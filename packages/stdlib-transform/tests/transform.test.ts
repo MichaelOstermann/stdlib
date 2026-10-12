@@ -176,3 +176,51 @@ describe("transform", () => {
         expect(result!.map.sourcesContent![0]).toContain(`match(a).case(1`)
     })
 })
+
+describe("transform, with hmr", () => {
+    const code = dedent(`
+        import "@monstermann/stdlib/globals";
+        import { Emitter as E } from "@monstermann/stdlib";
+        const $count = Signal(0);
+        const $double = Memo(() => $count() * 2);
+        const onChange = Emitter<number>();
+        const onOther = E();
+        const onLater = AsyncEmitter(dispatch);
+        Effect(() => console.log($count()));
+        Effect.watch($count, () => onChange(1));
+        Effect.defer(resolve => resolve());
+        const update = Action(() => $count(1));
+        function local() { const Effect = (fn: () => void) => fn(); Effect(() => {}); }
+    `)
+
+    it("should leave everything as it is without it", () => {
+        const result = transform(code, "source.ts")?.code
+        expect(result).not.toContain("import.meta.hot")
+        expect(result).toContain("Effect(() => console.log($count()));")
+    })
+
+    it("should skip files that do not use the package", () => {
+        expect(transform(`import { Effect } from "lib"\nEffect(() => {})`, "source.ts", { hmr: true })).toBe(undefined)
+    })
+
+    it("should pass what disposes them to effects and emitters", () => {
+        const result = transform(code, "source.ts", { hmr: true })?.code
+        expect(result).toContain("import.meta.hot")
+        expect(result).toContain("const meta = { hmr: hmr };")
+        expect(result).not.toContain("meta1")
+        expect(result).toContain("Emitter<number>(undefined, meta)")
+        expect(result).toContain("E(undefined, meta)")
+        expect(result).toContain("AsyncEmitter(dispatch, meta)")
+        expect(result).toContain("Effect(() => console.log($count()), meta)")
+        expect(result).toContain("Effect.watch($count, () => onChange(1), undefined, meta)")
+    })
+
+    it("should leave alone what is not disposed, and what only shares the name", () => {
+        const result = transform(code, "source.ts", { hmr: true })?.code
+        expect(result).toContain("Signal(0);")
+        expect(result).toContain("Memo(() => $count() * 2);")
+        expect(result).toContain("Effect.defer(resolve => resolve());")
+        expect(result).toContain("Action(() => $count(1));")
+        expect(result).toContain("Effect(() => {}); }")
+    })
+})

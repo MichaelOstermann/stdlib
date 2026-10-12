@@ -22,6 +22,7 @@ export default defineConfig({
 | `exclude` |                         | RegExp(s), files whose path matches are skipped.                       |
 | `enforce` |                         | `"pre"` or `"post"`.                                                   |
 | `debug`   | `false`                 | `true` or a RegExp matching file paths, prints what is being replaced. |
+| `hmr`     | Vite dev server         | Disposes effects and emitters when their module is replaced.           |
 
 Dependencies are always skipped: what a dependency uses of `Array` or `Object` is its own.
 

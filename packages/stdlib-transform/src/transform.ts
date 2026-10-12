@@ -1,7 +1,9 @@
+import type { MetaParam } from "@monstermann/meta"
 import type { SourceMap } from "magic-string"
 import type { Helpers } from "./match"
 import remapping from "@jridgewell/remapping"
 import { transform as treeshake } from "@monstermann/barrels-treeshake"
+import { transform as transformMeta } from "@monstermann/meta"
 import { SourceMap as MagicSourceMap } from "magic-string"
 import { transformGlobals } from "./globals"
 import { globals, values } from "./globals.manifest"
@@ -19,9 +21,25 @@ const globalsOptions = {
     resolve: (global: string, name: string): string => `${from}/${global}/${name}.mjs`,
 }
 
+// Effects and emitters only receive what is needed to dispose them.
+const hmrOnly: MetaParam["meta"] = ({ hmr }) => ({ hmr })
+
+/** What is disposed when its module is replaced. By then it is imported from the file it lives in, whatever it was written as. */
+const hmrParams: MetaParam[] = [
+    { function: "Effect", meta: hmrOnly, module: `${from}/Effect.mjs`, position: 2 },
+    { function: "Effect.watch", meta: hmrOnly, module: `${from}/Effect.mjs`, position: 4 },
+    { function: "Emitter", meta: hmrOnly, module: `${from}/Emitter.mjs`, position: 2 },
+    { function: "AsyncEmitter", meta: hmrOnly, module: `${from}/Emitter.mjs`, position: 2 },
+]
+
 export interface StdlibOptions {
     /** Prints what is being replaced. */
     debug?: boolean
+    /**
+     * Whether to dispose effects and emitters when their module is replaced.
+     * @default false
+     */
+    hmr?: boolean
 }
 
 export interface StdlibResult {
@@ -36,6 +54,7 @@ export interface StdlibResult {
  * - `match()` chains are compiled into conditional expressions
  * - `pipe()` calls are replaced with the calls they make
  * - everything else (`pipe`, `Result`, …) is imported from the file it lives in
+ * - with `hmr`, effects and emitters are passed what disposes them when their module is replaced
  *
  * All of it is available as globals, and can be imported from the package as well.
  *
@@ -98,6 +117,15 @@ export function transform(code: string, filePath: string, options: StdlibOptions
     if (replaced) {
         code = replaced.toString()
         maps.push(replaced.generateMap(generateMap))
+    }
+
+    // After everything else: by now effects and emitters are imported from where they live.
+    if (options.hmr && code.includes(from)) {
+        const meta = transformMeta(code, filePath, { hmr: true, params: hmrParams })
+        if (meta) {
+            code = meta.code
+            maps.push(meta.map)
+        }
     }
 
     if (!maps.length) return

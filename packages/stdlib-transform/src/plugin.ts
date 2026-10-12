@@ -9,6 +9,11 @@ export interface StdlibPluginOptions extends Omit<StdlibOptions, "debug"> {
     /** Skip files whose path matches one of these. Dependencies are always skipped. */
     exclude?: RegExp | RegExp[]
     /**
+     * Whether to dispose effects and emitters when their module is replaced.
+     * @default true when used with the dev server of Vite
+     */
+    hmr?: boolean
+    /**
      * Only transform files whose path matches one of these.
      * @default /\.m?[jt]sx?(?:\?.*)?$/
      */
@@ -22,6 +27,7 @@ export interface StdlibPlugin {
         filter: { id: { exclude: RegExp[], include: RegExp[] } }
         handler: (code: string, id: string) => ReturnType<typeof transform>
     }
+    configResolved: (config: { command: string }) => void
 }
 
 /** What is used of globals in a dependency is its own, and not to be replaced. */
@@ -31,7 +37,9 @@ const dependencies = /(?:^|[\\/])node_modules[\\/]/
 const modules = /\.m?[jt]sx?(?:\?.*)?$/
 
 /** A plugin for Vite, Rolldown and tsdown. */
-export function stdlib({ debug, enforce, exclude = [], include = modules }: StdlibPluginOptions = {}): StdlibPlugin {
+export function stdlib({ debug, enforce, exclude = [], hmr, include = modules }: StdlibPluginOptions = {}): StdlibPlugin {
+    let isViteDevServer = false
+
     const id = {
         exclude: [dependencies, exclude].flat(),
         include: [include].flat(),
@@ -46,8 +54,11 @@ export function stdlib({ debug, enforce, exclude = [], include = modules }: Stdl
                 // Bundlers that do not know hook filters call the handler for every file.
                 if (id.exclude.some(pattern => pattern.test(path))) return
                 if (!id.include.some(pattern => pattern.test(path))) return
-                return transform(code, path, { debug: debug instanceof RegExp ? debug.test(path) : debug })
+                return transform(code, path, { debug: debug instanceof RegExp ? debug.test(path) : debug, hmr: hmr ?? isViteDevServer })
             },
+        },
+        configResolved(config) {
+            isViteDevServer = config.command === "serve"
         },
     }
 }
@@ -75,7 +86,7 @@ export interface StdlibBunPlugin {
  *
  * Bun only uses the first `onLoad` that returns something, call `transform` from your own when there are others.
  */
-export function stdlibBun({ debug, exclude = [], include = modules }: Omit<StdlibPluginOptions, "enforce"> = {}): StdlibBunPlugin {
+export function stdlibBun({ debug, exclude = [], hmr, include = modules }: Omit<StdlibPluginOptions, "enforce"> = {}): StdlibBunPlugin {
     const excluded = [dependencies, exclude].flat()
 
     return {
@@ -85,7 +96,7 @@ export function stdlibBun({ debug, exclude = [], include = modules }: Omit<Stdli
                 build.onLoad({ filter }, async ({ loader, path }) => {
                     const code = await readFile(path, "utf8")
                     if (excluded.some(pattern => pattern.test(path))) return { contents: code, loader }
-                    const result = transform(code, path, { debug: debug instanceof RegExp ? debug.test(path) : debug })
+                    const result = transform(code, path, { debug: debug instanceof RegExp ? debug.test(path) : debug, hmr })
                     return { contents: result?.code ?? code, loader }
                 })
             }

@@ -27,6 +27,7 @@
       "dependencies": {
         "@jridgewell/remapping": "^2.3.5",
         "@monstermann/barrels-treeshake": "^0.5.0",
+        "@monstermann/meta": "^0.6.0",
         "magic-string": "^1.4.2",
         "oxc-parser": "^0.152.0",
         "oxc-walker": "^1.1.1",
@@ -167,6 +168,8 @@
     "@monstermann/barrels-treeshake": ["@monstermann/barrels-treeshake@0.5.0", "", { "dependencies": { "magic-string": "^1.4.2", "oxc-parser": "^0.152.0" } }, "sha512-euCpsBf9gw70XlA9UWx7hD0+0D5U6vSskNn3v3K2pJqw1ds1Agj7rwBPmnNf/KItXkauaPxG9YmmrmDKM000kw=="],
 
     "@monstermann/eslint-config": ["@monstermann/eslint-config@0.8.0", "", { "dependencies": { "@eslint-community/eslint-plugin-eslint-comments": "^4.8.1", "@eslint-react/eslint-plugin": "^5.23.1", "@stylistic/eslint-plugin": "^5.10.0", "@typescript-eslint/eslint-plugin": "^8.71.0", "@typescript-eslint/parser": "^8.71.0", "eslint": "^10.11.0", "eslint-plugin-antfu": "^3.2.3", "eslint-plugin-better-tailwindcss": "^4.7.0", "eslint-plugin-format": "^2.0.1", "eslint-plugin-import-x": "^4.17.1", "eslint-plugin-jsdoc": "^65.0.0", "eslint-plugin-jsonc": "^3.4.2", "eslint-plugin-n": "^18.4.0", "eslint-plugin-perfectionist": "^5.12.1", "eslint-plugin-react-compiler": "^19.1.0-rc.2", "eslint-plugin-react-hooks": "^7.1.1", "eslint-plugin-react-refresh": "^0.5.7", "eslint-plugin-regexp": "^3.3.1", "eslint-plugin-unicorn": "^76.0.0", "eslint-plugin-unused-imports": "^4.4.1", "globals": "^17.12.0", "jsonc-eslint-parser": "^3.3.0", "prettier": "^3.9.9" } }, "sha512-zrkehRwKpNfMNjYeCwE16Y2aRl2C7s4bH2WetofY+U8vDsnOItXIgmMTJTs2Hc6Vhab9mxtnlXNnUvYjh9yFfw=="],
+
+    "@monstermann/meta": ["@monstermann/meta@0.6.0", "", { "dependencies": { "magic-string": "^1.4.2", "oxc-parser": "^0.152.0", "oxc-walker": "^1.1.1" } }, "sha512-kUIQuWaUY02CAxbTQqrXyQXqskTiAtCSZPjKcsaDcQXr0Lhh6zcLNF1pymmE0uVk5Dcu1pJoFVhPv6V6F+yV/Q=="],
 
     "@monstermann/stdlib": ["@monstermann/stdlib@workspace:packages/stdlib"],
 

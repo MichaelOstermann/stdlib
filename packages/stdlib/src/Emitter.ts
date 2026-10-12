@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-redeclare -- Emitter and AsyncEmitter are a type and what creates it */
 import type { Disposer } from "./Disposer"
+import type { Meta } from "./internals/hmr"
 import { Disposer as createDisposer } from "./Disposer"
 import { noop } from "./Function/noop"
 import { holdDisposer } from "./internals/disposers"
+import { hmr } from "./internals/hmr"
 import { endBatch, pauseTracking, resumeTracking, startBatch } from "./internals/reactivity"
 
 type AnyFn = (...args: any[]) => any
@@ -55,6 +57,7 @@ export interface AsyncEmitter<T = void> extends ReadonlyAsyncEmitter<T>, Dispose
  * - `dispatch` replaces how listeners are called, to wrap it or to catch what they throw
  * - sending is batched and untracked: effects run once every listener has been called, and what listeners read is not depended on
  * - it can be disposed like a `Disposer`, which removes its listeners and ignores new ones
+ * - during development it is disposed when its module is replaced, the plugin passes what is needed for that as the last argument
  *
  * ```ts
  * const onMessage = Emitter<string>();
@@ -74,7 +77,7 @@ export interface AsyncEmitter<T = void> extends ReadonlyAsyncEmitter<T>, Dispose
  * const onChange: ReadonlyEmitter<string> = onMessage;
  * ```
  */
-export function Emitter<T = void>(dispatch?: (listeners: Set<Listener<T>>, message: T) => void): [T] extends [AnyFn] ? never : Emitter<T> {
+export function Emitter<T = void>(dispatch?: (listeners: Set<Listener<T>>, message: T) => void, meta?: Meta): [T] extends [AnyFn] ? never : Emitter<T> {
     const listeners = new Set<Listener<T>>()
 
     const emitter = (input: Listener<T> | T): unknown => {
@@ -99,7 +102,7 @@ export function Emitter<T = void>(dispatch?: (listeners: Set<Listener<T>>, messa
     }
 
     emitter.listeners = listeners
-    return disposable(emitter) as never
+    return disposable(emitter, meta) as never
 }
 
 /**
@@ -119,7 +122,7 @@ export function Emitter<T = void>(dispatch?: (listeners: Set<Listener<T>>, messa
  * await onShutdown("SIGTERM");
  * ```
  */
-export function AsyncEmitter<T = void>(dispatch?: (listeners: Set<AsyncListener<T>>, message: T) => Promise<void>): [T] extends [AnyFn] ? never : AsyncEmitter<T> {
+export function AsyncEmitter<T = void>(dispatch?: (listeners: Set<AsyncListener<T>>, message: T) => Promise<void>, meta?: Meta): [T] extends [AnyFn] ? never : AsyncEmitter<T> {
     const listeners = new Set<AsyncListener<T>>()
 
     const emitter = (input: AsyncListener<T> | T): unknown => {
@@ -129,7 +132,7 @@ export function AsyncEmitter<T = void>(dispatch?: (listeners: Set<AsyncListener<
     }
 
     emitter.listeners = listeners
-    return disposable(emitter) as never
+    return disposable(emitter, meta) as never
 }
 
 interface Target<T> {
@@ -149,7 +152,7 @@ async function send<T>(listeners: Set<AsyncListener<T>>, message: T): Promise<vo
 }
 
 /** Makes an emitter something to dispose. The disposer behind it is only created once something asks for it. */
-function disposable<T, U extends Target<T>>(emitter: U): Disposer & U & { clear: () => void } {
+function disposable<T, U extends Target<T>>(emitter: U, meta: Meta | undefined): Disposer & U & { clear: () => void } {
     const target = emitter as Disposer & U & { disposed: boolean, clear: () => void }
     const listeners = emitter.listeners
     let disposer: Disposer | undefined
@@ -174,5 +177,6 @@ function disposable<T, U extends Target<T>>(emitter: U): Disposer & U & { clear:
     target.onDispose = value => own().onDispose(value)
     target[Symbol.dispose] = target.dispose
     holdDisposer(target, own)
+    hmr(target, meta)
     return target
 }

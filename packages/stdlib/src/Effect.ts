@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-redeclare -- Effect is a type and what creates it */
 import type { MaybeDisposerValue } from "./Disposer"
+import type { Meta } from "./internals/hmr"
 import type { Memo as MemoType } from "./Memo"
 import type { ReadonlySignal } from "./Signal"
 import { Disposer } from "./Disposer"
 import { brand } from "./internals/disposers"
+import { hmr } from "./internals/hmr"
 import { pauseTracking, resumeTracking } from "./internals/reactivity"
 import { RawEffect } from "./internals/system"
 import { Memo } from "./Memo"
@@ -25,6 +27,7 @@ export interface WatchOptions<T> {
  * - what `computation` returns is cleaned up before the next run and when the effect is disposed: a function, or anything disposable
  * - it is a `Disposer`: dispose it to stop it, add it to another one to stop it together with that
  * - what `computation` throws is thrown by what created the effect, or by what changed the signal
+ * - during development it is disposed when its module is replaced, the plugin passes what is needed for that as the last argument
  *
  * ```ts
  * const $count = Signal(0);
@@ -55,7 +58,7 @@ export interface WatchOptions<T> {
  * ```
  */
 export const Effect: {
-    (computation: (effect: Effect) => MaybeDisposerValue): Effect
+    (computation: (effect: Effect) => MaybeDisposerValue, meta?: Meta): Effect
     /** Runs an effect until it calls `resolve` or `reject`, and returns a promise of that. It is disposed afterwards. */
     defer: <T = void>(computation: (resolve: (value: T) => void, reject: (reason?: unknown) => void, effect: Effect) => MaybeDisposerValue) => Promise<T>
     /**
@@ -63,13 +66,13 @@ export const Effect: {
      * Unlike an effect it does not run right away, and does not depend on what `computation` reads.
      * What `computation` returns is cleaned up like it is for an effect, which it is, and what it is called with last.
      */
-    watch: <T>(dependencies: ReadonlySignal<T> | MemoType<T> | (() => T), computation: (next: NoInfer<T>, prev: NoInfer<T>, effect: Effect) => MaybeDisposerValue, options?: WatchOptions<NoInfer<T>>) => Effect
+    watch: <T>(dependencies: ReadonlySignal<T> | MemoType<T> | (() => T), computation: (next: NoInfer<T>, prev: NoInfer<T>, effect: Effect) => MaybeDisposerValue, options?: WatchOptions<NoInfer<T>>, meta?: Meta) => Effect
 } = Object.assign(create, {
     defer,
     watch,
 })
 
-function create(computation: (effect: Effect) => MaybeDisposerValue): Effect {
+function create(computation: (effect: Effect) => MaybeDisposerValue, meta?: Meta): Effect {
     const effect: Effect = Disposer()
     let cleanup: MaybeDisposerValue
 
@@ -89,6 +92,7 @@ function create(computation: (effect: Effect) => MaybeDisposerValue): Effect {
     raw.run()
     effect.onDispose(() => raw.dispose())
     effect.onDispose(clean)
+    hmr(effect, meta)
 
     return effect
 }
@@ -116,7 +120,7 @@ function defer<T = void>(computation: (resolve: (value: T) => void, reject: (rea
     }).finally(() => effect?.dispose())
 }
 
-function watch<T>(dependencies: ReadonlySignal<T> | MemoType<T> | (() => T), computation: (next: T, prev: T, effect: Effect) => MaybeDisposerValue, options?: WatchOptions<T>): Effect {
+function watch<T>(dependencies: ReadonlySignal<T> | MemoType<T> | (() => T), computation: (next: T, prev: T, effect: Effect) => MaybeDisposerValue, options?: WatchOptions<T>, meta?: Meta): Effect {
     const effect: Effect = Disposer()
     // A function is turned into a memo, to only run when it returns something else.
     const read = "kind" in dependencies ? dependencies : Memo(dependencies, options)
@@ -149,6 +153,7 @@ function watch<T>(dependencies: ReadonlySignal<T> | MemoType<T> | (() => T), com
     raw.run()
     effect.onDispose(() => raw.dispose())
     effect.onDispose(clean)
+    hmr(effect, meta)
 
     return effect
 }

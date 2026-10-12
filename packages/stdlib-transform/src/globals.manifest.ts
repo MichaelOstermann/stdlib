@@ -22,7 +22,6 @@ export const values: Readonly<Record<string, string>> = {
     AsyncEmitter: "Emitter",
     Batch: "Batch",
     Bytes: "Bytes/index",
-    Context: "Context",
     Disposer: "Disposer",
     Duration: "Duration/index",
     Effect: "Effect",

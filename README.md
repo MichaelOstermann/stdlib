@@ -361,19 +361,6 @@ Effect.watch($count, (count, before) => console.log(before, count));
 
 What only batches does not load signals: an `Emitter` on a server costs a counter.
 
-### Context
-
-A value that is set for as long as a function runs, for what that function calls to read it without it being passed along.
-
-```ts
-const currentUser = Context<User>();
-
-currentUser.run(user, () => {
-    currentUser(); // user
-});
-currentUser(); // undefined
-```
-
 ## Installation
 
 ```sh
@@ -406,7 +393,7 @@ With the plugin you ship the functions you use, and nothing else. Without it, `@
 
 |                                        | Minified | Gzip    | Brotli  |
 | -------------------------------------- | -------- | ------- | ------- |
-| Everything                             | 51.7 kB  | 18.0 kB | 13.7 kB |
+| Everything                             | 51.6 kB  | 17.9 kB | 13.6 kB |
 | `match`, without the plugin            | 1.87 kB  | 0.68 kB | 0.60 kB |
 | `Result` and `ResultAsync`             | 2.22 kB  | 0.58 kB | 0.53 kB |
 | `String.slugify`, the largest function | 19.1 kB  | 6.28 kB | 3.67 kB |

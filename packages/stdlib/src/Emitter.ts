@@ -122,13 +122,12 @@ export function Emitter<T = void>(dispatch?: (listeners: Set<Listener<T>>, messa
  * await onShutdown("SIGTERM");
  * ```
  */
-export function AsyncEmitter<T = void>(dispatch?: (listeners: Set<AsyncListener<T>>, message: T) => Promise<void>, meta?: Meta): [T] extends [AnyFn] ? never : AsyncEmitter<T> {
+export function AsyncEmitter<T = void>(dispatch: (listeners: Set<AsyncListener<T>>, message: T) => Promise<void> = send, meta?: Meta): [T] extends [AnyFn] ? never : AsyncEmitter<T> {
     const listeners = new Set<AsyncListener<T>>()
 
     const emitter = (input: AsyncListener<T> | T): unknown => {
         if (typeof input === "function") return listen(emitter, input as AsyncListener<T>)
-        if (dispatch) return dispatch(listeners, input)
-        return send(listeners, input)
+        return dispatch(listeners, input)
     }
 
     emitter.listeners = listeners
@@ -147,6 +146,7 @@ function listen<T>(emitter: Target<T>, listener: T): () => void {
     return () => void listeners.delete(listener)
 }
 
+/** How an `AsyncEmitter` calls its listeners, unless it is told otherwise. */
 async function send<T>(listeners: Set<AsyncListener<T>>, message: T): Promise<void> {
     for (const listener of listeners) await listener(message)
 }

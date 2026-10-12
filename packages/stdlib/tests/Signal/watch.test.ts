@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "bun:test"
 import { Disposer } from "../../src/Disposer"
 import { Effect } from "../../src/Effect"
-import { memo, onCleanup, signal } from "./helpers"
+import { memo, signal } from "./helpers"
 
 const watch = Effect.watch
 const currentWatcher = Effect.current
@@ -68,20 +68,14 @@ describe("watch", () => {
     it("should run cleanups before the next run and when disposed", () => {
         const a = signal(1)
         const returned = vi.fn()
-        const registered = vi.fn()
-        const watcher = watch(a, () => {
-            onCleanup(registered)
-            return returned
-        })
+        const watcher = watch(a, () => returned)
 
         a(2)
         a(3)
         expect(returned).toHaveBeenCalledTimes(1)
-        expect(registered).toHaveBeenCalledTimes(1)
 
         watcher.dispose()
         expect(returned).toHaveBeenCalledTimes(2)
-        expect(registered).toHaveBeenCalledTimes(2)
 
         a(4)
         expect(returned).toHaveBeenCalledTimes(2)
@@ -120,19 +114,6 @@ describe("watch", () => {
         parent.dispose()
         a(2)
         expect(spy).toHaveBeenCalledTimes(0)
-    })
-
-    it("should not add the cleanups of its dependencies to the effect around it", () => {
-        const a = signal(1)
-        const cleanup = vi.fn()
-        const outer = Effect(() => {
-            watch(() => {
-                onCleanup(cleanup)
-                return a()
-            }, () => {})
-        })
-        outer.dispose()
-        expect(cleanup).toHaveBeenCalledTimes(0)
     })
 
     it("should be the running effect while it runs, and give it back", () => {

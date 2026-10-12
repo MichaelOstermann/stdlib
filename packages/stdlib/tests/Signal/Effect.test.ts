@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "bun:test"
 import { Disposer } from "../../src/Disposer"
 import { Effect } from "../../src/Effect"
 import { Emitter } from "../../src/Emitter"
-import { currentEffect, deferEffect, disposeEffect, hasEffect, onCleanup, signal } from "./helpers"
+import { currentEffect, deferEffect, disposeEffect, hasEffect, signal } from "./helpers"
 
 const effect = Effect
 
@@ -44,20 +44,17 @@ describe("effect", () => {
     it("should run cleanups before the next run and when disposed", () => {
         const a = signal(0)
         const returned = vi.fn()
-        const registered = vi.fn()
         const fx = effect(() => {
             a()
-            onCleanup(registered)
             return returned
         })
 
         a(1)
         expect(returned).toHaveBeenCalledTimes(1)
-        expect(registered).toHaveBeenCalledTimes(1)
 
         fx.dispose()
+        fx.dispose()
         expect(returned).toHaveBeenCalledTimes(2)
-        expect(registered).toHaveBeenCalledTimes(2)
     })
 
     it("should know the running effect", () => {
@@ -100,7 +97,6 @@ describe("effect", () => {
 
         expect(() => a(1)).toThrow("fail")
         expect(hasEffect()).toBe(false)
-        expect(onCleanup(() => {})).toBeFunction()
     })
 })
 
@@ -123,31 +119,61 @@ describe("deferEffect", () => {
 })
 
 describe("cleanups", () => {
-    it("should run cleanups of a run that threw when the effect is disposed", () => {
+    it("should clean up once, also when the cleanup throws", () => {
         const a = signal(0)
-        const cleanup = vi.fn()
+        const cleanup = vi.fn(() => {
+            throw new Error("fail")
+        })
         const fx = effect(() => {
-            onCleanup(cleanup)
-            if (a() > 0) throw new Error("fail")
+            a()
+            return a() === 0 ? cleanup : undefined
         })
 
         expect(() => a(1)).toThrow("fail")
-        expect(cleanup).toHaveBeenCalledTimes(1)
-
         fx.dispose()
-        expect(cleanup).toHaveBeenCalledTimes(2)
+        expect(cleanup).toHaveBeenCalledTimes(1)
     })
 
-    it("should run cleanups in reverse order", () => {
-        const order: number[] = []
+    it("should clean up when it is disposed while it runs", () => {
+        const cleanup = vi.fn()
+        effect(() => {
+            disposeEffect()
+            return cleanup
+        })
+        expect(cleanup).toHaveBeenCalledTimes(1)
+    })
+
+    it("should dispose what is disposable, an emitter is not called", () => {
+        const a = signal(0)
+        const listener = vi.fn()
+        const disposers: Disposer[] = []
+        const emitters: Emitter[] = []
         const fx = effect(() => {
-            onCleanup(() => order.push(1))
-            onCleanup(() => order.push(2))
-            return () => order.push(3)
+            if (a() % 2) return disposers[disposers.push(Disposer()) - 1]
+            const onTick = Emitter()
+            onTick(listener)
+            return emitters[emitters.push(onTick) - 1]
         })
 
+        a(1)
+        a(2)
         fx.dispose()
-        expect(order).toEqual([3, 2, 1])
+        expect(disposers.map(disposer => disposer.disposed)).toEqual([true])
+        expect(emitters.map(emitter => emitter.disposed)).toEqual([true, true])
+        expect(listener).toHaveBeenCalledTimes(0)
+    })
+
+    it("should not depend on what a cleanup reads", () => {
+        const a = signal(0)
+        const b = signal(0)
+        const spy = vi.fn(() => {
+            a()
+            return () => void b()
+        })
+        effect(spy)
+        a(1)
+        b(1)
+        expect(spy).toHaveBeenCalledTimes(2)
     })
 })
 
@@ -189,11 +215,5 @@ describe("Effect, as a disposer", () => {
     it("should reject what is deferred when it is disposed from the inside", async () => {
         const result = deferEffect(() => disposeEffect())
         expect(await result.then(() => "resolved", () => "rejected")).toBe("rejected")
-    })
-
-    it("should ignore cleanups when no effect is running", () => {
-        const cb = vi.fn()
-        expect(onCleanup(cb)).toBe(cb)
-        expect(cb).toHaveBeenCalledTimes(0)
     })
 })

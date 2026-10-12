@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-redeclare -- Effect is a type and what creates it */
 import type { MaybeDisposerValue } from "./Disposer"
-import type { Cleanups } from "./internals/cleanups"
 import type { Memo as MemoType } from "./Memo"
 import type { ReadonlySignal } from "./Signal"
 import { Disposer } from "./Disposer"
-import { addCleanup, onCleanup, runCleanups, swapCleanups } from "./internals/cleanups"
+import { brand } from "./internals/disposers"
 import { pauseTracking, resumeTracking } from "./internals/reactivity"
 import { RawEffect } from "./internals/system"
 import { Memo } from "./Memo"
@@ -25,7 +24,7 @@ let current: Effect | undefined
  * Calls `computation`, and again whenever a signal or memo changes that it read. It is what brings changes to the outside: the DOM, a request, a log.
  *
  * - it runs right away, and again once the batch is done in which something changed
- * - what `computation` returns is cleaned up before the next run and when the effect is disposed, like everything added with `Effect.onCleanup`
+ * - what `computation` returns is cleaned up before the next run and when the effect is disposed: a function, or anything disposable
  * - it is a `Disposer`: dispose it to stop it, add it to another one to stop it together with that
  * - what `computation` throws is thrown by what created the effect, or by what changed the signal
  *
@@ -43,9 +42,9 @@ let current: Effect | undefined
  * effect.dispose(); // "disposed", "cleanup"
  *
  * Effect(() => {
+ *     if ($done()) return Effect.current()?.dispose();
  *     const timer = setInterval(tick, $delay());
- *     Effect.onCleanup(() => clearInterval(timer));
- *     if ($done()) Effect.current()?.dispose();
+ *     return () => clearInterval(timer);
  * });
  *
  * await Effect.defer<number>((resolve) => {
@@ -63,46 +62,61 @@ export const Effect: {
     current: () => Effect | undefined
     /** Runs an effect until it calls `resolve` or `reject`, and returns a promise of that. It is disposed afterwards. */
     defer: <T = void>(computation: (resolve: (value: T) => void, reject: (reason?: unknown) => void) => MaybeDisposerValue) => Promise<T>
-    /** Adds something to clean up before the effect that is running runs again, and when it is disposed. Returns it, and ignores it when no effect is running. */
-    onCleanup: <T extends MaybeDisposerValue>(value: T) => T
     /**
      * Calls `computation` with the value of `dependencies` and the one before, whenever it changed.
      * Unlike an effect it does not run right away, and does not depend on what `computation` reads.
-     * Cleanups and disposing work like they do for an effect, which it is: `Effect.current()` returns it while it runs.
+     * What `computation` returns is cleaned up like it is for an effect, which it is: `Effect.current()` returns it while it runs.
      */
     watch: <T>(dependencies: ReadonlySignal<T> | MemoType<T> | (() => T), computation: (next: NoInfer<T>, prev: NoInfer<T>) => MaybeDisposerValue, options?: WatchOptions<NoInfer<T>>) => Effect
 } = Object.assign(create, {
     defer,
-    onCleanup,
     watch,
     current: () => current,
 })
 
 function create(computation: () => MaybeDisposerValue): Effect {
-    const cleanups: Cleanups = { current: undefined }
     const effect: Effect = Disposer()
+    let cleanup: MaybeDisposerValue
+
+    const clean = (): void => {
+        const value = cleanup
+        cleanup = undefined
+        cleanUp(value)
+    }
 
     const raw = new RawEffect(() => {
         const prevEffect = current
-        const prevCleanups = swapCleanups(cleanups)
         current = effect
         try {
-            runCleanups(cleanups)
+            clean()
             if (effect.disposed) return
-            addCleanup(cleanups, computation())
-            if (effect.disposed) runCleanups(cleanups)
+            cleanup = computation()
+            if (effect.disposed) clean()
         }
         finally {
-            swapCleanups(prevCleanups)
             current = prevEffect
         }
     })
 
     raw.run()
     effect.onDispose(() => raw.dispose())
-    effect.onDispose(() => runCleanups(cleanups))
+    effect.onDispose(clean)
 
     return effect
+}
+
+/** Disposes what a run returned, without depending on what that reads. An effect that runs or is disposed batches already. */
+function cleanUp(value: MaybeDisposerValue): void {
+    if (!value) return
+    pauseTracking()
+    try {
+        // An emitter is a function as well, and not one to call.
+        if (typeof value === "function" && !(brand in value)) value()
+        else (value as Disposable)[Symbol.dispose]()
+    }
+    finally {
+        resumeTracking()
+    }
 }
 
 function defer<T = void>(computation: (resolve: (value: T) => void, reject: (reason?: unknown) => void) => MaybeDisposerValue): Promise<T> {
@@ -115,43 +129,45 @@ function defer<T = void>(computation: (resolve: (value: T) => void, reject: (rea
 }
 
 function watch<T>(dependencies: ReadonlySignal<T> | MemoType<T> | (() => T), computation: (next: T, prev: T) => MaybeDisposerValue, options?: WatchOptions<T>): Effect {
-    const cleanups: Cleanups = { current: undefined }
     const effect: Effect = Disposer()
     // A function is turned into a memo, to only run when it returns something else.
     const read = "kind" in dependencies ? dependencies : Memo(dependencies, options)
+    let cleanup: MaybeDisposerValue
     let init = false
     let value: T
+
+    const clean = (): void => {
+        const value = cleanup
+        cleanup = undefined
+        cleanUp(value)
+    }
 
     const raw = new RawEffect(() => {
         const prev = value
         const prevEffect = current
-        // What reading the dependencies cleans up belongs to nothing.
-        const prevCleanups = swapCleanups(undefined)
         current = effect
         try {
             value = read()
             if (!init || effect.disposed) return void (init = true)
             pauseTracking()
             try {
-                runCleanups(cleanups)
-                swapCleanups(cleanups)
+                clean()
                 if (effect.disposed) return
-                addCleanup(cleanups, computation(value, prev))
-                if (effect.disposed) runCleanups(cleanups)
+                cleanup = computation(value, prev)
+                if (effect.disposed) clean()
             }
             finally {
                 resumeTracking()
             }
         }
         finally {
-            swapCleanups(prevCleanups)
             current = prevEffect
         }
     })
 
     raw.run()
     effect.onDispose(() => raw.dispose())
-    effect.onDispose(() => runCleanups(cleanups))
+    effect.onDispose(clean)
 
     return effect
 }

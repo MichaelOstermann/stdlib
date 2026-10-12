@@ -11,7 +11,6 @@ export const untrack = Untrack
 export const peek = Untrack
 export const memo = Memo
 export const indexed = Memo.indexed
-export const onCleanup = Effect.onCleanup
 export const currentEffect = Effect.current
 export const deferEffect = Effect.defer
 

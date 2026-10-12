@@ -1,94 +1,154 @@
+/* eslint-disable @typescript-eslint/no-redeclare -- Disposer is a type and what creates it */
+import { brand } from "./internals/disposers"
+import { endBatch, pauseTracking, resumeTracking, startBatch } from "./internals/reactivity"
+
 // Not every runtime knows disposables yet, for example the webview of Tauri on Linux.
 (Symbol as { dispose: symbol }).dispose ??= Symbol.for("Symbol.dispose")
 
-// Registered globally, so multiple copies of this package recognize each others disposers.
-const brand: unique symbol = Symbol.for("@monstermann/stdlib/Disposer") as never
-
 /** What a disposer can dispose: callbacks, other disposers, and everything else that is disposable. */
-export type DisposerValue = (() => void) | Disposable | Disposer
+export type DisposerValue = (() => void) | Disposable
 
-/** Where a value sits in a disposer, which is what removes it without looking for it. */
-export interface DisposerLink {
-    disposer: Disposer
-    nextDsp: DisposerLink | undefined
-    nextVal: DisposerLink | undefined
-    prevDsp: DisposerLink | undefined
-    prevVal: DisposerLink | undefined
-    val: DisposerValue
+/** What `onDispose` takes: nothing is fine, for `disposer.onDispose(condition && callback)`. */
+export type MaybeDisposerValue = DisposerValue | false | null | undefined | void
+
+/** Collects what needs to be cleaned up, and does so in reverse order. */
+export interface Disposer extends Disposable {
+    /** Disposes everything that has been added, the last first. Does nothing the second time, and ignores what it is called with: it can be passed as a callback. */
+    dispose: () => void
+    /** Whether this has been disposed. */
+    readonly disposed: boolean
+    /** Adds something to dispose, and returns it. It is disposed right away when this has been disposed already. */
+    onDispose: <T extends MaybeDisposerValue>(value: T) => T
+}
+
+/** A disposer as it is: its values and the disposers it has been added to are lists of links, which is what removes one without looking for it. */
+interface Node extends Disposer {
+    [brand]: Node
+    disposed: boolean
+    /** The last of the disposers this has been added to. */
+    dsps: Link | undefined
+    /** The last of the values that have been added. */
+    vals: Link | undefined
+}
+
+/** Something that is not a disposer, and has one: it is created when it is asked for. */
+interface Holder {
+    [brand]: () => Node
+}
+
+interface Link {
+    disposer: Node
+    nextVal: Link | undefined
+    prevDsp: Link | undefined
+    prevVal: Link | undefined
+    val: DisposerValue | Node
 }
 
 type DisposeStack =
     | undefined
-    | { disposer: Disposer, prev: DisposeStack }
+    | { disposer: Node, prev: DisposeStack }
 
 /**
- * # Disposer
+ * `Disposer(...values)`
  *
  * Collects callbacks, other disposers and everything else that is disposable,
  * and disposes them in reverse order.
  *
- * - A disposer that has been added to others is removed from them when it is disposed itself.
- * - What is added to a disposer that has been disposed already is disposed right away.
- * - Everything is disposed, also when something throws: one error is thrown as it is, several as an `AggregateError`.
- * - Works with `using`.
- *
- * ## Example
+ * - a disposer that has been added to others is removed from them when it is disposed itself
+ * - what is added to a disposer that has been disposed already is disposed right away
+ * - everything is disposed, also when something throws: one error is thrown as it is, several as an `AggregateError`
+ * - disposing is batched and untracked: effects run once everything is disposed, and nothing that is read is depended on
+ * - works with `using`, and `dispose` can be passed as a callback
  *
  * ```ts
- * const a = new Disposer();
- * const b = new Disposer();
+ * const a = Disposer();
+ * const b = Disposer();
  *
- * a.add(() => console.log(1));
- * b.add(() => console.log(2));
- * a.add(b);
+ * a.onDispose(() => console.log(1));
+ * b.onDispose(() => console.log(2));
+ * a.onDispose(b);
  *
  * a.dispose(); // 2, 1
  * a.disposed; // true
  * b.disposed; // true
+ *
+ * promise.finally(a.dispose);
  * ```
  */
-export class Disposer implements Disposable {
-    /** Whether this has been disposed. */
-    disposed = false
-    /** The last of the disposers this has been added to. */
-    dsps: DisposerLink | undefined = undefined
-    /** The last of the values that have been added. */
-    vals: DisposerLink | undefined = undefined
-
+export const Disposer: {
+    (...values: MaybeDisposerValue[]): Disposer
     /** Whether `value` is a disposer, also one of another copy of this package. */
-    static is(value: unknown): value is Disposer {
-        return value != null && typeof value === "object" && brand in value
+    is: (value: unknown) => value is Disposer
+} = Object.assign(create, { is })
+
+function create(...values: MaybeDisposerValue[]): Disposer {
+    const node: Node = {
+        [brand]: undefined as never,
+        disposed: false,
+        dsps: undefined,
+        [Symbol.dispose]: undefined as never,
+        vals: undefined,
+        dispose: () => disposeNode(node),
+        onDispose: value => add(node, value),
+    }
+    node[brand] = node
+    node[Symbol.dispose] = node.dispose
+    for (const value of values) add(node, value)
+    return node
+}
+
+function is(value: unknown): value is Disposer {
+    return value != null && typeof value === "object" && brand in value
+}
+
+/** The disposer that something is or has. */
+function nodeOf(value: DisposerValue): Node | undefined {
+    const node = (value as Partial<Holder | Node>)[brand]
+    return typeof node === "function" ? node() : node
+}
+
+function add<T extends MaybeDisposerValue>(node: Node, value: T): T {
+    if (!value) return value
+
+    const child = nodeOf(value)
+    if (child) {
+        if (child === node || child.disposed) return value
+        if (node.disposed) child.dispose()
+        else linkDsp(child, linkVal(node, createLink(node, child)))
+        return value
     }
 
-    /** Removes what `link` points at from the disposer it has been added to. */
-    static unlink(link: DisposerLink | undefined): void {
-        if (!link) return
-        unlinkVal(link)
-        unlinkDsp(link)
+    if (!node.disposed) {
+        linkVal(node, createLink(node, value))
+        return value
     }
 
-    /**
-     * Adds something to dispose, and returns where it sits, for `Disposer.unlink`.
-     * Returns nothing when there is nothing to remove later: `value` was disposed right away, or is this disposer itself.
-     */
-    add(value: DisposerValue): DisposerLink | undefined {
-        if (Disposer.is(value)) {
-            if (value === this || value.disposed) return
-            if (this.disposed) return void value.dispose()
-            return linkDsp(value, linkVal(this, createLink(this, value)))
-        }
-        if (this.disposed) return void (typeof value === "function" ? value() : value[Symbol.dispose]())
-        return linkVal(this, createLink(this, value))
+    startBatch()
+    pauseTracking()
+    try {
+        if (typeof value === "function") value()
+        else value[Symbol.dispose]()
     }
+    finally {
+        resumeTracking()
+        endBatch()
+    }
+    return value
+}
 
-    /** Disposes everything that has been added, the last first. */
-    dispose(): void {
-        let errors: unknown[] | undefined
-        let stack: DisposeStack = { disposer: this, prev: undefined }
-        let disposer: Disposer | undefined = stack.disposer
+function disposeNode(root: Node): void {
+    // Nothing to dispose, which is also what the second time looks like.
+    if (!root.vals && !root.dsps) return void (root.disposed = true)
 
+    let errors: unknown[] | undefined
+    let stack: DisposeStack = { disposer: root, prev: undefined }
+    let disposer: Node | undefined = root
+
+    startBatch()
+    pauseTracking()
+    try {
         while (disposer) {
-            let child: Disposer | undefined
+            let child: Node | undefined
             disposer.disposed = true
 
             while (disposer.dsps) {
@@ -97,10 +157,10 @@ export class Disposer implements Disposable {
             }
 
             while (disposer.vals) {
-                const val: DisposerValue = disposer.vals.val
+                const val: DisposerValue | Node = disposer.vals.val
                 disposer.vals = disposer.vals.prevVal
 
-                if (Disposer.is(val)) {
+                if (isNode(val)) {
                     child = val
                     break
                 }
@@ -120,43 +180,24 @@ export class Disposer implements Disposable {
             else stack = stack?.prev
             disposer = stack?.disposer
         }
-
-        if (!errors) return
-        if (errors.length === 1) throw errors[0]
-        throw new AggregateError(errors, "DisposeError")
+    }
+    finally {
+        resumeTracking()
+        endBatch()
     }
 
-    /** Returns where `value` sits, when it has been added. */
-    find(value: DisposerValue): DisposerLink | undefined {
-        let link = this.vals
-        while (link) {
-            if (link.val === value) return link
-            link = link.prevVal
-        }
-        return link
-    }
-
-    /** Whether `value` has been added. */
-    includes(value: DisposerValue): boolean {
-        return !!this.find(value)
-    }
-
-    /** Removes `value` without disposing it. */
-    remove(value: DisposerValue): void {
-        Disposer.unlink(this.find(value))
-    }
-
-    [Symbol.dispose](): void {
-        this.dispose()
-    }
+    if (!errors) return
+    if (errors.length === 1) throw errors[0]
+    throw new AggregateError(errors, "DisposeError")
 }
 
-Object.defineProperty(Disposer.prototype, brand, { value: true })
+function isNode(value: DisposerValue | Node): value is Node {
+    return typeof value === "object" && brand in value
+}
 
-function createLink(disposer: Disposer, val: DisposerValue): DisposerLink {
+function createLink(disposer: Node, val: DisposerValue | Node): Link {
     return {
         disposer,
-        nextDsp: undefined,
         nextVal: undefined,
         prevDsp: undefined,
         prevVal: undefined,
@@ -164,31 +205,22 @@ function createLink(disposer: Disposer, val: DisposerValue): DisposerLink {
     }
 }
 
-function linkVal(disposer: Disposer, link: DisposerLink): DisposerLink {
+function linkVal(disposer: Node, link: Link): Link {
     link.prevVal = disposer.vals
     if (disposer.vals) disposer.vals.nextVal = link
     disposer.vals = link
     return link
 }
 
-function linkDsp(disposer: Disposer, link: DisposerLink): DisposerLink {
+function linkDsp(disposer: Node, link: Link): Link {
     link.prevDsp = disposer.dsps
-    if (disposer.dsps) disposer.dsps.nextDsp = link
     disposer.dsps = link
     return link
 }
 
-function unlinkVal(link: DisposerLink): void {
+function unlinkVal(link: Link): void {
     if (link.prevVal) link.prevVal.nextVal = link.nextVal
     if (link.nextVal) link.nextVal.prevVal = link.prevVal
     if (link.disposer.vals === link) link.disposer.vals = link.prevVal
     link.nextVal = link.prevVal = undefined
-}
-
-function unlinkDsp(link: DisposerLink): void {
-    if (!Disposer.is(link.val)) return
-    if (link.prevDsp) link.prevDsp.nextDsp = link.nextDsp
-    if (link.nextDsp) link.nextDsp.prevDsp = link.prevDsp
-    if (link.val.dsps === link) link.val.dsps = link.prevDsp
-    link.nextDsp = link.prevDsp = undefined
 }

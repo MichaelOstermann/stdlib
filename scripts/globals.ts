@@ -26,6 +26,7 @@ const values: Record<string, string> = {
     AsyncEmitter: "Emitter",
     Batch: "Batch",
     Bytes: "Bytes/index",
+    Context: "Context",
     Disposer: "Disposer",
     Duration: "Duration/index",
     Effect: "Effect",
@@ -49,6 +50,7 @@ const values: Record<string, string> = {
 /** The types that go with them: the file, and the parameters when there are any. */
 const types: Record<string, [file: string, parameters?: string]> = {
     AsyncEmitter: ["Emitter", "T = void"],
+    Context: ["Context", "T"],
     Disposer: ["Disposer"],
     Effect: ["Effect"],
     Emitter: ["Emitter", "T = void"],

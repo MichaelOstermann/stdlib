@@ -7,6 +7,7 @@
 export * from "./_";
 export * from "./Batch";
 export * from "./Bytes/index";
+export * from "./Context";
 export * from "./Disposer";
 export * from "./Duration/index";
 export * from "./Effect";

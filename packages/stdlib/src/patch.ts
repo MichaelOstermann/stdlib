@@ -71,6 +71,7 @@ import { words as String_words } from "./String/words"
 import { AsyncEmitter } from "./Emitter"
 import { Batch } from "./Batch"
 import { Bytes } from "./Bytes/index"
+import { Context } from "./Context"
 import { Disposer } from "./Disposer"
 import { Duration } from "./Duration/index"
 import { Effect } from "./Effect"
@@ -189,6 +190,7 @@ define(globalThis, "globalThis", {
     AsyncEmitter,
     Batch,
     Bytes,
+    Context,
     Disposer,
     Duration,
     Effect,

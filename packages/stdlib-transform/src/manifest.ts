@@ -10,6 +10,7 @@ export const functions: ReadonlyMap<string, string> = new Map([
     ["_", "_"],
     ["AsyncEmitter", "Emitter"],
     ["Batch", "Batch"],
+    ["Context", "Context"],
     ["Disposer", "Disposer"],
     ["Effect", "Effect"],
     ["Emitter", "Emitter"],

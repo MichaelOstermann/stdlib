@@ -40,6 +40,7 @@ import type { set as Map_set } from "./Map/set"
 import type { clamp as Math_clamp } from "./Math/clamp"
 import type { mod as Math_mod } from "./Math/mod"
 import type { range as Number_range } from "./Number/range"
+import type { defaults as Object_defaults } from "./Object/defaults"
 import type { indexBy as Object_indexBy } from "./Object/indexBy"
 import type { isShallowEqual as Object_isShallowEqual } from "./Object/isShallowEqual"
 import type { merge as Object_merge } from "./Object/merge"
@@ -126,6 +127,7 @@ declare global {
     }
 
     interface ObjectConstructor {
+        defaults: typeof Object_defaults
         indexBy: typeof Object_indexBy
         isShallowEqual: typeof Object_isShallowEqual
         merge: typeof Object_merge

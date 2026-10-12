@@ -3,6 +3,7 @@ import { partition } from "../src/Array/partition"
 import { unique } from "../src/Array/unique"
 import { delete as deleteKey } from "../src/Map/delete"
 import { set } from "../src/Map/set"
+import { defaults } from "../src/Object/defaults"
 import { omit } from "../src/Object/omit"
 import { pick } from "../src/Object/pick"
 import { add } from "../src/Set/add"
@@ -43,5 +44,18 @@ describe("types", () => {
     it("should pick and omit", () => {
         expectTypeOf(pick({ a: 1, b: "b" }, ["a"])).toEqualTypeOf<{ a: number }>()
         expectTypeOf(omit({ a: 1, b: "b" }, ["a"])).toEqualTypeOf<{ b: string }>()
+    })
+
+    it("should require what has a default", () => {
+        const options = {} as { readonly id?: string, name?: string | null, retries?: number, timeout?: number | undefined }
+        expectTypeOf(defaults(options, { retries: 3, timeout: 1000 })).toEqualTypeOf<{ readonly id?: string, name?: string | null, retries: number, timeout: number }>()
+        expectTypeOf(defaults(options, { id: "a", name: "b" })).toEqualTypeOf<{ readonly id: string, name: string | null, retries?: number, timeout?: number | undefined }>()
+        expectTypeOf(defaults(options, {})).toEqualTypeOf<{ readonly id?: string, name?: string | null, retries?: number, timeout?: number | undefined }>()
+        // @ts-expect-error not a key
+        defaults(options, { retry: 3 })
+        // @ts-expect-error not a value
+        defaults(options, { retries: "3" })
+        // @ts-expect-error not a default
+        defaults(options, { retries: undefined })
     })
 })

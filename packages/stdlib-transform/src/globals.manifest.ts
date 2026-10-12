@@ -10,7 +10,7 @@ export const globals: Readonly<Record<string, readonly string[]>> = {
     Map: ["delete", "isShallowEqual", "set"],
     Math: ["clamp", "mod"],
     Number: ["range"],
-    Object: ["indexBy", "isShallowEqual", "merge", "omit", "pick", "set"],
+    Object: ["defaults", "indexBy", "isShallowEqual", "merge", "omit", "pick", "set"],
     Promise: ["sleep"],
     Retry: ["again", "run"],
     Set: ["add", "delete", "isShallowEqual"],

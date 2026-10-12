@@ -87,6 +87,7 @@ Array.uniqueBy(["a", "A", "b"], text => text.toLowerCase()); // ["a", "b"]
 ```
 
 ```ts
+Object.defaults({ a: 1, b: undefined }, { b: 2 }); // { a: 1, b: 2 }
 Object.indexBy(tasks, task => task.id); // { a: taskA, b: taskB }
 Object.isShallowEqual({ a: 1 }, { a: 1 }); // true
 Object.merge(task, { title: "New" }); // { ...task, title: "New" }
@@ -351,7 +352,7 @@ With the plugin you ship the functions you use, and nothing else. Without it, `@
 
 |                                        | Minified | Gzip    | Brotli  |
 | -------------------------------------- | -------- | ------- | ------- |
-| Everything                             | 43.0 kB  | 15.2 kB | 11.2 kB |
+| Everything                             | 43.3 kB  | 15.2 kB | 11.2 kB |
 | `match`, without the plugin            | 1.87 kB  | 0.68 kB | 0.60 kB |
 | `Result` and `ResultAsync`             | 2.22 kB  | 0.58 kB | 0.53 kB |
 | `String.slugify`, the largest function | 19.1 kB  | 6.28 kB | 3.67 kB |

@@ -368,6 +368,8 @@ const moveTask = Action((id: string, sectionId: string) => {
 Effect.watch($count, (count, before) => console.log(before, count));
 ```
 
+In React, [`@monstermann/stdlib-react`](./packages/stdlib-react#readme) has `useSignal`, and the plugin writes it for you with its `react` option. During development, effects and emitters are disposed when their module is replaced.
+
 What only batches does not load signals: an `Emitter` on a server costs a counter.
 
 ## Installation

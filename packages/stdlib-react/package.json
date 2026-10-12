@@ -1,0 +1,47 @@
+{
+    "name": "@monstermann/stdlib-react",
+    "type": "module",
+    "version": "0.1.0",
+    "description": "React hooks for @monstermann/stdlib.",
+    "author": "Michael Ostermann <michaelostermann@me.com>",
+    "license": "MIT",
+    "homepage": "https://github.com/MichaelOstermann/stdlib",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/MichaelOstermann/stdlib.git"
+    },
+    "bugs": {
+        "url": "https://github.com/MichaelOstermann/stdlib/issues"
+    },
+    "keywords": [
+        "hooks",
+        "react",
+        "signals",
+        "stdlib"
+    ],
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.mts",
+            "import": "./dist/index.mjs"
+        },
+        "./*": "./dist/*"
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "bundle": "bun run tsdown"
+    },
+    "peerDependencies": {
+        "@monstermann/stdlib": "workspace:^",
+        "react": "^19"
+    },
+    "devDependencies": {
+        "@monstermann/stdlib": "workspace:*",
+        "@monstermann/stdlib-transform": "workspace:*",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
+        "react-dom": "^19"
+    }
+}

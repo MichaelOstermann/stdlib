@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "bun:test"
 import { Disposer } from "../../src/Disposer"
 import { Effect } from "../../src/Effect"
 import { Emitter } from "../../src/Emitter"
-import { currentEffect, deferEffect, disposeEffect, hasEffect, signal } from "./helpers"
+import { deferEffect, signal } from "./helpers"
 
 const effect = Effect
 
@@ -11,8 +11,8 @@ describe("effect", () => {
         const onUnwatch = vi.fn()
         const a = signal(0, { onWatch: () => onUnwatch })
         const b = signal(0, { onWatch: () => onUnwatch })
-        const spy = vi.fn(() => {
-            if (a() + b() > 0) disposeEffect()
+        const spy = vi.fn((fx: Effect) => {
+            if (a() + b() > 0) fx.dispose()
         })
         const fx = effect(spy)
 
@@ -28,9 +28,9 @@ describe("effect", () => {
         const onUnwatch = vi.fn()
         const a = signal(0, { onWatch: () => onUnwatch })
         const b = signal(0, { onWatch: () => onUnwatch })
-        const spy = vi.fn(() => {
+        const spy = vi.fn((fx: Effect) => {
             a()
-            disposeEffect()
+            fx.dispose()
             b()
         })
         effect(spy)
@@ -57,18 +57,16 @@ describe("effect", () => {
         expect(returned).toHaveBeenCalledTimes(2)
     })
 
-    it("should know the running effect", () => {
-        expect(hasEffect()).toBe(false)
-        expect(currentEffect()).toBe(undefined)
-
-        const current: unknown[] = []
-        const fx = effect(() => {
-            expect(hasEffect()).toBe(true)
-            current.push(currentEffect())
+    it("should be called with itself", () => {
+        const a = signal(0)
+        const seen: unknown[] = []
+        const fx = effect((self) => {
+            a()
+            seen.push(self)
         })
-
-        expect(current).toEqual([fx])
-        expect(hasEffect()).toBe(false)
+        a(1)
+        expect(seen).toEqual([fx, fx])
+        expect(seen[0]).toBe(fx)
     })
 
     it("should rethrow what the computation throws", () => {
@@ -83,10 +81,9 @@ describe("effect", () => {
             thrown = error
         }
         expect(thrown).toBe(promise)
-        expect(hasEffect()).toBe(false)
     })
 
-    it("should restore the running effect when a cleanup throws", () => {
+    it("should throw what a cleanup throws", () => {
         const a = signal(0)
         effect(() => {
             a()
@@ -96,7 +93,6 @@ describe("effect", () => {
         })
 
         expect(() => a(1)).toThrow("fail")
-        expect(hasEffect()).toBe(false)
     })
 })
 
@@ -136,8 +132,8 @@ describe("cleanups", () => {
 
     it("should clean up when it is disposed while it runs", () => {
         const cleanup = vi.fn()
-        effect(() => {
-            disposeEffect()
+        effect((fx) => {
+            fx.dispose()
             return cleanup
         })
         expect(cleanup).toHaveBeenCalledTimes(1)
@@ -213,7 +209,7 @@ describe("Effect, as a disposer", () => {
     })
 
     it("should reject what is deferred when it is disposed from the inside", async () => {
-        const result = deferEffect(() => disposeEffect())
+        const result = deferEffect((_resolve, _reject, fx) => fx.dispose())
         expect(await result.then(() => "resolved", () => "rejected")).toBe("rejected")
     })
 })

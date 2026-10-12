@@ -16,12 +16,10 @@ export interface WatchOptions<T> {
     equals?: (before: T, after: T) => boolean
 }
 
-let current: Effect | undefined
-
 /**
  * `Effect(computation)`
  *
- * Calls `computation`, and again whenever a signal or memo changes that it read. It is what brings changes to the outside: the DOM, a request, a log.
+ * Calls `computation` with the effect itself, and again whenever a signal or memo changes that it read. It is what brings changes to the outside: the DOM, a request, a log.
  *
  * - it runs right away, and again once the batch is done in which something changed
  * - what `computation` returns is cleaned up before the next run and when the effect is disposed: a function, or anything disposable
@@ -41,8 +39,8 @@ let current: Effect | undefined
  * effect.onDispose(() => console.log("disposed"));
  * effect.dispose(); // "disposed", "cleanup"
  *
- * Effect(() => {
- *     if ($done()) return Effect.current()?.dispose();
+ * Effect((effect) => {
+ *     if ($done()) return effect.dispose();
  *     const timer = setInterval(tick, $delay());
  *     return () => clearInterval(timer);
  * });
@@ -57,24 +55,21 @@ let current: Effect | undefined
  * ```
  */
 export const Effect: {
-    (computation: () => MaybeDisposerValue): Effect
-    /** The effect that is running, to dispose it from the inside. */
-    current: () => Effect | undefined
+    (computation: (effect: Effect) => MaybeDisposerValue): Effect
     /** Runs an effect until it calls `resolve` or `reject`, and returns a promise of that. It is disposed afterwards. */
-    defer: <T = void>(computation: (resolve: (value: T) => void, reject: (reason?: unknown) => void) => MaybeDisposerValue) => Promise<T>
+    defer: <T = void>(computation: (resolve: (value: T) => void, reject: (reason?: unknown) => void, effect: Effect) => MaybeDisposerValue) => Promise<T>
     /**
      * Calls `computation` with the value of `dependencies` and the one before, whenever it changed.
      * Unlike an effect it does not run right away, and does not depend on what `computation` reads.
-     * What `computation` returns is cleaned up like it is for an effect, which it is: `Effect.current()` returns it while it runs.
+     * What `computation` returns is cleaned up like it is for an effect, which it is, and what it is called with last.
      */
-    watch: <T>(dependencies: ReadonlySignal<T> | MemoType<T> | (() => T), computation: (next: NoInfer<T>, prev: NoInfer<T>) => MaybeDisposerValue, options?: WatchOptions<NoInfer<T>>) => Effect
+    watch: <T>(dependencies: ReadonlySignal<T> | MemoType<T> | (() => T), computation: (next: NoInfer<T>, prev: NoInfer<T>, effect: Effect) => MaybeDisposerValue, options?: WatchOptions<NoInfer<T>>) => Effect
 } = Object.assign(create, {
     defer,
     watch,
-    current: () => current,
 })
 
-function create(computation: () => MaybeDisposerValue): Effect {
+function create(computation: (effect: Effect) => MaybeDisposerValue): Effect {
     const effect: Effect = Disposer()
     let cleanup: MaybeDisposerValue
 
@@ -85,17 +80,10 @@ function create(computation: () => MaybeDisposerValue): Effect {
     }
 
     const raw = new RawEffect(() => {
-        const prevEffect = current
-        current = effect
-        try {
-            clean()
-            if (effect.disposed) return
-            cleanup = computation()
-            if (effect.disposed) clean()
-        }
-        finally {
-            current = prevEffect
-        }
+        clean()
+        if (effect.disposed) return
+        cleanup = computation(effect)
+        if (effect.disposed) clean()
     })
 
     raw.run()
@@ -119,16 +107,16 @@ function cleanUp(value: MaybeDisposerValue): void {
     }
 }
 
-function defer<T = void>(computation: (resolve: (value: T) => void, reject: (reason?: unknown) => void) => MaybeDisposerValue): Promise<T> {
+function defer<T = void>(computation: (resolve: (value: T) => void, reject: (reason?: unknown) => void, effect: Effect) => MaybeDisposerValue): Promise<T> {
     let effect: Effect | undefined
     return new Promise<T>((resolve, reject) => {
-        effect = create(() => computation(resolve, reject))
+        effect = create(effect => computation(resolve, reject, effect))
         // Disposed for another reason than being done: nothing is going to resolve it anymore.
         effect.onDispose(reject)
     }).finally(() => effect?.dispose())
 }
 
-function watch<T>(dependencies: ReadonlySignal<T> | MemoType<T> | (() => T), computation: (next: T, prev: T) => MaybeDisposerValue, options?: WatchOptions<T>): Effect {
+function watch<T>(dependencies: ReadonlySignal<T> | MemoType<T> | (() => T), computation: (next: T, prev: T, effect: Effect) => MaybeDisposerValue, options?: WatchOptions<T>): Effect {
     const effect: Effect = Disposer()
     // A function is turned into a memo, to only run when it returns something else.
     const read = "kind" in dependencies ? dependencies : Memo(dependencies, options)
@@ -144,24 +132,17 @@ function watch<T>(dependencies: ReadonlySignal<T> | MemoType<T> | (() => T), com
 
     const raw = new RawEffect(() => {
         const prev = value
-        const prevEffect = current
-        current = effect
+        value = read()
+        if (!init || effect.disposed) return void (init = true)
+        pauseTracking()
         try {
-            value = read()
-            if (!init || effect.disposed) return void (init = true)
-            pauseTracking()
-            try {
-                clean()
-                if (effect.disposed) return
-                cleanup = computation(value, prev)
-                if (effect.disposed) clean()
-            }
-            finally {
-                resumeTracking()
-            }
+            clean()
+            if (effect.disposed) return
+            cleanup = computation(value, prev, effect)
+            if (effect.disposed) clean()
         }
         finally {
-            current = prevEffect
+            resumeTracking()
         }
     })
 

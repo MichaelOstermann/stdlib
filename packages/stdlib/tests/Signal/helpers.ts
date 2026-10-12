@@ -11,18 +11,20 @@ export const untrack = Untrack
 export const peek = Untrack
 export const memo = Memo
 export const indexed = Memo.indexed
-export const currentEffect = Effect.current
 export const deferEffect = Effect.defer
+
+const running: Effect[] = []
 
 /** Returns what disposes the effect, which is what an effect used to be. */
 export function effect(computation: () => unknown): () => void {
-    return Effect(computation as () => void).dispose
+    return Effect((effect) => {
+        running.push(effect)
+        try { return (computation as () => void)() }
+        finally { running.pop() }
+    }).dispose
 }
 
-export function hasEffect(): boolean {
-    return Effect.current() !== undefined
-}
-
+/** Disposes the effect that is running, which the tests of the system do without having it at hand. */
 export function disposeEffect(): void {
-    Effect.current()?.dispose()
+    running.at(-1)?.dispose()
 }

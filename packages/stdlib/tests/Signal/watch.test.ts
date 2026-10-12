@@ -4,8 +4,6 @@ import { Effect } from "../../src/Effect"
 import { memo, signal } from "./helpers"
 
 const watch = Effect.watch
-const currentWatcher = Effect.current
-const disposeWatcher = (): void => Effect.current()?.dispose()
 
 describe("watch", () => {
     it("should call the computation with the next and previous value, but not initially", () => {
@@ -15,10 +13,10 @@ describe("watch", () => {
         expect(spy).toHaveBeenCalledTimes(0)
 
         a(2)
-        expect(spy).toHaveBeenCalledWith(2, 1)
+        expect(spy).toHaveBeenCalledWith(2, 1, expect.anything())
 
         a(3)
-        expect(spy).toHaveBeenCalledWith(3, 2)
+        expect(spy).toHaveBeenCalledWith(3, 2, expect.anything())
     })
 
     it("should accept memos and functions", () => {
@@ -29,8 +27,8 @@ describe("watch", () => {
         watch(() => a() * 3, fromFunction)
 
         a(2)
-        expect(fromMemo).toHaveBeenCalledWith(4, 2)
-        expect(fromFunction).toHaveBeenCalledWith(6, 3)
+        expect(fromMemo).toHaveBeenCalledWith(4, 2, expect.anything())
+        expect(fromFunction).toHaveBeenCalledWith(6, 3, expect.anything())
     })
 
     it("should only run when the dependencies changed their value", () => {
@@ -84,18 +82,18 @@ describe("watch", () => {
     it("should be able to dispose itself", () => {
         const a = signal(1)
         const current: unknown[] = []
-        const spy = vi.fn(() => {
-            current.push(currentWatcher())
-            disposeWatcher()
+        const spy = vi.fn((_next: number, _prev: number, self: Effect) => {
+            current.push(self)
+            self.dispose()
         })
         const watcher = watch(a, spy)
 
         a(2)
         a(3)
-        expect(current).toEqual([watcher])
+        expect(current.length).toBe(1)
         expect(watcher.disposed).toBe(true)
         expect(spy).toHaveBeenCalledTimes(1)
-        expect(currentWatcher()).toBe(undefined)
+        expect(current[0]).toBe(watcher)
     })
 
     it("should not call the computation for the value it has when it is created", () => {
@@ -114,19 +112,5 @@ describe("watch", () => {
         parent.dispose()
         a(2)
         expect(spy).toHaveBeenCalledTimes(0)
-    })
-
-    it("should be the running effect while it runs, and give it back", () => {
-        const a = signal(1)
-        const current: unknown[] = []
-        const outer = Effect(() => {
-            a()
-            current.push(Effect.current())
-        })
-        const watcher = watch(a, () => void current.push(Effect.current()))
-        a(2)
-        const names = current.map(value => value === outer ? "outer" : value === watcher ? "watcher" : "other")
-        expect(names.toSorted()).toEqual(["outer", "outer", "watcher"])
-        expect(Effect.current()).toBe(undefined)
     })
 })

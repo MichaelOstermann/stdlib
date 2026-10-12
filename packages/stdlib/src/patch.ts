@@ -28,6 +28,7 @@ import { shuffle as Array_shuffle } from "./Array/shuffle"
 import { sortBy as Array_sortBy } from "./Array/sortBy"
 import { sortByLocale as Array_sortByLocale } from "./Array/sortByLocale"
 import { unique as Array_unique } from "./Array/unique"
+import { uniqueBy as Array_uniqueBy } from "./Array/uniqueBy"
 import { debounce as Function_debounce } from "./Function/debounce"
 import { middleware as Function_middleware } from "./Function/middleware"
 import { noop as Function_noop } from "./Function/noop"
@@ -109,6 +110,7 @@ define(Array, "Array", {
     sortBy: Array_sortBy,
     sortByLocale: Array_sortByLocale,
     unique: Array_unique,
+    uniqueBy: Array_uniqueBy,
 })
 
 define(Function, "Function", {

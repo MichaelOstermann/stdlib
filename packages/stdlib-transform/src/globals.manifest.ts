@@ -2,7 +2,7 @@
 
 /** What @monstermann/stdlib makes available on globals, each is a file of the same name: `Array.map` → `Array/map.mjs`. */
 export const globals: Readonly<Record<string, readonly string[]>> = {
-    Array: ["chunk", "filter", "isShallowEqual", "map", "mapFirstWhere", "mapLastWhere", "mapWhere", "maxBy", "minBy", "partition", "removeAll", "removeFirst", "removeFirstWhere", "removeLast", "removeLastWhere", "removeWhere", "replaceFirst", "replaceFirstWhere", "replaceLast", "replaceLastWhere", "sample", "shuffle", "sortBy", "sortByLocale", "unique"],
+    Array: ["chunk", "filter", "isShallowEqual", "map", "mapFirstWhere", "mapLastWhere", "mapWhere", "maxBy", "minBy", "partition", "removeAll", "removeFirst", "removeFirstWhere", "removeLast", "removeLastWhere", "removeWhere", "replaceFirst", "replaceFirstWhere", "replaceLast", "replaceLastWhere", "sample", "shuffle", "sortBy", "sortByLocale", "unique", "uniqueBy"],
     Bytes: ["GB", "GiB", "KB", "KiB", "MB", "MiB", "TB", "TiB", "format", "parse"],
     Duration: ["DAY", "HOUR", "MINUTE", "SECOND", "WEEK", "backoff", "format", "jitter", "parse"],
     Function: ["debounce", "middleware", "noop", "once", "throttle"],

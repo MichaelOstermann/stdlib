@@ -83,6 +83,7 @@ Array.shuffle([1, 2, 3]); // [2, 3, 1]
 Array.sortBy([3, 1, 2], value => value); // [1, 2, 3]
 Array.sortByLocale(["b", "ä", "A"], text => text); // ["A", "ä", "b"]
 Array.unique([1, 2, 1, 3, 2]); // [1, 2, 3]
+Array.uniqueBy(["a", "A", "b"], text => text.toLowerCase()); // ["a", "b"]
 ```
 
 ```ts
@@ -350,7 +351,7 @@ With the plugin you ship the functions you use, and nothing else. Without it, `@
 
 |                                        | Minified | Gzip    | Brotli  |
 | -------------------------------------- | -------- | ------- | ------- |
-| Everything                             | 42.8 kB  | 15.1 kB | 11.1 kB |
+| Everything                             | 43.0 kB  | 15.2 kB | 11.2 kB |
 | `match`, without the plugin            | 1.87 kB  | 0.68 kB | 0.60 kB |
 | `Result` and `ResultAsync`             | 2.22 kB  | 0.58 kB | 0.53 kB |
 | `String.slugify`, the largest function | 19.1 kB  | 6.28 kB | 3.67 kB |

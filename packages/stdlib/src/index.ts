@@ -5,6 +5,7 @@
 // biome-ignore lint: disable
 
 export * from "./_";
+export * from "./Batch";
 export * from "./Bytes/index";
 export * from "./Disposer";
 export * from "./Duration/index";
@@ -15,3 +16,5 @@ export * from "./Result";
 export * from "./ResultAsync";
 export * from "./Retry/index";
 export * from "./Semaphore";
+export * from "./Signal";
+export * from "./Untrack";

@@ -352,7 +352,7 @@ With the plugin you ship the functions you use, and nothing else. Without it, `@
 
 |                                        | Minified | Gzip    | Brotli  |
 | -------------------------------------- | -------- | ------- | ------- |
-| Everything                             | 43.3 kB  | 15.2 kB | 11.2 kB |
+| Everything                             | 49.6 kB  | 17.2 kB | 12.9 kB |
 | `match`, without the plugin            | 1.87 kB  | 0.68 kB | 0.60 kB |
 | `Result` and `ResultAsync`             | 2.22 kB  | 0.58 kB | 0.53 kB |
 | `String.slugify`, the largest function | 19.1 kB  | 6.28 kB | 3.67 kB |

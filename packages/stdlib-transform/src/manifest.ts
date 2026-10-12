@@ -9,6 +9,7 @@ export const namespaces: ReadonlySet<string> = new Set([
 export const functions: ReadonlyMap<string, string> = new Map([
     ["_", "_"],
     ["AsyncEmitter", "Emitter"],
+    ["Batch", "Batch"],
     ["Disposer", "Disposer"],
     ["Emitter", "Emitter"],
     ["Err", "Result"],
@@ -21,6 +22,8 @@ export const functions: ReadonlyMap<string, string> = new Map([
     ["ResultAsync", "ResultAsync"],
     ["Semaphore", "Semaphore"],
     ["SemaphoreFullError", "Semaphore"],
+    ["Signal", "Signal"],
+    ["Untrack", "Untrack"],
 ])
 
 /** Files that are only there for when the code runs as it is written. */

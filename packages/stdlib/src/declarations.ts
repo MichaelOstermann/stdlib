@@ -164,6 +164,7 @@ declare global {
     }
 
     const AsyncEmitter: typeof import("./Emitter").AsyncEmitter
+    const Batch: typeof import("./Batch").Batch
     const Bytes: typeof import("./Bytes/index").Bytes
     const Disposer: typeof import("./Disposer").Disposer
     const Duration: typeof import("./Duration/index").Duration
@@ -179,6 +180,8 @@ declare global {
     const Retry: typeof import("./Retry/index").Retry
     const Semaphore: typeof import("./Semaphore").Semaphore
     const SemaphoreFullError: typeof import("./Semaphore").SemaphoreFullError
+    const Signal: typeof import("./Signal").Signal
+    const Untrack: typeof import("./Untrack").Untrack
 
     /** A single event that waits for its listeners: call it with a function to listen, and with anything else to tell the listeners about it. */
     type AsyncEmitter<T = void> = import("./Emitter").AsyncEmitter<T>
@@ -215,6 +218,8 @@ declare global {
     type Err<E, T = never> = import("./Result").Err<E, T>
     /** A result that succeeded, `value` is what it succeeded with. */
     type Ok<T, E = never> = import("./Result").Ok<T, E>
+    /** A signal that can only be read. */
+    type ReadonlySignal<T = any> = import("./Signal").ReadonlySignal<T>
     /** Success or failure as a value: either an `Ok` with a value, or an `Err` with an error. `result.ok` tells which. */
     type Result<T, E> = import("./Result").Result<T, E>
     /** A `Result` that is not there yet. It can be awaited, and continued with the same methods without awaiting in between. */
@@ -224,4 +229,6 @@ declare global {
     type Semaphore = import("./Semaphore").Semaphore
     /** What a semaphore with `maxWaiting` fails with when that many are waiting already. */
     type SemaphoreFullError = import("./Semaphore").SemaphoreFullError
+    /** A value that changes over time: call it to read, and with a value or a function to write. */
+    type Signal<T = any> = import("./Signal").Signal<T>
 }

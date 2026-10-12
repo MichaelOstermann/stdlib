@@ -24,6 +24,7 @@ const interfaces: Record<string, string> = {
 /** What is a global of its own, and the file it lives in. */
 const values: Record<string, string> = {
     AsyncEmitter: "Emitter",
+    Batch: "Batch",
     Bytes: "Bytes/index",
     Disposer: "Disposer",
     Duration: "Duration/index",
@@ -39,6 +40,8 @@ const values: Record<string, string> = {
     Retry: "Retry/index",
     Semaphore: "Semaphore",
     SemaphoreFullError: "Semaphore",
+    Signal: "Signal",
+    Untrack: "Untrack",
 }
 
 /** The types that go with them: the file, and the parameters when there are any. */
@@ -48,11 +51,13 @@ const types: Record<string, [file: string, parameters?: string]> = {
     Emitter: ["Emitter", "T = void"],
     Err: ["Result", "E, T = never"],
     Ok: ["Result", "T, E = never"],
+    ReadonlySignal: ["Signal", "T = any"],
     Result: ["Result", "T, E"],
     ResultAsync: ["ResultAsync", "T, E"],
     RetryAgain: ["Retry/index", "E"],
     Semaphore: ["Semaphore"],
     SemaphoreFullError: ["Semaphore"],
+    Signal: ["Signal", "T = any"],
 }
 
 /** Globals of their own that are objects of functions, each a file of the same name. */

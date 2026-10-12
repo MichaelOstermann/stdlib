@@ -20,6 +20,7 @@ export const globals: Readonly<Record<string, readonly string[]>> = {
 /** What is a global of its own, and the file it lives in: `pipe` → `pipe.mjs`. */
 export const values: Readonly<Record<string, string>> = {
     AsyncEmitter: "Emitter",
+    Batch: "Batch",
     Bytes: "Bytes/index",
     Disposer: "Disposer",
     Duration: "Duration/index",
@@ -35,4 +36,6 @@ export const values: Readonly<Record<string, string>> = {
     Retry: "Retry/index",
     Semaphore: "Semaphore",
     SemaphoreFullError: "Semaphore",
+    Signal: "Signal",
+    Untrack: "Untrack",
 }

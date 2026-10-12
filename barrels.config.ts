@@ -10,4 +10,12 @@ export default defineConfig([
         exclude: ["declarations.ts", "globals.ts", "patch.ts"],
         include: ["*.ts", "{Bytes,Duration,Retry}/index.js"],
     }),
+    // Not globals: what is in here is imported.
+    namespace({
+        entries: "./packages/stdlib-web/src/Rect",
+    }),
+    flat({
+        entries: "./packages/stdlib-web/src",
+        include: ["Rect/index.js"],
+    }),
 ])

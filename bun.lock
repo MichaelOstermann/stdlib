@@ -52,6 +52,10 @@
         "rolldown": "1.2.12",
       },
     },
+    "packages/stdlib-web": {
+      "name": "@monstermann/stdlib-web",
+      "version": "0.1.0",
+    },
   },
   "packages": {
     "@babel/code-frame": ["@babel/code-frame@7.29.7", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.29.7", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw=="],
@@ -191,6 +195,8 @@
     "@monstermann/stdlib-react": ["@monstermann/stdlib-react@workspace:packages/stdlib-react"],
 
     "@monstermann/stdlib-transform": ["@monstermann/stdlib-transform@workspace:packages/stdlib-transform"],
+
+    "@monstermann/stdlib-web": ["@monstermann/stdlib-web@workspace:packages/stdlib-web"],
 
     "@monstermann/tsconfig": ["@monstermann/tsconfig@0.0.0", "", {}, "sha512-DJfOlZ71AOBJWxPUUcy8SIkJLXOy1c9LP84o52I2JcpiODNOn7/c5P7Gqp7z6hPLLi9rgRCIzOEBrNOazZsYfQ=="],
 

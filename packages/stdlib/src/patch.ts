@@ -68,6 +68,7 @@ import { snakeCase as String_snakeCase } from "./String/snakeCase"
 import { titleCase as String_titleCase } from "./String/titleCase"
 import { uncapitalize as String_uncapitalize } from "./String/uncapitalize"
 import { words as String_words } from "./String/words"
+import { Action } from "./Action"
 import { AsyncEmitter } from "./Emitter"
 import { Batch } from "./Batch"
 import { Bytes } from "./Bytes/index"
@@ -186,6 +187,7 @@ define(String, "String", {
 })
 
 define(globalThis, "globalThis", {
+    Action,
     AsyncEmitter,
     Batch,
     Bytes,

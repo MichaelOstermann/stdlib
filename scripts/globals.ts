@@ -23,6 +23,7 @@ const interfaces: Record<string, string> = {
 
 /** What is a global of its own, and the file it lives in. */
 const values: Record<string, string> = {
+    Action: "Action",
     AsyncEmitter: "Emitter",
     Batch: "Batch",
     Bytes: "Bytes/index",

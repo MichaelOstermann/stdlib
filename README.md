@@ -353,6 +353,15 @@ Batch(() => {
 Effect(() => console.log($a(), Untrack($b))); // Only runs again when $a changes.
 ```
 
+An `Action` is a function that does both, for what changes several signals at once:
+
+```ts
+const moveTask = Action((id: string, sectionId: string) => {
+    $tasks((tasks) => Object.set(tasks, id, { ...tasks[id], sectionId }));
+    $selected(id);
+});
+```
+
 `Effect.watch` is an effect that says what it depends on: it is called with the value and the one before, only once that changed, and reads whatever else it likes without depending on it.
 
 ```ts
@@ -393,7 +402,7 @@ With the plugin you ship the functions you use, and nothing else. Without it, `@
 
 |                                        | Minified | Gzip    | Brotli  |
 | -------------------------------------- | -------- | ------- | ------- |
-| Everything                             | 51.6 kB  | 17.9 kB | 13.6 kB |
+| Everything                             | 51.7 kB  | 18.0 kB | 13.6 kB |
 | `match`, without the plugin            | 1.87 kB  | 0.68 kB | 0.60 kB |
 | `Result` and `ResultAsync`             | 2.22 kB  | 0.58 kB | 0.53 kB |
 | `String.slugify`, the largest function | 19.1 kB  | 6.28 kB | 3.67 kB |

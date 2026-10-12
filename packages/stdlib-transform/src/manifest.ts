@@ -8,6 +8,7 @@ export const namespaces: ReadonlySet<string> = new Set([
 /** Everything else @monstermann/stdlib exports, and the file it lives in: `pipe` → `pipe.mjs`. */
 export const functions: ReadonlyMap<string, string> = new Map([
     ["_", "_"],
+    ["Action", "Action"],
     ["AsyncEmitter", "Emitter"],
     ["Batch", "Batch"],
     ["Disposer", "Disposer"],

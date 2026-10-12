@@ -163,6 +163,7 @@ declare global {
         words: typeof String_words
     }
 
+    const Action: typeof import("./Action").Action
     const AsyncEmitter: typeof import("./Emitter").AsyncEmitter
     const Batch: typeof import("./Batch").Batch
     const Bytes: typeof import("./Bytes/index").Bytes

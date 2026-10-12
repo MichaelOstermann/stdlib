@@ -11,6 +11,7 @@ import { transformImports } from "./imports"
 import { guards, namespaces } from "./manifest"
 import { transformMatches } from "./match"
 import { transformPipes } from "./pipe"
+import { transformReact } from "./react"
 
 const from = "@monstermann/stdlib"
 
@@ -40,6 +41,12 @@ export interface StdlibOptions {
      * @default false
      */
     hmr?: boolean
+    /**
+     * Whether to wrap reads of signals in React components and hooks with `useSignal` from `@monstermann/stdlib-react`.
+     * Signals are recognized by their `$` prefix: `$count()`, `state.$count()`.
+     * @default false
+     */
+    react?: boolean
 }
 
 export interface StdlibResult {
@@ -55,6 +62,7 @@ export interface StdlibResult {
  * - `pipe()` calls are replaced with the calls they make
  * - everything else (`pipe`, `Result`, …) is imported from the file it lives in
  * - with `hmr`, effects and emitters are passed what disposes them when their module is replaced
+ * - with `react`, reads of signals in components and hooks are wrapped with `useSignal`
  *
  * All of it is available as globals, and can be imported from the package as well.
  *
@@ -64,6 +72,16 @@ export function transform(code: string, filePath: string, options: StdlibOptions
     const maps: SourceMap[] = []
     const unused = new Set<string>()
     const generateMap = { hires: "boundary", includeContent: true, source: filePath } as const
+
+    // Before everything else: it only looks for what is written with a `$`, whatever that turns into.
+    if (options.react) {
+        const react = transformReact(code, filePath)
+        if (react) {
+            code = react.toString()
+            maps.push(react.generateMap(generateMap))
+        }
+    }
+
     const imported = code.includes(from)
 
     // Chains inside of the callbacks of another chain are compiled by another run.

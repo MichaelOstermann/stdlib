@@ -37,7 +37,7 @@ const dependencies = /(?:^|[\\/])node_modules[\\/]/
 const modules = /\.m?[jt]sx?(?:\?.*)?$/
 
 /** A plugin for Vite, Rolldown and tsdown. */
-export function stdlib({ debug, enforce, exclude = [], hmr, include = modules }: StdlibPluginOptions = {}): StdlibPlugin {
+export function stdlib({ debug, enforce, exclude = [], hmr, include = modules, react }: StdlibPluginOptions = {}): StdlibPlugin {
     let isViteDevServer = false
 
     const id = {
@@ -54,7 +54,7 @@ export function stdlib({ debug, enforce, exclude = [], hmr, include = modules }:
                 // Bundlers that do not know hook filters call the handler for every file.
                 if (id.exclude.some(pattern => pattern.test(path))) return
                 if (!id.include.some(pattern => pattern.test(path))) return
-                return transform(code, path, { debug: debug instanceof RegExp ? debug.test(path) : debug, hmr: hmr ?? isViteDevServer })
+                return transform(code, path, { debug: debug instanceof RegExp ? debug.test(path) : debug, hmr: hmr ?? isViteDevServer, react })
             },
         },
         configResolved(config) {
@@ -86,7 +86,7 @@ export interface StdlibBunPlugin {
  *
  * Bun only uses the first `onLoad` that returns something, call `transform` from your own when there are others.
  */
-export function stdlibBun({ debug, exclude = [], hmr, include = modules }: Omit<StdlibPluginOptions, "enforce"> = {}): StdlibBunPlugin {
+export function stdlibBun({ debug, exclude = [], hmr, include = modules, react }: Omit<StdlibPluginOptions, "enforce"> = {}): StdlibBunPlugin {
     const excluded = [dependencies, exclude].flat()
 
     return {
@@ -96,7 +96,7 @@ export function stdlibBun({ debug, exclude = [], hmr, include = modules }: Omit<
                 build.onLoad({ filter }, async ({ loader, path }) => {
                     const code = await readFile(path, "utf8")
                     if (excluded.some(pattern => pattern.test(path))) return { contents: code, loader }
-                    const result = transform(code, path, { debug: debug instanceof RegExp ? debug.test(path) : debug, hmr })
+                    const result = transform(code, path, { debug: debug instanceof RegExp ? debug.test(path) : debug, hmr, react })
                     return { contents: result?.code ?? code, loader }
                 })
             }

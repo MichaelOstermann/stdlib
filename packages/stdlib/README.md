@@ -291,7 +291,7 @@ onMessage("hello");
 remove();
 ```
 
-How listeners are called is yours to replace, to wrap it or to keep one that throws from stopping the others:
+Sending is batched and untracked, see signals. How listeners are called is yours to replace, to wrap it or to keep one that throws from stopping the others:
 
 ```ts
 const onMessage = Emitter<string>((listeners, message) => {
@@ -310,15 +310,50 @@ const onMessage = Emitter<string>((listeners, message) => {
 Collects what needs to be cleaned up, and does so in reverse order. Unlike a `DisposableStack` it is made to live long: a disposer that is added to others is removed from them when it is disposed by itself.
 
 ```ts
-const app = new Disposer();
-const view = new Disposer();
+const app = Disposer();
+const view = Disposer();
 
-app.add(view);
-view.add(() => socket.close());
-view.add(onMessage((message) => render(message)));
+app.onDispose(view);
+view.onDispose(() => socket.close());
+view.onDispose(onMessage((message) => render(message)));
 
 view.dispose(); // Closes the socket, stops listening, and is gone from `app`.
+onClose(app.dispose); // `dispose` can be passed as it is.
 ```
+
+Emitters and effects are disposed the same way: `onDispose`, `dispose` and `disposed`.
+
+### Signals
+
+Values that change over time, and what follows from them. A `Signal` holds a value, a `Memo` computes one from others, and an `Effect` runs again when what it read changed.
+
+```ts
+const $count = Signal(1);
+const $double = Memo(() => $count() * 2);
+
+const effect = Effect(() => {
+    console.log($double());
+    return () => console.log("cleanup");
+}); // 2
+
+$count(2); // "cleanup", 4
+$count((count) => count + 1); // "cleanup", 6
+
+effect.dispose(); // "cleanup"
+```
+
+`Batch` makes several changes count as one, and `Untrack` reads without depending on what is read. An `Emitter` does both while it calls its listeners, a `Disposer` while it disposes:
+
+```ts
+Batch(() => {
+    $a(1);
+    $b(1);
+}); // Effects that read both run once.
+
+Effect(() => console.log($a(), Untrack($b))); // Only runs again when $a changes.
+```
+
+What only batches does not load signals: an `Emitter` on a server costs a counter.
 
 ## Installation
 
@@ -352,7 +387,7 @@ With the plugin you ship the functions you use, and nothing else. Without it, `@
 
 |                                        | Minified | Gzip    | Brotli  |
 | -------------------------------------- | -------- | ------- | ------- |
-| Everything                             | 49.6 kB  | 17.2 kB | 12.9 kB |
+| Everything                             | 51.3 kB  | 17.8 kB | 13.5 kB |
 | `match`, without the plugin            | 1.87 kB  | 0.68 kB | 0.60 kB |
 | `Result` and `ResultAsync`             | 2.22 kB  | 0.58 kB | 0.53 kB |
 | `String.slugify`, the largest function | 19.1 kB  | 6.28 kB | 3.67 kB |

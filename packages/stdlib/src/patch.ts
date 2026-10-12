@@ -73,10 +73,12 @@ import { Batch } from "./Batch"
 import { Bytes } from "./Bytes/index"
 import { Disposer } from "./Disposer"
 import { Duration } from "./Duration/index"
+import { Effect } from "./Effect"
 import { Emitter } from "./Emitter"
 import { Err } from "./Result"
 import { ErrAsync } from "./ResultAsync"
 import { match } from "./match"
+import { Memo } from "./Memo"
 import { Ok } from "./Result"
 import { OkAsync } from "./ResultAsync"
 import { pipe } from "./pipe"
@@ -189,10 +191,12 @@ define(globalThis, "globalThis", {
     Bytes,
     Disposer,
     Duration,
+    Effect,
     Emitter,
     Err,
     ErrAsync,
     match,
+    Memo,
     Ok,
     OkAsync,
     pipe,

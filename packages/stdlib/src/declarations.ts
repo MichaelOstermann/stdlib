@@ -168,10 +168,12 @@ declare global {
     const Bytes: typeof import("./Bytes/index").Bytes
     const Disposer: typeof import("./Disposer").Disposer
     const Duration: typeof import("./Duration/index").Duration
+    const Effect: typeof import("./Effect").Effect
     const Emitter: typeof import("./Emitter").Emitter
     const Err: typeof import("./Result").Err
     const ErrAsync: typeof import("./ResultAsync").ErrAsync
     const match: typeof import("./match").match
+    const Memo: typeof import("./Memo").Memo
     const Ok: typeof import("./Result").Ok
     const OkAsync: typeof import("./ResultAsync").OkAsync
     const pipe: typeof import("./pipe").pipe
@@ -185,37 +187,16 @@ declare global {
 
     /** A single event that waits for its listeners: call it with a function to listen, and with anything else to tell the listeners about it. */
     type AsyncEmitter<T = void> = import("./Emitter").AsyncEmitter<T>
-    /**
-     * # Disposer
-     *
-     * Collects callbacks, other disposers and everything else that is disposable,
-     * and disposes them in reverse order.
-     *
-     * - A disposer that has been added to others is removed from them when it is disposed itself.
-     * - What is added to a disposer that has been disposed already is disposed right away.
-     * - Everything is disposed, also when something throws: one error is thrown as it is, several as an `AggregateError`.
-     * - Works with `using`.
-     *
-     * ## Example
-     *
-     * ```ts
-     * const a = new Disposer();
-     * const b = new Disposer();
-     *
-     * a.add(() => console.log(1));
-     * b.add(() => console.log(2));
-     * a.add(b);
-     *
-     * a.dispose(); // 2, 1
-     * a.disposed; // true
-     * b.disposed; // true
-     * ```
-     */
+    /** Collects what needs to be cleaned up, and does so in reverse order. */
     type Disposer = import("./Disposer").Disposer
+    /** Something that runs again when what it read changes, until it is disposed. */
+    type Effect = import("./Effect").Effect
     /** A single event: call it with a function to listen, and with anything else to tell the listeners about it. */
     type Emitter<T = void> = import("./Emitter").Emitter<T>
     /** A result that failed, `value` is the error. */
     type Err<E, T = never> = import("./Result").Err<E, T>
+    /** A value that is computed from signals and other memos: call it to read. */
+    type Memo<T = any> = import("./Memo").Memo<T>
     /** A result that succeeded, `value` is what it succeeded with. */
     type Ok<T, E = never> = import("./Result").Ok<T, E>
     /** A signal that can only be read. */

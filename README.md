@@ -383,7 +383,7 @@ I was a big fan of currying, in particular the "data-first / data-last" approach
 - **Inconsistency.** It is annoying to apply to your own functions, so you end up with code where some things are curried and some are not.
 - **Errors.** It is done with overloads: you do not see what went wrong, you get a list of overloads your code does not match. When the first step of a pipe is wrong, the error shows up on the second one.
 - **Editor.** Autocomplete assumes data-first until the whole call is written, you can not hover a parameter to ask what it is, and optional parameters are not straightforward.
-- **Bloat.** You start building `Arr.find()`, which does nothing `tasks.find()` does not do, only so that there is a curried version. Of the 354 functions this library previously had, 100 were that.
+- **Bloat.** You end up shipping `add(1, 1)`, because `1 + 1` can not be curried. Same for `Arr.find()`, which does nothing `tasks.find()` does not do. Of the 354 functions this library previously had, 100 were that.
 - **Functions only.** Currying makes classes awkward.
 - **Speed.** Not a big deal, but you pay for it on every call.
 

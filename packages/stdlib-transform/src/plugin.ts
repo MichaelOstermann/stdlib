@@ -1,5 +1,7 @@
 import type { StdlibOptions } from "./transform"
+import { existsSync } from "node:fs"
 import { readFile } from "node:fs/promises"
+import Path from "node:path"
 import { transform } from "./transform"
 
 export interface StdlibPluginOptions extends Omit<StdlibOptions, "debug"> {
@@ -18,6 +20,11 @@ export interface StdlibPluginOptions extends Omit<StdlibOptions, "debug"> {
      * @default /\.m?[jt]sx?(?:\?.*)?$/
      */
     include?: RegExp | RegExp[]
+    /**
+     * Whether to wrap reads of signals in React components and hooks with `useSignal`.
+     * @default true when `@monstermann/stdlib-react` is installed
+     */
+    react?: boolean
 }
 
 export interface StdlibPlugin {
@@ -27,18 +34,29 @@ export interface StdlibPlugin {
         filter: { id: { exclude: RegExp[], include: RegExp[] } }
         handler: (code: string, id: string) => ReturnType<typeof transform>
     }
-    configResolved: (config: { command: string }) => void
+    configResolved: (config: { command: string, root?: string }) => void
 }
 
 /** What is used of globals in a dependency is its own, and not to be replaced. */
 const dependencies = /(?:^|[\\/])node_modules[\\/]/
 
+/** Whether a package can be found from `root`, in the `node_modules` of it or of a directory above. */
+function isInstalled(name: string, root: string): boolean {
+    for (let dir = Path.resolve(root); ; dir = Path.dirname(dir)) {
+        if (existsSync(Path.join(dir, "node_modules", name, "package.json"))) return true
+        if (dir === Path.dirname(dir)) return false
+    }
+}
+
+const react = "@monstermann/stdlib-react"
+
 /** Modules, with what a bundler may add to their path: `a.ts`, `a.mts`, `a.tsx?v=1` */
 const modules = /\.m?[jt]sx?(?:\?.*)?$/
 
 /** A plugin for Vite, Rolldown and tsdown. */
-export function stdlib({ debug, enforce, exclude = [], hmr, include = modules, react }: StdlibPluginOptions = {}): StdlibPlugin {
+export function stdlib({ debug, enforce, exclude = [], hmr, include = modules, react: wrap }: StdlibPluginOptions = {}): StdlibPlugin {
     let isViteDevServer = false
+    let hasReact = wrap ?? isInstalled(react, process.cwd())
 
     const id = {
         exclude: [dependencies, exclude].flat(),
@@ -54,11 +72,12 @@ export function stdlib({ debug, enforce, exclude = [], hmr, include = modules, r
                 // Bundlers that do not know hook filters call the handler for every file.
                 if (id.exclude.some(pattern => pattern.test(path))) return
                 if (!id.include.some(pattern => pattern.test(path))) return
-                return transform(code, path, { debug: debug instanceof RegExp ? debug.test(path) : debug, hmr: hmr ?? isViteDevServer, react })
+                return transform(code, path, { debug: debug instanceof RegExp ? debug.test(path) : debug, hmr: hmr ?? isViteDevServer, react: hasReact })
             },
         },
         configResolved(config) {
             isViteDevServer = config.command === "serve"
+            if (config.root) hasReact = wrap ?? isInstalled(react, config.root)
         },
     }
 }
@@ -86,8 +105,9 @@ export interface StdlibBunPlugin {
  *
  * Bun only uses the first `onLoad` that returns something, call `transform` from your own when there are others.
  */
-export function stdlibBun({ debug, exclude = [], hmr, include = modules, react }: Omit<StdlibPluginOptions, "enforce"> = {}): StdlibBunPlugin {
+export function stdlibBun({ debug, exclude = [], hmr, include = modules, react: wrap }: Omit<StdlibPluginOptions, "enforce"> = {}): StdlibBunPlugin {
     const excluded = [dependencies, exclude].flat()
+    const hasReact = wrap ?? isInstalled(react, process.cwd())
 
     return {
         name: "stdlib",
@@ -96,7 +116,7 @@ export function stdlibBun({ debug, exclude = [], hmr, include = modules, react }
                 build.onLoad({ filter }, async ({ loader, path }) => {
                     const code = await readFile(path, "utf8")
                     if (excluded.some(pattern => pattern.test(path))) return { contents: code, loader }
-                    const result = transform(code, path, { debug: debug instanceof RegExp ? debug.test(path) : debug, hmr, react })
+                    const result = transform(code, path, { debug: debug instanceof RegExp ? debug.test(path) : debug, hmr, react: hasReact })
                     return { contents: result?.code ?? code, loader }
                 })
             }

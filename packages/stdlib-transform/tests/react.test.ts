@@ -1,3 +1,6 @@
+import { mkdir, mkdtemp, rm } from "node:fs/promises"
+import { tmpdir } from "node:os"
+import Path from "node:path"
 import { describe, expect, test } from "bun:test"
 import { stdlib, transform } from "../src"
 
@@ -284,9 +287,31 @@ describe("react", () => {
 })
 
 describe("stdlib, with react", () => {
+    const code = "export const Component = () => <div>{$count()}</div>"
+
     test("Should pass the react option on", () => {
-        const code = "export const Component = () => <div>{$count()}</div>"
         expect(stdlib({ react: true }).transform.handler(code, "/a/b.tsx")?.code).toContain("useSignal($count)")
-        expect(stdlib().transform.handler(code, "/a/b.tsx")).toBe(undefined)
+        expect(stdlib({ react: false }).transform.handler(code, "/a/b.tsx")).toBe(undefined)
+    })
+
+    test("Should be enabled when @monstermann/stdlib-react is installed, unless it is said otherwise", async () => {
+        const root = await mkdtemp(Path.join(tmpdir(), "stdlib-react-"))
+        const nested = Path.join(root, "apps/web")
+        await mkdir(nested, { recursive: true })
+
+        const plugin = stdlib()
+        plugin.configResolved({ command: "build", root: nested })
+        expect(plugin.transform.handler(code, "/a/b.tsx")).toBe(undefined)
+
+        // Found in the directories above as well, which is where a workspace installs it.
+        await Bun.write(Path.join(root, "node_modules/@monstermann/stdlib-react/package.json"), "{}")
+        plugin.configResolved({ command: "build", root: nested })
+        expect(plugin.transform.handler(code, "/a/b.tsx")?.code).toContain("useSignal($count)")
+
+        const disabled = stdlib({ react: false })
+        disabled.configResolved({ command: "build", root: nested })
+        expect(disabled.transform.handler(code, "/a/b.tsx")).toBe(undefined)
+
+        await rm(root, { recursive: true })
     })
 })

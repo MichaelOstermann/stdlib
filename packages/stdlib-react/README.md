@@ -29,13 +29,7 @@ bun add @monstermann/stdlib @monstermann/stdlib-react
 
 ## Without writing it
 
-With its `react` option, [`@monstermann/stdlib-transform`](../stdlib-transform#readme) writes the `useSignal` calls for you. Signals are recognized by their `$` prefix, in components and hooks:
-
-```ts
-export default defineConfig({
-    plugins: [stdlib({ enforce: "pre", react: true })],
-});
-```
+[`@monstermann/stdlib-transform`](../stdlib-transform#readme) writes the `useSignal` calls for you once this package is installed, `react: false` turns that off. Signals are recognized by their `$` prefix, in components and hooks:
 
 ```tsx
 export function Counter({ offset }: { offset: number }) {

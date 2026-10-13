@@ -1,14 +1,22 @@
-import { Effect, Signal } from "@monstermann/stdlib"
+import { Effect, Memo, Signal } from "@monstermann/stdlib"
 import { describe, expect, it } from "bun:test"
 import { observeSize } from "../../src/DOM/observeSize"
-import { dom, fakeDOM, fakeElement, resize } from "./helpers"
+import { origin } from "../../src/Rect/origin"
+import { dom, fakeDOM, fakeElement, resize, resizeWindow } from "./helpers"
 
 fakeDOM()
 
 describe("DOM.observeSize", () => {
+    it("should return the same signal for the same element", () => {
+        const a = fakeElement({ height: 10, left: 0, top: 0, width: 20 })
+        const b = fakeElement({ height: 10, left: 0, top: 0, width: 20 })
+        expect(observeSize(a.element)).toBe(observeSize(a.element))
+        expect(observeSize(a.element)).not.toBe(observeSize(b.element))
+    })
+
     it("should measure on every read while nothing depends on it", () => {
         const a = fakeElement({ height: 10, left: 5, top: 5, width: 20 })
-        const $size = observeSize(Signal<Element | null>(a.element))
+        const $size = observeSize(a.element)
         expect($size()).toEqual({ height: 10, left: 0, top: 0, width: 20 })
         a.rect.width = 30
         expect($size()).toEqual({ height: 10, left: 0, top: 0, width: 30 })
@@ -17,9 +25,8 @@ describe("DOM.observeSize", () => {
 
     it("should observe the element while an effect depends on it", () => {
         const a = fakeElement({ height: 10, left: 5, top: 5, width: 20 })
-        const $size = observeSize(Signal<Element | null>(a.element))
         const widths: number[] = []
-        const effect = Effect(() => void widths.push($size().width))
+        const effect = Effect(() => void widths.push(observeSize(a.element)().width))
         expect(dom.resizing.has(a.element)).toBe(true)
 
         a.rect.width = 30
@@ -32,43 +39,59 @@ describe("DOM.observeSize", () => {
 
     it("should not update for the same size", () => {
         const a = fakeElement({ height: 10, left: 0, top: 0, width: 20 })
-        const $size = observeSize(Signal<Element | null>(a.element))
         const widths: number[] = []
-        Effect(() => void widths.push($size().width))
+        Effect(() => void widths.push(observeSize(a.element)().width))
         resize(a)
         expect(widths).toEqual([20])
     })
 
-    it("should follow the element, and be the origin without one", () => {
+    it("should follow an element that changes, through a memo", () => {
         const a = fakeElement({ height: 10, left: 0, top: 0, width: 20 })
         const b = fakeElement({ height: 40, left: 0, top: 0, width: 50 })
         const $element = Signal<Element | null>(null)
-        const $size = observeSize($element)
+        const $size = Memo(() => observeSize($element())())
         const widths: number[] = []
         Effect(() => void widths.push($size().width))
 
         $element(a.element)
+        a.rect.width = 30
+        resize(a)
+        expect([...dom.resizing.keys()]).toEqual([a.element])
+
         $element(b.element)
-        expect(widths).toEqual([0, 20, 50])
         expect([...dom.resizing.keys()]).toEqual([b.element])
 
         $element(null)
-        expect(widths).toEqual([0, 20, 50, 0])
+        expect(widths).toEqual([0, 20, 30, 50, 0])
         expect(dom.resizing.size).toBe(0)
     })
 
-    it("should keep observing an element for the signals that are still depended on", () => {
-        const a = fakeElement({ height: 10, left: 0, top: 0, width: 20 })
-        const $element = Signal<Element | null>(a.element)
-        const $one = observeSize($element)
-        const $two = observeSize($element)
-        const one = Effect(() => void $one())
-        const widths: number[] = []
-        Effect(() => void widths.push($two().width))
+    it("should be the origin without an element", () => {
+        expect(observeSize(null)()).toBe(origin)
+        expect(observeSize(null)).toBe(observeSize(null))
+    })
 
-        one.dispose()
-        a.rect.width = 30
-        resize(a)
-        expect(widths).toEqual([20, 30])
+    describe("with a window", () => {
+        it("should return the same signal for the same window", () => {
+            expect(observeSize(window)).toBe(observeSize(window))
+            expect(observeSize(window)).not.toBe(observeSize({ innerHeight: 1, innerWidth: 1 } as Window))
+        })
+
+        it("should measure on every read while nothing depends on it", () => {
+            expect(observeSize(window)()).toEqual({ height: 600, left: 0, top: 0, width: 800 })
+            dom.window.innerWidth = 1000
+            expect(observeSize(window)()).toEqual({ height: 600, left: 0, top: 0, width: 1000 })
+            expect(dom.listeners.size).toBe(0)
+        })
+
+        it("should listen to resize while an effect depends on it", () => {
+            const widths: number[] = []
+            const effect = Effect(() => void widths.push(observeSize(window)().width))
+            expect(dom.listeners.size).toBe(1)
+            resizeWindow(1000, 700)
+            expect(widths).toEqual([800, 1000])
+            effect.dispose()
+            expect(dom.listeners.size).toBe(0)
+        })
     })
 })

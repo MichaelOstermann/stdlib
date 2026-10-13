@@ -2,6 +2,7 @@ import type { ReadonlySignal } from "@monstermann/stdlib"
 import type { Rect } from "../Rect"
 import { Signal } from "@monstermann/stdlib"
 import { isEqual } from "../Rect/isEqual"
+import { origin } from "../Rect/origin"
 
 /**
  * A rect that is kept up to date while a memo or an effect depends on it.
@@ -26,4 +27,11 @@ export function sensor(measure: () => Rect, observe: (set: (rect: Rect) => void)
     })
 
     return $rect
+}
+
+let $origin: ReadonlySignal<Rect> | undefined
+
+/** The signal for a target that does not exist: always `Rect.origin`. */
+export function nothing(): ReadonlySignal<Rect> {
+    return $origin ??= Signal(origin)
 }

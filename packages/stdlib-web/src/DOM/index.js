@@ -6,12 +6,10 @@
 
 import { observeRect } from "./observeRect.js";
 import { observeSize } from "./observeSize.js";
-import { observeViewport } from "./observeViewport.js";
 import { roundByDPR } from "./roundByDPR.js";
 
 export const DOM = {
     observeRect,
     observeSize,
-    observeViewport,
     roundByDPR,
 }

@@ -5,3 +5,4 @@
 // biome-ignore lint: disable
 
 export * from "./Rect/index";
+export * from "./Transition";

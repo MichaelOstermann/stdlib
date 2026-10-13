@@ -27,12 +27,14 @@
       "devDependencies": {
         "@monstermann/stdlib": "workspace:*",
         "@monstermann/stdlib-transform": "workspace:*",
+        "@monstermann/stdlib-web": "workspace:*",
         "@types/react": "^19",
         "@types/react-dom": "^19",
         "react-dom": "^19",
       },
       "peerDependencies": {
         "@monstermann/stdlib": "workspace:^",
+        "@monstermann/stdlib-web": "workspace:^",
         "react": "^19",
       },
     },
@@ -55,6 +57,13 @@
     "packages/stdlib-web": {
       "name": "@monstermann/stdlib-web",
       "version": "0.1.0",
+      "devDependencies": {
+        "@monstermann/stdlib": "workspace:*",
+        "@monstermann/stdlib-transform": "workspace:*",
+      },
+      "peerDependencies": {
+        "@monstermann/stdlib": "workspace:^",
+      },
     },
   },
   "packages": {

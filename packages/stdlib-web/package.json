@@ -34,5 +34,12 @@
     ],
     "scripts": {
         "bundle": "bun run tsdown"
+    },
+    "peerDependencies": {
+        "@monstermann/stdlib": "workspace:^"
+    },
+    "devDependencies": {
+        "@monstermann/stdlib": "workspace:*",
+        "@monstermann/stdlib-transform": "workspace:*"
     }
 }

@@ -35,11 +35,13 @@
     },
     "peerDependencies": {
         "@monstermann/stdlib": "workspace:^",
+        "@monstermann/stdlib-web": "workspace:^",
         "react": "^19"
     },
     "devDependencies": {
         "@monstermann/stdlib": "workspace:*",
         "@monstermann/stdlib-transform": "workspace:*",
+        "@monstermann/stdlib-web": "workspace:*",
         "@types/react": "^19",
         "@types/react-dom": "^19",
         "react-dom": "^19"

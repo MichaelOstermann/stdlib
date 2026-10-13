@@ -16,6 +16,6 @@ export default defineConfig([
     }),
     flat({
         entries: "./packages/stdlib-web/src",
-        include: ["Rect/index.js"],
+        include: ["*.ts", "Rect/index.js"],
     }),
 ])

@@ -32,7 +32,7 @@ type DropFields<T, P, K> = IsExact<P> extends true
     : T
 
 type DropKeys<T, P, K> = K extends [infer Head, ...infer Tail]
-    // Fields that are wider than the pattern (`number` and `1`) leave everything as it is.
+    // Fields that are wider than the pattern (`number` and `1`) leave the input unchanged.
     ? [Get<T, Head>] extends [Exclude<Get<T, Head>, Get<P, Head>>]
             ? T
             : Refine<T, Head, Exclude<Get<T, Head>, Get<P, Head>>> | DropKeys<Refine<T, Head, Get<P, Head> & Get<T, Head>>, P, Tail>

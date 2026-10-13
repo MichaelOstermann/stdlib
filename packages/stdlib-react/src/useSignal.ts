@@ -8,7 +8,6 @@ import { useCallback, useMemo, useSyncExternalStore } from "react"
  * Returns the value of a signal or a memo, and renders the component again when it changes.
  * A function is turned into a memo: the component only renders again when it returns something else.
  *
- * - a function that is created while rendering is a new memo every time, which is fine for what is cheap to compute
  * - `@monstermann/stdlib-transform` writes it for you, wherever a component or a hook reads something that starts with a `$`
  *
  * ```tsx

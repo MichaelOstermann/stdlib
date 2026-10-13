@@ -13,7 +13,7 @@ export type MaybeDisposerValue = DisposerValue | false | null | undefined | void
 
 /** Collects what needs to be cleaned up, and does so in reverse order. */
 export interface Disposer extends Disposable {
-    /** Disposes everything that has been added, the last first. Does nothing the second time, and ignores what it is called with: it can be passed as a callback. */
+    /** Disposes everything that has been added, the last first. Does nothing the second time. Ignores its arguments, so it can be passed as a callback. */
     dispose: () => void
     /** Whether this has been disposed. */
     readonly disposed: boolean
@@ -21,7 +21,7 @@ export interface Disposer extends Disposable {
     onDispose: <T extends MaybeDisposerValue>(value: T) => T
 }
 
-/** A disposer as it is: its values and the disposers it has been added to are lists of links, which is what removes one without looking for it. */
+/** The internal shape of a disposer. Its values and the disposers it has been added to are linked lists, so an entry can be removed without searching for it. */
 interface Node extends Disposer {
     [brand]: Node
     disposed: boolean
@@ -55,8 +55,8 @@ type DisposeStack =
  * and disposes them in reverse order.
  *
  * - a disposer that has been added to others is removed from them when it is disposed itself
- * - what is added to a disposer that has been disposed already is disposed right away
- * - everything is disposed, also when something throws: one error is thrown as it is, several as an `AggregateError`
+ * - a value added to an already disposed disposer is disposed right away
+ * - everything is disposed, also when something throws: a single error is rethrown unchanged, several are thrown as an `AggregateError`
  * - disposing is batched and untracked: effects run once everything is disposed, and nothing that is read is depended on
  * - works with `using`, and `dispose` can be passed as a callback
  *

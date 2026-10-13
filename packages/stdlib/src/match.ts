@@ -52,6 +52,6 @@ export const match = function (value: unknown) {
     return new Unmatched(value)
 } as unknown as Match
 
-// The semicolon keeps this from being read as a call of what is above, once the types are gone.
+// The semicolon keeps this from being parsed as a call of the expression above, once the types are gone.
 ;(match as { _: unknown })._ = _
 ;(match as { tag: unknown }).tag = tag

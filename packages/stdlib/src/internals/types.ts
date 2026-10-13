@@ -6,10 +6,10 @@ export type Updated<T extends readonly unknown[], U = never> = T extends unknown
     ? ([U] extends [never] ? T[number] : U)[]
     : readonly ([U] extends [never] ? T[number] : U)[]
 
-/** `{ mut: true }` is only accepted when what is passed can be changed, which a union with something readonly can not. */
+/** `{ mut: true }` is only accepted for a mutable array. A union that includes a readonly array is not mutable. */
 export type MutOptions<T extends readonly unknown[]> = [T] extends [unknown[]] ? { mut?: boolean } : { mut?: false }
 
-/** Several values. A string is several characters, which is never what is meant by passing one. */
+/** Several values. A string is rejected: it is iterable, but passing one is never meant as a list of characters. */
 export type Values<T extends readonly unknown[], V extends Iterable<T[number]>> = V extends string ? never : V
 
 /** What a predicate narrows to when it is a type guard, `T` otherwise. */
@@ -19,7 +19,7 @@ export interface Mut {
     mut?: boolean
 }
 
-/** What is left for the second list of a partition: what a type guard excludes, `T` otherwise. */
+/** The element type of the second list of a partition: `T` without the type a type guard narrows to, `T` otherwise. */
 export type Excluded<P, T> = P extends (value: any, ...args: any[]) => value is infer U ? Exclude<T, U> : T
 
 export type AnyMap = ReadonlyMap<any, any>

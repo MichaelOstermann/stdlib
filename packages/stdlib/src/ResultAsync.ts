@@ -73,7 +73,7 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
         }))
     }
 
-    /** Calls `fn` with the value when this succeeded and waits for it, the result stays as it is. */
+    /** Calls `fn` with the value when this succeeded and waits for it, the result stays unchanged. */
     inspect(fn: (value: T) => Promise<void> | void): ResultAsync<T, E> {
         return new ResultAsync(this.promise.then(async (result) => {
             if (result.ok) await fn(result.value)
@@ -81,7 +81,7 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
         }))
     }
 
-    /** Calls `fn` with the error when this failed and waits for it, the result stays as it is. */
+    /** Calls `fn` with the error when this failed and waits for it, the result stays unchanged. */
     inspectErr(fn: (error: E) => Promise<void> | void): ResultAsync<T, E> {
         return new ResultAsync(this.promise.then(async (result) => {
             if (!result.ok) await fn(result.value)

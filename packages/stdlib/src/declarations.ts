@@ -198,7 +198,7 @@ declare global {
     type Err<E, T = never> = import("./Result").Err<E, T>
     /** A value that is computed from signals and other memos: call it to read. */
     type Memo<T = any> = import("./Memo").Memo<T>
-    /** A result that succeeded, `value` is what it succeeded with. */
+    /** A successful result that holds `value`. */
     type Ok<T, E = never> = import("./Result").Ok<T, E>
     /** A signal that can only be read. */
     type ReadonlySignal<T = any> = import("./Signal").ReadonlySignal<T>

@@ -22,10 +22,10 @@ const globalsOptions = {
     resolve: (global: string, name: string): string => `${from}/${global}/${name}.mjs`,
 }
 
-// Effects and emitters only receive what is needed to dispose them.
+// Effects and emitters only receive `hmr`, which is enough to dispose them.
 const hmrOnly: MetaParam["meta"] = ({ hmr }) => ({ hmr })
 
-/** What is disposed when its module is replaced. By then it is imported from the file it lives in, whatever it was written as. */
+/** Functions whose results are disposed when their module is replaced. At this point each one is imported from its own file, however the source referred to it. */
 const hmrParams: MetaParam[] = [
     { function: "Effect", meta: hmrOnly, module: `${from}/Effect.mjs`, position: 2 },
     { function: "Effect.watch", meta: hmrOnly, module: `${from}/Effect.mjs`, position: 4 },
@@ -73,7 +73,7 @@ export function transform(code: string, filePath: string, options: StdlibOptions
     const unused = new Set<string>()
     const generateMap = { hires: "boundary", includeContent: true, source: filePath } as const
 
-    // Before everything else: it only looks for what is written with a `$`, whatever that turns into.
+    // Runs first: it looks for names written with a `$`, before other transforms rewrite them.
     if (options.react) {
         const react = transformReact(code, filePath)
         if (react) {
@@ -130,7 +130,7 @@ export function transform(code: string, filePath: string, options: StdlibOptions
         }
     }
 
-    // After everything else: what is left of `match` once chains have been compiled is what needs to be imported.
+    // Runs last: only the references to `match` that remain after compiling chains need an import.
     const replaced = transformGlobals(code, filePath, globalsOptions)
     if (replaced) {
         code = replaced.toString()

@@ -112,7 +112,7 @@ export function throttle<T extends unknown[]>(
                 invoke()
             }
             else if (isPending && options.leading && waitTimer.tid == null) {
-                // The wait time has passed while running, so what is pending is due.
+                // The wait time has passed while running, so the pending call is due.
                 invoke()
             }
             else if (isPending) {

@@ -2,10 +2,10 @@ import type { RawEffect, RawMemo } from "./system"
 import { version } from "../../package.json"
 
 /**
- * What batching and tracking are made of, without the signals themselves.
+ * The state behind batching and tracking, without the signals themselves.
  *
- * An `Emitter` batches and untracks through this, which is a counter and a slot of a stack
- * as long as nothing has created a signal: `./system` is what brings the rest, and is only loaded by what needs it.
+ * An `Emitter` batches and untracks through this module. Until a signal is created, that costs a counter and one stack slot:
+ * the graph lives in `./system`, which is only loaded by the modules that create signals, memos and effects.
  */
 
 interface Registry {
@@ -23,17 +23,17 @@ if (registry.system !== undefined) assertSingleVersion()
 
 /**
  * Signals of one version do not know the effects of another: nothing would update, without anything failing.
- * Two copies of the same version are not told apart, which is what a module that is replaced during development looks like.
+ * Two copies of the same version are accepted, because a module that is replaced during development shows up as a second copy.
  */
 function assertSingleVersion(): void {
     if (registry.versions.length === 1) return
     throw new Error(`@monstermann/stdlib: signals need a single version of this package, ${registry.versions.join(" and ")} have been loaded.`)
 }
 
-// Exported as they are, for signals to read them without a call: only this module writes them.
+// Exported as mutable bindings, so signals read them without a function call. Only this module writes them.
 // eslint-disable-next-line import/no-mutable-exports
 export let batchDepth = 0
-// What is currently collecting dependencies, and what did so before it.
+// The effect or memo that is currently collecting dependencies. `evalStack` holds the ones it interrupted.
 // eslint-disable-next-line import/no-mutable-exports
 export let evalContext: RawEffect | RawMemo | undefined
 let evalDepth = 0

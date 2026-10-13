@@ -9,7 +9,7 @@ import { Err as fail } from "../Result"
  * function Retry.again<E>(error: E, delay?: number): Err<RetryAgain<E>>
  * ```
  *
- * A failure that `Retry.run` tries again for. `error` is what the result fails with when it does not, `delay` the milliseconds to wait in place of the ones it would wait by itself.
+ * A failure that `Retry.run` tries again for. `error` is the error the result fails with once `Retry.run` stops retrying, `delay` overrides the milliseconds it waits before the next attempt.
  *
  * ## Example
  *

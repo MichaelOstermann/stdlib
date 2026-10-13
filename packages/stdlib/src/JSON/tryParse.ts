@@ -8,7 +8,7 @@ import { Err, Ok } from "../Result"
  * function JSON.tryParse(text: string): Result<unknown, SyntaxError>
  * ```
  *
- * Parses `text` like `JSON.parse`, and returns what that throws as an `Err`.
+ * Parses `text` like `JSON.parse`, and returns the error it throws as an `Err`.
  *
  * ## Example
  *

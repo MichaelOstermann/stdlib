@@ -4,7 +4,7 @@ import { importEnd } from "./globals"
 import { functions, namespaces } from "./manifest"
 
 /**
- * Points what is left of the imports from `from` at the files they are exported from,
+ * Rewrites the remaining imports from `from` to the files that export them,
  * so the entry of the package, which imports everything, is never loaded:
  *
  * ```ts

@@ -63,7 +63,7 @@ export function Semaphore(options: { concurrency: number, maxWaiting?: number })
     const { concurrency, maxWaiting } = options
     if (!(concurrency >= 1)) throw new RangeError("Semaphore: a concurrency below 1 lets nothing run.")
 
-    // What is run without a key shares a slot that no key can be.
+    // Tasks without a key share one slot. Its key is this map itself, which no caller can pass as a key.
     const slots = new Map<unknown, Slot>()
     const idle: (() => void)[] = []
     let size = 0

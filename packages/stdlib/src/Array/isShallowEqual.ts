@@ -6,7 +6,7 @@
  * ```
  *
  * Whether `a` and `b` have the same elements, in the same order.
- * Elements are compared by identity, not by what is in them.
+ * Elements are compared by identity, not by their contents.
  *
  * ## Example
  *

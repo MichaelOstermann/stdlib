@@ -93,7 +93,7 @@ export function debounce<T extends unknown[]>(
     }
 
     function expire() {
-        // A call that would have been a leading one is kept until what is running is done.
+        // A call that would have been a leading call is kept until the running call is done.
         if (!leadAsap) clear()
     }
 

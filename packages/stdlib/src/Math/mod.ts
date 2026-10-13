@@ -5,7 +5,7 @@
  * Math.mod(value, divisor)
  * ```
  *
- * Returns what is left of `value` after dividing by `divisor`, with the sign of `divisor`: unlike `%`, something negative wraps around instead of staying negative.
+ * Returns the remainder of `value` divided by `divisor`, with the sign of `divisor`: unlike `%`, a negative value wraps around instead of staying negative.
  *
  * ## Example
  *

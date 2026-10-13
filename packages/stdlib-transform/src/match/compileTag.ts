@@ -60,7 +60,7 @@ export function compileTag(node: Node, tag: Tag, ctx: Context): string {
     // Without anything to compare with, the tag would never be read.
     if (!cases.length) abort()
 
-    // What can not be referred to as it is gets evaluated once, as the argument of a function.
+    // A subject that is not a stable name is evaluated once and passed as the argument of a function.
     let subject: string
     let wrap = (result: string): string => `(${result})`
     if (tag.subject.type === "Identifier" && ctx.isStable(tag.subject.name)) {

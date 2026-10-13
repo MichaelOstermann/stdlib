@@ -1,6 +1,6 @@
 import type { Node } from "oxc-parser"
 
-/** Thrown for a chain that is kept as it is. */
+/** Thrown to leave a chain uncompiled. */
 export class AbortError extends Error {}
 
 export function abort(): never {

@@ -8,7 +8,7 @@ import { setOwn } from "../internals/objects"
  * ```
  *
  * Creates an object of `items` by what `key` returns for each, like `Object.groupBy` for keys that occur once.
- * When a key occurs more than once, the last item is the one that stays.
+ * When a key occurs more than once, the last item wins.
  *
  * ## Example
  *

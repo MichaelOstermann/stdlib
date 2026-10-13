@@ -21,7 +21,7 @@ const interfaces: Record<string, string> = {
     String: "StringConstructor",
 }
 
-/** What is a global of its own, and the file it lives in. */
+/** Globals that are values themselves, and the file each one lives in. */
 const values: Record<string, string> = {
     Action: "Action",
     AsyncEmitter: "Emitter",
@@ -129,7 +129,7 @@ export const globals: Readonly<Record<string, readonly string[]>> = {
 ${Object.entries(members).sort(([a], [b]) => a.localeCompare(b)).map(([global, names]) => `    ${global}: [${names.map(name => `"${name}"`).join(", ")}],`).join("\n")}
 }
 
-/** What is a global of its own, and the file it lives in: \`pipe\` → \`pipe.mjs\`. */
+/** Globals that are values themselves, and the file each one lives in: \`pipe\` → \`pipe.mjs\`. */
 export const values: Readonly<Record<string, string>> = {
 ${Object.entries(values).map(([name, file]) => `    ${name}: "${file}",`).join("\n")}
 }

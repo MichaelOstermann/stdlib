@@ -4,13 +4,13 @@ import { parseSync } from "oxc-parser"
 import { ScopeTracker, walk } from "oxc-walker"
 
 export interface GlobalsOptions {
-    /** What is available on which global: `{ Array: ["removeAll"] }` makes `Array.removeAll` something to replace. */
+    /** The members declared on each global: `{ Array: ["removeAll"] }` makes `Array.removeAll` something to replace. */
     globals: Readonly<Record<string, readonly string[]>>
-    /** Files that are only there for when the code runs as it is written, imports of them are removed. */
+    /** Files that only exist for running the code untransformed. Imports of them are removed. */
     guards: readonly string[]
     /** Where a member is imported from, it is exported there under its own name. */
     resolve: (global: string, name: string) => string
-    /** What is a global of its own, and where it is imported from: `{ pipe: "@monstermann/stdlib/pipe.mjs" }` */
+    /** Globals that are values themselves, and where each one is imported from: `{ pipe: "@monstermann/stdlib/pipe.mjs" }` */
     values?: Readonly<Record<string, string>>
 }
 
@@ -30,7 +30,7 @@ const expressions = new Set([
     "TSTypeAssertion",
 ])
 
-/** What can be put around something without changing what it is: `(Array)`, `Array!`, `Array as any` */
+/** Syntax that wraps an expression without changing its value: `(Array)`, `Array!`, `Array as any` */
 const wrappers = new Set([
     "ParenthesizedExpression",
     "TSAsExpression",
@@ -42,7 +42,7 @@ const wrappers = new Set([
 const mentions = new WeakMap<GlobalsOptions["globals"], (code: string) => boolean>()
 
 /**
- * Replaces what has been declared on globals with direct imports, the globals themselves are never touched:
+ * Replaces the members declared on globals with direct imports, the globals themselves are never touched:
  *
  * ```ts
  * import "@monstermann/stdlib/globals";
@@ -54,7 +54,7 @@ const mentions = new WeakMap<GlobalsOptions["globals"], (code: string) => boolea
  * _removeAll(values, [1, 2]);
  * ```
  *
- * What is a global of its own (`pipe`, `Duration`) is imported where it is used as it is.
+ * A global that is a value itself (`pipe`, `Duration`) is imported under its own name.
  *
  * A global that has been declared in the file is something else, and left alone.
  * Imports are added to an existing line, so every line stays where it is.
@@ -226,7 +226,7 @@ function isName(node: Node, parent: Node | null): boolean {
     if (parent.type === "Property") return parent.key === node && !parent.computed && !parent.shorthand
     if (parent.type === "MethodDefinition" || parent.type === "PropertyDefinition" || parent.type === "AccessorProperty") return parent.key === node && !parent.computed
     if (parent.type === "LabeledStatement" || parent.type === "BreakStatement" || parent.type === "ContinueStatement") return true
-    // export { pipe as p }: what is exported is used, what it is exported as is a name.
+    // export { pipe as p }: `pipe` is a reference, `p` is only a name.
     if (parent.type === "ExportSpecifier") return parent.local !== node
     if (parent.type === "TSEnumMember" || parent.type === "TSEnumDeclaration" || parent.type === "TSModuleDeclaration") return parent.id === node
     if (parent.type === "ImportSpecifier" || parent.type === "ImportAttribute") return true

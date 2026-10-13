@@ -21,13 +21,13 @@ export interface WatchOptions<T> {
 /**
  * `Effect(computation)`
  *
- * Calls `computation` with the effect itself, and again whenever a signal or memo changes that it read. It is what brings changes to the outside: the DOM, a request, a log.
+ * Calls `computation` with the effect itself, and again whenever a signal or memo changes that it read. Use it to apply changes outside of signals: the DOM, a request, a log.
  *
  * - it runs right away, and again once the batch is done in which something changed
  * - what `computation` returns is cleaned up before the next run and when the effect is disposed: a function, or anything disposable
  * - it is a `Disposer`: dispose it to stop it, add it to another one to stop it together with that
  * - what `computation` throws is thrown by what created the effect, or by what changed the signal
- * - during development it is disposed when its module is replaced, the plugin passes what is needed for that as the last argument
+ * - during development it is disposed when its module is replaced, the plugin passes the metadata for that as the last argument
  *
  * ```ts
  * const $count = Signal(0);
@@ -64,7 +64,7 @@ export const Effect: {
     /**
      * Calls `computation` with the value of `dependencies` and the one before, whenever it changed.
      * Unlike an effect it does not run right away, and does not depend on what `computation` reads.
-     * What `computation` returns is cleaned up like it is for an effect, which it is, and what it is called with last.
+     * The return value of `computation` is cleaned up like the return value of an effect. The watcher is an effect itself, and is passed to `computation` as the last argument.
      */
     watch: <T>(dependencies: ReadonlySignal<T> | MemoType<T> | (() => T), computation: (next: NoInfer<T>, prev: NoInfer<T>, effect: Effect) => MaybeDisposerValue, options?: WatchOptions<NoInfer<T>>, meta?: Meta) => Effect
 } = Object.assign(create, {
@@ -97,7 +97,7 @@ function create(computation: (effect: Effect) => MaybeDisposerValue, meta?: Meta
     return effect
 }
 
-/** Disposes what a run returned, without depending on what that reads. An effect that runs or is disposed batches already. */
+/** Disposes the value a run returned, without tracking what the cleanup reads. No batch is needed: an effect that runs or is disposed is batched already. */
 function cleanUp(value: MaybeDisposerValue): void {
     if (!value) return
     pauseTracking()

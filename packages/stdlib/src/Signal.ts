@@ -31,11 +31,11 @@ export interface SignalOptions<T> {
 /**
  * `Signal(value, options?)`
  *
- * Creates a value that changes over time. What it is called with tells what happens: nothing reads, a function changes the value, anything else replaces it.
+ * Creates a value that changes over time. The argument decides what a call does: no argument reads the value, a function computes the next value from the current one, anything else replaces the value.
  * A function can therefore not be a value, unless a function returns it: `$fn(() => fn)`.
  *
  * - memos and effects that read a signal run again when it changes
- * - writing the value it has already updates nothing, `equals` extends what counts as the same
+ * - writing the current value updates nothing, `equals` extends what counts as the same
  * - `onRead` and `onWatch` tell when the signal is used, for a value that is expensive to keep up to date
  *
  * ```ts

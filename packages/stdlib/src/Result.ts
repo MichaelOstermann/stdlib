@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-redeclare -- Ok, Err and Result are a type and what creates it */
 /** Success or failure as a value: either an `Ok` with a value, or an `Err` with an error. `result.ok` tells which. */
 export type Result<T, E> = Ok<T, E> | Err<E, T>
-/** A result that succeeded, `value` is what it succeeded with. */
+/** A successful result that holds `value`. */
 export interface Ok<T, E = never> extends IResult<T, E> {
     /** Whether this succeeded, `value` is the error otherwise. */
     readonly ok: true
@@ -172,9 +172,9 @@ export function Err<E>(error?: E): Err<E | void> {
 interface IResult<T, E> {
     /** Continues with another result when this one succeeded, a failure is passed along: `Ok(1).andThen(n => Ok(n + 1))` is `Ok(2)`. */
     andThen: <R extends Result<unknown, unknown>>(fn: (value: T) => R) => Result<InferOk<R>, E | InferErr<R>>
-    /** Calls `fn` with the value when this succeeded, and returns the result as it is. */
+    /** Calls `fn` with the value when this succeeded, and returns the result unchanged. */
     inspect: (fn: (value: T) => void) => Result<T, E>
-    /** Calls `fn` with the error when this failed, and returns the result as it is. */
+    /** Calls `fn` with the error when this failed, and returns the result unchanged. */
     inspectErr: (fn: (error: E) => void) => Result<T, E>
     /** Changes the value when this succeeded, a failure is passed along: `Ok(1).map(n => n + 1)` is `Ok(2)`. */
     map: <U>(fn: (value: T) => U) => Result<U, E>

@@ -8,7 +8,7 @@ type Tagged<T, K extends keyof T, V extends string> = T extends unknown ? V exte
 
 type Handlers<T, K extends keyof T> = { [V in `${T[K] & Tag}`]: (value: Tagged<T, K, V>) => unknown }
 
-/** Nothing but what is a tag, or the fallback. */
+/** Rejects handlers whose key is neither a tag nor the `_` fallback. */
 type Exact<T, K extends keyof T, H> = H & NoInfer<{ [V in keyof H as `${V & (number | string)}` extends `${T[K] & Tag}` | "_" ? never : V]: never }>
 
 type Returned<H> = H[keyof H] extends infer F ? F extends (...args: never[]) => infer R ? R : never : never

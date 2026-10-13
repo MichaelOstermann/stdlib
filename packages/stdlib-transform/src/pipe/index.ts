@@ -14,10 +14,10 @@ export interface PipeResult {
     references: number
 }
 
-/** What is passed from one step to the next, as it is written. */
+/** The code of the value that is passed from one step to the next. */
 interface Value {
     code: string
-    /** Can be written anywhere as it is, without parentheses: `a`, `a.b`, `a(b)`, `1` */
+    /** Can be placed anywhere without parentheses: `a`, `a.b`, `a(b)`, `1` */
     isAtom: boolean
     /** Can be written any number of times, anywhere: a literal, or a name that always refers to the same value. */
     isSimple: boolean
@@ -34,8 +34,8 @@ interface Value {
  * format(Array.removeAll(tasks, done).length)
  * ```
  *
- * A callback is replaced with what it returns when its parameter is used once, as the first thing that happens in there,
- * or when the value is a literal or a name that is never assigned to. Everything else is called as it is: `(v => v + v)(value)`.
+ * A callback is replaced with its body when its parameter is used once, as the first thing the body evaluates,
+ * or when the value is a literal or a name that is never assigned to. Every other callback is called directly: `(v => v + v)(value)`.
  *
  * A call is kept when one of its steps is neither a function nor the name of one (`pipe(a, create())`):
  * it would be created after the value instead of before.
@@ -67,7 +67,7 @@ export function transformPipes(code: string, filePath: string, from: string): Pi
 
     const isStable = (name: string): boolean => {
         const declaration = scopeTracker.getDeclaration(name)
-        // Globals and what has been imported can be changed from somewhere else.
+        // Globals and imports can be reassigned from other modules.
         if (!declaration || declaration.type === "Import") return false
         if (declaration.type === "Variable" && declaration.variableNode.kind === "const") return true
         return !assigned.has(name)
@@ -98,7 +98,7 @@ export function transformPipes(code: string, filePath: string, from: string): Pi
             const result = value.isAtom ? value.code : `(${value.code})`
             // Anything but a name would be read as a part of the statement before, when that one has no semicolon.
             ms.overwrite(node.start, node.end, startsStatement(node, parents) && !/^[\w$]/.test(result) ? `;${result}` : result)
-            // The call has been replaced as a whole, what is left in there of other calls is still being used.
+            // The whole call has been replaced without visiting its children: references inside of it remain, except the one that was just compiled.
             this.skip()
             references += countReferences(node, local) - 1
         },
@@ -242,7 +242,7 @@ function findLead(body: Node, param: string): Lead | undefined {
                 // a?.(v), a?.b(v): not called when there is nothing to call.
                 if (isOptional(node)) return
                 const found = all(node.arguments, node)
-                // Calling something is what a value has to be there for.
+                // A call is never pure: the search ends here unless the parameter is one of its arguments.
                 return found === "found" ? "found" : undefined
             }
             case "SpreadElement":

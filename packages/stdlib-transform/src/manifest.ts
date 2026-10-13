@@ -29,7 +29,7 @@ export const functions: ReadonlyMap<string, string> = new Map([
     ["Untrack", "Untrack"],
 ])
 
-/** Files that are only there for when the code runs as it is written. */
+/** Files that only exist for running the code untransformed. */
 export const guards: readonly string[] = [
     "globals",
     "patch",

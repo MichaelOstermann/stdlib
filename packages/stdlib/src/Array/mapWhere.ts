@@ -9,7 +9,7 @@ import { mapWhere as update } from "../internals/arrays"
  * ```
  *
  * Applies `map` to every element that satisfies `predicate`.
- * Returns `target` itself when there is no such element, or when `map` returned each as it was.
+ * Returns `target` itself when there is no such element, or when `map` returned every element unchanged.
  *
  * With `{ mut: true }`, `target` itself is changed and returned.
  *

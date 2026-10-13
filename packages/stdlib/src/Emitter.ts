@@ -50,14 +50,14 @@ export interface AsyncEmitter<T = void> extends ReadonlyAsyncEmitter<T>, Dispose
 /**
  * `Emitter<T>(dispatch?)`
  *
- * Creates a single event. What it is called with tells what happens: a function is added as a listener, anything else is a message for the listeners.
+ * Creates a single event. The argument decides what a call does: a function is added as a listener, anything else is sent to the listeners as a message.
  * A function can therefore not be a message.
  *
  * - listeners are kept in a `Set`: the same function counts once, and one that is added while a message is sent is called as well
  * - `dispatch` replaces how listeners are called, to wrap it or to catch what they throw
  * - sending is batched and untracked: effects run once every listener has been called, and what listeners read is not depended on
  * - it can be disposed like a `Disposer`, which removes its listeners and ignores new ones
- * - during development it is disposed when its module is replaced, the plugin passes what is needed for that as the last argument
+ * - during development it is disposed when its module is replaced, the plugin passes the metadata for that as the last argument
  *
  * ```ts
  * const onMessage = Emitter<string>();
@@ -73,7 +73,7 @@ export interface AsyncEmitter<T = void> extends ReadonlyAsyncEmitter<T>, Dispose
  * onMessage.dispose();
  * onMessage.disposed; // true
  *
- * // What is exposed can be limited to listening.
+ * // Expose an emitter that can only be listened to.
  * const onChange: ReadonlyEmitter<string> = onMessage;
  * ```
  */
@@ -165,7 +165,7 @@ function disposable<T, U extends Target<T>>(emitter: U, meta: Meta | undefined):
     const own = (): Disposer => {
         if (disposer) return disposer
         disposer = createDisposer()
-        // Added first to be called last, after what has been added to the emitter.
+        // Added first, so it runs last: after everything else that has been added to the emitter's disposer.
         if (target.disposed) disposer.dispose()
         else disposer.onDispose(end)
         return disposer

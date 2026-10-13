@@ -37,7 +37,7 @@ export interface StdlibPlugin {
     configResolved: (config: { command: string, root?: string }) => void
 }
 
-/** What is used of globals in a dependency is its own, and not to be replaced. */
+/** Dependencies are skipped: how a package in `node_modules` uses globals is its own business. */
 const dependencies = /(?:^|[\\/])node_modules[\\/]/
 
 /** Whether a package can be found from `root`, in the `node_modules` of it or of a directory above. */

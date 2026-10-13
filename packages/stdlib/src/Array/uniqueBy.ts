@@ -29,7 +29,7 @@ export function uniqueBy(target: unknown[], by: (value: unknown, index: number, 
             continue
         }
 
-        // The first duplicate, everything before it stays as it is.
+        // The first duplicate, everything before it is kept unchanged.
         const result = options?.mut ? target : target.slice(0, i)
         let length = i
         for (let j = i + 1; j < target.length; j++) {

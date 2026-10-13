@@ -5,7 +5,7 @@
  * function Function.once<T>(fn: () => T): () => T
  * ```
  *
- * Returns a function that calls `fn` the first time it is called, and returns what that returned from then on.
+ * Returns a function that calls `fn` the first time it is called, and returns the result of that first call from then on.
  *
  * A call that throws does not count, the next one tries again.
  *

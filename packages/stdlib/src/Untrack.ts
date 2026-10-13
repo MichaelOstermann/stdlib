@@ -4,17 +4,17 @@ import { pauseTracking, resumeTracking, untrack } from "./internals/reactivity"
 export interface Untrack {
     /** Calls `fn`, what it reads is not depended on. */
     <T>(fn: () => T): T
-    /** Ends what has been started with `Untrack.start`. */
+    /** Resumes tracking after `Untrack.start`. */
     end: () => void
-    /** Stops depending on what is read until `Untrack.end`, for when there is no function to wrap. */
+    /** Stops tracking reads until `Untrack.end`. For code that can not be wrapped in a function. */
     start: () => void
 }
 
 /**
  * `Untrack(fn)`
  *
- * Reads without depending on what is read: a memo or an effect does not run again when a signal changes that it only read inside of `fn`.
- * A signal is a function that reads, so it can be passed as it is.
+ * Calls `fn` without tracking its reads: a memo or an effect does not run again when a signal changes that was only read inside of `fn`.
+ * A signal can be passed directly, since calling it reads it.
  *
  * ```ts
  * Untrack($count); // The value of $count.

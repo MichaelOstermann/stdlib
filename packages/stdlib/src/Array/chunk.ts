@@ -5,7 +5,7 @@
  * Array.chunk(target, size)
  * ```
  *
- * Splits into arrays of `size` elements, the last one has what is left.
+ * Splits into arrays of `size` elements, the last one holds the remaining elements.
  *
  * ## Example
  *

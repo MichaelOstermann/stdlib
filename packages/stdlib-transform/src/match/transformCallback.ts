@@ -9,7 +9,7 @@ import { ScopeTracker, walk } from "oxc-walker"
  * - `() => result` becomes `result`
  * - `v => v + 1` becomes `value + 1`
  *
- * Everything where that would change what the callback does is called as it is: `(callback)(value)`.
+ * A callback that can not be inlined without changing its behaviour is called directly: `(callback)(value)`.
  */
 export function transformCallback(value: string, cb: Node, ctx: Context): string {
     // A method is called without the object it belongs to, the same way it is when being passed along.

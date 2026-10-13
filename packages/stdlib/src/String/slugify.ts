@@ -64,8 +64,8 @@ function transliterate(target: string): string {
         i += length || 1
     }
 
-    // `^` and `` ` `` are diacritics too, they separate like they do without anything to transliterate.
-    // Composed again: what is left of a letter with a mark that is no diacritic does not count as that letter.
+    // Strips the remaining diacritics. The ASCII ones, `^` and `` ` ``, are kept: they are separators like in any other input.
+    // The final `normalize()` composes again, so a letter that keeps a non-diacritic mark stays distinct from the bare letter.
     // eslint-disable-next-line no-control-regex
     return result.normalize("NFD").replace(/(?![\x00-\x7F])\p{Diacritic}/gu, "").normalize()
 }

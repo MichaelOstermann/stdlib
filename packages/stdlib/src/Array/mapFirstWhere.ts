@@ -9,7 +9,7 @@ import { indexWhere, setAt } from "../internals/arrays"
  * ```
  *
  * Applies `map` to the first element that satisfies `predicate`.
- * Returns `target` itself when there is no such element, or when `map` returned it as it was.
+ * Returns `target` itself when there is no such element, or when `map` returned the element unchanged.
  *
  * With `{ mut: true }`, `target` itself is changed and returned.
  *

@@ -36,7 +36,7 @@ export function defaults(target: Record<PropertyKey, unknown>, source: Record<Pr
     return target
 }
 
-/** Only what is its own: `toString` and `__proto__` are there on every object, and still missing. */
+/** Only own properties count: `toString` and `__proto__` exist on every object through its prototype, and are still treated as missing. */
 function isSet(target: Record<PropertyKey, unknown>, key: PropertyKey): boolean {
     return Object.hasOwn(target, key) && target[key] !== undefined
 }

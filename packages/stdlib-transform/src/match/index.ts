@@ -12,7 +12,7 @@ export type { Helpers } from "./types"
 
 export interface MatchResult {
     ms: MagicString
-    /** What has been imported and is not referred to any more, now that every usage of it has been compiled away: `match`, `_` */
+    /** Imports that are no longer referenced, because every use has been compiled away: `match`, `_` */
     unused: string[]
 }
 
@@ -43,8 +43,8 @@ interface Imported {
  * : (0))
  * ```
  *
- * Chains inside of the callbacks of another chain are left for another run, which is what `helpers` is passed along for:
- * what has been imported already for shapes that are not written where they are used.
+ * Chains inside of the callbacks of another chain are compiled in a later run.
+ * `helpers` carries the helper imports that already exist from one run to the next.
  *
  * Returns `undefined` when `match` has not been imported from `from`.
  */
@@ -114,7 +114,7 @@ export function transformMatches(code: string, filePath: string, from: string, h
         },
         isStable(name: string): boolean {
             const declaration = scopeTracker.getDeclaration(name)
-            // Globals and what has been imported can be changed from somewhere else.
+            // Globals and imports can be reassigned from other modules.
             if (!declaration || declaration.type === "Import") return false
             if (declaration.type === "Variable" && declaration.variableNode.kind === "const") return true
             return !assigned.has(name)
@@ -148,14 +148,14 @@ export function transformMatches(code: string, filePath: string, from: string, h
                 ctx.ms.overwrite(node.start, node.end, startsStatement(node, parents) ? `;${result}` : result)
             }
             catch (error) {
-                // What has been asked for by a chain that is kept as it is.
+                // Drop the helpers requested by a chain that is left uncompiled.
                 for (const name of added.splice(known)) delete helpers[name]
                 if (error instanceof AbortError) return
                 throw error
             }
 
             transformed++
-            // The chain has been replaced as a whole, what is left in there of what has been imported is still being used.
+            // The whole chain has been replaced without visiting its children: references to the imports inside of it remain.
             count(node, 1)
             references.match -= 1 + ctx.used.match
             references._ -= ctx.used._

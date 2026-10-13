@@ -6,7 +6,7 @@
  * ```
  *
  * Whether `a` and `b` have the same values.
- * Values are compared by identity, not by what is in them.
+ * Values are compared by identity, not by their contents.
  *
  * ## Example
  *

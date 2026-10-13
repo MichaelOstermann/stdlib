@@ -9,11 +9,11 @@ import { isFunction, transformCallback } from "./transformCallback"
 export function compileChain(node: Node, chain: Chain, ctx: Context): string {
     const src = (node: Node): string => ctx.code.slice(node.start, node.end)
 
-    // What can not be referred to as it is gets evaluated once, as the argument of a function.
+    // A value that is not a stable name is evaluated once and passed as the argument of a function.
     const params: string[] = []
     const args: string[] = []
     const bind = (value: Node): string => {
-        // The value is matched as it was when the chain started, also when something assigns to it later.
+        // Only a stable name is reused: the chain matches the value from when it started, even if the name is assigned to later.
         if (value.type === "Identifier" && ctx.isStable(value.name)) return value.name
         const id = ctx.id("match")
         params.push(id)
@@ -53,7 +53,7 @@ export function compileChain(node: Node, chain: Chain, ctx: Context): string {
         else if (step.name === "unwrapOr") {
             const [result] = step.args
             if (!result || step.args.length !== 1) abort()
-            // On its own it would still be what it is written as, an `object.method` that can be called with its object.
+            // As the whole chain, the result may be called right away. `(0, a.b)` keeps that call from passing `a` as `this`, which `(a.b)` would do.
             branches.push(chain.steps.length > 1 ? `(${src(result)})` : `(0, ${src(result)})`)
         }
 

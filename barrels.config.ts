@@ -12,10 +12,10 @@ export default defineConfig([
     }),
     // Not globals: what is in here is imported.
     namespace({
-        entries: "./packages/stdlib-web/src/Rect",
+        entries: ["./packages/stdlib-web/src/DOM", "./packages/stdlib-web/src/Rect"],
     }),
     flat({
         entries: "./packages/stdlib-web/src",
-        include: ["*.ts", "Rect/index.js"],
+        include: ["*.ts", "{DOM,Rect}/index.js"],
     }),
 ])

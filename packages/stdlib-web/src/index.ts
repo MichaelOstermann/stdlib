@@ -4,5 +4,6 @@
 // dprint-ignore-file
 // biome-ignore lint: disable
 
+export * from "./DOM/index";
 export * from "./Rect/index";
 export * from "./Transition";

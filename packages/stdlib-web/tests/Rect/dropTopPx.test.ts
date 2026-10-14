@@ -1,4 +1,4 @@
-import type { Rect } from "../../src/Rect/types"
+import type { Rect } from "../../src/Rect"
 import { describe, expect, it } from "bun:test"
 import { dropTopPx } from "../../src/Rect/dropTopPx"
 

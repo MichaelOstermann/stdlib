@@ -1,6 +1,6 @@
+import type { RetryOptions } from "."
 import type { Result } from "../Result"
 import type { InferAsyncErr, InferAsyncOk } from "../ResultAsync"
-import type { RetryOptions } from "./types"
 import { backoff } from "../Duration/backoff"
 import { jitter } from "../Duration/jitter"
 import { RetryAgain } from "../internals/retry"

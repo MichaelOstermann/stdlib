@@ -5,13 +5,12 @@
         "packages/*"
     ],
     "scripts": {
-        "barrels": "barrels && bun scripts/globals.ts",
+        "globals": "bun scripts/globals.ts",
         "checks": "bun run eslint && bun run tsc && bun test",
         "bundles": "bun run --filter '*' bundle",
         "readme": "bun run bundles && bun scripts/readme.ts"
     },
     "devDependencies": {
-        "@monstermann/barrels": "^0.5.0",
         "@monstermann/eslint-config": "^0.8.0",
         "@monstermann/tsconfig": "^0.0.0",
         "@types/bun": "^1.4.2",

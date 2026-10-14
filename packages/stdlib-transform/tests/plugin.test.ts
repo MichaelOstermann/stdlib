@@ -13,8 +13,7 @@ const src = Path.resolve(import.meta.dirname, "../../stdlib/src")
 /** Resolves the files of the published package to their sources, to not depend on a build. */
 function resolveSource(path: string): string | undefined {
     if (!path.startsWith("@monstermann/stdlib/")) return
-    const file = path.slice("@monstermann/stdlib/".length).replace(/\.mjs$/, "")
-    return Path.join(src, file.endsWith("/index") ? `${file}.js` : `${file}.ts`)
+    return Path.join(src, path.slice("@monstermann/stdlib/".length).replace(/\.mjs$/, ".ts"))
 }
 
 async function evaluate(code: string): Promise<unknown> {
@@ -32,7 +31,7 @@ describe("manifest", () => {
     })
 
     it("should match the files of @monstermann/stdlib", async () => {
-        for (const name of namespaces) expect(await Bun.file(Path.join(src, name, "index.js")).exists()).toBe(true)
+        for (const name of namespaces) expect(await Bun.file(Path.join(src, name, "index.ts")).exists()).toBe(true)
         for (const [name, file] of functions) expect(name in await import(Path.join(src, `${file}.ts`))).toBe(true)
         for (const name of guards) expect(await Bun.file(Path.join(src, `${name}.ts`)).exists()).toBe(true)
         for (const [name, file] of Object.entries(values)) expect(name in await import(Path.join(src, file))).toBe(true)

@@ -1,3 +1,6 @@
+import { again } from "./again"
+import { run } from "./run"
+
 export type { RetryAgain } from "../internals/retry"
 
 export interface RetryOptions {
@@ -13,4 +16,9 @@ export interface RetryOptions {
     signal?: AbortSignal
     /** Waits between two attempts, in place of a timer. */
     sleep?: (delay: number, attempt: number) => Promise<void>
+}
+
+export const Retry = {
+    again,
+    run,
 }

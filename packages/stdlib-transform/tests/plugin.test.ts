@@ -47,11 +47,17 @@ describe("manifest", () => {
 
             const files = await Array.fromAsync(new Bun.Glob("*.ts").scan(Path.join(src, global)))
             expect([...names]).toEqual(files.map(file => file.slice(0, -3)).sort())
-            // Nothing that exists already.
-            for (const name of names) expect(name in (globalThis as never)[global]).toBe(false)
+            // Nothing that exists already. The tests run patched (bunfig.toml), so a name may be there as long as it is ours.
+            for (const name of names) {
+                const existing = (globalThis as never)[global][name]
+                if (existing !== undefined) expect(existing).toBe((await import(Path.join(src, global, `${name}.ts`)))[name])
+            }
         }
 
-        for (const name of Object.keys(values)) expect(name in globalThis).toBe(false)
+        for (const [name, file] of Object.entries(values)) {
+            const existing = (globalThis as never)[name]
+            if (existing !== undefined) expect(existing).toBe((await import(Path.join(src, file)))[name])
+        }
     })
 })
 

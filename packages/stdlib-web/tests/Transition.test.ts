@@ -98,26 +98,8 @@ describe("Transition", () => {
         expect([transition.$status(), transition.$mounted()]).toEqual(["closed", false])
     })
 
-    it("should wait for closingDelay before closing", async () => {
-        const transition = Transition({ ...options, closingDelay: 20, open: true })
-        transition.close()
-        expect([transition.$open(), transition.$status()]).toEqual([false, "opened"])
-        await Bun.sleep(30)
-        expect(transition.$status()).toBe("closing")
-        await Bun.sleep(30)
-        expect(transition.$status()).toBe("closed")
-    })
-
-    it("should stay opened when opened again during closingDelay", async () => {
-        const transition = Transition({ ...options, closingDelay: 20, open: true })
-        transition.close()
-        transition.open()
-        await Bun.sleep(60)
-        expect(transition.$status()).toBe("opened")
-    })
-
     it("should become opened when closed and opened again while opening", async () => {
-        const transition = Transition({ ...options, closingDelay: 20 })
+        const transition = Transition(options)
         transition.open()
         frame()
         frame()

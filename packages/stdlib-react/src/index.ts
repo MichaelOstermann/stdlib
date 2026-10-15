@@ -1,2 +1,2 @@
 export * from "./useSignal"
-export * from "./useTransition"
+export * from "./useTransitionStatus"

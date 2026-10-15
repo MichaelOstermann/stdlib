@@ -3,14 +3,14 @@ import { describe, expect, expectTypeOf, it } from "bun:test"
 import { createElement } from "react"
 import { renderToString } from "react-dom/server"
 import { useSignal } from "../src/useSignal"
-import { useTransition } from "../src/useTransition"
+import { useTransitionStatus } from "../src/useTransitionStatus"
 
 function Status(options: { animateMount?: boolean, open: boolean }): string {
-    const transition = useTransition({ ...options, closeDuration: 200, openDuration: 250 })
+    const transition = useTransitionStatus({ ...options, closeDuration: 200, openDuration: 250 })
     return [useSignal(transition.$status), useSignal(transition.$mounted)].join(" ")
 }
 
-describe("useTransition", () => {
+describe("useTransitionStatus", () => {
     it("should start as closed, and open once mounted", () => {
         expect(renderToString(createElement(Status, { open: false }))).toBe("closed false")
         expect(renderToString(createElement(Status, { open: true }))).toBe("closed false")
@@ -22,6 +22,6 @@ describe("useTransition", () => {
     })
 
     it("should return a transition", () => {
-        expectTypeOf(useTransition).returns.toEqualTypeOf<Transition>()
+        expectTypeOf(useTransitionStatus).returns.toEqualTypeOf<Transition>()
     })
 })

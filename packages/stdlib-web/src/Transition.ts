@@ -7,8 +7,6 @@ export type TransitionStatus = "closed" | "closing" | "opened" | "opening"
 export interface TransitionOptions {
     /** Milliseconds between `closing` and `closed`. */
     closeDuration: number
-    /** Milliseconds between `close()` and `closing`. Defaults to 0. */
-    closingDelay?: number
     /** Starts as `opened` instead of `closed`. */
     open?: boolean
     /** Milliseconds between `opening` and `opened`. */
@@ -34,7 +32,7 @@ export interface Transition extends Disposer {
  * It only holds the status. Turning the status into classes, attributes or styles is up to the caller.
  *
  * - `open()` sets `$mounted` right away and `opening` two frames later, so the element is painted in its closed state first and the browser has a style to animate from
- * - `close()` sets `closing` right away, or after `closingDelay`
+ * - `close()` sets `closing` right away
  * - `close()` during `opening` switches to `closing`, and `open()` during `closing` switches back to `opening`
  * - a disposed transition keeps its last status and ignores `open()` and `close()`
  *
@@ -77,15 +75,12 @@ export function Transition(options: TransitionOptions): Transition {
 
         if (!open) {
             // Still `closed`: `open()` was cancelled before its two frames passed.
-            if (status === "closed") return
-            if (options.closingDelay) cancel = delay(options.closingDelay, () => enter("closing"))
-            else enter("closing")
+            if (status !== "closed") enter("closing")
         }
         else if (status === "closed") {
             cancel = afterPaint(() => enter("opening"))
         }
-        // `opening` is entered again when `close()` was cancelled during `closingDelay`, which restarts `openDuration`.
-        else if (status !== "opened") {
+        else {
             enter("opening")
         }
     }

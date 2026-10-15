@@ -1,3 +1,5 @@
+import { Disposer } from "@monstermann/stdlib"
+
 /**
  * Calls `onMove` when `element` moves or resizes, without polling.
  *
@@ -6,7 +8,7 @@
  *
  * Reference: https://github.com/floating-ui/floating-ui/blob/master/packages/dom/src/autoUpdate.ts
  */
-export function observeMove(element: Element, onMove: (rect: DOMRectReadOnly) => void): () => void {
+export function observeMove(element: Element, onMove: (rect: DOMRectReadOnly) => void): Disposer {
     let io: IntersectionObserver | undefined
     let timeout: ReturnType<typeof setTimeout> | undefined
 
@@ -56,10 +58,10 @@ export function observeMove(element: Element, onMove: (rect: DOMRectReadOnly) =>
     ro.observe(element)
     refresh(true)
 
-    return () => {
+    return Disposer(() => {
         stop()
         ro.disconnect()
-    }
+    })
 }
 
 function isSameRect(a: DOMRectReadOnly, b: DOMRectReadOnly): boolean {

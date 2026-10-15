@@ -1,5 +1,6 @@
 import type { ReadonlySignal } from "@monstermann/stdlib"
 import type { Rect } from "../Rect"
+import { Disposer } from "@monstermann/stdlib"
 import { observeResize } from "../internals/observeResize"
 import { nothing, sensor } from "../internals/sensor"
 
@@ -63,6 +64,6 @@ function observeViewport(window: Window): ReadonlySignal<Rect> {
         const controller = new AbortController()
         set(measure())
         window.addEventListener("resize", () => set(measure()), { passive: true, signal: controller.signal })
-        return () => controller.abort()
+        return Disposer(() => controller.abort())
     })
 }

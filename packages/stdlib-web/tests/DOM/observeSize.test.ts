@@ -23,6 +23,28 @@ describe("DOM.observeSize", () => {
         expect(dom.resizing.size).toBe(0)
     })
 
+    it("should share one ResizeObserver, and drop it once it observes nothing", () => {
+        const globals = globalThis as unknown as { ResizeObserver: new (callback: ResizeObserverCallback) => ResizeObserver }
+        const Fake = globals.ResizeObserver
+        let created = 0
+        globals.ResizeObserver = class extends Fake {
+            constructor(callback: ResizeObserverCallback) {
+                super(callback)
+                created++
+            }
+        }
+        const a = fakeElement({ height: 10, left: 0, top: 0, width: 20 })
+        const b = fakeElement({ height: 10, left: 0, top: 0, width: 20 })
+        const first = Effect(() => void observeSize(a.element)())
+        const second = Effect(() => void observeSize(b.element)())
+        first.dispose()
+        Effect(() => void observeSize(a.element)()).dispose()
+        expect(created).toBe(1)
+        second.dispose()
+        Effect(() => void observeSize(a.element)()).dispose()
+        expect(created).toBe(2)
+    })
+
     it("should observe the element while an effect depends on it", () => {
         const a = fakeElement({ height: 10, left: 5, top: 5, width: 20 })
         const widths: number[] = []

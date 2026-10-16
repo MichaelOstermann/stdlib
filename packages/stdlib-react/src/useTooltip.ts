@@ -1,15 +1,13 @@
-import type { Memo, ReadonlySignal, Signal } from "@monstermann/stdlib"
-import type { PlacementOptions, PlacementPosition } from "@monstermann/stdlib-web"
-import type { Modal } from "./Modals"
-import type { TransitionStatus } from "./useTransitionStatus"
+import type { Signal } from "@monstermann/stdlib"
+import type { PlacementOptions } from "@monstermann/stdlib-web"
+import type { AnchoredModal } from "./internals/useAnchoredModal"
 import { DOM, Placement } from "@monstermann/stdlib-web"
+import { useAnchoredModal } from "./internals/useAnchoredModal"
 import { useCreateEffect } from "./internals/useCreateEffect"
-import { useCreateMemo } from "./internals/useCreateMemo"
-import { useCreateSignal } from "./internals/useCreateSignal"
-import { Modals } from "./Modals"
-import { useTransitionStatus } from "./useTransitionStatus"
 
 export interface UseTooltipOptions extends PlacementOptions {
+    /** The trigger of a popover on the same element, `triggerRef` of `usePopover`. */
+    $trigger?: Signal<Element | null>
     /** `200` by default. */
     closeDuration?: number
     /** Milliseconds the pointer rests on the trigger before the tooltip opens, `600` by default. */
@@ -22,16 +20,12 @@ export interface UseTooltipOptions extends PlacementOptions {
     placement?: Placement
 }
 
-export interface TooltipModal extends Modal {
-    readonly $position: Memo<PlacementPosition | undefined>
-    readonly $status: ReadonlySignal<TransitionStatus>
-    readonly kind: "tooltip"
-}
+export type TooltipModal = AnchoredModal<"tooltip">
 
 /**
  * - `mounted`: from opening until closed again, whether to render `<Tooltip>`. The component calling the hook renders again when this changes.
  * - `triggerRef`: `tooltip.$trigger`, as its own binding: React Compiler skips a component that passes `tooltip.$trigger` as `ref`.
- * - `tooltip`: a new one only when the placement or the name changes.
+ * - `tooltip`: a new one only when the trigger, the placement or the name changes.
  */
 export type UseTooltip = [mounted: boolean, triggerRef: Signal<Element | null>, tooltip: TooltipModal]
 
@@ -43,7 +37,7 @@ export type UseTooltip = [mounted: boolean, triggerRef: Signal<Element | null>, 
  * - opens once the pointer rests on the trigger for `delay`, or on focus, and closes when the pointer leaves or on blur
  * - a click on the trigger closes the tooltip until the pointer leaves
  * - closes when something around the trigger scrolls, or when any other modal opens; clicks and Esc go past it
- * - the trigger is only a ref: the listeners are added to the element, there are no props to merge
+ * - the trigger is only a ref: the listeners are added to the element, there are no props to merge; an element with a popover too passes `$trigger`
  * - `mounted` is the only React state: the component calling the hook renders when the tooltip mounts and unmounts
  * - the listeners and effects are there while the component is mounted, and follow changes of the options
  *
@@ -61,39 +55,9 @@ export type UseTooltip = [mounted: boolean, triggerRef: Signal<Element | null>, 
  * ```
  */
 export function useTooltip(options: UseTooltipOptions = {}): UseTooltip {
-    const { anchorGap, boundaryGap, closeDuration = 200, delay = 600, name, openDuration = 200, placement = Placement.tooltip } = options
-    const [mounted, { $open, $status }] = useTransitionStatus({ closeDuration, openDuration })
-    const $floating = useCreateSignal<Element | null>(null)
-    const $trigger = useCreateSignal<Element | null>(null)
-
-    const $position = useCreateMemo(() => {
-        const floating = $floating()
-        const trigger = $trigger()
-        if (!floating || !trigger) return undefined
-        return placement({
-            anchor: DOM.observeRect(trigger)(),
-            boundary: DOM.observeSize(window)(),
-            floating: DOM.observeSize(floating)(),
-        }, { anchorGap, boundaryGap })
-    })
-
-    // The stack knows the tooltip by this object, React Compiler keeps it until the placement or the name changes.
-    const tooltip: TooltipModal = {
-        $floating,
-        $open,
-        $position,
-        $status,
-        $trigger,
-        kind: "tooltip",
-        name,
-    }
-
-    // On the stack while open and rendered: off it when it closes, when `<Tooltip>` unmounts, and when the component does.
-    useCreateEffect(() => {
-        if (!$open() || !$floating()) return
-        Modals.open(tooltip)
-        return () => Modals.close(tooltip)
-    })
+    const { closeDuration = 200, delay = 600, openDuration = 200, placement = Placement.tooltip, ...rest } = options
+    const [mounted, tooltip] = useAnchoredModal("tooltip", { ...rest, closeDuration, openDuration, placement })
+    const { $open, $trigger } = tooltip
 
     // Listeners on the trigger, removed when it unmounts. `mouseleave` and `blur` are only there while the pointer is on the trigger and while it has focus.
     useCreateEffect(() => {

@@ -1,6 +1,7 @@
 import type { ComponentProps, ReactNode } from "react"
 import type { TooltipModal } from "./useTooltip"
 import { createPortal } from "react-dom"
+import { floatingStyle } from "./internals/floatingStyle"
 import { useSignal } from "./useSignal"
 
 export interface TooltipProps extends Omit<ComponentProps<"div">, "ref"> {
@@ -28,6 +29,7 @@ export function Tooltip({ children, className, style, tooltip, ...rest }: Toolti
     const { $floating, $position, $status } = tooltip
     const status = useSignal($status)
     const position = useSignal($position)
+    const floating = floatingStyle(position)
 
     return createPortal(
         <div
@@ -36,15 +38,7 @@ export function Tooltip({ children, className, style, tooltip, ...rest }: Toolti
             data-status={status}
             ref={$floating}
             role="tooltip"
-            style={{
-                left: 0,
-                position: "fixed",
-                top: 0,
-                transform: position && `translate(${position.left}px, ${position.top}px)`,
-                transformOrigin: position && `${position.originX}px ${position.originY}px`,
-                visibility: position ? undefined : "hidden",
-                ...style,
-            }}
+            style={style ? { ...floating, ...style } : floating}
         >
             {children}
         </div>,

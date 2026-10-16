@@ -14,6 +14,15 @@ describe("DOM.observeSize", () => {
         expect(observeSize(a.element)).not.toBe(observeSize(b.element))
     })
 
+    it("should measure the layout size, which a scale does not change", () => {
+        // Scaled to half: getBoundingClientRect has the drawn size, offsetWidth and offsetHeight the one of the layout.
+        const element = { offsetHeight: 100, offsetWidth: 200, getBoundingClientRect: () => ({ height: 50, width: 100 }) } as unknown as Element
+        expect(observeSize(element)()).toEqual({ height: 100, left: 0, top: 0, width: 200 })
+        const sizes: unknown[] = []
+        Effect(() => void sizes.push(observeSize(element)())).dispose()
+        expect(sizes).toEqual([{ height: 100, left: 0, top: 0, width: 200 }])
+    })
+
     it("should measure on every read while nothing depends on it", () => {
         const a = fakeElement({ height: 10, left: 5, top: 5, width: 20 })
         const $size = observeSize(a.element)

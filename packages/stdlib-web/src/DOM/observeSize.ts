@@ -19,6 +19,7 @@ let observed = 0
  * ```
  *
  * Returns the size of an element as a signal: a rect at `0, 0` with the width and height of its border box.
+ * The size is the one of its layout, which transforms such as `scale` do not change, like `ResizeObserver` reports it.
  * For a window, the rect has the size of its viewport: `innerWidth` and `innerHeight`.
  * Cheaper than `DOM.observeRect`, for when the position does not matter.
  *
@@ -49,6 +50,8 @@ export function observeSize(target: Element | Window | null): ReadonlySignal<Rec
 
 function observeElement(element: Element): ReadonlySignal<Rect> {
     const measure = (): Rect => {
+        // The layout size, as the ResizeObserver reports it. `getBoundingClientRect` would include transforms. SVG elements have no `offsetWidth`.
+        if ("offsetWidth" in element) return { height: (element as HTMLElement).offsetHeight, left: 0, top: 0, width: (element as HTMLElement).offsetWidth }
         const { height, width } = element.getBoundingClientRect()
         return { height, left: 0, top: 0, width }
     }

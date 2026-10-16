@@ -1,9 +1,9 @@
-import type { Modal } from "../../src/Modals"
-import type { TransitionStatus } from "../../src/Transition"
-import { Batch, Signal } from "@monstermann/stdlib"
+import type { Modal } from "../src/Modals"
+import { Signal } from "@monstermann/stdlib"
 import { afterEach, beforeEach, describe, expect, it } from "bun:test"
-import { add } from "../../src/Modals/add"
-import { onClose, onOpen, stack } from "../../src/Modals/stack"
+import { Modals } from "../src/Modals"
+
+const { close, onClose, onOpen, open, stack } = Modals
 
 type Listener = (event: { key?: string, target?: unknown }) => void
 const listeners = new Map<string, Set<Listener>>()
@@ -23,6 +23,7 @@ beforeEach(() => {
 
 afterEach(() => {
     for (const dispose of disposers.splice(0)) dispose()
+    for (const modal of [...stack]) close(modal)
     delete globals.document
 })
 
@@ -31,15 +32,19 @@ function fakeElement(): Element {
     return el
 }
 
-function modal(kind: Modal["kind"], name?: string): Modal & { $status: Signal<TransitionStatus>, open: () => void } {
-    const $open = Signal(false)
-    const $status = Signal<TransitionStatus>("closed")
-    const close = (): void => void Batch(() => [$open(false), $status("closing")])
-    const open = (): void => void Batch(() => [$open(true), $status("opening")])
-    const floating = fakeElement()
-    const trigger = fakeElement()
-    const result = { $open, $status, close, kind, name, open, $floating: () => floating, $trigger: () => trigger }
-    disposers.push(add(result).dispose)
+function modal(kind: Modal["kind"], name?: string): Modal & { open: () => void } {
+    const result = {
+        $floating: Signal<Element | null>(fakeElement()),
+        $open: Signal(false),
+        $status: Signal("closed" as const),
+        $trigger: Signal<Element | null>(fakeElement()),
+        kind,
+        name,
+        open: () => {
+            result.$open(true)
+            open(result)
+        },
+    }
     return result
 }
 
@@ -48,17 +53,28 @@ function send(type: string, event: { key?: string, target?: unknown }): void {
 }
 
 describe("Modals", () => {
-    it("should keep the open modals in the order they opened, from open() until close()", () => {
+    it("should keep the modals in the order they opened, once each", () => {
         const a = modal("dialog")
         const b = modal("dialog")
         expect(stack).toEqual([])
         a.open()
         b.open()
+        a.open()
         expect(stack).toEqual([a, b])
-        a.$status("opened")
-        expect(stack).toEqual([a, b])
-        a.close()
+        close(a)
+        close(a)
         expect(stack).toEqual([b])
+    })
+
+    it("should only track the modal, closing it is $open(false)", () => {
+        const a = modal("dialog")
+        a.open()
+        close(a)
+        expect(a.$open()).toBe(true)
+        open(a)
+        send("keydown", { key: "Escape", target: { nodeName: "DIV" } })
+        expect(a.$open()).toBe(false)
+        expect(stack).toEqual([])
     })
 
     it("should send onOpen and onClose with the modal", () => {
@@ -67,20 +83,8 @@ describe("Modals", () => {
         disposers.push(onClose(modal => events.push(`close ${modal.name}`)))
         const a = modal("dialog", "a")
         a.open()
-        a.$status("opened")
-        a.close()
-        a.$status("closed")
+        close(a)
         expect(events).toEqual(["open a", "close a"])
-    })
-
-    it("should send onClose when an open modal is removed", () => {
-        const events: string[] = []
-        disposers.push(onClose(modal => events.push(`close ${modal.name}`)))
-        const remove = add({ $open: Signal(true), kind: "dialog", name: "a", $floating: () => null, close: () => {} })
-        expect(stack).toHaveLength(1)
-        remove.dispose()
-        expect(stack).toHaveLength(0)
-        expect(events).toEqual(["close a"])
     })
 
     it("should close the other popovers when a popover opens", () => {
@@ -90,7 +94,7 @@ describe("Modals", () => {
         a.open()
         b.open()
         c.open()
-        expect(a.$status()).toBe("closing")
+        expect(a.$open()).toBe(false)
         expect(stack).toEqual([b, c])
     })
 
@@ -100,9 +104,9 @@ describe("Modals", () => {
         const c = modal("dialog")
         a.open()
         b.open()
-        expect(a.$status()).toBe("closing")
+        expect(a.$open()).toBe(false)
         c.open()
-        expect(b.$status()).toBe("closing")
+        expect(b.$open()).toBe(false)
         expect(stack).toEqual([c])
     })
 
@@ -114,18 +118,19 @@ describe("Modals", () => {
         b.open()
         tooltip.open()
         send("mousedown", { target: {} })
-        expect(b.$status()).toBe("closing")
-        expect(tooltip.$status()).toBe("opening")
+        expect(b.$open()).toBe(false)
+        expect(tooltip.$open()).toBe(true)
+        expect(stack).toEqual([a, tooltip])
         send("mousedown", { target: {} })
-        expect(a.$status()).toBe("closing")
+        expect(a.$open()).toBe(false)
     })
 
     it("should leave clicks on the modal and on its trigger alone", () => {
         const a = modal("popover")
         a.open()
         send("mousedown", { target: { parent: a.$floating() } })
-        send("mousedown", { target: a.$trigger!() })
-        expect(a.$status()).toBe("opening")
+        send("mousedown", { target: a.$trigger() })
+        expect(a.$open()).toBe(true)
     })
 
     it("should close the top modal on a click in a modal below it", () => {
@@ -134,8 +139,8 @@ describe("Modals", () => {
         a.open()
         b.open()
         send("mousedown", { target: { parent: a.$floating() } })
-        expect(b.$status()).toBe("closing")
-        expect(a.$status()).toBe("opening")
+        expect(b.$open()).toBe(false)
+        expect(a.$open()).toBe(true)
     })
 
     it("should close the last opened modal on Esc, unless a text field has focus", () => {
@@ -144,9 +149,10 @@ describe("Modals", () => {
         send("keydown", { key: "Escape", target: { nodeName: "INPUT" } })
         send("keydown", { key: "Escape", target: { isContentEditable: true, nodeName: "DIV" } })
         send("keydown", { key: "Enter", target: { nodeName: "DIV" } })
-        expect(a.$status()).toBe("opening")
+        expect(a.$open()).toBe(true)
         send("keydown", { key: "Escape", target: { nodeName: "DIV" } })
-        expect(a.$status()).toBe("closing")
+        expect(a.$open()).toBe(false)
+        expect(stack).toEqual([])
     })
 
     it("should only listen to the document while a modal is open", () => {
@@ -155,7 +161,7 @@ describe("Modals", () => {
         a.open()
         expect(listeners.get("mousedown")?.size).toBe(1)
         expect(listeners.get("keydown")?.size).toBe(1)
-        a.close()
+        close(a)
         expect(listeners.get("mousedown")?.size).toBe(0)
         expect(listeners.get("keydown")?.size).toBe(0)
     })

@@ -1,2 +1,2 @@
 [test]
-preload = ["@monstermann/stdlib/patch"]
+preload = ["@monstermann/stdlib/patch", "./packages/stdlib-react/tests/preload.ts"]

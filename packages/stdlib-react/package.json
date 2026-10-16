@@ -36,14 +36,17 @@
     "peerDependencies": {
         "@monstermann/stdlib": "workspace:^",
         "@monstermann/stdlib-web": "workspace:^",
-        "react": "^19"
+        "react": "^19",
+        "react-dom": "^19"
     },
     "devDependencies": {
+        "@happy-dom/global-registrator": "^21.0.3",
         "@monstermann/stdlib": "workspace:*",
         "@monstermann/stdlib-transform": "workspace:*",
         "@monstermann/stdlib-web": "workspace:*",
         "@types/react": "^19",
         "@types/react-dom": "^19",
+        "oxc-transform-react": "^0.153.0",
         "react-dom": "^19"
     }
 }

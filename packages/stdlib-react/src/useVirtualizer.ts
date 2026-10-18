@@ -1,5 +1,6 @@
 import { DOM } from "@monstermann/stdlib-web"
 import { useLayoutEffect, useRef, useState } from "react"
+import { setScrollTop } from "./internals/setScrollTop"
 import { useLatest } from "./internals/useLatest"
 
 export interface VirtualItem {
@@ -161,9 +162,4 @@ function firstIndex(count: number, test: (index: number) => boolean): number {
         else low = middle + 1
     }
     return low
-}
-
-// Its own function: React Compiler skips a hook that writes to an element it was passed.
-function setScrollTop(element: HTMLElement, top: number): void {
-    element.scrollTop = top
 }

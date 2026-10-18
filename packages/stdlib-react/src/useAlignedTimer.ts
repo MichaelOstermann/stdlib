@@ -1,5 +1,6 @@
 import { Timer } from "@monstermann/stdlib"
-import { useEffect, useLayoutEffect, useReducer, useRef } from "react"
+import { useEffect, useReducer } from "react"
+import { useLatest } from "./internals/useLatest"
 
 /**
  * `useAlignedTimer(every, select?)`
@@ -32,16 +33,12 @@ export function useAlignedTimer<T>(every: number, select?: (now: number) => T): 
     const now = Date.now()
     const value = select ? select(now) : now
     // What is on screen: a render that React throws away does not get here.
-    const committed = useRef({ select, value })
-
-    useLayoutEffect(() => {
-        committed.current = { select, value }
-    })
+    const committed = useLatest({ select, value })
 
     useEffect(() => Timer.aligned(every, (now) => {
         const { select, value } = committed.current
         if (!select || !Object.is(select(now), value)) render()
-    }), [every])
+    }), [every, committed])
 
     return value
 }

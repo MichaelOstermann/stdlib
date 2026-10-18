@@ -1,6 +1,7 @@
 import type { Signal } from "@monstermann/stdlib"
 import type { PlacementOptions } from "@monstermann/stdlib-web"
 import type { AnchoredModal } from "./internals/useAnchoredModal"
+import { Timer } from "@monstermann/stdlib"
 import { DOM, Placement } from "@monstermann/stdlib-web"
 import { useAnchoredModal } from "./internals/useAnchoredModal"
 import { useCreateEffect } from "./internals/useCreateEffect"
@@ -65,18 +66,18 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltip {
         if (!trigger) return
         const controller = new AbortController()
         const { signal } = controller
-        let timer: ReturnType<typeof setTimeout> | undefined
+        let cancel: (() => void) | undefined
         let clicked = false
         let hovered = false
 
         // Every move starts the delay again, the tooltip opens once the pointer rests.
         const open = (): void => {
             if (clicked) return
-            clearTimeout(timer)
-            timer = setTimeout(() => $open(true), delay)
+            cancel?.()
+            cancel = Timer.timeout(delay, () => $open(true))
         }
         const close = (): void => {
-            clearTimeout(timer)
+            cancel?.()
             $open(false)
         }
 
@@ -102,7 +103,7 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltip {
         }, { signal })
 
         return () => {
-            clearTimeout(timer)
+            cancel?.()
             controller.abort()
         }
     })

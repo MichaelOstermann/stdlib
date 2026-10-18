@@ -1,6 +1,5 @@
 import type { ReadonlySignal, Signal } from "@monstermann/stdlib"
 import { peek, Timer } from "@monstermann/stdlib"
-import { useState } from "react"
 import { useCreateEffect } from "./internals/useCreateEffect"
 import { useCreateMemo } from "./internals/useCreateMemo"
 import { useCreateSignal } from "./internals/useCreateSignal"
@@ -57,7 +56,7 @@ export function useTransitionStatus({ closeDuration, openDuration }: UseTransiti
     const $open = useCreateSignal(false)
     const $status = useCreateSignal<TransitionStatus>("closed")
     const $mounted = useCreateMemo(() => $open() || $status() !== "closed")
-    const [transition] = useState<Transition>(() => ({ $open, $status }))
+    const transition: Transition = { $open, $status }
 
     useCreateEffect(() => {
         const open = $open()

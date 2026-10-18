@@ -2,6 +2,7 @@ import type { Memo, ReadonlySignal } from "@monstermann/stdlib"
 import { batch, Timer } from "@monstermann/stdlib"
 import { DOM } from "@monstermann/stdlib-web"
 import { useEffect } from "react"
+import { setScrollTop } from "./internals/setScrollTop"
 import { useCreateMemo } from "./internals/useCreateMemo"
 import { useCreateSignal } from "./internals/useCreateSignal"
 
@@ -123,9 +124,4 @@ export function useScrollbar(scrollElement: HTMLElement | null, contentElement: 
             if (scrollElement) setScrollTop(scrollElement, progress * (scrollElement.scrollHeight - scrollElement.clientHeight))
         },
     }
-}
-
-// Its own function: React Compiler skips a hook that writes to an element it was passed.
-function setScrollTop(element: HTMLElement, top: number): void {
-    element.scrollTop = top
 }

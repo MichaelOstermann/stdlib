@@ -28,13 +28,12 @@ export function useSignal<T>(value: ReadonlySignal<T> | Memo<T> | (() => T)): T 
 
     const subscribe = (onChange: () => void) => {
         let isFirst = true
-        const effect = Effect(() => {
+        return Effect(() => {
             read()
             // What React does once it is told is not something the effect depends on.
             if (!isFirst) peek(onChange)
             isFirst = false
         })
-        return () => effect.dispose()
     }
 
     // Rendering inside of an effect is not something that effect depends on either.

@@ -1,3 +1,4 @@
+import type { EffectContext } from "../../src/Effect"
 import { batch } from "../../src/batch"
 import { Effect } from "../../src/Effect"
 import { Memo } from "../../src/Memo"
@@ -12,16 +13,14 @@ export const memo = Memo
 export const indexed = Memo.indexed
 export const deferEffect = Effect.defer
 
-const running: Effect[] = []
+const running: EffectContext[] = []
 
-/** Returns what disposes the effect, which is what an effect used to be. */
 export function effect(computation: () => unknown): () => void {
-    const effect = Effect((effect) => {
-        running.push(effect)
+    return Effect(function () {
+        running.push(this)
         try { return (computation as () => void)() }
         finally { running.pop() }
     })
-    return () => effect.dispose()
 }
 
 /** Disposes the effect that is running, which the tests of the system do without having it at hand. */

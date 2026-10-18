@@ -188,8 +188,6 @@ declare global {
 
     /** A single event that waits for its listeners: call it with a function to listen, and with anything else to tell the listeners about it. */
     type AsyncEmitter<T = void> = import("./Emitter").AsyncEmitter<T>
-    /** Something that runs again when what it read changes, until it is disposed. */
-    type Effect = import("./Effect").Effect
     /** A single event: call it with a function to listen, and with anything else to tell the listeners about it. */
     type Emitter<T = void> = import("./Emitter").Emitter<T>
     /** A result that failed, `value` is the error. */

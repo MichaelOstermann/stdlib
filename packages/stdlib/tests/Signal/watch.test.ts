@@ -1,3 +1,4 @@
+import type { EffectContext } from "../../src/Effect"
 import { describe, expect, it, vi } from "bun:test"
 import { Effect } from "../../src/Effect"
 import { memo, signal } from "./helpers"
@@ -12,10 +13,10 @@ describe("watch", () => {
         expect(spy).toHaveBeenCalledTimes(0)
 
         a(2)
-        expect(spy).toHaveBeenCalledWith(2, 1, expect.anything())
+        expect(spy).toHaveBeenCalledWith(2, 1)
 
         a(3)
-        expect(spy).toHaveBeenCalledWith(3, 2, expect.anything())
+        expect(spy).toHaveBeenCalledWith(3, 2)
     })
 
     it("should accept memos and functions", () => {
@@ -26,8 +27,8 @@ describe("watch", () => {
         watch(() => a() * 3, fromFunction)
 
         a(2)
-        expect(fromMemo).toHaveBeenCalledWith(4, 2, expect.anything())
-        expect(fromFunction).toHaveBeenCalledWith(6, 3, expect.anything())
+        expect(fromMemo).toHaveBeenCalledWith(4, 2)
+        expect(fromFunction).toHaveBeenCalledWith(6, 3)
     })
 
     it("should only run when the dependencies changed their value", () => {
@@ -71,7 +72,7 @@ describe("watch", () => {
         a(3)
         expect(returned).toHaveBeenCalledTimes(1)
 
-        watcher.dispose()
+        watcher()
         expect(returned).toHaveBeenCalledTimes(2)
 
         a(4)
@@ -81,17 +82,16 @@ describe("watch", () => {
     it("should be able to dispose itself", () => {
         const a = signal(1)
         const current: unknown[] = []
-        const spy = vi.fn((_next: number, _prev: number, self: Effect) => {
-            current.push(self)
-            self.dispose()
+        const spy = vi.fn(function (this: EffectContext) {
+            current.push(this)
+            this.dispose()
         })
-        const watcher = watch(a, spy)
+        watch(a, spy)
 
         a(2)
         a(3)
         expect(current.length).toBe(1)
         expect(spy).toHaveBeenCalledTimes(1)
-        expect(current[0]).toBe(watcher)
     })
 
     it("should not call the computation for the value it has when it is created", () => {

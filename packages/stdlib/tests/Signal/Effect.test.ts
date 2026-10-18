@@ -1,3 +1,4 @@
+import type { EffectContext } from "../../src/Effect"
 import { describe, expect, it, vi } from "bun:test"
 import { Effect } from "../../src/Effect"
 import { deferEffect, signal } from "./helpers"
@@ -8,8 +9,8 @@ describe("effect", () => {
     it("should unsubscribe from everything when disposed while running", () => {
         const a = signal(0)
         const b = signal(0)
-        const spy = vi.fn((fx: Effect) => {
-            if (a() + b() > 0) fx.dispose()
+        const spy = vi.fn(function (this: EffectContext) {
+            if (a() + b() > 0) this.dispose()
         })
         effect(spy)
 
@@ -21,9 +22,9 @@ describe("effect", () => {
     it("should unsubscribe from everything when disposed during the first run", () => {
         const a = signal(0)
         const b = signal(0)
-        const spy = vi.fn((fx: Effect) => {
+        const spy = vi.fn(function (this: EffectContext) {
             a()
-            fx.dispose()
+            this.dispose()
             b()
         })
         effect(spy)
@@ -44,21 +45,21 @@ describe("effect", () => {
         a(1)
         expect(returned).toHaveBeenCalledTimes(1)
 
-        fx.dispose()
-        fx.dispose()
+        fx()
+        fx()
         expect(returned).toHaveBeenCalledTimes(2)
     })
 
-    it("should be called with itself", () => {
+    it("should be called with itself as this", () => {
         const a = signal(0)
         const seen: unknown[] = []
-        const fx = effect((self) => {
+        effect(function () {
             a()
-            seen.push(self)
+            seen.push(this)
         })
         a(1)
-        expect(seen).toEqual([fx, fx])
-        expect(seen[0]).toBe(fx)
+        expect(seen).toHaveLength(2)
+        expect(seen[0]).toBe(seen[1])
     })
 
     it("should rethrow what the computation throws", () => {
@@ -118,14 +119,14 @@ describe("cleanups", () => {
         })
 
         expect(() => a(1)).toThrow("fail")
-        fx.dispose()
+        fx()
         expect(cleanup).toHaveBeenCalledTimes(1)
     })
 
     it("should clean up when it is disposed while it runs", () => {
         const cleanup = vi.fn()
-        effect((fx) => {
-            fx.dispose()
+        effect(function () {
+            this.dispose()
             return cleanup
         })
         expect(cleanup).toHaveBeenCalledTimes(1)
@@ -150,15 +151,17 @@ describe("Effect, disposed", () => {
         const a = signal(0)
         const spy = vi.fn(() => void a())
         const fx = effect(spy)
-        fx.dispose()
-        fx.dispose()
+        fx()
+        fx()
 
         a(1)
         expect(spy).toHaveBeenCalledTimes(1)
     })
 
     it("should reject what is deferred when it is disposed from the inside", async () => {
-        const result = deferEffect((_resolve, _reject, fx) => fx.dispose())
+        const result = deferEffect(function () {
+            this.dispose()
+        })
         expect(await result.then(() => "resolved", () => "rejected")).toBe("rejected")
     })
 })

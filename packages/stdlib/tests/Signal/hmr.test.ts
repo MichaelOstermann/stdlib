@@ -29,7 +29,7 @@ describe("hmr", () => {
         expect(watched).toHaveBeenCalledTimes(0)
     })
 
-    it("should dispose emitters when their module is replaced", () => {
+    it("should clear the listeners of emitters when their module is replaced", () => {
         const hmr = new Set<() => void>()
         const onTick = Emitter(undefined, { hmr })
         const onTock = AsyncEmitter(undefined, { hmr })
@@ -42,13 +42,11 @@ describe("hmr", () => {
         expect(onTock.listeners.size).toBe(0)
     })
 
-    it("should not keep what has been disposed", () => {
+    it("should not keep effects that have been stopped", () => {
         const hmr = new Set<() => void>()
-        const effect = Effect(() => {}, { hmr })
-        const onTick = Emitter(undefined, { hmr })
-        expect(hmr.size).toBe(2)
-        effect.dispose()
-        onTick.dispose()
+        const stop = Effect(() => {}, { hmr })
+        expect(hmr.size).toBe(1)
+        stop()
         expect(hmr.size).toBe(0)
     })
 

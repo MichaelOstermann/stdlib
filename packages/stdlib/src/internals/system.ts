@@ -438,8 +438,8 @@ RawMemo.prototype.get = function<T>(this: RawMemo<T>): T {
     return this.value
 }
 
-/** Runs with the effect, and returns what cleans up after it: called before the next run, and when the effect is disposed. */
-type EffectFn = (effect: RawEffect) => (() => void) | void
+/** Runs with the effect as `this`, and returns what cleans up after it: called before the next run, and when the effect is disposed. */
+type EffectFn = (this: RawEffect) => (() => void) | void
 
 // @ts-expect-error ignore
 export declare class RawEffect {
@@ -506,7 +506,7 @@ RawEffect.prototype.run = function (this: RawEffect): void {
         // The cleanup of the previous run can dispose the effect.
         if (this.cleanup) cleanUp(this)
         if (this.flags & DISPOSED || this.fn === undefined) return
-        this.cleanup = this.fn(this)
+        this.cleanup = this.fn()
         // Disposed by the run itself, after `dispose` looked for a cleanup.
         if (this.flags & DISPOSED && this.cleanup) cleanUp(this)
     }

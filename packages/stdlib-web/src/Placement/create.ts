@@ -2,6 +2,9 @@ import type { PlacementMeasurements, PlacementName, PlacementOptions, PlacementP
 import type { Rect } from "../Rect"
 import { roundByDPR } from "../DOM/roundByDPR"
 
+type Side = "down" | "left" | "right" | "up"
+type Shift = "center" | "down" | "left" | "right" | "up"
+
 /**
  * # create
  *
@@ -40,8 +43,10 @@ import { roundByDPR } from "../DOM/roundByDPR"
 export function create(name: PlacementName, measurements: PlacementMeasurements, options: PlacementOptions = {}): PlacementPosition {
     const { anchor, boundary, floating } = measurements
     const { anchorGap = 4, boundaryGap = 10 } = options
-    const [side, shift] = name.split("-") as [string, string]
+    const [side, shift] = name.split("-") as [Side, Shift]
     const vertical = side === "down" || side === "up"
+    // Below or right of the anchor, towards larger coordinates.
+    const afterAnchor = side === "down" || side === "right"
 
     // The main axis leads away from the anchor, the cross axis runs along it.
     const [anchorStart, anchorEnd] = span(anchor, vertical)
@@ -51,35 +56,46 @@ export function create(name: PlacementName, measurements: PlacementMeasurements,
     const size = vertical ? floating.height : floating.width
     const crossSize = vertical ? floating.width : floating.height
 
-    // The room between anchor and boundary edge on the chosen side.
-    const after = side === "down" || side === "right"
-    const roomStart = after ? Math.clamp(anchorEnd + anchorGap, boundaryStart, boundaryEnd) : boundaryStart
-    const roomEnd = after ? boundaryEnd : Math.clamp(anchorStart - anchorGap, boundaryStart, boundaryEnd)
+    // The room between the anchor and the boundary on the chosen side.
+    const roomStart = afterAnchor ? Math.clamp(anchorEnd + anchorGap, boundaryStart, boundaryEnd) : boundaryStart
+    const roomEnd = afterAnchor ? boundaryEnd : Math.clamp(anchorStart - anchorGap, boundaryStart, boundaryEnd)
     const room = Math.max(0, roomEnd - roomStart)
     const crossRoom = Math.max(0, crossBoundaryEnd - crossBoundaryStart)
 
-    // The point of the anchor the floating rect lines up with, which is also where it grows from.
-    const towardsStart = shift === "left" || shift === "up"
-    const point = shift === "center"
-        ? (crossAnchorStart + crossAnchorEnd) / 2
-        : towardsStart ? crossAnchorEnd : crossAnchorStart
-    const wanted = shift === "center"
-        ? point - crossSize / 2
-        : towardsStart ? point - crossSize : point
+    // `anchorPoint`: the point on the anchor the floating rect lines up with, and grows from.
+    // `idealCrossStart`: the start of the floating rect on the cross axis, before the boundary pushes it back.
+    let anchorPoint: number
+    let idealCrossStart: number
+    if (shift === "center") {
+        anchorPoint = (crossAnchorStart + crossAnchorEnd) / 2
+        idealCrossStart = anchorPoint - crossSize / 2
+    }
+    else if (shift === "left" || shift === "up") {
+        // Moved towards the start: the end edges line up.
+        anchorPoint = crossAnchorEnd
+        idealCrossStart = anchorPoint - crossSize
+    }
+    else {
+        // Moved towards the end: the start edges line up.
+        anchorPoint = crossAnchorStart
+        idealCrossStart = anchorPoint
+    }
 
-    const position = roundByDPR(after ? roomStart : Math.max(roomStart, roomEnd - size))
+    // Against the anchor: at the start of the room after it, at the end of the room before it.
+    const mainStart = roundByDPR(afterAnchor ? roomStart : Math.max(roomStart, roomEnd - size))
     // Pushed back inside the boundary, to its start when the floating rect is wider.
-    const crossPosition = roundByDPR(Math.max(crossBoundaryStart, Math.min(wanted, crossBoundaryEnd - crossSize)))
-    const origin = after ? 0 : roomEnd - position
-    const crossOrigin = Math.clamp(point - crossPosition, 0, Math.min(crossSize, crossRoom))
+    const crossStart = roundByDPR(Math.max(crossBoundaryStart, Math.min(idealCrossStart, crossBoundaryEnd - crossSize)))
+    // The transform origin, relative to the floating rect.
+    const mainOrigin = afterAnchor ? 0 : roomEnd - mainStart
+    const crossOrigin = Math.clamp(anchorPoint - crossStart, 0, Math.min(crossSize, crossRoom))
 
     return {
         fits: size <= room && crossSize <= crossRoom,
-        left: vertical ? crossPosition : position,
+        left: vertical ? crossStart : mainStart,
         maxHeight: vertical ? room : crossRoom,
-        originX: vertical ? crossOrigin : origin,
-        originY: vertical ? origin : crossOrigin,
-        top: vertical ? position : crossPosition,
+        originX: vertical ? crossOrigin : mainOrigin,
+        originY: vertical ? mainOrigin : crossOrigin,
+        top: vertical ? mainStart : crossStart,
     }
 }
 

@@ -1,5 +1,5 @@
 import type { Rect } from "../Rect"
-import { onRoundedChange } from "../internals/onRoundedChange"
+import { roundedAndDeduped } from "../internals/roundedAndDeduped"
 import { fromDOMRect } from "../Rect/fromDOMRect"
 import { isEqual } from "../Rect/isEqual"
 
@@ -33,7 +33,7 @@ import { isEqual } from "../Rect/isEqual"
  * ```
  */
 export function observePosition(element: Element, onChange: (rect: Rect) => void): () => void {
-    const report = onRoundedChange(onChange)
+    const report = roundedAndDeduped(onChange)
     return observe(element, rect => report(fromDOMRect(rect)))
 }
 
@@ -79,7 +79,7 @@ function observe(element: Element, onMove: (rect: DOMRectReadOnly) => void): () 
                 else refresh(ratio)
             }
 
-            // Fully inside of the area, and still somewhere else than when the observer was set up.
+            // Fully visible, yet the element moved since the observer was set up: set it up again.
             if (ratio === 1 && !isEqual(rect, element.getBoundingClientRect())) refresh()
 
             isFirstEntry = false

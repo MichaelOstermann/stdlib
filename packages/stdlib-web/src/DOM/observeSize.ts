@@ -1,5 +1,5 @@
 import type { Rect } from "../Rect"
-import { onRoundedChange } from "../internals/onRoundedChange"
+import { roundedAndDeduped } from "../internals/roundedAndDeduped"
 
 const callbacks = new WeakMap<Element, Set<(entry: ResizeObserverEntry) => void>>()
 
@@ -39,7 +39,7 @@ let observed = 0
  * ```
  */
 export function observeSize(target: Element | Window, onChange: (size: Rect) => void): () => void {
-    const report = onRoundedChange(onChange)
+    const report = roundedAndDeduped(onChange)
     return "getBoundingClientRect" in target ? observeElement(target, report) : observeViewport(target, report)
 }
 
@@ -83,7 +83,7 @@ function observe(element: Element, onResize: (entry: ResizeObserverEntry) => voi
     if (!set) {
         callbacks.set(element, set = new Set())
         observed++
-        // The border box: the default, the content box, does not change with borders or padding.
+        // The border box, because the default content box ignores changes to borders and padding.
         observer.observe(element, { box: "border-box" })
     }
     set.add(onResize)

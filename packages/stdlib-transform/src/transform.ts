@@ -1,10 +1,9 @@
 import type { MetaParam } from "@monstermann/meta"
-import type { SourceMap } from "magic-string"
 import type { Helpers } from "./match"
 import remapping from "@jridgewell/remapping"
 import { transform as treeshake } from "@monstermann/barrels-treeshake"
 import { transform as transformMeta } from "@monstermann/meta"
-import { SourceMap as MagicSourceMap } from "magic-string"
+import { SourceMap } from "magic-string"
 import { transformGlobals } from "./globals"
 import { globals, values } from "./globals.manifest"
 import { transformImports } from "./imports"
@@ -153,7 +152,7 @@ export function transform(code: string, filePath: string, options: StdlibOptions
         get map() {
             if (maps.length === 1) return maps[0]!
             // Sourcemaps are combined in reverse order.
-            return new MagicSourceMap(remapping(maps.toReversed() as never, () => null, { decodedMappings: true }) as never)
+            return new SourceMap(remapping(maps.toReversed() as never, () => null, { decodedMappings: true }) as never)
         },
     }
 }

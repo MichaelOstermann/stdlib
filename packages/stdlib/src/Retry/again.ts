@@ -1,6 +1,5 @@
-import type { Err } from "../Result"
 import { RetryAgain } from "../internals/retry"
-import { Err as fail } from "../Result"
+import { Err } from "../Result"
 
 /**
  * # again
@@ -27,5 +26,5 @@ export function again(): Err<RetryAgain<void>>
 export function again<E extends string>(error: E, delay?: number): Err<RetryAgain<E>>
 export function again<E>(error: E, delay?: number): Err<RetryAgain<E>>
 export function again<E>(error?: E, delay?: number): Err<RetryAgain<E | void>> {
-    return fail(new RetryAgain(error, delay))
+    return Err(new RetryAgain(error, delay))
 }

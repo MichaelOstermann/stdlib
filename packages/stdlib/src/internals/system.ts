@@ -1,4 +1,4 @@
-import { batchDepth, connect, endBatch, evalContext, exitBatch, popContext, pushContext, startBatch, untrack } from "./reactivity"
+import { batchDepth, connect, endBatch, evalContext, exitBatch, popContext, pushContext, startBatch, swapContext, untrack } from "./reactivity"
 
 type Dispose = () => void
 
@@ -308,19 +308,16 @@ RawSignal.prototype.set = function<T>(this: RawSignal<T>, value: T): void {
     if (this.notified === notifyEpoch) return
     this.notified = notifyEpoch
 
+    // Notifying only sets flags and queues effects, it can not throw.
     startBatch()
-    try {
-        for (
-            let node = this.targets;
-            node !== undefined;
-            node = node.nextTarget
-        ) {
-            node.target.notify()
-        }
+    for (
+        let node = this.targets;
+        node !== undefined;
+        node = node.nextTarget
+    ) {
+        node.target.notify()
     }
-    finally {
-        endBatch()
-    }
+    endBatch()
 }
 
 export declare class RawMemo<T = any> extends RawSignal<T> {
@@ -377,7 +374,7 @@ RawMemo.prototype.refresh = function () {
     }
 
     prepareSources(this)
-    pushContext(this)
+    const prevContext = swapContext(this)
     try {
         const value = this.fn()
         if (
@@ -396,7 +393,7 @@ RawMemo.prototype.refresh = function () {
         this.version++
     }
     finally {
-        popContext()
+        swapContext(prevContext)
     }
     cleanupSources(this)
     this.flags &= ~RUNNING

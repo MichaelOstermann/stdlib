@@ -52,6 +52,13 @@ export function pushContext(context: RawEffect | RawMemo | undefined): void {
     evalContext = context
 }
 
+/** Makes `context` the one that collects dependencies and returns the previous one, for a caller to restore it from its own stack frame instead of `evalStack`. */
+export function swapContext(context: RawEffect | RawMemo | undefined): RawEffect | RawMemo | undefined {
+    const prev = evalContext
+    evalContext = context
+    return prev
+}
+
 export function popContext(): void {
     evalContext = evalStack[--evalDepth]
     evalStack[evalDepth] = undefined

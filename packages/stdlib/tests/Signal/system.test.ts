@@ -297,6 +297,24 @@ describe("effect()", () => {
         expect(spy).toHaveBeenCalledTimes(1)
     })
 
+    it("should run what an effect notifies once that effect is done", () => {
+        const a = signal(0)
+        const log: string[] = []
+        effect(() => {
+            log.push(`read ${a()}`)
+        })
+        log.length = 0
+
+        effect(() => {
+            a(1)
+            log.push("wrote")
+            batch(() => a(2))
+            log.push("wrote in batch")
+        })
+
+        expect(log).toEqual(["wrote", "wrote in batch", "read 2"])
+    })
+
     it("should call the cleanup callback before the next run", () => {
         const a = signal(0)
         const spy = vi.fn()

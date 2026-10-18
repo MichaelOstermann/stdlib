@@ -7,7 +7,7 @@ import { endBatch, pauseTracking, resumeTracking, startBatch } from "./internals
  * Use it for a named operation that changes several signals at once and can be called from anywhere.
  *
  * - arguments and the return value are passed through unchanged
- * - only what happens until the first `await` is batched, like with `Batch`
+ * - only what happens until the first `await` is batched, like with `batch`
  *
  * ```ts
  * const moveTask = Action((id: string, sectionId: string) => {

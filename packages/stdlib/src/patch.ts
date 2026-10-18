@@ -70,7 +70,7 @@ import { uncapitalize as String_uncapitalize } from "./String/uncapitalize"
 import { words as String_words } from "./String/words"
 import { Action } from "./Action"
 import { AsyncEmitter } from "./Emitter"
-import { Batch } from "./Batch"
+import { batch } from "./batch"
 import { Bytes } from "./Bytes/index"
 import { Duration } from "./Duration/index"
 import { Effect } from "./Effect"
@@ -81,6 +81,7 @@ import { match } from "./match"
 import { Memo } from "./Memo"
 import { Ok } from "./Result"
 import { OkAsync } from "./ResultAsync"
+import { peek } from "./peek"
 import { pipe } from "./pipe"
 import { Result } from "./Result"
 import { ResultAsync } from "./ResultAsync"
@@ -88,7 +89,6 @@ import { Retry } from "./Retry/index"
 import { Semaphore } from "./Semaphore"
 import { SemaphoreFullError } from "./Semaphore"
 import { Signal } from "./Signal"
-import { Untrack } from "./Untrack"
 
 define(Array, "Array", {
     chunk: Array_chunk,
@@ -188,7 +188,7 @@ define(String, "String", {
 define(globalThis, "globalThis", {
     Action,
     AsyncEmitter,
-    Batch,
+    batch,
     Bytes,
     Duration,
     Effect,
@@ -199,6 +199,7 @@ define(globalThis, "globalThis", {
     Memo,
     Ok,
     OkAsync,
+    peek,
     pipe,
     Result,
     ResultAsync,
@@ -206,7 +207,6 @@ define(globalThis, "globalThis", {
     Semaphore,
     SemaphoreFullError,
     Signal,
-    Untrack,
 })
 
 Object.defineProperty(globalThis, Symbol.for("@monstermann/stdlib/patch"), { configurable: true, value: true })

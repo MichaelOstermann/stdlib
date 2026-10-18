@@ -1,14 +1,13 @@
-import { Batch } from "../../src/Batch"
+import { batch } from "../../src/batch"
 import { Effect } from "../../src/Effect"
 import { Memo } from "../../src/Memo"
+import { peek } from "../../src/peek"
 import { Signal } from "../../src/Signal"
-import { Untrack } from "../../src/Untrack"
 
 /** The names the tests of the system were written with, which came from `@monstermann/signals`. */
 export const signal = Signal
-export const batch = Batch
-export const untrack = Untrack
-export const peek = Untrack
+export { batch, peek }
+export const untrack = peek
 export const memo = Memo
 export const indexed = Memo.indexed
 export const deferEffect = Effect.defer

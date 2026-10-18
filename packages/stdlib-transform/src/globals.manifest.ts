@@ -21,7 +21,7 @@ export const globals: Readonly<Record<string, readonly string[]>> = {
 export const values: Readonly<Record<string, string>> = {
     Action: "Action",
     AsyncEmitter: "Emitter",
-    Batch: "Batch",
+    batch: "batch",
     Bytes: "Bytes/index",
     Duration: "Duration/index",
     Effect: "Effect",
@@ -32,6 +32,7 @@ export const values: Readonly<Record<string, string>> = {
     Memo: "Memo",
     Ok: "Result",
     OkAsync: "ResultAsync",
+    peek: "peek",
     pipe: "pipe",
     Result: "Result",
     ResultAsync: "ResultAsync",
@@ -39,5 +40,4 @@ export const values: Readonly<Record<string, string>> = {
     Semaphore: "Semaphore",
     SemaphoreFullError: "Semaphore",
     Signal: "Signal",
-    Untrack: "Untrack",
 }

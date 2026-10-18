@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it, vi } from "bun:test"
 import { Action } from "../../src/Action"
-import { Batch } from "../../src/Batch"
+import { isBatching } from "../../src/internals/reactivity"
 import { effect, signal } from "./helpers"
 
 const action = Action
@@ -68,11 +68,11 @@ describe("action", () => {
         const run = action(async () => {
             a(1)
             a(2)
-            const inside = Batch.isActive()
+            const inside = isBatching()
             await Promise.resolve()
             a(3)
             a(4)
-            return [inside, Batch.isActive()]
+            return [inside, isBatching()]
         })
 
         const result = run()

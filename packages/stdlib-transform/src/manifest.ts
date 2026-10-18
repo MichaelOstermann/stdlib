@@ -10,7 +10,7 @@ export const functions: ReadonlyMap<string, string> = new Map([
     ["_", "_"],
     ["Action", "Action"],
     ["AsyncEmitter", "Emitter"],
-    ["Batch", "Batch"],
+    ["batch", "batch"],
     ["Effect", "Effect"],
     ["Emitter", "Emitter"],
     ["Err", "Result"],
@@ -19,13 +19,13 @@ export const functions: ReadonlyMap<string, string> = new Map([
     ["Memo", "Memo"],
     ["Ok", "Result"],
     ["OkAsync", "ResultAsync"],
+    ["peek", "peek"],
     ["pipe", "pipe"],
     ["Result", "Result"],
     ["ResultAsync", "ResultAsync"],
     ["Semaphore", "Semaphore"],
     ["SemaphoreFullError", "Semaphore"],
     ["Signal", "Signal"],
-    ["Untrack", "Untrack"],
 ])
 
 /** Files that only exist for running the code untransformed. */

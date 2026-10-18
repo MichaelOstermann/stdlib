@@ -1,5 +1,5 @@
 import type { ReadonlySignal } from "@monstermann/stdlib"
-import { Effect, Memo, Untrack } from "@monstermann/stdlib"
+import { Effect, Memo, peek } from "@monstermann/stdlib"
 import { useCallback, useMemo, useSyncExternalStore } from "react"
 
 /**
@@ -31,14 +31,14 @@ export function useSignal<T>(value: ReadonlySignal<T> | Memo<T> | (() => T)): T 
         const effect = Effect(() => {
             read()
             // What React does once it is told is not something the effect depends on.
-            if (!isFirst) Untrack(onChange)
+            if (!isFirst) peek(onChange)
             isFirst = false
         })
         return () => effect.dispose()
     }, [read])
 
     // Rendering inside of an effect is not something that effect depends on either.
-    const getSnapshot = useCallback(() => Untrack(read), [read])
+    const getSnapshot = useCallback(() => peek(read), [read])
 
     return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 }

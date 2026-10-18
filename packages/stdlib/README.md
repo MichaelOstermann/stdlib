@@ -324,15 +324,15 @@ $count((count) => count + 1); // "cleanup", 6
 effect.dispose(); // "cleanup"
 ```
 
-`Batch` makes several changes count as one, and `Untrack` reads without depending on what is read. An `Emitter` does both while it calls its listeners:
+`batch` makes several changes count as one, and `peek` reads without depending on what is read. An `Emitter` does both while it calls its listeners:
 
 ```ts
-Batch(() => {
+batch(() => {
     $a(1);
     $b(1);
 }); // Effects that read both run once.
 
-Effect(() => console.log($a(), Untrack($b))); // Only runs again when $a changes.
+Effect(() => console.log($a(), peek($b))); // Only runs again when $a changes.
 ```
 
 An `Action` is a function that does both, for what changes several signals at once:

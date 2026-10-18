@@ -25,7 +25,7 @@ const interfaces: Record<string, string> = {
 const values: Record<string, string> = {
     Action: "Action",
     AsyncEmitter: "Emitter",
-    Batch: "Batch",
+    batch: "batch",
     Bytes: "Bytes/index",
     Duration: "Duration/index",
     Effect: "Effect",
@@ -36,6 +36,7 @@ const values: Record<string, string> = {
     Memo: "Memo",
     Ok: "Result",
     OkAsync: "ResultAsync",
+    peek: "peek",
     pipe: "pipe",
     Result: "Result",
     ResultAsync: "ResultAsync",
@@ -43,7 +44,6 @@ const values: Record<string, string> = {
     Semaphore: "Semaphore",
     SemaphoreFullError: "Semaphore",
     Signal: "Signal",
-    Untrack: "Untrack",
 }
 
 /** The types that go with them: the file, and the parameters when there are any. */

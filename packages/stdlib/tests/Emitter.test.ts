@@ -1,7 +1,7 @@
 import type { ReadonlyEmitter } from "../src/Emitter"
 import { describe, expect, it, vi } from "bun:test"
-import { Batch } from "../src/Batch"
 import { AsyncEmitter, Emitter } from "../src/Emitter"
+import { isBatching } from "../src/internals/reactivity"
 import { Signal } from "../src/Signal"
 import { effect } from "./Signal/helpers"
 
@@ -235,7 +235,7 @@ describe("Emitter, with signals", () => {
         onTick(1)
         expect(seen).toEqual([0, 2])
         expect(() => onTick(3)).toThrow("dispatch")
-        expect(Batch.isActive()).toBe(false)
+        expect(isBatching()).toBe(false)
         expect(seen).toEqual([0, 2, 4])
     })
 })

@@ -1,8 +1,8 @@
-import { Batch } from "../../packages/stdlib/src/Batch"
+import { batch } from "../../packages/stdlib/src/batch"
 import { Effect } from "../../packages/stdlib/src/Effect"
 import { Memo } from "../../packages/stdlib/src/Memo"
+import { peek } from "../../packages/stdlib/src/peek"
 import { Signal } from "../../packages/stdlib/src/Signal"
-import { Untrack } from "../../packages/stdlib/src/Untrack"
 
 // Times graphs of signals, memos and effects, ns per operation: bun benchmarks/signals/index.ts
 // For V8: bun build benchmarks/signals/index.ts --target=node --outfile=/tmp/signals.mjs && node /tmp/signals.mjs
@@ -48,7 +48,7 @@ const benchmarks: Benchmark[] = [
         Effect(() => {
             for (const $a of $all) sink += $a()
         })
-        return () => Batch(() => {
+        return () => batch(() => {
             const value = ++i
             for (const $a of $all) $a(value)
         })
@@ -117,7 +117,7 @@ function items($selected: Signal<number>): Effect[] {
         let isFirst = true
         return Effect(() => {
             $isSelected()
-            if (!isFirst) Untrack(() => sink++)
+            if (!isFirst) peek(() => sink++)
             isFirst = false
         })
     })

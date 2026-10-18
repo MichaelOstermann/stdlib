@@ -1,5 +1,5 @@
 import type { ReadonlySignal, Signal } from "@monstermann/stdlib"
-import { Untrack } from "@monstermann/stdlib"
+import { peek } from "@monstermann/stdlib"
 import { useState } from "react"
 import { useCreateEffect } from "./internals/useCreateEffect"
 import { useCreateMemo } from "./internals/useCreateMemo"
@@ -73,7 +73,7 @@ export function useTransitionStatus({ closeDuration, openDuration }: UseTransiti
         }
 
         // Only `$open` is what this follows, the status is where it starts from.
-        Untrack(() => {
+        peek(() => {
             const status = $status()
             // Still `closed` when closing: opened and closed again within the two frames.
             if (!open) return void (status !== "closed" && enter("closing"))

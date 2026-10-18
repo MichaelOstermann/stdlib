@@ -1,12 +1,12 @@
-import type { Memo, ReadonlySignal, Signal } from "@monstermann/stdlib"
+import type { ReadonlySignal, Signal } from "@monstermann/stdlib"
 import type { Placement, PlacementOptions, PlacementPosition } from "@monstermann/stdlib-web"
 import type { Modal } from "../Modals"
 import type { TransitionStatus } from "../useTransitionStatus"
+import { Memo } from "@monstermann/stdlib"
 import { DOM, Rect } from "@monstermann/stdlib-web"
 import { Modals } from "../Modals"
 import { useTransitionStatus } from "../useTransitionStatus"
 import { useCreateEffect } from "./useCreateEffect"
-import { useCreateMemo } from "./useCreateMemo"
 import { useCreateSignal } from "./useCreateSignal"
 
 /** A modal next to its trigger: a tooltip or a popover. */
@@ -52,7 +52,7 @@ export function useAnchoredModal<K extends "popover" | "tooltip">(kind: K, optio
         return DOM.observeSize(floating, $floatingSize)
     })
 
-    const $position = useCreateMemo(() => {
+    const $position = Memo(() => {
         if (!$floating() || !$trigger()) return undefined
         return placement({
             anchor: $anchor(),

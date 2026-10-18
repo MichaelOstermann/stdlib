@@ -1,6 +1,6 @@
 import type { ReadonlySignal } from "@monstermann/stdlib"
 import { Effect, Memo, peek } from "@monstermann/stdlib"
-import { useCallback, useMemo, useSyncExternalStore } from "react"
+import { useSyncExternalStore } from "react"
 
 /**
  * `useSignal(value)`
@@ -24,9 +24,9 @@ import { useCallback, useMemo, useSyncExternalStore } from "react"
  * ```
  */
 export function useSignal<T>(value: ReadonlySignal<T> | Memo<T> | (() => T)): T {
-    const read = useMemo(() => "kind" in value ? value : Memo(value), [value])
+    const read = "kind" in value ? value : Memo(value)
 
-    const subscribe = useCallback((onChange: () => void) => {
+    const subscribe = (onChange: () => void) => {
         let isFirst = true
         const effect = Effect(() => {
             read()
@@ -35,10 +35,10 @@ export function useSignal<T>(value: ReadonlySignal<T> | Memo<T> | (() => T)): T 
             isFirst = false
         })
         return () => effect.dispose()
-    }, [read])
+    }
 
     // Rendering inside of an effect is not something that effect depends on either.
-    const getSnapshot = useCallback(() => peek(read), [read])
+    const getSnapshot = () => peek(read)
 
     return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 }

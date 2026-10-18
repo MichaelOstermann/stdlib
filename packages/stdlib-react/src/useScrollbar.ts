@@ -1,9 +1,8 @@
-import type { Memo, ReadonlySignal } from "@monstermann/stdlib"
-import { batch, Timer } from "@monstermann/stdlib"
+import type { ReadonlySignal } from "@monstermann/stdlib"
+import { batch, Memo, Timer } from "@monstermann/stdlib"
 import { DOM } from "@monstermann/stdlib-web"
 import { useEffect } from "react"
 import { setScrollTop } from "./internals/setScrollTop"
-import { useCreateMemo } from "./internals/useCreateMemo"
 import { useCreateSignal } from "./internals/useCreateSignal"
 
 export interface Scrollbar {
@@ -68,12 +67,12 @@ export function useScrollbar(scrollElement: HTMLElement | null, contentElement: 
     const $scrollHeight = useCreateSignal(0)
     const $scrolling = useCreateSignal(false)
     const $scrollTop = useCreateSignal(0)
-    const $overflows = useCreateMemo(() => $scrollHeight() > $clientHeight())
-    const $progress = useCreateMemo(() => {
+    const $overflows = Memo(() => $scrollHeight() > $clientHeight())
+    const $progress = Memo(() => {
         const max = $scrollHeight() - $clientHeight()
         return max > 0 ? Math.min(1, $scrollTop() / max) : 0
     })
-    const $ratio = useCreateMemo(() => $overflows() ? $clientHeight() / $scrollHeight() : 1)
+    const $ratio = Memo(() => $overflows() ? $clientHeight() / $scrollHeight() : 1)
 
     useEffect(() => {
         if (!scrollElement || !contentElement) return

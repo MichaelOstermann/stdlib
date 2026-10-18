@@ -44,6 +44,7 @@ const values: Record<string, string> = {
     Semaphore: "Semaphore",
     SemaphoreFullError: "Semaphore",
     Signal: "Signal",
+    Timer: "Timer/index",
 }
 
 /** The types that go with them: the file, and the parameters when there are any. */
@@ -64,7 +65,7 @@ const types: Record<string, [file: string, parameters?: string]> = {
 }
 
 /** Globals of their own that are objects of functions, each a file of the same name. */
-const namespaces = ["Bytes", "Duration", "Retry"]
+const namespaces = ["Bytes", "Duration", "Retry", "Timer"]
 
 const root = Path.resolve(import.meta.dirname, "..")
 const src = Path.join(root, "packages/stdlib/src")

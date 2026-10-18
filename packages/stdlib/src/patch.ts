@@ -89,6 +89,7 @@ import { Retry } from "./Retry/index"
 import { Semaphore } from "./Semaphore"
 import { SemaphoreFullError } from "./Semaphore"
 import { Signal } from "./Signal"
+import { Timer } from "./Timer/index"
 
 define(Array, "Array", {
     chunk: Array_chunk,
@@ -207,6 +208,7 @@ define(globalThis, "globalThis", {
     Semaphore,
     SemaphoreFullError,
     Signal,
+    Timer,
 })
 
 Object.defineProperty(globalThis, Symbol.for("@monstermann/stdlib/patch"), { configurable: true, value: true })

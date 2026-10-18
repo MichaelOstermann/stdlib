@@ -3,6 +3,7 @@ export const namespaces: ReadonlySet<string> = new Set([
     "Bytes",
     "Duration",
     "Retry",
+    "Timer",
 ])
 
 /** Everything else @monstermann/stdlib exports, and the file it lives in: `pipe` → `pipe.mjs`. */

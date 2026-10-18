@@ -14,7 +14,6 @@ const interfaces: Record<string, string> = {
     JSON: "JSON",
     Map: "MapConstructor",
     Math: "Math",
-    Number: "NumberConstructor",
     Object: "ObjectConstructor",
     Promise: "PromiseConstructor",
     Set: "SetConstructor",

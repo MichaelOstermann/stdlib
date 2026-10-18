@@ -9,7 +9,6 @@ export const globals: Readonly<Record<string, readonly string[]>> = {
     JSON: ["safeStringify", "tryParse", "tryStringify"],
     Map: ["delete", "isShallowEqual", "set"],
     Math: ["clamp", "mod"],
-    Number: ["range"],
     Object: ["defaults", "indexBy", "isShallowEqual", "merge", "omit", "pick", "set"],
     Promise: ["sleep"],
     Retry: ["again", "run"],

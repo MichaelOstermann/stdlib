@@ -39,7 +39,6 @@ import type { isShallowEqual as Map_isShallowEqual } from "./Map/isShallowEqual"
 import type { set as Map_set } from "./Map/set"
 import type { clamp as Math_clamp } from "./Math/clamp"
 import type { mod as Math_mod } from "./Math/mod"
-import type { range as Number_range } from "./Number/range"
 import type { defaults as Object_defaults } from "./Object/defaults"
 import type { indexBy as Object_indexBy } from "./Object/indexBy"
 import type { isShallowEqual as Object_isShallowEqual } from "./Object/isShallowEqual"
@@ -120,10 +119,6 @@ declare global {
     interface Math {
         clamp: typeof Math_clamp
         mod: typeof Math_mod
-    }
-
-    interface NumberConstructor {
-        range: typeof Number_range
     }
 
     interface ObjectConstructor {

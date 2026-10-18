@@ -42,7 +42,6 @@ import { isShallowEqual as Map_isShallowEqual } from "./Map/isShallowEqual"
 import { set as Map_set } from "./Map/set"
 import { clamp as Math_clamp } from "./Math/clamp"
 import { mod as Math_mod } from "./Math/mod"
-import { range as Number_range } from "./Number/range"
 import { defaults as Object_defaults } from "./Object/defaults"
 import { indexBy as Object_indexBy } from "./Object/indexBy"
 import { isShallowEqual as Object_isShallowEqual } from "./Object/isShallowEqual"
@@ -143,10 +142,6 @@ define(Map, "Map", {
 define(Math, "Math", {
     clamp: Math_clamp,
     mod: Math_mod,
-})
-
-define(Number, "Number", {
-    range: Number_range,
 })
 
 define(Object, "Object", {

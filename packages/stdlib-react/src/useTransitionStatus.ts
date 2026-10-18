@@ -1,5 +1,5 @@
 import type { ReadonlySignal, Signal } from "@monstermann/stdlib"
-import { peek } from "@monstermann/stdlib"
+import { peek, Timer } from "@monstermann/stdlib"
 import { useState } from "react"
 import { useCreateEffect } from "./internals/useCreateEffect"
 import { useCreateMemo } from "./internals/useCreateMemo"
@@ -68,8 +68,8 @@ export function useTransitionStatus({ closeDuration, openDuration }: UseTransiti
             cancel?.()
             $status(status)
             cancel = status === "opening"
-                ? delay(openDuration, () => $status("opened"))
-                : delay(closeDuration, () => $status("closed"))
+                ? Timer.timeout(openDuration, () => $status("opened"))
+                : Timer.timeout(closeDuration, () => $status("closed"))
         }
 
         // Only `$open` is what this follows, the status is where it starts from.
@@ -93,9 +93,4 @@ function afterPaint(callback: () => void): () => void {
         frame = requestAnimationFrame(callback)
     })
     return () => cancelAnimationFrame(frame)
-}
-
-function delay(ms: number, callback: () => void): () => void {
-    const timeout = setTimeout(callback, ms)
-    return () => clearTimeout(timeout)
 }

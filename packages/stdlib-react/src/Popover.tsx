@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-redeclare -- Popover is a type and the component that renders it */
-import type { ComponentProps, ReactNode } from "react"
+import type { ComponentProps, ReactNode, SyntheticEvent } from "react"
 import type { AnchoredModal } from "./internals/useAnchoredModal"
 import { createPortal } from "react-dom"
 import { floatingStyle } from "./internals/floatingStyle"
@@ -43,23 +43,22 @@ export function Popover({ children, className, onClick, onContextMenu, onPointer
             {...rest}
             className={className ? `modal popover ${className}` : "modal popover"}
             data-status={status}
+            onClick={stopping(onClick)}
+            onContextMenu={stopping(onContextMenu)}
+            onPointerDown={stopping(onPointerDown)}
             ref={$floating}
             style={style ? { ...floating, ...style } : floating}
-            onClick={(event) => {
-                onClick?.(event)
-                event.stopPropagation()
-            }}
-            onContextMenu={(event) => {
-                onContextMenu?.(event)
-                event.stopPropagation()
-            }}
-            onPointerDown={(event) => {
-                onPointerDown?.(event)
-                event.stopPropagation()
-            }}
         >
             {children}
         </div>,
         document.body,
     )
+}
+
+/** Calls `handler`, then stops the event from reaching the React parents of the portal. */
+function stopping<E extends SyntheticEvent>(handler: ((event: E) => void) | undefined): (event: E) => void {
+    return (event) => {
+        handler?.(event)
+        event.stopPropagation()
+    }
 }

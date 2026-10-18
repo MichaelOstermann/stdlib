@@ -66,9 +66,8 @@ const onClose: ReadonlyEmitter<Modal> = closed
  */
 function open(modal: Modal): void {
     if (modals.includes(modal)) return
-    // Tooltips close when anything opens, popovers when a popover or a dialog opens.
     for (const other of [...modals]) {
-        if (other.kind === "tooltip" || (other.kind === "popover" && modal.kind !== "tooltip")) dismiss(other)
+        if (closesOnOpen(other, modal)) dismiss(other)
     }
     modals.push(modal)
     stopListening ??= listen()
@@ -93,6 +92,12 @@ function close(modal: Modal): void {
         stopListening = undefined
     }
     closed(modal)
+}
+
+/** Tooltips close when anything opens, popovers when a popover or a dialog opens. */
+function closesOnOpen(open: Modal, opening: Modal): boolean {
+    if (open.kind === "tooltip") return true
+    return open.kind === "popover" && opening.kind !== "tooltip"
 }
 
 function dismiss(modal: Modal): void {

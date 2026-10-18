@@ -32,7 +32,7 @@ export function useAlignedTimer<T>(every: number, select?: (now: number) => T): 
     const [, render] = useReducer((count: number) => count + 1, 0)
     const now = Date.now()
     const value = select ? select(now) : now
-    // What is on screen: a render that React throws away does not get here.
+    // The value on screen: `useLatest` updates in a layout effect, which a discarded render never reaches.
     const committed = useLatest({ select, value })
 
     useEffect(() => Timer.aligned(every, (now) => {

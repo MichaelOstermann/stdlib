@@ -4,7 +4,7 @@ import { Signal } from "@monstermann/stdlib"
 import { useEffect } from "react"
 import { useCreateEffect } from "./internals/useCreateEffect"
 import { useCreateSignal } from "./internals/useCreateSignal"
-import { Modals } from "./Modals"
+import { useModalStack } from "./internals/useModalStack"
 import { useMountEffect } from "./useMountEffect"
 import { useSignal } from "./useSignal"
 import { useTransitionStatus } from "./useTransitionStatus"
@@ -29,6 +29,7 @@ interface Entry {
     readonly id: number
     readonly meta: unknown
     readonly options: DialogOptions
+    /** Called from several places: only the first call settles the promise. */
     readonly resolve: (value: unknown) => void
 }
 
@@ -101,7 +102,7 @@ function DialogEntry({ entry }: { entry: Entry }): ReactNode {
     const $floating = useCreateSignal<Element | null>(null)
     const $trigger = useCreateSignal<Element | null>(null)
 
-    // The stack knows the dialog by this object, React Compiler keeps it for as long as the entry.
+    // The stack identifies modals by object identity. React Compiler keeps this object for as long as the entry.
     const dialog: Dialog<unknown, unknown> = {
         $floating,
         $open,
@@ -120,32 +121,27 @@ function DialogEntry({ entry }: { entry: Entry }): ReactNode {
         $open(true)
     })
 
-    // Resolves with `undefined` when it closes without `done`. After `done` it is resolved already.
-    // From `closing` and not from `$open`: `<StrictMode>` runs the cleanups of the first effects once more, while the dialog is open.
+    // Resolves with `undefined` when the dialog closes without `done`, and does nothing after `done`.
+    // Triggered by `closing` instead of `$open`: `<StrictMode>` runs effect cleanups once more while the dialog is open.
     useCreateEffect(() => {
         if ($status() === "closing") resolve(undefined)
     })
 
-    // On the stack while open and rendered.
-    useCreateEffect(() => {
-        if (!$open() || !$floating()) return
-        Modals.open(dialog)
-        return () => Modals.close(dialog)
-    })
+    useModalStack(dialog)
 
-    // Resolves the dialog as well: after `done` that does nothing, after closing within the two frames before `opening` it is what resolves it.
+    // Resolves too, which does nothing after `done` or `closing`. A dialog closed before `opening` never reaches `closing`, and this call resolves it.
     const remove = () => {
         resolve(undefined)
         $entries(entries => entries.filter(other => other !== entry))
     }
 
-    // Gone once closed.
+    // Removed once the closing transition ends and `mounted` turns `false`.
     useEffect(() => {
         if (!mounted) return
         return remove
     }, [mounted, remove])
 
-    // Gone when `<Dialogs />` unmounts, also before `mounted` is true. Not on the unmount and mount again of `<StrictMode>`.
+    // Also removed when `<Dialogs />` unmounts, even before `mounted` turns `true`. The `<StrictMode>` remount does not count.
     useUnmountEffect(remove)
 
     return mounted && <Component dialog={dialog} />

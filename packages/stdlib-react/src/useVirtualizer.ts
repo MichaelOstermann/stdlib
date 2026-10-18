@@ -92,7 +92,7 @@ export function useVirtualizer(scrollElement: HTMLElement | null, options: UseVi
     // The range of the last `setRange`, which may not be rendered yet.
     const requested = useRef(range)
 
-    // Only for another range: React renders the component for the same state too, at times, before it bails out.
+    // Skipped for an unchanged range: `setRange` with an equal object still renders the component.
     const update = (): void => {
         const next = visibleRange(layoutRef.current, view.current)
         if (next.start === requested.current.start && next.end === requested.current.end) return
@@ -100,7 +100,7 @@ export function useVirtualizer(scrollElement: HTMLElement | null, options: UseVi
         setRange(next)
     }
 
-    // After each render, for a new `count`, `size` or `gap`. `useLatest` is declared above, `layoutRef` has the current layout.
+    // After every render, for a new `count`, `size` or `gap`. Declared after `useLatest`, so its layout effect runs second and `layoutRef` already holds the new layout.
     useLayoutEffect(update)
 
     useLayoutEffect(() => {
@@ -123,7 +123,7 @@ export function useVirtualizer(scrollElement: HTMLElement | null, options: UseVi
     }, [scrollElement, update])
 
     const items: VirtualItem[] = []
-    // A range of a longer list, until the effect above replaced it.
+    // `range` can still come from a longer list until the effect above updates it.
     for (let i = range.start; i < Math.min(range.end, count); i++) {
         items.push({ index: i, size: ends[i]! - starts[i]!, start: starts[i]! })
     }
@@ -136,7 +136,7 @@ export function useVirtualizer(scrollElement: HTMLElement | null, options: UseVi
         if (top < scrollTop + topOffset) setScrollTop(scrollElement, top - topOffset)
         else if (bottom > scrollTop + clientHeight) setScrollTop(scrollElement, bottom - clientHeight)
         else return
-        // The items at the new position right away, instead of after the scroll event.
+        // Updated right away, so the items at the new position render without waiting for the scroll event.
         view.current.top = scrollElement.scrollTop
         update()
     }

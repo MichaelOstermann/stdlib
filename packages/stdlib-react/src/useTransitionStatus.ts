@@ -28,7 +28,7 @@ export type UseTransitionStatus = [mounted: boolean, transition: Transition]
  * - `$open(false)` sets `closing` right away, `closed` and `mounted: false` once `closeDuration` has passed
  * - closing during `opening` switches to `closing`, and opening during `closing` switches back to `opening`
  * - `mounted` is the only React state: the component calling the hook renders when it changes, `$status` is read by what animates
- * - the transition follows `$open` while the component is mounted, a change of a duration starts the step in progress again with it
+ * - the transition follows `$open` while the component is mounted, and a new duration restarts the timer of the current step
  *
  * ```tsx
  * function Fade({ children }: { children: ReactNode }) {
@@ -59,7 +59,7 @@ export function useTransitionStatus({ closeDuration, openDuration }: UseTransiti
 
     useCreateEffect(() => {
         const open = $open()
-        // The timer of this run of the effect, cancelled before the next change of `$open` and when the component unmounts.
+        // The pending timer or frame of this run, cancelled when `$open` changes again or the component unmounts.
         let cancel: (() => void) | undefined
 
         const enter = (status: "closing" | "opening") => {
@@ -70,11 +70,14 @@ export function useTransitionStatus({ closeDuration, openDuration }: UseTransiti
                 : Timer.timeout(closeDuration, () => $status("closed"))
         }
 
-        // Only `$open` is what this follows, the status is where it starts from.
+        // `peek`: the effect depends only on `$open`. The current status decides where the transition starts.
         peek(() => {
             const status = $status()
-            // Still `closed` when closing: opened and closed again within the two frames.
-            if (!open) return void (status !== "closed" && enter("closing"))
+            if (!open) {
+                // Still `closed`: `$open` went back to `false` before `afterPaint`, nothing to animate.
+                if (status !== "closed") enter("closing")
+                return
+            }
             if (status === "closed") cancel = afterPaint(() => enter("opening"))
             else enter("opening")
         })

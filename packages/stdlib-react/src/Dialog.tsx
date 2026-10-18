@@ -9,8 +9,8 @@ import { useSignal } from "./useSignal"
 /** A dialog opened with `Dialogs.open`, passed to its component as `dialog`: `meta` is what `Dialogs.open` was given, `done` what it resolves with. */
 export interface Dialog<T = void, R = void> extends Modal {
     readonly $status: ReadonlySignal<TransitionStatus>
-    /** Closes the dialog, `Dialogs.open` resolves with `value`. */
     readonly kind: "dialog"
+    /** Closes the dialog, `Dialogs.open` resolves with `value`. */
     readonly done: (value: R) => void
     /** What `Dialogs.open` was given after the component. */
     readonly meta: T

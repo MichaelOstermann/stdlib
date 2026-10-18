@@ -60,7 +60,7 @@ export function usePopover(options: UsePopoverOptions = {}): UsePopover {
     const [mounted, popover] = useAnchoredModal("popover", { ...rest, closeDuration, openDuration, placement })
     const { $open, $trigger } = popover
 
-    // A click on the trigger opens and closes the popover. The stack leaves clicks on the trigger alone.
+    // A click on the trigger opens and closes the popover. The stack ignores clicks on the trigger.
     useCreateEffect(() => {
         const trigger = $trigger()
         if (!trigger) return

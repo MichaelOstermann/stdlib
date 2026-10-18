@@ -27,16 +27,17 @@ export function useSignal<T>(value: ReadonlySignal<T> | Memo<T> | (() => T)): T 
     const read = "kind" in value ? value : Memo(value)
 
     const subscribe = (onChange: () => void) => {
+        // The first run only subscribes: React already has the current value.
         let isFirst = true
         return Effect(() => {
             read()
-            // What React does once it is told is not something the effect depends on.
+            // `peek`: signals read while React handles `onChange` must not become dependencies of this effect.
             if (!isFirst) peek(onChange)
             isFirst = false
         })
     }
 
-    // Rendering inside of an effect is not something that effect depends on either.
+    // `peek` here too: a render can happen inside another signal effect, which must not track the signals read here.
     const getSnapshot = () => peek(read)
 
     return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)

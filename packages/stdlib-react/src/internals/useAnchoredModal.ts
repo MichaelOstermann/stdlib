@@ -4,10 +4,10 @@ import type { Modal } from "../Modals"
 import type { TransitionStatus } from "../useTransitionStatus"
 import { Memo } from "@monstermann/stdlib"
 import { DOM, Rect } from "@monstermann/stdlib-web"
-import { Modals } from "../Modals"
 import { useTransitionStatus } from "../useTransitionStatus"
 import { useCreateEffect } from "./useCreateEffect"
 import { useCreateSignal } from "./useCreateSignal"
+import { useModalStack } from "./useModalStack"
 
 /** A modal next to its trigger: a tooltip or a popover. */
 export interface AnchoredModal<K extends "popover" | "tooltip"> extends Modal {
@@ -36,7 +36,7 @@ export function useAnchoredModal<K extends "popover" | "tooltip">(kind: K, optio
     const $boundary = useCreateSignal(Rect.origin)
     const $floatingSize = useCreateSignal(Rect.origin)
 
-    // Measured only while the floating element is rendered, and each from the element it measures.
+    // Measurements run only while the floating element is rendered. Each effect restarts only when its own element changes.
     useCreateEffect(() => {
         const trigger = $trigger()
         if (!$floating() || !trigger) return
@@ -61,7 +61,7 @@ export function useAnchoredModal<K extends "popover" | "tooltip">(kind: K, optio
         }, { anchorGap, boundaryGap })
     })
 
-    // The stack knows the modal by this object, React Compiler keeps it until the trigger, the placement or the name changes.
+    // The stack identifies modals by object identity. React Compiler keeps this object until the trigger, the placement or the name changes.
     const modal: AnchoredModal<K> = {
         $floating,
         $open,
@@ -72,12 +72,7 @@ export function useAnchoredModal<K extends "popover" | "tooltip">(kind: K, optio
         name,
     }
 
-    // On the stack while open and rendered: off it when it closes, when the floating element unmounts, and when the component does.
-    useCreateEffect(() => {
-        if (!$open() || !$floating()) return
-        Modals.open(modal)
-        return () => Modals.close(modal)
-    })
+    useModalStack(modal)
 
     return [mounted, modal]
 }

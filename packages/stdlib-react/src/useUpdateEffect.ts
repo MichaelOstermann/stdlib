@@ -20,7 +20,7 @@ import { useEffect, useRef } from "react"
 export function useUpdateEffect(effect: EffectCallback, deps: DependencyList): void {
     const mounted = useRef(false)
 
-    // An unmount forgets the mount, for the next mount to be skipped as well.
+    // Reset on unmount, so the mount after a `<StrictMode>` remount is skipped as well.
     useEffect(() => () => {
         mounted.current = false
     }, [])

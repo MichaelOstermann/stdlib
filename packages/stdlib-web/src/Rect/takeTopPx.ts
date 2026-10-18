@@ -1,5 +1,4 @@
 import type { Rect } from "."
-import { clamp } from "./internals/clamp"
 import { merge } from "./merge"
 
 /**
@@ -20,5 +19,5 @@ import { merge } from "./merge"
  *
  */
 export function takeTopPx(rect: Rect, amount: number): Rect {
-    return merge(rect, { height: clamp(amount, 0, rect.height) })
+    return merge(rect, { height: Math.clamp(amount, 0, rect.height) })
 }

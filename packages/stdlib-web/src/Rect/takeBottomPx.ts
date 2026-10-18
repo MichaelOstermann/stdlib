@@ -1,5 +1,4 @@
 import type { Rect } from "."
-import { clamp } from "./internals/clamp"
 import { merge } from "./merge"
 
 /**
@@ -20,7 +19,7 @@ import { merge } from "./merge"
  *
  */
 export function takeBottomPx(rect: Rect, amount: number): Rect {
-    const height = clamp(amount, 0, rect.height)
+    const height = Math.clamp(amount, 0, rect.height)
     if (height === rect.height) return rect
     return merge(rect, {
         height,

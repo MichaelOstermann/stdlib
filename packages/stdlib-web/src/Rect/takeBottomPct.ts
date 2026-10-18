@@ -1,5 +1,4 @@
 import type { Rect } from "."
-import { clamp } from "./internals/clamp"
 import { merge } from "./merge"
 
 /**
@@ -20,7 +19,7 @@ import { merge } from "./merge"
  *
  */
 export function takeBottomPct(rect: Rect, amount: number): Rect {
-    const height = rect.height * clamp(amount, 0, 1)
+    const height = rect.height * Math.clamp(amount, 0, 1)
     if (height === rect.height) return rect
     return merge(rect, {
         height,

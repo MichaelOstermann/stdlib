@@ -1,5 +1,4 @@
 import type { Rect } from "."
-import { clamp } from "./internals/clamp"
 import { merge } from "./merge"
 
 /**
@@ -20,7 +19,7 @@ import { merge } from "./merge"
  *
  */
 export function dropTopPx(rect: Rect, amount: number): Rect {
-    const dh = clamp(amount, 0, rect.height)
+    const dh = Math.clamp(amount, 0, rect.height)
     return merge(rect, {
         height: rect.height - dh,
         top: rect.top + dh,

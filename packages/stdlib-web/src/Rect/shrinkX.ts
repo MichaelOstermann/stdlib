@@ -1,5 +1,4 @@
 import type { Rect } from "."
-import { clamp } from "./internals/clamp"
 import { merge } from "./merge"
 
 /**
@@ -20,7 +19,7 @@ import { merge } from "./merge"
  *
  */
 export function shrinkX(rect: Rect, amount: number): Rect {
-    const dw = clamp(amount, 0, rect.width / 2)
+    const dw = Math.clamp(amount, 0, rect.width / 2)
     return merge(rect, {
         left: rect.left + dw,
         width: rect.width - (dw * 2),

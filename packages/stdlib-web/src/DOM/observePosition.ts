@@ -85,7 +85,7 @@ function observe(element: Element, onMove: (rect: DOMRectReadOnly) => void): () 
             isFirstEntry = false
         }, {
             rootMargin: `${-insetTop}px ${-insetRight}px ${-insetBottom}px ${-insetLeft}px`,
-            threshold: Math.max(0, Math.min(1, threshold)) || 1,
+            threshold: Math.clamp(threshold, 0, 1) || 1,
         })
 
         io.observe(element)

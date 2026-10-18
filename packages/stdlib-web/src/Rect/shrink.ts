@@ -1,5 +1,4 @@
 import type { Rect } from "."
-import { clamp } from "./internals/clamp"
 import { merge } from "./merge"
 
 /**
@@ -20,8 +19,8 @@ import { merge } from "./merge"
  *
  */
 export function shrink(rect: Rect, amount: number): Rect {
-    const dw = clamp(amount, 0, rect.width / 2)
-    const dh = clamp(amount, 0, rect.height / 2)
+    const dw = Math.clamp(amount, 0, rect.width / 2)
+    const dh = Math.clamp(amount, 0, rect.height / 2)
     return merge(rect, {
         height: rect.height - (dh * 2),
         left: rect.left + dw,

@@ -1,5 +1,4 @@
 import type { Rect } from "."
-import { clamp } from "./internals/clamp"
 import { merge } from "./merge"
 
 /**
@@ -20,7 +19,7 @@ import { merge } from "./merge"
  *
  */
 export function takeRightPct(rect: Rect, amount: number): Rect {
-    const width = rect.width * clamp(amount, 0, 1)
+    const width = rect.width * Math.clamp(amount, 0, 1)
     if (width === rect.width) return rect
     return merge(rect, {
         left: rect.left + rect.width - width,

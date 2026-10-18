@@ -1,11 +1,15 @@
+/* eslint-disable @typescript-eslint/no-redeclare -- Popover is a type and the component that renders it */
 import type { ComponentProps, ReactNode } from "react"
-import type { PopoverModal } from "./usePopover"
+import type { AnchoredModal } from "./internals/useAnchoredModal"
 import { createPortal } from "react-dom"
 import { floatingStyle } from "./internals/floatingStyle"
 import { useSignal } from "./useSignal"
 
+/** What `usePopover` returns as `popover`, for `<Popover popover={popover}>`. */
+export type Popover = AnchoredModal<"popover">
+
 export interface PopoverProps extends Omit<ComponentProps<"div">, "popover" | "ref"> {
-    popover: PopoverModal
+    popover: Popover
 }
 
 /**

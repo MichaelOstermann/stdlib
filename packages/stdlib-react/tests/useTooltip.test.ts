@@ -1,6 +1,5 @@
 import type { ReactNode } from "react"
 import type { Modal } from "../src/Modals"
-import type { TooltipModal } from "../src/useTooltip"
 import type { TransitionStatus } from "../src/useTransitionStatus"
 import { Signal } from "@monstermann/stdlib"
 import { describe, expect, it } from "bun:test"
@@ -11,7 +10,7 @@ import { useTooltip } from "../src/useTooltip"
 import { fakeDOM, render, send as sendTo, sleep, unmountAll } from "./dom"
 
 let mounted = false
-let tooltip: TooltipModal
+let tooltip: Tooltip
 let trigger: HTMLButtonElement
 
 fakeDOM()

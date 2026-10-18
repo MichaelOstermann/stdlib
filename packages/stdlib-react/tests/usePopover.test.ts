@@ -1,6 +1,4 @@
 import type { ReactNode } from "react"
-import type { PopoverModal } from "../src/usePopover"
-import type { TooltipModal } from "../src/useTooltip"
 import { describe, expect, it } from "bun:test"
 import { createElement, Fragment } from "react"
 import { Modals } from "../src/Modals"
@@ -15,7 +13,7 @@ fakeDOM()
 const options = { closeDuration: 5, openDuration: 5 }
 let parentClicks = 0
 
-function owner(popovers: PopoverModal[]): () => ReactNode {
+function owner(popovers: Popover[]): () => ReactNode {
     return function Owner(): ReactNode {
         const [mounted, triggerRef, popover] = usePopover(options)
         popovers.push(popover)
@@ -29,8 +27,8 @@ function owner(popovers: PopoverModal[]): () => ReactNode {
 }
 
 /** Renders a popover, and returns its trigger and the popover of the latest render. */
-function setup(): { trigger: HTMLElement, popover: () => PopoverModal } {
-    const popovers: PopoverModal[] = []
+function setup(): { trigger: HTMLElement, popover: () => Popover } {
+    const popovers: Popover[] = []
     const trigger = render(owner(popovers)).querySelector("button")!
     return { trigger, popover: () => popovers.at(-1)! }
 }
@@ -94,8 +92,8 @@ describe("usePopover", () => {
     })
 
     it("should share a trigger with a tooltip", async () => {
-        let tooltip: TooltipModal | undefined
-        let popover: PopoverModal | undefined
+        let tooltip: Tooltip | undefined
+        let popover: Popover | undefined
         const trigger = render(() => {
             const [tooltipMounted, triggerRef, self] = useTooltip({ ...options, delay: 5 })
             const [popoverMounted, , other] = usePopover({ ...options, $trigger: triggerRef })

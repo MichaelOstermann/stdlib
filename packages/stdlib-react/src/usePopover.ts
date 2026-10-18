@@ -1,6 +1,6 @@
 import type { Signal } from "@monstermann/stdlib"
 import type { PlacementOptions } from "@monstermann/stdlib-web"
-import type { AnchoredModal } from "./internals/useAnchoredModal"
+import type { Popover } from "./Popover"
 import { Placement } from "@monstermann/stdlib-web"
 import { useAnchoredModal } from "./internals/useAnchoredModal"
 import { useCreateEffect } from "./internals/useCreateEffect"
@@ -18,14 +18,12 @@ export interface UsePopoverOptions extends PlacementOptions {
     placement?: Placement
 }
 
-export type PopoverModal = AnchoredModal<"popover">
-
 /**
  * - `mounted`: from opening until closed again, whether to render `<Popover>`. The component calling the hook renders again when this changes.
  * - `triggerRef`: `popover.$trigger`, as its own binding: React Compiler skips a component that passes `popover.$trigger` as `ref`.
  * - `popover`: a new one only when the trigger, the placement or the name changes.
  */
-export type UsePopover = [mounted: boolean, triggerRef: Signal<Element | null>, popover: PopoverModal]
+export type UsePopover = [mounted: boolean, triggerRef: Signal<Element | null>, popover: Popover]
 
 /**
  * `usePopover(options?)`

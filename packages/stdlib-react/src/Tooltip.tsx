@@ -1,11 +1,15 @@
+/* eslint-disable @typescript-eslint/no-redeclare -- Tooltip is a type and the component that renders it */
 import type { ComponentProps, ReactNode } from "react"
-import type { TooltipModal } from "./useTooltip"
+import type { AnchoredModal } from "./internals/useAnchoredModal"
 import { createPortal } from "react-dom"
 import { floatingStyle } from "./internals/floatingStyle"
 import { useSignal } from "./useSignal"
 
+/** What `useTooltip` returns as `tooltip`, for `<Tooltip tooltip={tooltip}>`. */
+export type Tooltip = AnchoredModal<"tooltip">
+
 export interface TooltipProps extends Omit<ComponentProps<"div">, "ref"> {
-    tooltip: TooltipModal
+    tooltip: Tooltip
 }
 
 /**

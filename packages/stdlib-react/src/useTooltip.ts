@@ -1,6 +1,6 @@
 import type { Signal } from "@monstermann/stdlib"
 import type { PlacementOptions } from "@monstermann/stdlib-web"
-import type { AnchoredModal } from "./internals/useAnchoredModal"
+import type { Tooltip } from "./Tooltip"
 import { Timer } from "@monstermann/stdlib"
 import { DOM, Placement } from "@monstermann/stdlib-web"
 import { useAnchoredModal } from "./internals/useAnchoredModal"
@@ -21,14 +21,12 @@ export interface UseTooltipOptions extends PlacementOptions {
     placement?: Placement
 }
 
-export type TooltipModal = AnchoredModal<"tooltip">
-
 /**
  * - `mounted`: from opening until closed again, whether to render `<Tooltip>`. The component calling the hook renders again when this changes.
  * - `triggerRef`: `tooltip.$trigger`, as its own binding: React Compiler skips a component that passes `tooltip.$trigger` as `ref`.
  * - `tooltip`: a new one only when the trigger, the placement or the name changes.
  */
-export type UseTooltip = [mounted: boolean, triggerRef: Signal<Element | null>, tooltip: TooltipModal]
+export type UseTooltip = [mounted: boolean, triggerRef: Signal<Element | null>, tooltip: Tooltip]
 
 /**
  * `useTooltip(options?)`

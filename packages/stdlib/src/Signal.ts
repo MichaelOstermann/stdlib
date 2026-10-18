@@ -62,13 +62,14 @@ export function Signal<T>(value: T | undefined | void, options?: SignalOptions<N
 export function Signal<T>(value: T, options?: SignalOptions<NoInfer<T>>): Signal<T> {
     const raw = new RawSignal(value, options)
     const equals = options?.equals
-    let prev = value
 
-    const signal = function (...args: [] | [T | ((value: T) => T)]): T | void {
-        if (args.length === 0) return raw.get()
-        const next = typeof args[0] === "function" ? (args[0] as (value: T) => T)(prev) : args[0]
-        if (prev === next || equals?.(prev, next)) return
-        raw.set(prev = next)
+    // `arguments` instead of a rest parameter: JavaScriptCore allocates the rest array on every call.
+    const signal = function (next?: T | ((value: T) => T)): T | void {
+        if (arguments.length === 0) return raw.get()
+        const prev = raw.value
+        if (typeof next === "function") next = (next as (value: T) => T)(prev)
+        if (prev === next || equals?.(prev, next as T)) return
+        raw.set(next as T)
     } as { kind: "Signal" } & Signal<T>
 
     signal.kind = "Signal"

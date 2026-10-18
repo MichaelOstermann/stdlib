@@ -10,13 +10,6 @@ const rects: R[] = [
 ]
 
 const unchanged: Record<string, (rect: R) => R> = {
-    alignBottom: rect => Rect.alignBottom(rect, rect),
-    alignCenter: rect => Rect.alignCenter(rect, rect),
-    alignCenterX: rect => Rect.alignCenterX(rect, rect),
-    alignCenterY: rect => Rect.alignCenterY(rect, rect),
-    alignLeft: rect => Rect.alignLeft(rect, rect),
-    alignRight: rect => Rect.alignRight(rect, rect),
-    alignTop: rect => Rect.alignTop(rect, rect),
     intersection: rect => Rect.intersection(rect, Rect.expand(rect, 10)),
     moveBottomTo: rect => Rect.moveBottomTo(rect, Rect.bottom(rect)),
     moveLeftTo: rect => Rect.moveLeftTo(rect, rect.left),

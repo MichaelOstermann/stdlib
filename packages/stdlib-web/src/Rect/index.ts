@@ -1,11 +1,4 @@
 /* eslint-disable @typescript-eslint/no-redeclare -- Rect is a type and the functions that take it */
-import { alignBottom } from "./alignBottom"
-import { alignCenter } from "./alignCenter"
-import { alignCenterX } from "./alignCenterX"
-import { alignCenterY } from "./alignCenterY"
-import { alignLeft } from "./alignLeft"
-import { alignRight } from "./alignRight"
-import { alignTop } from "./alignTop"
 import { area } from "./area"
 import { bottom } from "./bottom"
 import { centerX } from "./centerX"
@@ -42,10 +35,6 @@ import { moveRightTo } from "./moveRightTo"
 import { moveTopTo } from "./moveTopTo"
 import { normalize } from "./normalize"
 import { origin } from "./origin"
-import { placeAboveBy } from "./placeAboveBy"
-import { placeBelowBy } from "./placeBelowBy"
-import { placeLeftOfBy } from "./placeLeftOfBy"
-import { placeRightOfBy } from "./placeRightOfBy"
 import { right } from "./right"
 import { scale } from "./scale"
 import { scaleX } from "./scaleX"
@@ -84,13 +73,6 @@ export type Rect = {
 }
 
 export const Rect = {
-    alignBottom,
-    alignCenter,
-    alignCenterX,
-    alignCenterY,
-    alignLeft,
-    alignRight,
-    alignTop,
     area,
     bottom,
     centerX,
@@ -127,10 +109,6 @@ export const Rect = {
     moveTopTo,
     normalize,
     origin,
-    placeAboveBy,
-    placeBelowBy,
-    placeLeftOfBy,
-    placeRightOfBy,
     right,
     scale,
     scaleX,

@@ -7,14 +7,16 @@
     "scripts": {
         "globals": "bun scripts/globals.ts",
         "checks": "bun run eslint && bun run tsc && bun test",
-        "bundles": "bun run --filter '*' bundle"
+        "bundles": "bun run --filter '*' bundle",
+        "docs:dev": "blume dev",
+        "docs:build": "blume build"
     },
     "devDependencies": {
         "@monstermann/eslint-config": "^0.8.0",
         "@monstermann/tsconfig": "^0.0.0",
         "@types/bun": "^1.4.2",
+        "blume": "^2.2.3",
         "eslint": "^10.11.0",
-        "ts-pattern": "^5.9.0",
         "tsdown": "^0.23.0",
         "typescript": "^6.0.0"
     }

@@ -1,0 +1,33 @@
+.prose p {
+    line-height: 1.8;
+}
+
+.prose > :where(pre[data-language][data-icon])::before {
+    --blume-border: transparent;
+}
+
+[data-blume-page-actions] {
+    display: none;
+}
+
+.prose pre[data-language]:not([data-title]) {
+    padding-top: 1rem;
+}
+
+.prose pre[data-language]:not([data-title])::before,
+.prose pre[data-language]:not([data-title])::after {
+    content: none;
+}
+
+.prose pre[data-language]:not([data-title]) > code {
+    padding-inline-end: 3.5rem;
+}
+
+.prose pre:has(> code) {
+    padding-bottom: 0;
+}
+
+.prose pre > code {
+    padding-bottom: 1rem;
+    max-height: none;
+}

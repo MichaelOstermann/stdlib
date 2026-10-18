@@ -34,7 +34,6 @@ import { intersection } from "./intersection"
 import { intersects } from "./intersects"
 import { isEmpty } from "./isEmpty"
 import { isEqual } from "./isEqual"
-import { isOrigin } from "./isOrigin"
 import { map } from "./map"
 import { merge } from "./merge"
 import { moveBottomTo } from "./moveBottomTo"
@@ -63,10 +62,6 @@ import { setWidth } from "./setWidth"
 import { shrink } from "./shrink"
 import { shrinkX } from "./shrinkX"
 import { shrinkY } from "./shrinkY"
-import { snapAbove } from "./snapAbove"
-import { snapBelow } from "./snapBelow"
-import { snapLeftOf } from "./snapLeftOf"
-import { snapRightOf } from "./snapRightOf"
 import { takeBottomPct } from "./takeBottomPct"
 import { takeBottomPx } from "./takeBottomPx"
 import { takeLeftPct } from "./takeLeftPct"
@@ -124,7 +119,6 @@ export const Rect = {
     intersects,
     isEmpty,
     isEqual,
-    isOrigin,
     map,
     merge,
     moveBottomTo,
@@ -153,10 +147,6 @@ export const Rect = {
     shrink,
     shrinkX,
     shrinkY,
-    snapAbove,
-    snapBelow,
-    snapLeftOf,
-    snapRightOf,
     takeBottomPct,
     takeBottomPx,
     takeLeftPct,

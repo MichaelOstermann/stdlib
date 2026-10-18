@@ -30,13 +30,11 @@ import { fromDOMRect } from "./fromDOMRect"
 import { fromEdges } from "./fromEdges"
 import { fromElement } from "./fromElement"
 import { fromWindow } from "./fromWindow"
-import { height } from "./height"
 import { intersection } from "./intersection"
 import { intersects } from "./intersects"
 import { isEmpty } from "./isEmpty"
 import { isEqual } from "./isEqual"
 import { isOrigin } from "./isOrigin"
-import { left } from "./left"
 import { map } from "./map"
 import { merge } from "./merge"
 import { moveBottomTo } from "./moveBottomTo"
@@ -77,13 +75,10 @@ import { takeRightPct } from "./takeRightPct"
 import { takeRightPx } from "./takeRightPx"
 import { takeTopPct } from "./takeTopPct"
 import { takeTopPx } from "./takeTopPx"
-import { top } from "./top"
-import { transform } from "./transform"
 import { translate } from "./translate"
 import { translateX } from "./translateX"
 import { translateY } from "./translateY"
 import { union } from "./union"
-import { width } from "./width"
 
 /** A rectangle by its position and size. Every function of `Rect` takes anything of this shape, a `DOMRect` included. */
 export type Rect = {
@@ -125,13 +120,11 @@ export const Rect = {
     fromEdges,
     fromElement,
     fromWindow,
-    height,
     intersection,
     intersects,
     isEmpty,
     isEqual,
     isOrigin,
-    left,
     map,
     merge,
     moveBottomTo,
@@ -172,11 +165,8 @@ export const Rect = {
     takeRightPx,
     takeTopPct,
     takeTopPx,
-    top,
-    transform,
     translate,
     translateX,
     translateY,
     union,
-    width,
 }

@@ -1,6 +1,4 @@
-import { batchDepth, connect, endBatch, evalContext, exitBatch, popContext, pushContext, startBatch, swapContext, untrack } from "./reactivity"
-
-type Dispose = () => void
+import { batchDepth, connect, endBatch, evalContext, exitBatch, popContext, pushContext, startBatch, swapContext } from "./reactivity"
 
 type ReactiveNode = {
     nextSource: ReactiveNode | undefined
@@ -206,15 +204,12 @@ function prepareSources(target: RawMemo | RawEffect) {
 export declare class RawSignal<T = any> {
     node: ReactiveNode | undefined
     notified: number
-    onRead?: () => void
-    onUnwatch?: () => void
-    onWatch?: () => Dispose | void
     snapshot: BatchSnapshot | undefined
     targets: ReactiveNode | undefined
     value: T
     version: number
 
-    constructor(value?: T, options?: RawSignalOptions)
+    constructor(value?: T)
     get(): T
     refresh(): boolean
     set(value: T): void
@@ -222,23 +217,15 @@ export declare class RawSignal<T = any> {
     unsubscribe(node: ReactiveNode): void
 }
 
-export interface RawSignalOptions {
-    onRead?: () => void
-    onWatch?: () => Dispose | void
-}
-
 // @ts-expect-error ignore
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export function RawSignal(this: RawSignal, value?: unknown, options?: RawSignalOptions) {
+export function RawSignal(this: RawSignal, value?: unknown) {
     this.node = undefined
     this.targets = undefined
     this.snapshot = undefined
     this.notified = 0
     this.value = value
     this.version = 0
-    this.onRead = options?.onRead
-    this.onWatch = options?.onWatch
-    this.onUnwatch = undefined
 }
 
 RawSignal.prototype.refresh = function () {
@@ -255,9 +242,6 @@ RawSignal.prototype.subscribe = function (node: ReactiveNode) {
 
         if (targets !== undefined) {
             targets.prevTarget = node
-        }
-        else if (this.onWatch) {
-            this.onUnwatch = untrack(this.onWatch) as undefined
         }
     }
 }
@@ -278,15 +262,11 @@ RawSignal.prototype.unsubscribe = function (node: ReactiveNode) {
 
         if (node === this.targets) {
             this.targets = next
-            if (next === undefined && this.onUnwatch) {
-                this.onUnwatch = untrack(this.onUnwatch) as undefined
-            }
         }
     }
 }
 
 RawSignal.prototype.get = function<T>(this: RawSignal<T>): T {
-    if (this.onRead) untrack(this.onRead)
     const node = addDependency(this)
     if (node !== undefined) {
         node.version = this.version
@@ -326,18 +306,14 @@ export declare class RawMemo<T = any> extends RawSignal<T> {
     globalVersion: number
     sources?: ReactiveNode
 
-    constructor(fn: () => T, options?: RawMemoOptions)
+    constructor(fn: () => T)
     get(): T
     notify(): void
 }
 
-export interface RawMemoOptions {
-    onWatch?: () => Dispose | void
-}
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export function RawMemo(this: RawMemo, fn: () => unknown, options?: RawMemoOptions) {
-    RawSignal.call(this, undefined, options)
+export function RawMemo(this: RawMemo, fn: () => unknown) {
+    RawSignal.call(this, undefined)
 
     this.fn = fn
     this.sources = undefined
@@ -541,7 +517,7 @@ RawEffect.prototype.run = function (this: RawEffect): void {
 
 RawEffect.prototype.dispose = function (this: RawEffect): void {
     this.flags |= DISPOSED
-    // What the cleanup and the signals that are no longer watched write is batched.
+    // What the cleanup writes is batched.
     startBatch()
     try {
         if (this.cleanup) cleanUp(this)

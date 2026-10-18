@@ -58,36 +58,6 @@ describe("Signal", () => {
         expect(spy).toHaveBeenCalledTimes(2)
     })
 
-    it("should tell when it is read", () => {
-        const onRead = vi.fn()
-        const $count = Signal(0, { onRead })
-        $count()
-        $count(1)
-        $count()
-        expect(onRead).toHaveBeenCalledTimes(2)
-    })
-
-    it("should tell when it is watched, and when it no longer is", () => {
-        const onUnwatch = vi.fn()
-        const onWatch = vi.fn(() => onUnwatch)
-        const $count = Signal(0, { onWatch })
-
-        $count()
-        expect(onWatch).toHaveBeenCalledTimes(0)
-
-        const a = effect(() => void $count())
-        const b = effect(() => void $count())
-        expect(onWatch).toHaveBeenCalledTimes(1)
-
-        a()
-        expect(onUnwatch).toHaveBeenCalledTimes(0)
-        b()
-        expect(onUnwatch).toHaveBeenCalledTimes(1)
-
-        effect(() => void $count())
-        expect(onWatch).toHaveBeenCalledTimes(2)
-    })
-
     it("should know what it holds", () => {
         expectTypeOf(Signal(0)).toEqualTypeOf<Signal<number>>()
         expectTypeOf(Signal<string>(null)).toEqualTypeOf<Signal<string | null>>()

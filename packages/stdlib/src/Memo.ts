@@ -11,8 +11,6 @@ export interface Memo<T = any> {
 export interface MemoOptions<T> {
     /** Whether two values are the same, for what reads the memo to not run again. Only asked when they are not `===`. */
     equals?: (before: T, after: T) => boolean
-    /** Called when the first memo or effect starts to depend on the memo, what it returns is called when the last one stopped. */
-    onWatch?: () => (() => void) | void
 }
 
 /** A memo of a map, and of each of its entries. */
@@ -71,7 +69,7 @@ function create<T>(computation: () => T, options?: MemoOptions<NoInfer<T>>): Mem
                 init = true
                 return prev = next
             }
-        : computation, options)
+        : computation)
 
     const memo = (() => raw.get()) as { kind: "Memo" } & Memo<T>
     memo.kind = "Memo"
@@ -105,7 +103,7 @@ function indexed<T, K, V>(target: () => readonly T[], by: (value: NoInfer<T>) =>
         }
         hasChanges ||= nextIdx.size !== prevIdx.size
         return hasChanges ? prevIdx = nextIdx : prevIdx
-    }, { onWatch: options?.onWatch }) as unknown as MemoIndex<K, V>
+    }) as unknown as MemoIndex<K, V>
 
     index.for = (key) => {
         const existing = cache.get(key)?.deref()

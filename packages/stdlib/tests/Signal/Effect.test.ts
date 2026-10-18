@@ -6,25 +6,21 @@ const effect = Effect
 
 describe("effect", () => {
     it("should unsubscribe from everything when disposed while running", () => {
-        const onUnwatch = vi.fn()
-        const a = signal(0, { onWatch: () => onUnwatch })
-        const b = signal(0, { onWatch: () => onUnwatch })
+        const a = signal(0)
+        const b = signal(0)
         const spy = vi.fn((fx: Effect) => {
             if (a() + b() > 0) fx.dispose()
         })
         effect(spy)
 
         a(1)
-        expect(onUnwatch).toHaveBeenCalledTimes(2)
-
         b(1)
         expect(spy).toHaveBeenCalledTimes(2)
     })
 
     it("should unsubscribe from everything when disposed during the first run", () => {
-        const onUnwatch = vi.fn()
-        const a = signal(0, { onWatch: () => onUnwatch })
-        const b = signal(0, { onWatch: () => onUnwatch })
+        const a = signal(0)
+        const b = signal(0)
         const spy = vi.fn((fx: Effect) => {
             a()
             fx.dispose()
@@ -32,7 +28,6 @@ describe("effect", () => {
         })
         effect(spy)
 
-        expect(onUnwatch).toHaveBeenCalledTimes(2)
         a(1)
         b(1)
         expect(spy).toHaveBeenCalledTimes(1)

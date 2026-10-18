@@ -22,10 +22,6 @@ export interface ReadonlySignal<T = any> {
 export interface SignalOptions<T> {
     /** Whether two values are the same, for a write to be skipped. Only asked when they are not `===`. */
     equals?: (before: T, after: T) => boolean
-    /** Called before the signal is read. */
-    onRead?: () => void
-    /** Called when the first memo or effect starts to depend on the signal, what it returns is called when the last one stopped. */
-    onWatch?: () => (() => void) | void
 }
 
 /**
@@ -36,7 +32,6 @@ export interface SignalOptions<T> {
  *
  * - memos and effects that read a signal run again when it changes
  * - writing the current value updates nothing, `equals` extends what counts as the same
- * - `onRead` and `onWatch` tell when the signal is used, for a value that is expensive to keep up to date
  *
  * ```ts
  * const $count = Signal(0);
@@ -48,11 +43,6 @@ export interface SignalOptions<T> {
  *
  * const $size = Signal({ width: 0, height: 0 }, {
  *     equals: (before, after) => before.width === after.width && before.height === after.height,
- *     onWatch() {
- *         const observer = new ResizeObserver(([entry]) => $size(entry.contentRect));
- *         observer.observe(element);
- *         return () => observer.disconnect();
- *     },
  * });
  * ```
  */
@@ -60,7 +50,7 @@ export function Signal<T>(value: T, options?: SignalOptions<NoInfer<T>>): Signal
 export function Signal<T>(value: T | null, options?: SignalOptions<NoInfer<T> | null>): Signal<T | null>
 export function Signal<T>(value: T | undefined | void, options?: SignalOptions<NoInfer<T> | undefined>): Signal<T | undefined>
 export function Signal<T>(value: T, options?: SignalOptions<NoInfer<T>>): Signal<T> {
-    const raw = new RawSignal(value, options)
+    const raw = new RawSignal(value)
     const equals = options?.equals
 
     // `arguments` instead of a rest parameter: JavaScriptCore allocates the rest array on every call.

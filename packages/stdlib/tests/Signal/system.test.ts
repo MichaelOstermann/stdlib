@@ -1865,21 +1865,9 @@ describe("untracked", () => {
 })
 
 describe("dependencies", () => {
-    /** Counts how many signals are watched, through `onWatch`. */
-    function watcher(counts: Record<string, number>, name: string): { onWatch: () => () => void } {
-        counts[name] = 0
-        return {
-            onWatch() {
-                counts[name]!++
-                return () => void counts[name]!--
-            },
-        }
-    }
-
     it("should keep a signal that is read in another order, and drop the one that is no longer read", () => {
-        const watching: Record<string, number> = {}
-        const a = signal(0, watcher(watching, "a"))
-        const b = signal(0, watcher(watching, "b"))
+        const a = signal(0)
+        const b = signal(0)
         const order = signal<("a" | "b")[]>(["a", "b"])
         const spy = vi.fn(() => {
             for (const name of order()) (name === "a" ? a : b)()
@@ -1887,30 +1875,27 @@ describe("dependencies", () => {
         effect(spy)
 
         order(["b", "a"])
-        expect(watching).toEqual({ a: 1, b: 1 })
         a(1)
         b(1)
         expect(spy).toHaveBeenCalledTimes(4)
 
         order(["b"])
-        expect(watching).toEqual({ a: 0, b: 1 })
         a(2)
         expect(spy).toHaveBeenCalledTimes(5)
+        b(2)
+        expect(spy).toHaveBeenCalledTimes(6)
     })
 
     it("should keep a signal that is read again after a memo read it in between", () => {
-        const watching: Record<string, number> = {}
-        const a = signal(0, watcher(watching, "a"))
+        const a = signal(0)
         const double = memo(() => a() * 2)
         const spy = vi.fn(() => void (a() + double() + a()))
         const dispose = effect(spy)
 
         for (let i = 1; i <= 3; i++) a(i)
         expect(spy).toHaveBeenCalledTimes(4)
-        expect(watching).toEqual({ a: 1 })
 
         dispose()
-        expect(watching).toEqual({ a: 0 })
         a(4)
         expect(spy).toHaveBeenCalledTimes(4)
     })

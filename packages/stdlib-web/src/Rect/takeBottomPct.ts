@@ -1,5 +1,5 @@
 import type { Rect } from "."
-import { merge } from "./merge"
+import { takeBottomPx } from "./takeBottomPx"
 
 /**
  * # takeBottomPct
@@ -19,10 +19,5 @@ import { merge } from "./merge"
  *
  */
 export function takeBottomPct(rect: Rect, amount: number): Rect {
-    const height = rect.height * Math.clamp(amount, 0, 1)
-    if (height === rect.height) return rect
-    return merge(rect, {
-        height,
-        top: rect.top + rect.height - height,
-    })
+    return takeBottomPx(rect, rect.height * amount)
 }

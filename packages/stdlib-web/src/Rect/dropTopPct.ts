@@ -1,5 +1,5 @@
 import type { Rect } from "."
-import { merge } from "./merge"
+import { dropTopPx } from "./dropTopPx"
 
 /**
  * # dropTopPct
@@ -19,9 +19,5 @@ import { merge } from "./merge"
  *
  */
 export function dropTopPct(rect: Rect, amount: number): Rect {
-    const dh = rect.height * Math.clamp(amount, 0, 1)
-    return merge(rect, {
-        height: rect.height - dh,
-        top: rect.top + dh,
-    })
+    return dropTopPx(rect, rect.height * amount)
 }

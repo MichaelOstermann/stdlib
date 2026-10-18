@@ -8,7 +8,7 @@ fakeDOM()
 describe("DOM.observeSize", () => {
     it("should measure the layout size right away, which a scale does not change", () => {
         // Scaled to half: getBoundingClientRect has the drawn size, offsetWidth and offsetHeight the one of the layout.
-        const element = { offsetHeight: 100, offsetWidth: 200, getBoundingClientRect: () => ({ height: 50, width: 100 }) } as unknown as Element
+        const element = Object.assign(new HTMLElement(), { offsetHeight: 100, offsetWidth: 200, getBoundingClientRect: () => ({ height: 50, width: 100 }) })
         const sizes: Rect[] = []
         observeSize(element, size => sizes.push(size))()
         expect(sizes).toEqual([{ height: 100, left: 0, top: 0, width: 200 }])

@@ -67,13 +67,15 @@ class FakeIntersectionObserver {
 }
 
 export function fakeDOM(): void {
-    const globals = globalThis as { IntersectionObserver?: unknown, ResizeObserver?: unknown, window?: unknown }
+    const globals = globalThis as { HTMLElement?: unknown, IntersectionObserver?: unknown, ResizeObserver?: unknown, window?: unknown }
 
     beforeEach(() => {
         dom.intersecting.clear()
         dom.listeners.clear()
         dom.resizing.clear()
         Object.assign(dom.window, { devicePixelRatio: 1, innerHeight: 600, innerWidth: 800 })
+        // Only for `instanceof`: an element with `offsetWidth` is created from it, the others are plain objects.
+        globals.HTMLElement = class {}
         globals.ResizeObserver = FakeResizeObserver
         globals.IntersectionObserver = FakeIntersectionObserver
         globals.window = Object.assign(dom.window, {
@@ -85,6 +87,7 @@ export function fakeDOM(): void {
     })
 
     afterEach(() => {
+        delete globals.HTMLElement
         delete globals.ResizeObserver
         delete globals.IntersectionObserver
         delete globals.window

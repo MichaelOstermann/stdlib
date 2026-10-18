@@ -1,5 +1,5 @@
 import type { Rect } from "."
-import { merge } from "./merge"
+import { takeLeftPx } from "./takeLeftPx"
 
 /**
  * # takeLeftPct
@@ -19,5 +19,5 @@ import { merge } from "./merge"
  *
  */
 export function takeLeftPct(rect: Rect, amount: number): Rect {
-    return merge(rect, { width: rect.width * Math.clamp(amount, 0, 1) })
+    return takeLeftPx(rect, rect.width * amount)
 }

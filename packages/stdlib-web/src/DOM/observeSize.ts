@@ -45,26 +45,30 @@ export function observeSize(target: Element | Window, onChange: (size: Rect) => 
 
 function observeElement(element: Element, report: (size: Rect) => void): () => void {
     // The layout size, as the ResizeObserver reports it. `getBoundingClientRect` would include transforms. SVG elements have no `offsetWidth`.
-    if ("offsetWidth" in element) {
-        report({ height: (element as HTMLElement).offsetHeight, left: 0, top: 0, width: (element as HTMLElement).offsetWidth })
+    if (element instanceof HTMLElement) {
+        report(size(element.offsetWidth, element.offsetHeight))
     }
     else {
         const { height, width } = element.getBoundingClientRect()
-        report({ height, left: 0, top: 0, width })
+        report(size(width, height))
     }
 
     return observe(element, (entry) => {
-        const size = entry.borderBoxSize[0]
-        if (size) report({ height: size.blockSize, left: 0, top: 0, width: size.inlineSize })
+        const box = entry.borderBoxSize[0]
+        if (box) report(size(box.inlineSize, box.blockSize))
     })
 }
 
 function observeViewport(window: Window, report: (size: Rect) => void): () => void {
-    const measure = (): void => report({ height: window.innerHeight, left: 0, top: 0, width: window.innerWidth })
+    const measure = (): void => report(size(window.innerWidth, window.innerHeight))
     const controller = new AbortController()
     measure()
     window.addEventListener("resize", measure, { passive: true, signal: controller.signal })
     return () => controller.abort()
+}
+
+function size(width: number, height: number): Rect {
+    return { height, left: 0, top: 0, width }
 }
 
 /** Calls `onResize` when the border box of `element` changes size, through one `ResizeObserver` shared by all elements. */

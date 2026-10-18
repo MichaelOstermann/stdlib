@@ -18,10 +18,6 @@ export interface Batch {
  * Makes several changes count as one: effects run once `fn` is done, instead of after every signal that is written.
  * Batches can be nested, the outermost one runs the effects.
  *
- * - a signal that is back to the value it had before the batch updates nothing
- * - memos are up to date inside of a batch, only effects wait
- * - an `Emitter` batches while it calls its listeners, and a `Disposer` while it disposes
- *
  * ```ts
  * Batch(() => {
  *     $a(1);

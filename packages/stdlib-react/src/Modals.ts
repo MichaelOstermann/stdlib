@@ -14,7 +14,7 @@ export interface Modal {
     readonly $status: ReadonlySignal<TransitionStatus>
     /** The element that opens and closes the modal, a button for example. Clicks on it do not close the modal, the element handles them itself. */
     readonly $trigger: Signal<Element | null>
-    /** Tooltips are left alone by clicks and Esc and close when anything opens. Opening a popover closes the other popovers. */
+    /** Tooltips are left alone by clicks and Esc and close when anything opens. Opening a popover or a dialog closes the open popovers. */
     readonly kind: "dialog" | "popover" | "tooltip"
     /** For telling modals apart in `Modals.onOpen` and `Modals.onClose`, or in telemetry. Need not be unique. */
     readonly name?: string
@@ -45,7 +45,7 @@ const onClose: ReadonlyEmitter<Modal> = closed
  *
  * - a click outside of the last opened modal closes it, unless it is on its trigger
  * - Esc closes the last opened modal, unless a text field has focus
- * - opening anything closes the open tooltips, opening a popover closes the other popovers
+ * - opening anything closes the open tooltips, opening a popover or a dialog closes the open popovers: a menu item that opens a dialog closes its menu
  * - tooltips are on the stack, but clicks and Esc go past them
  * - the stack closes a modal with `$open(false)`, after taking it off
  * - the listeners on `document` are only there while a modal is open
@@ -66,9 +66,9 @@ const onClose: ReadonlyEmitter<Modal> = closed
  */
 function open(modal: Modal): void {
     if (modals.includes(modal)) return
-    // Tooltips close when anything opens, popovers when another popover opens.
+    // Tooltips close when anything opens, popovers when a popover or a dialog opens.
     for (const other of [...modals]) {
-        if (other.kind === "tooltip" || (other.kind === "popover" && modal.kind === "popover")) dismiss(other)
+        if (other.kind === "tooltip" || (other.kind === "popover" && modal.kind !== "tooltip")) dismiss(other)
     }
     modals.push(modal)
     stopListening ??= listen()

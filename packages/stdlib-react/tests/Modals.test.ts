@@ -89,13 +89,31 @@ describe("Modals", () => {
 
     it("should close the other popovers when a popover opens", () => {
         const a = modal("popover")
+        const b = modal("popover")
+        a.open()
+        b.open()
+        expect(a.$open()).toBe(false)
+        expect(stack).toEqual([b])
+    })
+
+    it("should close the open popovers when a dialog opens, and keep the dialog when a popover opens in it", () => {
+        const a = modal("popover")
         const b = modal("dialog")
         const c = modal("popover")
         a.open()
         b.open()
-        c.open()
         expect(a.$open()).toBe(false)
+        expect(stack).toEqual([b])
+        c.open()
         expect(stack).toEqual([b, c])
+    })
+
+    it("should keep the open popovers when a tooltip opens", () => {
+        const a = modal("popover")
+        const b = modal("tooltip")
+        a.open()
+        b.open()
+        expect(stack).toEqual([a, b])
     })
 
     it("should close the open tooltips when anything opens", () => {

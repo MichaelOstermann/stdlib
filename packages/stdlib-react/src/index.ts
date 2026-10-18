@@ -1,3 +1,5 @@
+export * from "./Dialog"
+export * from "./Dialogs"
 export * from "./mergeRefs"
 export * from "./Modals"
 export * from "./Popover"

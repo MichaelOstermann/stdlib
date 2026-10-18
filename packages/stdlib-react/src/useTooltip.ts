@@ -58,7 +58,7 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltip {
     const [mounted, tooltip] = useAnchoredModal("tooltip", { ...rest, closeDuration, openDuration, placement })
     const { $open, $trigger } = tooltip
 
-    // Listeners on the trigger, removed when it unmounts. `mouseleave` and `blur` are only there while the pointer is on the trigger and while it has focus.
+    // Listeners on the trigger, removed when the trigger changes or unmounts.
     useCreateEffect(() => {
         const trigger = $trigger()
         if (!trigger) return
@@ -66,9 +66,8 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltip {
         const { signal } = controller
         let cancel: (() => void) | undefined
         let clicked = false
-        let hovered = false
 
-        // Every move starts the delay again, the tooltip opens once the pointer rests.
+        // Every mouse move restarts the delay, so the tooltip opens only once the pointer rests.
         const open = (): void => {
             if (clicked) return
             cancel?.()
@@ -79,21 +78,13 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltip {
             $open(false)
         }
 
-        trigger.addEventListener("mousemove", () => {
-            if (!hovered) {
-                hovered = true
-                trigger.addEventListener("mouseleave", () => {
-                    hovered = false
-                    clicked = false
-                    close()
-                }, { once: true, signal })
-            }
-            open()
+        trigger.addEventListener("mousemove", open, { signal })
+        trigger.addEventListener("mouseleave", () => {
+            clicked = false
+            close()
         }, { signal })
-        trigger.addEventListener("focus", () => {
-            trigger.addEventListener("blur", close, { once: true, signal })
-            open()
-        }, { signal })
+        trigger.addEventListener("focus", open, { signal })
+        trigger.addEventListener("blur", close, { signal })
         // A click closes the tooltip until the pointer leaves.
         trigger.addEventListener("click", () => {
             clicked = true

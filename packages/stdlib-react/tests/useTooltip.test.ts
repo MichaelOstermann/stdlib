@@ -84,21 +84,6 @@ describe("useTooltip", () => {
         expect(tooltip.$open()).toBe(false)
     })
 
-    it("should only listen for the pointer leaving while it is on the trigger", async () => {
-        setup()
-        const added: string[] = []
-        const addEventListener = trigger.addEventListener.bind(trigger)
-        trigger.addEventListener = ((type: string, ...rest: [never, never]) => {
-            added.push(type)
-            addEventListener(type, ...rest)
-        }) as typeof trigger.addEventListener
-        for (let i = 0; i < 5; i++) send("mousemove")
-        expect(added).toEqual(["mouseleave"])
-        send("mouseleave")
-        send("mousemove")
-        expect(added).toEqual(["mouseleave", "mouseleave"])
-    })
-
     it("should close when another modal opens", async () => {
         setup()
         send("focus")

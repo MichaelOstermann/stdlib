@@ -22,10 +22,10 @@ const globalsOptions = {
     resolve: (global: string, name: string): string => `${from}/${global}/${name}.mjs`,
 }
 
-// Effects and emitters only receive `hmr`, which is enough to dispose them.
+// Effects and emitters only receive `hmr`, which is enough to stop effects and clear the listeners of emitters.
 const hmrOnly: MetaParam["meta"] = ({ hmr }) => ({ hmr })
 
-/** Functions whose results are disposed when their module is replaced. At this point each one is imported from its own file, however the source referred to it. */
+/** Functions whose results are stopped or cleared when their module is replaced. At this point each one is imported from its own file, however the source referred to it. */
 const hmrParams: MetaParam[] = [
     { function: "Effect", meta: hmrOnly, module: `${from}/Effect.mjs`, position: 2 },
     { function: "Effect.watch", meta: hmrOnly, module: `${from}/Effect.mjs`, position: 4 },
@@ -37,7 +37,7 @@ export interface StdlibOptions {
     /** Prints what is being replaced. */
     debug?: boolean
     /**
-     * Whether to dispose effects and emitters when their module is replaced.
+     * Whether to stop effects and clear the listeners of emitters when their module is replaced.
      * @default false
      */
     hmr?: boolean
@@ -61,7 +61,7 @@ export interface StdlibResult {
  * - `match()` chains are compiled into conditional expressions
  * - `pipe()` calls are replaced with the calls they make
  * - everything else (`pipe`, `Result`, …) is imported from the file it lives in
- * - with `hmr`, effects and emitters are passed what disposes them when their module is replaced
+ * - with `hmr`, effects and emitters are passed what stops them or clears their listeners when their module is replaced
  * - with `react`, reads of signals in components and hooks are wrapped with `useSignal`
  *
  * All of it is available as globals, and can be imported from the package as well.

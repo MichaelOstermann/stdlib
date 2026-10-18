@@ -11,7 +11,7 @@ export interface StdlibPluginOptions extends Omit<StdlibOptions, "debug"> {
     /** Skip files whose path matches one of these. Dependencies are always skipped. */
     exclude?: RegExp | RegExp[]
     /**
-     * Whether to dispose effects and emitters when their module is replaced.
+     * Whether to stop effects and clear the listeners of emitters when their module is replaced.
      * @default true when used with the dev server of Vite
      */
     hmr?: boolean

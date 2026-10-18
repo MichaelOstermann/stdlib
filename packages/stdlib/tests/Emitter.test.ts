@@ -56,7 +56,7 @@ describe("Emitter", () => {
         const onTick = Emitter<number>()
         onTick(() => calls++)
         onTick(() => calls++)
-        onTick.clear()
+        onTick.listeners.clear()
         onTick(1)
         expect(calls).toBe(0)
     })
@@ -151,7 +151,7 @@ describe("AsyncEmitter", () => {
         remove()
         await onTick()
         expect(calls).toBe(1)
-        onTick.clear()
+        onTick.listeners.clear()
         await onTick()
         expect(calls).toBe(1)
     })
@@ -164,36 +164,6 @@ describe("AsyncEmitter", () => {
         onTick(value => void log.push(value))
         await onTick(2)
         expect(log).toEqual([4])
-    })
-})
-
-describe("Emitter, disposed", () => {
-    it("should remove its listeners and ignore new ones", () => {
-        let calls = 0
-        const onTick = Emitter()
-        onTick(() => calls++)
-
-        onTick.dispose()
-        onTick.dispose()
-        expect(onTick.listeners.size).toBe(0)
-
-        const remove = onTick(() => calls++)
-        onTick()
-        remove()
-        expect(calls).toBe(0)
-        expect(onTick.listeners.size).toBe(0)
-    })
-
-    it("should dispose an emitter that waits", async () => {
-        let calls = 0
-        const onTick = AsyncEmitter()
-        onTick(async () => void calls++)
-        await onTick()
-        onTick.dispose()
-        onTick(async () => void calls++)
-        await onTick()
-        expect(calls).toBe(1)
-        expect(onTick.listeners.size).toBe(0)
     })
 })
 

@@ -33,9 +33,9 @@ const clocks = new Map<number, Clock>()
  * const stop = Timer.aligned(Duration.MINUTE, now => console.log(new Date(now)));
  * stop();
  *
- * // A signal of the time, while the effect runs.
+ * // A signal of the time, every minute.
  * const $now = Signal(Date.now());
- * Effect(() => Timer.aligned(Duration.MINUTE, $now));
+ * const stopNow = Timer.aligned(Duration.MINUTE, $now);
  * ```
  *
  */

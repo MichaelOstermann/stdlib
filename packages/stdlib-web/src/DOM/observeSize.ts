@@ -20,7 +20,7 @@ let observed = 0
  * Returns the size of an element as a signal: a rect at `0, 0` with the width and height of its border box.
  * The size is the one of its layout, which transforms such as `scale` do not change, like `ResizeObserver` reports it.
  * For a window, the rect has the size of its viewport: `innerWidth` and `innerHeight`.
- * Cheaper than `DOM.observeRect`, for when the position does not matter.
+ * Cheaper than `DOM.observePosition`, for when the position does not matter.
  *
  * - every call with the same target returns the same signal
  * - the target is only observed while a memo or an effect depends on the signal

@@ -1,10 +1,10 @@
-import { observeRect } from "./observeRect"
+import { observePosition } from "./observePosition"
 import { observeSize } from "./observeSize"
 import { onAncestorScroll } from "./onAncestorScroll"
 import { roundByDPR } from "./roundByDPR"
 
 export const DOM = {
-    observeRect,
+    observePosition,
     observeSize,
     onAncestorScroll,
     roundByDPR,

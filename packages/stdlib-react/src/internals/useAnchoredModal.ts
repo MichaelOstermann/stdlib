@@ -38,7 +38,7 @@ export function useAnchoredModal<K extends "popover" | "tooltip">(kind: K, optio
         const trigger = $trigger()
         if (!floating || !trigger) return undefined
         return placement({
-            anchor: DOM.observeRect(trigger)(),
+            anchor: DOM.observePosition(trigger)(),
             boundary: DOM.observeSize(window)(),
             floating: DOM.observeSize(floating)(),
         }, { anchorGap, boundaryGap })

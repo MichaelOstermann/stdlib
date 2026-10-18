@@ -6,13 +6,14 @@ import { fromDOMRect } from "../Rect/fromDOMRect"
 const signals = new WeakMap<Element, ReadonlySignal<Rect>>()
 
 /**
- * # observeRect
+ * # observePosition
  *
  * ```ts
- * function DOM.observeRect(element: Element | null): ReadonlySignal<Rect>
+ * function DOM.observePosition(element: Element | null): ReadonlySignal<Rect>
  * ```
  *
- * Returns the position and size of an element as a signal, in viewport coordinates like `getBoundingClientRect`.
+ * Returns where an element is as a signal: its rect in viewport coordinates, like `getBoundingClientRect` reports it.
+ * The size of that rect is the one after transforms such as `scale`, unlike the one of `DOM.observeSize`.
  *
  * - every call with the same element returns the same signal
  * - the element is only observed while a memo or an effect depends on the signal
@@ -23,15 +24,15 @@ const signals = new WeakMap<Element, ReadonlySignal<Rect>>()
  * ## Example
  *
  * ```ts
- * const $rect = DOM.observeRect(element);
- * Effect(() => console.log($rect().left, $rect().top));
+ * const $position = DOM.observePosition(element);
+ * Effect(() => console.log($position().left, $position().top));
  *
  * // An element that is set later, or changes:
  * const $button = Signal<HTMLElement | null>(null);
- * const $buttonRect = Memo(() => DOM.observeRect($button())());
+ * const $buttonPosition = Memo(() => DOM.observePosition($button())());
  * ```
  */
-export function observeRect(element: Element | null): ReadonlySignal<Rect> {
+export function observePosition(element: Element | null): ReadonlySignal<Rect> {
     if (!element) return nothing()
     let $rect = signals.get(element)
     if (!$rect) {

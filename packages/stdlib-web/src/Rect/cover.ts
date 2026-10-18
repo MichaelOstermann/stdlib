@@ -8,7 +8,7 @@ import { merge } from "./merge"
  * function Rect.cover(target: Rect, source: Rect): Rect
  * ```
  *
- * Scales the `target` rectangle up proportionally so it completely covers the `source` rectangle while maintaining its aspect ratio, then centers it within the `source`.
+ * Scales `target` to the smallest size that covers `source`, keeping its aspect ratio, and centers it on `source`. Like `object-fit: cover`.
  *
  * ## Example
  *
@@ -19,7 +19,6 @@ import { merge } from "./merge"
  * );
  * // { left: -45, top: 0, width: 240, height: 120 }
  * ```
- *
  */
 export function cover(target: Rect, source: Rect): Rect {
     const scale = Math.max(

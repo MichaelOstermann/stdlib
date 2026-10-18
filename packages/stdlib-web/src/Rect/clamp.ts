@@ -1,5 +1,7 @@
 import type { Rect } from "."
+import { bottom } from "./bottom"
 import { merge } from "./merge"
+import { right } from "./right"
 
 /**
  * # clamp
@@ -8,7 +10,7 @@ import { merge } from "./merge"
  * function Rect.clamp(target: Rect, source: Rect): Rect
  * ```
  *
- * Constrains the `target` rectangle to fit within the boundaries of the `source` rectangle, adjusting position and size as needed.
+ * Moves `target` inside `source`, and shrinks it where it is larger than `source`.
  *
  * ## Example
  *
@@ -19,13 +21,12 @@ import { merge } from "./merge"
  * );
  * // { left: 0, top: 20, width: 150, height: 100 }
  * ```
- *
  */
 export function clamp(target: Rect, source: Rect): Rect {
     const width = Math.min(target.width, source.width)
     const height = Math.min(target.height, source.height)
-    const left = Math.max(source.left, Math.min(target.left, source.left + source.width - width))
-    const top = Math.max(source.top, Math.min(target.top, source.top + source.height - height))
+    const left = Math.max(source.left, Math.min(target.left, right(source) - width))
+    const top = Math.max(source.top, Math.min(target.top, bottom(source) - height))
     return merge(target, {
         height,
         left,

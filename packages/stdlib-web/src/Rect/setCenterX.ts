@@ -1,4 +1,5 @@
 import type { Rect } from "."
+import { centerX } from "./centerX"
 import { merge } from "./merge"
 
 /**
@@ -8,7 +9,7 @@ import { merge } from "./merge"
  * function Rect.setCenterX(rect: Rect, x: number): Rect
  * ```
  *
- * Sets the horizontal center position of the rectangle to the specified x-coordinate.
+ * Moves the rect so its horizontal center is at `x`. The size stays.
  *
  * ## Example
  *
@@ -16,9 +17,8 @@ import { merge } from "./merge"
  * Rect.setCenterX({ left: 10, top: 20, width: 100, height: 50 }, 75);
  * // { left: 25, top: 20, width: 100, height: 50 }
  * ```
- *
  */
 export function setCenterX(rect: Rect, x: number): Rect {
-    if (x === rect.left + rect.width / 2) return rect
+    if (x === centerX(rect)) return rect
     return merge(rect, { left: x - (rect.width / 2) })
 }

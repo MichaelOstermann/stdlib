@@ -10,7 +10,7 @@ import { merge } from "./merge"
  * function Rect.scale(rect: Rect, factor: number): Rect
  * ```
  *
- * Scales the rectangle by the specified factor in both dimensions while keeping it centered at the same position.
+ * Multiplies the width and the height by `factor`, around the center. A negative `factor` counts as `0`.
  *
  * ## Example
  *
@@ -18,7 +18,6 @@ import { merge } from "./merge"
  * Rect.scale({ left: 10, top: 20, width: 100, height: 50 }, 1.5);
  * // { left: -15, top: 7.5, width: 150, height: 75 }
  * ```
- *
  */
 export function scale(rect: Rect, factor: number): Rect {
     factor = Math.max(factor, 0)

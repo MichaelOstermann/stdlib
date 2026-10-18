@@ -8,7 +8,7 @@ import { merge } from "./merge"
  * function Rect.contain(target: Rect, source: Rect): Rect
  * ```
  *
- * Scales the `target` rectangle down proportionally so it fits entirely within the `source` rectangle while maintaining its aspect ratio, then centers it within the `source`.
+ * Scales `target` to the largest size that fits inside `source`, keeping its aspect ratio, and centers it in `source`. Like `object-fit: contain`.
  *
  * ## Example
  *
@@ -19,7 +19,6 @@ import { merge } from "./merge"
  * );
  * // { left: 0, top: 22.5, width: 150, height: 75 }
  * ```
- *
  */
 export function contain(target: Rect, source: Rect): Rect {
     const scale = Math.min(

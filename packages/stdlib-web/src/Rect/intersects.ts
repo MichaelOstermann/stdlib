@@ -1,4 +1,6 @@
 import type { Rect } from "."
+import { bottom } from "./bottom"
+import { right } from "./right"
 
 /**
  * # intersects
@@ -7,7 +9,7 @@ import type { Rect } from "."
  * function Rect.intersects(a: Rect, b: Rect): boolean
  * ```
  *
- * Checks if two rectangles intersect or overlap with each other.
+ * Whether `a` and `b` overlap. Rects that only share an edge do not.
  *
  * ## Example
  *
@@ -18,13 +20,12 @@ import type { Rect } from "."
  * );
  * // true
  * ```
- *
  */
 export function intersects(a: Rect, b: Rect): boolean {
     return !(
-        a.left >= (b.left + b.width)
-        || (a.left + a.width) <= b.left
-        || a.top >= (b.top + b.height)
-        || (a.top + a.height) <= b.top
+        a.left >= right(b)
+        || right(a) <= b.left
+        || a.top >= bottom(b)
+        || bottom(a) <= b.top
     )
 }

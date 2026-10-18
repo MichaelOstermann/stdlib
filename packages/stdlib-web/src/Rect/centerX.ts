@@ -7,7 +7,7 @@ import type { Rect } from "."
  * function Rect.centerX(rect: Rect): number
  * ```
  *
- * Gets the horizontal center x-coordinate of a rectangle.
+ * The x-coordinate of the center.
  *
  * ## Example
  *
@@ -15,7 +15,6 @@ import type { Rect } from "."
  * Rect.centerX({ left: 10, top: 20, width: 100, height: 50 });
  * // 60
  * ```
- *
  */
 export function centerX(rect: Rect): number {
     return rect.left + rect.width / 2

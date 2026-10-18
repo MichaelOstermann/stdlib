@@ -8,7 +8,7 @@ import { merge } from "./merge"
  * function Rect.map(rect: Rect, transform: (rect: Rect) => Partial<Rect>): Rect
  * ```
  *
- * Applies a transformation function to a rectangle, merging the returned partial rectangle with the original.
+ * Merges the properties that `transform` returns into `rect`, like `Rect.merge`.
  *
  * ## Example
  *
@@ -18,7 +18,6 @@ import { merge } from "./merge"
  * }));
  * // { left: 10, top: 20, width: 200, height: 50 }
  * ```
- *
  */
 export function map(rect: Rect, transform: (rect: Rect) => Partial<Rect>): Rect {
     return merge(rect, transform(rect))

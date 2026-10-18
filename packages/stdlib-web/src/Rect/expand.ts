@@ -8,7 +8,7 @@ import { merge } from "./merge"
  * function Rect.expand(rect: Rect, amount: number): Rect
  * ```
  *
- * Expands the rectangle in all directions by the specified amount.
+ * Moves every edge outward by `amount`. A negative `amount` changes nothing.
  *
  * ## Example
  *
@@ -16,14 +16,13 @@ import { merge } from "./merge"
  * Rect.expand({ left: 10, top: 20, width: 100, height: 50 }, 10);
  * // { left: 0, top: 10, width: 120, height: 70 }
  * ```
- *
  */
 export function expand(rect: Rect, amount: number): Rect {
-    const d = Math.max(amount, 0)
+    amount = Math.max(amount, 0)
     return merge(rect, {
-        height: rect.height + (d * 2),
-        left: rect.left - d,
-        top: rect.top - d,
-        width: rect.width + (d * 2),
+        height: rect.height + amount * 2,
+        left: rect.left - amount,
+        top: rect.top - amount,
+        width: rect.width + amount * 2,
     })
 }

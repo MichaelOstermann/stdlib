@@ -8,7 +8,7 @@ import { isEqual } from "./isEqual"
  * function Rect.normalize(rect: Rect): Rect
  * ```
  *
- * Normalizes a rectangle by ensuring positive width and height, adjusting position as needed if dimensions were negative.
+ * Turns a negative width or height positive, and moves `left` or `top` so the rect covers the same area.
  *
  * ## Example
  *
@@ -16,7 +16,6 @@ import { isEqual } from "./isEqual"
  * Rect.normalize({ left: 50, top: 60, width: -30, height: -40 });
  * // { left: 20, top: 20, width: 30, height: 40 }
  * ```
- *
  */
 export function normalize(rect: Rect): Rect {
     const result = {

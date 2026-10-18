@@ -8,7 +8,7 @@ import { merge } from "./merge"
  * function Rect.moveRightTo(rect: Rect, right: number): Rect
  * ```
  *
- * Moves the rectangle so its right edge is positioned at the specified x-coordinate.
+ * Moves the rect so its right edge is at `right`. The size stays.
  *
  * ## Example
  *
@@ -16,7 +16,6 @@ import { merge } from "./merge"
  * Rect.moveRightTo({ left: 10, top: 20, width: 100, height: 50 }, 150);
  * // { left: 50, top: 20, width: 100, height: 50 }
  * ```
- *
  */
 export function moveRightTo(rect: Rect, right: number): Rect {
     if (right === rect.left + rect.width) return rect

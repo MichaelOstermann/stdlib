@@ -8,7 +8,7 @@ import { merge } from "./merge"
  * function Rect.expandY(rect: Rect, amount: number): Rect
  * ```
  *
- * Expands the rectangle vertically by the specified amount.
+ * Moves the top and bottom edges outward by `amount`. A negative `amount` changes nothing.
  *
  * ## Example
  *
@@ -16,12 +16,11 @@ import { merge } from "./merge"
  * Rect.expandY({ left: 10, top: 20, width: 100, height: 50 }, 10);
  * // { left: 10, top: 10, width: 100, height: 70 }
  * ```
- *
  */
 export function expandY(rect: Rect, amount: number): Rect {
-    const d = Math.max(amount, 0)
+    amount = Math.max(amount, 0)
     return merge(rect, {
-        height: rect.height + (d * 2),
-        top: rect.top - d,
+        height: rect.height + amount * 2,
+        top: rect.top - amount,
     })
 }

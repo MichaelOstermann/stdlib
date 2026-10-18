@@ -64,7 +64,10 @@ import { translateX } from "./translateX"
 import { translateY } from "./translateY"
 import { union } from "./union"
 
-/** A rectangle by its position and size. Every function of `Rect` takes anything of this shape, a `DOMRect` included. */
+/**
+ * A rectangle by its position and size. Every function of `Rect` takes anything of this shape, a `DOMRect` included.
+ * A function that returns a rect returns the one it was given when nothing changes.
+ */
 export type Rect = {
     readonly height: number
     readonly left: number

@@ -8,7 +8,7 @@ import { dropBottomPx } from "./dropBottomPx"
  * function Rect.dropBottomPct(rect: Rect, amount: number): Rect
  * ```
  *
- * Removes a percentage of the rectangle's height from the bottom edge. The amount should be between 0 and 1.
+ * Removes `amount` of the height from the bottom, as a fraction from `0` to `1`. The top edge stays.
  *
  * ## Example
  *
@@ -16,7 +16,6 @@ import { dropBottomPx } from "./dropBottomPx"
  * Rect.dropBottomPct({ left: 10, top: 20, width: 100, height: 80 }, 0.25);
  * // { left: 10, top: 20, width: 100, height: 60 }
  * ```
- *
  */
 export function dropBottomPct(rect: Rect, amount: number): Rect {
     return dropBottomPx(rect, rect.height * amount)

@@ -1,9 +1,11 @@
 import type { Rect } from "."
+import { bottom } from "./bottom"
 import { contains } from "./contains"
 import { fromEdges } from "./fromEdges"
 import { intersects } from "./intersects"
 import { isEqual } from "./isEqual"
 import { origin } from "./origin"
+import { right } from "./right"
 
 /**
  * # intersection
@@ -12,7 +14,7 @@ import { origin } from "./origin"
  * function Rect.intersection(a: Rect, b: Rect): Rect
  * ```
  *
- * Calculates the intersection rectangle of two rectangles. Returns the origin rectangle if they don't intersect.
+ * The area where `a` and `b` overlap, or `Rect.origin` when they do not.
  *
  * ## Example
  *
@@ -23,7 +25,6 @@ import { origin } from "./origin"
  * );
  * // { left: 25, top: 25, width: 25, height: 25 }
  * ```
- *
  */
 export function intersection(a: Rect, b: Rect): Rect {
     if (isEqual(a, b)) return a
@@ -31,9 +32,9 @@ export function intersection(a: Rect, b: Rect): Rect {
     if (contains(b, a)) return a
     if (contains(a, b)) return b
     return fromEdges({
-        bottom: Math.min(a.top + a.height, b.top + b.height),
+        bottom: Math.min(bottom(a), bottom(b)),
         left: Math.max(a.left, b.left),
-        right: Math.min(a.left + a.width, b.left + b.width),
+        right: Math.min(right(a), right(b)),
         top: Math.max(a.top, b.top),
     })
 }

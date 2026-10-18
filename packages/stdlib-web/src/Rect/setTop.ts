@@ -1,4 +1,5 @@
 import type { Rect } from "."
+import { bottom } from "./bottom"
 import { merge } from "./merge"
 
 /**
@@ -8,7 +9,7 @@ import { merge } from "./merge"
  * function Rect.setTop(rect: Rect, top: number): Rect
  * ```
  *
- * Sets the top edge of a rectangle to a specific y-coordinate. The rectangle's height is adjusted to maintain the bottom edge position while moving the top edge to the new position.
+ * Moves the top edge to `top`, the bottom edge stays. A `top` below the bottom edge gives a height of `0`.
  *
  * ## Example
  *
@@ -16,14 +17,13 @@ import { merge } from "./merge"
  * Rect.setTop({ left: 10, top: 20, width: 100, height: 50 }, 30);
  * // { left: 10, top: 30, width: 100, height: 40 }
  * ```
- *
  */
 export function setTop(rect: Rect, top: number): Rect {
     if (top === rect.top) return rect
-    const bottom = rect.top + rect.height
-    top = Math.min(top, bottom)
+    const bottomEdge = bottom(rect)
+    top = Math.min(top, bottomEdge)
     return merge(rect, {
-        height: bottom - top,
+        height: bottomEdge - top,
         top,
     })
 }

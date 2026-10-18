@@ -8,7 +8,7 @@ import { setHeight } from "./setHeight"
  * function Rect.setBottom(rect: Rect, bottom: number): Rect
  * ```
  *
- * Sets the bottom edge of a rectangle to a specific y-coordinate. The rectangle's height is adjusted to reach the new bottom position while keeping the top edge fixed.
+ * Moves the bottom edge to `bottom`, the top edge stays. A `bottom` above the top edge gives a height of `0`.
  *
  * ## Example
  *
@@ -16,9 +16,8 @@ import { setHeight } from "./setHeight"
  * Rect.setBottom({ left: 10, top: 20, width: 100, height: 50 }, 80);
  * // { left: 10, top: 20, width: 100, height: 60 }
  * ```
- *
  */
 export function setBottom(rect: Rect, bottom: number): Rect {
     if (bottom === rect.top + rect.height) return rect
-    return setHeight(rect, (Math.max(rect.top, bottom)) - rect.top)
+    return setHeight(rect, Math.max(rect.top, bottom) - rect.top)
 }

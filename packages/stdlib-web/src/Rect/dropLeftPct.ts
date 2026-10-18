@@ -8,7 +8,7 @@ import { dropLeftPx } from "./dropLeftPx"
  * function Rect.dropLeftPct(rect: Rect, amount: number): Rect
  * ```
  *
- * Removes a percentage of the rectangle's width from the left edge, moving the left position rightward. The amount should be between 0 and 1.
+ * Removes `amount` of the width from the left, as a fraction from `0` to `1`. The right edge stays.
  *
  * ## Example
  *
@@ -16,7 +16,6 @@ import { dropLeftPx } from "./dropLeftPx"
  * Rect.dropLeftPct({ left: 10, top: 20, width: 100, height: 80 }, 0.25);
  * // { left: 35, top: 20, width: 75, height: 80 }
  * ```
- *
  */
 export function dropLeftPct(rect: Rect, amount: number): Rect {
     return dropLeftPx(rect, rect.width * amount)

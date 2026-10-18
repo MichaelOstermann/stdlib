@@ -14,7 +14,7 @@ type RectEdges = {
  * function Rect.fromEdges(edges: { bottom: number, left: number, right: number, top: number }): Rect
  * ```
  *
- * Creates a rectangle from edge coordinates.
+ * A rect from the coordinates of its four edges. Edges in the wrong order are swapped.
  *
  * ## Example
  *
@@ -22,7 +22,6 @@ type RectEdges = {
  * Rect.fromEdges({ left: 10, top: 20, right: 110, bottom: 70 });
  * // { left: 10, top: 20, width: 100, height: 50 }
  * ```
- *
  */
 export function fromEdges(edges: RectEdges): Rect {
     const top = Math.min(edges.top, edges.bottom)

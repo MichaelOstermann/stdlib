@@ -7,7 +7,7 @@ import type { Rect } from "."
  * function Rect.isEqual(a: Rect, b: Rect): boolean
  * ```
  *
- * Checks if two rectangles are equal by comparing their position and dimensions.
+ * Whether `a` and `b` have the same position and size.
  *
  * ## Example
  *
@@ -18,7 +18,6 @@ import type { Rect } from "."
  * );
  * // true
  * ```
- *
  */
 export function isEqual(a: Rect, b: Rect): boolean {
     return a === b

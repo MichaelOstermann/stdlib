@@ -7,7 +7,7 @@ import type { Rect } from "."
  * function Rect.fromWindow(): Rect
  * ```
  *
- * Creates a rectangle representing the browser window's viewport dimensions.
+ * The rect of the viewport: at `0, 0`, with the size of `innerWidth` and `innerHeight`.
  *
  * ## Example
  *
@@ -15,7 +15,6 @@ import type { Rect } from "."
  * Rect.fromWindow();
  * // { left: 0, top: 0, width: 1920, height: 1080 }
  * ```
- *
  */
 export function fromWindow(): Rect {
     return {

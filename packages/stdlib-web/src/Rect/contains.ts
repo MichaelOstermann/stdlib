@@ -1,4 +1,6 @@
 import type { Rect } from "."
+import { bottom } from "./bottom"
+import { right } from "./right"
 
 /**
  * # contains
@@ -7,7 +9,7 @@ import type { Rect } from "."
  * function Rect.contains(a: Rect, b: Rect): boolean
  * ```
  *
- * Checks if rectangle `a` completely contains rectangle `b` within its boundaries.
+ * Whether `b` lies entirely inside `a`. Shared edges count as inside.
  *
  * ## Example
  *
@@ -18,11 +20,10 @@ import type { Rect } from "."
  * );
  * // true
  * ```
- *
  */
 export function contains(a: Rect, b: Rect): boolean {
     return a.left <= b.left
         && a.top <= b.top
-        && (a.left + a.width) >= (b.left + b.width)
-        && (a.top + a.height) >= (b.top + b.height)
+        && right(a) >= right(b)
+        && bottom(a) >= bottom(b)
 }

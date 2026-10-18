@@ -8,7 +8,7 @@ import { setWidth } from "./setWidth"
  * function Rect.setRight(rect: Rect, right: number): Rect
  * ```
  *
- * Sets the right edge of a rectangle to a specific x-coordinate. The rectangle's width is adjusted to reach the new right position while keeping the left edge fixed.
+ * Moves the right edge to `right`, the left edge stays. A `right` before the left edge gives a width of `0`.
  *
  * ## Example
  *
@@ -16,7 +16,6 @@ import { setWidth } from "./setWidth"
  * Rect.setRight({ left: 10, top: 20, width: 100, height: 50 }, 130);
  * // { left: 10, top: 20, width: 120, height: 50 }
  * ```
- *
  */
 export function setRight(rect: Rect, right: number): Rect {
     if (right === rect.left + rect.width) return rect

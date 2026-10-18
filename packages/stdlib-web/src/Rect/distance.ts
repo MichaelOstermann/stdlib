@@ -1,4 +1,6 @@
 import type { Rect } from "."
+import { bottom } from "./bottom"
+import { right } from "./right"
 
 /**
  * # distance
@@ -7,7 +9,7 @@ import type { Rect } from "."
  * function Rect.distance(a: Rect, b: Rect): number
  * ```
  *
- * Calculates the shortest distance between two rectangles. Returns 0 if the rectangles intersect.
+ * The shortest distance between the edges of `a` and `b`, `0` when they touch or overlap.
  *
  * ## Example
  *
@@ -18,10 +20,9 @@ import type { Rect } from "."
  * );
  * // 50
  * ```
- *
  */
 export function distance(a: Rect, b: Rect): number {
-    const x = Math.max(0, a.left - (b.left + b.width), b.left - (a.left + a.width))
-    const y = Math.max(0, a.top - (b.top + b.height), b.top - (a.top + a.height))
+    const x = Math.max(0, a.left - right(b), b.left - right(a))
+    const y = Math.max(0, a.top - bottom(b), b.top - bottom(a))
     return Math.hypot(x, y)
 }

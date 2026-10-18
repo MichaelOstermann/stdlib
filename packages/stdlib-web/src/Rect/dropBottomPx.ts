@@ -8,7 +8,7 @@ import { merge } from "./merge"
  * function Rect.dropBottomPx(rect: Rect, amount: number): Rect
  * ```
  *
- * Removes a specified number of pixels from the rectangle's height at the bottom edge.
+ * Removes `amount` pixels from the bottom, at most the height. The top edge stays.
  *
  * ## Example
  *
@@ -16,7 +16,6 @@ import { merge } from "./merge"
  * Rect.dropBottomPx({ left: 10, top: 20, width: 100, height: 80 }, 20);
  * // { left: 10, top: 20, width: 100, height: 60 }
  * ```
- *
  */
 export function dropBottomPx(rect: Rect, amount: number): Rect {
     return merge(rect, { height: rect.height - Math.clamp(amount, 0, rect.height) })

@@ -19,7 +19,7 @@ export type PlacementName =
 export interface PlacementMeasurements {
     /** What the floating rect is placed next to: an element, the point of a mouse event, a caret. */
     readonly anchor: Rect
-    /** The area the floating rect has to stay in, usually `DOM.observeSize(window)`. */
+    /** The area the floating rect has to stay in, usually the size of the window, from `DOM.observeSize(window, onChange)`. */
     readonly boundary: Rect
     /** The size of the floating element. Its position is ignored. */
     readonly floating: Rect

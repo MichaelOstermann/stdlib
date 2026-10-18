@@ -2,7 +2,7 @@ import type { Memo, ReadonlySignal, Signal } from "@monstermann/stdlib"
 import type { Placement, PlacementOptions, PlacementPosition } from "@monstermann/stdlib-web"
 import type { Modal } from "../Modals"
 import type { TransitionStatus } from "../useTransitionStatus"
-import { DOM } from "@monstermann/stdlib-web"
+import { DOM, Rect } from "@monstermann/stdlib-web"
 import { Modals } from "../Modals"
 import { useTransitionStatus } from "../useTransitionStatus"
 import { useCreateEffect } from "./useCreateEffect"
@@ -32,15 +32,32 @@ export function useAnchoredModal<K extends "popover" | "tooltip">(kind: K, optio
     const $floating = useCreateSignal<Element | null>(null)
     const $ownTrigger = useCreateSignal<Element | null>(null)
     const $trigger = options.$trigger ?? $ownTrigger
+    const $anchor = useCreateSignal(Rect.origin)
+    const $boundary = useCreateSignal(Rect.origin)
+    const $floatingSize = useCreateSignal(Rect.origin)
+
+    // Measured only while the floating element is rendered, and each from the element it measures.
+    useCreateEffect(() => {
+        const trigger = $trigger()
+        if (!$floating() || !trigger) return
+        return DOM.observePosition(trigger, $anchor)
+    })
+    useCreateEffect(() => {
+        if (!$floating()) return
+        return DOM.observeSize(window, $boundary)
+    })
+    useCreateEffect(() => {
+        const floating = $floating()
+        if (!floating) return
+        return DOM.observeSize(floating, $floatingSize)
+    })
 
     const $position = useCreateMemo(() => {
-        const floating = $floating()
-        const trigger = $trigger()
-        if (!floating || !trigger) return undefined
+        if (!$floating() || !$trigger()) return undefined
         return placement({
-            anchor: DOM.observePosition(trigger)(),
-            boundary: DOM.observeSize(window)(),
-            floating: DOM.observeSize(floating)(),
+            anchor: $anchor(),
+            boundary: $boundary(),
+            floating: $floatingSize(),
         }, { anchorGap, boundaryGap })
     })
 

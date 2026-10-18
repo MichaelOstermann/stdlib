@@ -1,8 +1,5 @@
-import type { ReadonlySignal } from "@monstermann/stdlib"
 import type { Rect } from "../Rect"
-import { nothing, sensor } from "../internals/sensor"
-
-const signals = new WeakMap<Element | Window, ReadonlySignal<Rect>>()
+import { onRoundedChange } from "../internals/onRoundedChange"
 
 const callbacks = new WeakMap<Element, Set<(entry: ResizeObserverEntry) => void>>()
 
@@ -14,65 +11,60 @@ let observed = 0
  * # observeSize
  *
  * ```ts
- * function DOM.observeSize(target: Element | Window | null): ReadonlySignal<Rect>
+ * function DOM.observeSize(target: Element | Window, onChange: (size: Rect) => void): () => void
  * ```
  *
- * Returns the size of an element as a signal: a rect at `0, 0` with the width and height of its border box.
+ * Calls `onChange` with the size of an element right away, and again whenever it changes: a rect at `0, 0` with the width and height of its border box. Returns what stops observing.
  * The size is the one of its layout, which transforms such as `scale` do not change, like `ResizeObserver` reports it.
  * For a window, the rect has the size of its viewport: `innerWidth` and `innerHeight`.
  * Cheaper than `DOM.observePosition`, for when the position does not matter.
  *
- * - every call with the same target returns the same signal
- * - the target is only observed while a memo or an effect depends on the signal
- * - a read outside of a memo or an effect measures right away
- * - `null` returns a signal that is always `Rect.origin`, for an element that is set later
+ * - the size is rounded to whole pixels, and `onChange` is only called when the rounded size changed
+ * - all elements share one `ResizeObserver`
  *
  * ## Example
  *
  * ```ts
- * const $size = DOM.observeSize(element);
- * Effect(() => console.log($size().width, $size().height));
- *
- * const $boundary = Memo(() => Rect.shrink(DOM.observeSize(window)(), 10));
+ * const stop = DOM.observeSize(element, size => console.log(size.width, size.height));
+ * stop();
  *
  * // An element that is set later, or changes:
  * const $popover = Signal<HTMLElement | null>(null);
- * const $popoverSize = Memo(() => DOM.observeSize($popover())());
+ * const $popoverSize = Signal(Rect.origin);
+ * Effect(() => {
+ *     const popover = $popover();
+ *     if (!popover) return;
+ *     return DOM.observeSize(popover, $popoverSize);
+ * });
  * ```
  */
-export function observeSize(target: Element | Window | null): ReadonlySignal<Rect> {
-    if (!target) return nothing()
-    let $size = signals.get(target)
-    if (!$size) signals.set(target, $size = "getBoundingClientRect" in target ? observeElement(target) : observeViewport(target))
-    return $size
+export function observeSize(target: Element | Window, onChange: (size: Rect) => void): () => void {
+    const report = onRoundedChange(onChange)
+    return "getBoundingClientRect" in target ? observeElement(target, report) : observeViewport(target, report)
 }
 
-function observeElement(element: Element): ReadonlySignal<Rect> {
-    const measure = (): Rect => {
-        // The layout size, as the ResizeObserver reports it. `getBoundingClientRect` would include transforms. SVG elements have no `offsetWidth`.
-        if ("offsetWidth" in element) return { height: (element as HTMLElement).offsetHeight, left: 0, top: 0, width: (element as HTMLElement).offsetWidth }
+function observeElement(element: Element, report: (size: Rect) => void): () => void {
+    // The layout size, as the ResizeObserver reports it. `getBoundingClientRect` would include transforms. SVG elements have no `offsetWidth`.
+    if ("offsetWidth" in element) {
+        report({ height: (element as HTMLElement).offsetHeight, left: 0, top: 0, width: (element as HTMLElement).offsetWidth })
+    }
+    else {
         const { height, width } = element.getBoundingClientRect()
-        return { height, left: 0, top: 0, width }
+        report({ height, left: 0, top: 0, width })
     }
 
-    return sensor(measure, (set) => {
-        set(measure())
-        return observe(element, (entry) => {
-            const size = entry.borderBoxSize[0]
-            if (size) set({ height: size.blockSize, left: 0, top: 0, width: size.inlineSize })
-        })
+    return observe(element, (entry) => {
+        const size = entry.borderBoxSize[0]
+        if (size) report({ height: size.blockSize, left: 0, top: 0, width: size.inlineSize })
     })
 }
 
-function observeViewport(window: Window): ReadonlySignal<Rect> {
-    const measure = (): Rect => ({ height: window.innerHeight, left: 0, top: 0, width: window.innerWidth })
-
-    return sensor(measure, (set) => {
-        const controller = new AbortController()
-        set(measure())
-        window.addEventListener("resize", () => set(measure()), { passive: true, signal: controller.signal })
-        return () => controller.abort()
-    })
+function observeViewport(window: Window, report: (size: Rect) => void): () => void {
+    const measure = (): void => report({ height: window.innerHeight, left: 0, top: 0, width: window.innerWidth })
+    const controller = new AbortController()
+    measure()
+    window.addEventListener("resize", measure, { passive: true, signal: controller.signal })
+    return () => controller.abort()
 }
 
 /** Calls `onResize` when the border box of `element` changes size, through one `ResizeObserver` shared by all elements. */

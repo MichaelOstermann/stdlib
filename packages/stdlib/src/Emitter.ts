@@ -1,9 +1,6 @@
 /* eslint-disable @typescript-eslint/no-redeclare -- Emitter and AsyncEmitter are a type and what creates it */
-import type { Disposer } from "./Disposer"
 import type { Meta } from "./internals/hmr"
-import { Disposer as createDisposer } from "./Disposer"
 import { noop } from "./Function/noop"
-import { holdDisposer } from "./internals/disposers"
 import { hmr } from "./internals/hmr"
 import { endBatch, pauseTracking, resumeTracking, startBatch } from "./internals/reactivity"
 
@@ -30,21 +27,25 @@ export interface ReadonlyAsyncEmitter<T = void> {
 }
 
 /** A single event: call it with a function to listen, and with anything else to tell the listeners about it. */
-export interface Emitter<T = void> extends ReadonlyEmitter<T>, Disposer {
+export interface Emitter<T = void> extends ReadonlyEmitter<T> {
     /** Calls every listener with `message`, in the order they were added. */
     (message: T): void
     readonly listeners: Set<Listener<T>>
     /** Removes all listeners, without disposing. */
     clear: () => void
+    /** Removes all listeners, and ignores the ones that are added afterwards. */
+    dispose: () => void
 }
 
 /** A single event that waits for its listeners: call it with a function to listen, and with anything else to tell the listeners about it. */
-export interface AsyncEmitter<T = void> extends ReadonlyAsyncEmitter<T>, Disposer {
+export interface AsyncEmitter<T = void> extends ReadonlyAsyncEmitter<T> {
     /** Calls every listener with `message`, one after the other, and resolves once the last one is done. */
     (message: T): Promise<void>
     readonly listeners: Set<AsyncListener<T>>
     /** Removes all listeners, without disposing. */
     clear: () => void
+    /** Removes all listeners, and ignores the ones that are added afterwards. */
+    dispose: () => void
 }
 
 /**
@@ -56,7 +57,7 @@ export interface AsyncEmitter<T = void> extends ReadonlyAsyncEmitter<T>, Dispose
  * - listeners are kept in a `Set`: the same function counts once, and one that is added while a message is sent is called as well
  * - `dispatch` replaces how listeners are called, to wrap it or to catch what they throw
  * - sending is batched and untracked: effects run once every listener has been called, and what listeners read is not depended on
- * - it can be disposed like a `Disposer`, which removes its listeners and ignores new ones
+ * - `dispose` removes its listeners and ignores new ones
  * - during development it is disposed when its module is replaced, the plugin passes the metadata for that as the last argument
  *
  * ```ts
@@ -69,9 +70,7 @@ export interface AsyncEmitter<T = void> extends ReadonlyAsyncEmitter<T>, Dispose
  * onMessage.listeners.size; // 0
  * onMessage.clear();
  *
- * onMessage.onDispose(() => socket.close());
  * onMessage.dispose();
- * onMessage.disposed; // true
  *
  * // Expose an emitter that can only be listened to.
  * const onChange: ReadonlyEmitter<string> = onMessage;
@@ -134,13 +133,17 @@ export function AsyncEmitter<T = void>(dispatch: (listeners: Set<AsyncListener<T
     return disposable(emitter, meta) as never
 }
 
+const disposed = Symbol("disposed")
+const unregister = Symbol("unregister")
+
 interface Target<T> {
-    disposed?: boolean
+    [disposed]?: boolean
     listeners: Set<T>
+    [unregister]?: () => void
 }
 
 function listen<T>(emitter: Target<T>, listener: T): () => void {
-    if (emitter.disposed) return noop
+    if (emitter[disposed]) return noop
     const listeners = emitter.listeners
     listeners.add(listener)
     return () => void listeners.delete(listener)
@@ -151,32 +154,22 @@ async function send<T>(listeners: Set<AsyncListener<T>>, message: T): Promise<vo
     for (const listener of listeners) await listener(message)
 }
 
-/** Makes an emitter something to dispose. The disposer behind it is only created once something asks for it. */
-function disposable<T, U extends Target<T>>(emitter: U, meta: Meta | undefined): Disposer & U & { clear: () => void } {
-    const target = emitter as Disposer & U & { disposed: boolean, clear: () => void }
-    const listeners = emitter.listeners
-    let disposer: Disposer | undefined
-
-    const end = (): void => {
-        target.disposed = true
-        listeners.clear()
-    }
-
-    const own = (): Disposer => {
-        if (disposer) return disposer
-        disposer = createDisposer()
-        // Added first, so it runs last: after everything else that has been added to the emitter's disposer.
-        if (target.disposed) disposer.dispose()
-        else disposer.onDispose(end)
-        return disposer
-    }
-
-    target.clear = () => listeners.clear()
-    target.disposed = false
-    target.dispose = () => disposer ? disposer.dispose() : end()
-    target.onDispose = value => own().onDispose(value)
-    target[Symbol.dispose] = target.dispose
-    holdDisposer(target, own)
-    hmr(target, meta)
+/** Gives an emitter `clear` and `dispose`, which are shared by every emitter. */
+function disposable<T, U extends Target<T>>(emitter: U, meta: Meta | undefined): U & { clear: () => void, dispose: () => void } {
+    const target = emitter as U & { clear: () => void, dispose: () => void }
+    target.clear = clear
+    target.dispose = dispose
+    if (meta?.hmr) target[unregister] = hmr(() => target.dispose(), meta)
     return target
+}
+
+function clear(this: Target<unknown>): void {
+    this.listeners.clear()
+}
+
+function dispose(this: Target<unknown>): void {
+    if (this[disposed]) return
+    this[disposed] = true
+    this.listeners.clear()
+    this[unregister]?.()
 }

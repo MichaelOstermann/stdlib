@@ -17,11 +17,12 @@ const running: Effect[] = []
 
 /** Returns what disposes the effect, which is what an effect used to be. */
 export function effect(computation: () => unknown): () => void {
-    return Effect((effect) => {
+    const effect = Effect((effect) => {
         running.push(effect)
         try { return (computation as () => void)() }
         finally { running.pop() }
-    }).dispose
+    })
+    return () => effect.dispose()
 }
 
 /** Disposes the effect that is running, which the tests of the system do without having it at hand. */

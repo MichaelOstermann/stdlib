@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from "bun:test"
-import { Disposer } from "../../src/Disposer"
 import { Effect } from "../../src/Effect"
 import { memo, signal } from "./helpers"
 
@@ -91,7 +90,6 @@ describe("watch", () => {
         a(2)
         a(3)
         expect(current.length).toBe(1)
-        expect(watcher.disposed).toBe(true)
         expect(spy).toHaveBeenCalledTimes(1)
         expect(current[0]).toBe(watcher)
     })
@@ -101,16 +99,6 @@ describe("watch", () => {
         const spy = vi.fn()
         watch(() => a() * 2, spy)
         a(1)
-        expect(spy).toHaveBeenCalledTimes(0)
-    })
-
-    it("should stop with the disposer it has been added to", () => {
-        const a = signal(1)
-        const spy = vi.fn()
-        const parent = Disposer()
-        parent.onDispose(watch(a, spy))
-        parent.dispose()
-        a(2)
         expect(spy).toHaveBeenCalledTimes(0)
     })
 })

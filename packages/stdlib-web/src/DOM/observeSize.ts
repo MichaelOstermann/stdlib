@@ -1,6 +1,5 @@
 import type { ReadonlySignal } from "@monstermann/stdlib"
 import type { Rect } from "../Rect"
-import { Disposer } from "@monstermann/stdlib"
 import { nothing, sensor } from "../internals/sensor"
 
 const signals = new WeakMap<Element | Window, ReadonlySignal<Rect>>()
@@ -72,12 +71,12 @@ function observeViewport(window: Window): ReadonlySignal<Rect> {
         const controller = new AbortController()
         set(measure())
         window.addEventListener("resize", () => set(measure()), { passive: true, signal: controller.signal })
-        return Disposer(() => controller.abort())
+        return () => controller.abort()
     })
 }
 
 /** Calls `onResize` when the border box of `element` changes size, through one `ResizeObserver` shared by all elements. */
-function observe(element: Element, onResize: (entry: ResizeObserverEntry) => void): Disposer {
+function observe(element: Element, onResize: (entry: ResizeObserverEntry) => void): () => void {
     observer ??= new ResizeObserver((entries) => {
         for (const entry of entries) {
             for (const callback of callbacks.get(entry.target) ?? []) callback(entry)
@@ -93,7 +92,7 @@ function observe(element: Element, onResize: (entry: ResizeObserverEntry) => voi
     }
     set.add(onResize)
 
-    return Disposer(() => {
+    return () => {
         set.delete(onResize)
         if (set.size) return
         callbacks.delete(element)
@@ -101,5 +100,5 @@ function observe(element: Element, onResize: (entry: ResizeObserverEntry) => voi
         if (--observed) return
         observer!.disconnect()
         observer = undefined
-    })
+    }
 }

@@ -1,7 +1,6 @@
 import type { ReadonlyEmitter } from "../src/Emitter"
 import { describe, expect, it, vi } from "bun:test"
 import { Batch } from "../src/Batch"
-import { Disposer } from "../src/Disposer"
 import { AsyncEmitter, Emitter } from "../src/Emitter"
 import { Signal } from "../src/Signal"
 import { effect } from "./Signal/helpers"
@@ -173,11 +172,9 @@ describe("Emitter, disposed", () => {
         let calls = 0
         const onTick = Emitter()
         onTick(() => calls++)
-        expect(onTick.disposed).toBe(false)
 
         onTick.dispose()
         onTick.dispose()
-        expect(onTick.disposed).toBe(true)
         expect(onTick.listeners.size).toBe(0)
 
         const remove = onTick(() => calls++)
@@ -185,52 +182,6 @@ describe("Emitter, disposed", () => {
         remove()
         expect(calls).toBe(0)
         expect(onTick.listeners.size).toBe(0)
-    })
-
-    it("should dispose what has been added to it, before its listeners are removed", () => {
-        const log: unknown[] = []
-        const onTick = Emitter()
-        onTick(() => {})
-        onTick.onDispose(() => log.push(["a", onTick.listeners.size]))
-        onTick.onDispose(() => log.push(["b", onTick.listeners.size]))
-        onTick.dispose()
-        expect(log).toEqual([["b", 1], ["a", 1]])
-        expect(onTick.listeners.size).toBe(0)
-
-        onTick.onDispose(() => log.push("late"))
-        expect(log).toEqual([["b", 1], ["a", 1], "late"])
-    })
-
-    it("should be disposed by the disposer it has been added to, and leave it when disposed by itself", () => {
-        const parent = Disposer()
-        const onTick = Emitter()
-        const onTock = AsyncEmitter()
-        expect(parent.onDispose(onTick)).toBe(onTick)
-        parent.onDispose(onTock)
-
-        onTock.dispose()
-        expect((parent as unknown as { vals: { prevVal: unknown } }).vals.prevVal).toBe(undefined)
-
-        onTick(() => {})
-        parent.dispose()
-        expect(onTick.disposed).toBe(true)
-        expect(onTick.listeners.size).toBe(0)
-        expect(onTock.disposed).toBe(true)
-    })
-
-    it("should work with using, and with dispose as a callback", () => {
-        const cb = vi.fn()
-        {
-            using onTick = Emitter()
-            onTick.onDispose(cb)
-        }
-        expect(cb).toHaveBeenCalledTimes(1)
-
-        const onTick = Emitter()
-        const onClose = Emitter<string>()
-        onClose(onTick.dispose)
-        onClose("now")
-        expect(onTick.disposed).toBe(true)
     })
 
     it("should dispose an emitter that waits", async () => {
@@ -242,7 +193,7 @@ describe("Emitter, disposed", () => {
         onTick(async () => void calls++)
         await onTick()
         expect(calls).toBe(1)
-        expect(onTick.disposed).toBe(true)
+        expect(onTick.listeners.size).toBe(0)
     })
 })
 

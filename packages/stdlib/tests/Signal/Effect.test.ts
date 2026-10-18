@@ -1,7 +1,5 @@
 import { describe, expect, it, vi } from "bun:test"
-import { Disposer } from "../../src/Disposer"
 import { Effect } from "../../src/Effect"
-import { Emitter } from "../../src/Emitter"
 import { deferEffect, signal } from "./helpers"
 
 const effect = Effect
@@ -14,10 +12,9 @@ describe("effect", () => {
         const spy = vi.fn((fx: Effect) => {
             if (a() + b() > 0) fx.dispose()
         })
-        const fx = effect(spy)
+        effect(spy)
 
         a(1)
-        expect(fx.disposed).toBe(true)
         expect(onUnwatch).toHaveBeenCalledTimes(2)
 
         b(1)
@@ -139,26 +136,6 @@ describe("cleanups", () => {
         expect(cleanup).toHaveBeenCalledTimes(1)
     })
 
-    it("should dispose what is disposable, an emitter is not called", () => {
-        const a = signal(0)
-        const listener = vi.fn()
-        const disposers: Disposer[] = []
-        const emitters: Emitter[] = []
-        const fx = effect(() => {
-            if (a() % 2) return disposers[disposers.push(Disposer()) - 1]
-            const onTick = Emitter()
-            onTick(listener)
-            return emitters[emitters.push(onTick) - 1]
-        })
-
-        a(1)
-        a(2)
-        fx.dispose()
-        expect(disposers.map(disposer => disposer.disposed)).toEqual([true])
-        expect(emitters.map(emitter => emitter.disposed)).toEqual([true, true])
-        expect(listener).toHaveBeenCalledTimes(0)
-    })
-
     it("should not depend on what a cleanup reads", () => {
         const a = signal(0)
         const b = signal(0)
@@ -173,37 +150,14 @@ describe("cleanups", () => {
     })
 })
 
-describe("Effect, as a disposer", () => {
-    it("should stop when disposed, and with the disposer it has been added to", () => {
+describe("Effect, disposed", () => {
+    it("should stop when disposed, also twice", () => {
         const a = signal(0)
         const spy = vi.fn(() => void a())
-        const parent = Disposer()
-        const fx = parent.onDispose(effect(spy))
-        const other = effect(spy)
-
-        parent.dispose()
-        expect(fx.disposed).toBe(true)
-        other.dispose()
-        other.dispose()
-
-        a(1)
-        expect(spy).toHaveBeenCalledTimes(2)
-    })
-
-    it("should dispose what has been added to it before its cleanups", () => {
-        const order: number[] = []
-        const fx = effect(() => () => order.push(1))
-        fx.onDispose(() => order.push(2))
+        const fx = effect(spy)
         fx.dispose()
-        expect(order).toEqual([2, 1])
-    })
+        fx.dispose()
 
-    it("should stop when dispose is passed as a callback", () => {
-        const a = signal(0)
-        const spy = vi.fn(() => void a())
-        const onClose = Emitter<string>()
-        onClose(effect(spy).dispose)
-        onClose("now")
         a(1)
         expect(spy).toHaveBeenCalledTimes(1)
     })

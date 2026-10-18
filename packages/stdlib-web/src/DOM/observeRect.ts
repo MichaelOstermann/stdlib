@@ -1,6 +1,5 @@
 import type { ReadonlySignal } from "@monstermann/stdlib"
 import type { Rect } from "../Rect"
-import { Disposer } from "@monstermann/stdlib"
 import { nothing, sensor } from "../internals/sensor"
 import { fromDOMRect } from "../Rect/fromDOMRect"
 
@@ -53,7 +52,7 @@ export function observeRect(element: Element | null): ReadonlySignal<Rect> {
  *
  * Reference: https://github.com/floating-ui/floating-ui/blob/master/packages/dom/src/autoUpdate.ts
  */
-function observe(element: Element, onMove: (rect: DOMRectReadOnly) => void): Disposer {
+function observe(element: Element, onMove: (rect: DOMRectReadOnly) => void): () => void {
     let io: IntersectionObserver | undefined
     let timeout: ReturnType<typeof setTimeout> | undefined
 
@@ -103,10 +102,10 @@ function observe(element: Element, onMove: (rect: DOMRectReadOnly) => void): Dis
     ro.observe(element)
     refresh(true)
 
-    return Disposer(() => {
+    return () => {
         stop()
         ro.disconnect()
-    })
+    }
 }
 
 function isSameRect(a: DOMRectReadOnly, b: DOMRectReadOnly): boolean {

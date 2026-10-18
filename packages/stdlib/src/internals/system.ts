@@ -462,10 +462,12 @@ RawMemo.prototype.get = function<T>(this: RawMemo<T>): T {
     return this.value
 }
 
-type EffectFn = () => void
+/** Runs with the effect, and returns what cleans up after it: called before the next run, and when the effect is disposed. */
+type EffectFn = (effect: RawEffect) => (() => void) | void
 
 // @ts-expect-error ignore
 export declare class RawEffect {
+    cleanup: (() => void) | void
     flags: number
     fn?: EffectFn
     nextBatchedEffect?: RawEffect
@@ -482,6 +484,7 @@ export declare class RawEffect {
 // @ts-expect-error ignore
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export function RawEffect(this: RawEffect, fn: EffectFn) {
+    this.cleanup = undefined
     this.fn = fn
     this.sources = undefined
     this.nextBatchedEffect = undefined
@@ -524,9 +527,12 @@ RawEffect.prototype.end = function (this: RawEffect) {
 RawEffect.prototype.run = function (this: RawEffect): void {
     this.start()
     try {
-        if (this.flags & DISPOSED) return
-        if (this.fn === undefined) return
-        this.fn()
+        // The cleanup of the previous run can dispose the effect.
+        if (this.cleanup) cleanUp(this)
+        if (this.flags & DISPOSED || this.fn === undefined) return
+        this.cleanup = this.fn(this)
+        // Disposed by the run itself, after `dispose` looked for a cleanup.
+        if (this.flags & DISPOSED && this.cleanup) cleanUp(this)
     }
     finally {
         this.end()
@@ -535,8 +541,25 @@ RawEffect.prototype.run = function (this: RawEffect): void {
 
 RawEffect.prototype.dispose = function (this: RawEffect): void {
     this.flags |= DISPOSED
-    // While running, the sources are being collected, `end` takes care of it.
-    if (!(this.flags & RUNNING)) disposeEffect(this)
+    // What the cleanup and the signals that are no longer watched write is batched.
+    startBatch()
+    try {
+        if (this.cleanup) cleanUp(this)
+    }
+    finally {
+        // While running, the sources are being collected, `end` takes care of it.
+        if (!(this.flags & RUNNING)) disposeEffect(this)
+        endBatch()
+    }
+}
+
+/** Calls the cleanup of the last run, without tracking what it reads. */
+function cleanUp(effect: RawEffect): void {
+    const cleanup = effect.cleanup!
+    effect.cleanup = undefined
+    pushContext(undefined)
+    try { cleanup() }
+    finally { popContext() }
 }
 
 function disposeEffect(effect: RawEffect): void {

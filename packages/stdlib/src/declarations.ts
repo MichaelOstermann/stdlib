@@ -167,7 +167,6 @@ declare global {
     const AsyncEmitter: typeof import("./Emitter").AsyncEmitter
     const Batch: typeof import("./Batch").Batch
     const Bytes: typeof import("./Bytes/index").Bytes
-    const Disposer: typeof import("./Disposer").Disposer
     const Duration: typeof import("./Duration/index").Duration
     const Effect: typeof import("./Effect").Effect
     const Emitter: typeof import("./Emitter").Emitter
@@ -188,8 +187,6 @@ declare global {
 
     /** A single event that waits for its listeners: call it with a function to listen, and with anything else to tell the listeners about it. */
     type AsyncEmitter<T = void> = import("./Emitter").AsyncEmitter<T>
-    /** Collects what needs to be cleaned up, and does so in reverse order. */
-    type Disposer = import("./Disposer").Disposer
     /** Something that runs again when what it read changes, until it is disposed. */
     type Effect = import("./Effect").Effect
     /** A single event: call it with a function to listen, and with anything else to tell the listeners about it. */

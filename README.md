@@ -305,24 +305,6 @@ const onMessage = Emitter<string>((listeners, message) => {
 });
 ```
 
-### Disposer
-
-Collects what needs to be cleaned up, and does so in reverse order. Unlike a `DisposableStack` it is made to live long: a disposer that is added to others is removed from them when it is disposed by itself.
-
-```ts
-const app = Disposer();
-const view = Disposer();
-
-app.onDispose(view);
-view.onDispose(() => socket.close());
-view.onDispose(onMessage((message) => render(message)));
-
-view.dispose(); // Closes the socket, stops listening, and is gone from `app`.
-onClose(app.dispose); // `dispose` can be passed as it is.
-```
-
-Emitters and effects are disposed the same way: `onDispose`, `dispose` and `disposed`.
-
 ### Signals
 
 Values that change over time, and what follows from them. A `Signal` holds a value, a `Memo` computes one from others, and an `Effect` runs again when what it read changed.
@@ -342,7 +324,7 @@ $count((count) => count + 1); // "cleanup", 6
 effect.dispose(); // "cleanup"
 ```
 
-`Batch` makes several changes count as one, and `Untrack` reads without depending on what is read. An `Emitter` does both while it calls its listeners, a `Disposer` while it disposes:
+`Batch` makes several changes count as one, and `Untrack` reads without depending on what is read. An `Emitter` does both while it calls its listeners:
 
 ```ts
 Batch(() => {

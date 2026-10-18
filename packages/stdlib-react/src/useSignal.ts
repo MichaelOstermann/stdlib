@@ -28,12 +28,13 @@ export function useSignal<T>(value: ReadonlySignal<T> | Memo<T> | (() => T)): T 
 
     const subscribe = useCallback((onChange: () => void) => {
         let isFirst = true
-        return Effect(() => {
+        const effect = Effect(() => {
             read()
             // What React does once it is told is not something the effect depends on.
             if (!isFirst) Untrack(onChange)
             isFirst = false
-        }).dispose
+        })
+        return () => effect.dispose()
     }, [read])
 
     // Rendering inside of an effect is not something that effect depends on either.

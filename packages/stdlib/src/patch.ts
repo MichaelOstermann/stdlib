@@ -72,7 +72,6 @@ import { Action } from "./Action"
 import { AsyncEmitter } from "./Emitter"
 import { Batch } from "./Batch"
 import { Bytes } from "./Bytes/index"
-import { Disposer } from "./Disposer"
 import { Duration } from "./Duration/index"
 import { Effect } from "./Effect"
 import { Emitter } from "./Emitter"
@@ -191,7 +190,6 @@ define(globalThis, "globalThis", {
     AsyncEmitter,
     Batch,
     Bytes,
-    Disposer,
     Duration,
     Effect,
     Emitter,

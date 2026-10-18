@@ -17,14 +17,13 @@ describe("hmr", () => {
         const $a = Signal(0)
         const spy = vi.fn(() => void $a())
         const watched = vi.fn()
-        const effect = Effect(spy, { hmr })
-        const watcher = Effect.watch($a, watched, undefined, { hmr })
+        Effect(spy, { hmr })
+        Effect.watch($a, watched, undefined, { hmr })
         expect(hmr.size).toBe(2)
 
         replaceModule(hmr)
         $a(1)
 
-        expect([effect.disposed, watcher.disposed]).toEqual([true, true])
         expect(hmr.size).toBe(0)
         expect(spy).toHaveBeenCalledTimes(1)
         expect(watched).toHaveBeenCalledTimes(0)
@@ -35,11 +34,12 @@ describe("hmr", () => {
         const onTick = Emitter(undefined, { hmr })
         const onTock = AsyncEmitter(undefined, { hmr })
         onTick(() => {})
+        onTock(async () => {})
 
         replaceModule(hmr)
 
-        expect([onTick.disposed, onTock.disposed]).toEqual([true, true])
         expect(onTick.listeners.size).toBe(0)
+        expect(onTock.listeners.size).toBe(0)
     })
 
     it("should not keep what has been disposed", () => {
@@ -53,7 +53,13 @@ describe("hmr", () => {
     })
 
     it("should do nothing without it", () => {
-        expect(Effect(() => {}, {}).disposed).toBe(false)
-        expect(Emitter(undefined, undefined).disposed).toBe(false)
+        const $a = Signal(0)
+        const spy = vi.fn(() => void $a())
+        Effect(spy, {})
+        const onTick = Emitter(undefined, undefined)
+        onTick(() => {})
+        $a(1)
+        expect(spy).toHaveBeenCalledTimes(2)
+        expect(onTick.listeners.size).toBe(1)
     })
 })

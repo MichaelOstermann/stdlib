@@ -42,8 +42,7 @@ export interface WatchOptions<T> {
  *
  * Effect((effect) => {
  *     if ($done()) return effect.dispose();
- *     const timer = setInterval(tick, $delay());
- *     return () => clearInterval(timer);
+ *     return Timer.interval($delay(), tick);
  * });
  *
  * await Effect.defer<number>((resolve) => {

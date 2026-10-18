@@ -1,7 +1,7 @@
 import type { PlacementName } from "../../src/Placement"
 import { describe, expect, it } from "bun:test"
 import { create } from "../../src/Placement/create"
-import { dom, fakeDOM } from "../DOM/helpers"
+import { fakeDOM, setViewport } from "../DOM/helpers"
 
 fakeDOM()
 
@@ -74,7 +74,7 @@ describe("Placement.create", () => {
     })
 
     it("should round the position to device pixels", () => {
-        dom.window.devicePixelRatio = 2
+        setViewport({ devicePixelRatio: 2 })
         const position = create("down-center", { anchor: { ...anchor, left: 300.3, top: 200.3 }, boundary, floating })
         expect(position).toMatchObject({ left: 250.5, top: 244.5 })
     })

@@ -1,14 +1,15 @@
 import type { Rect } from "../../src/Rect"
 import { describe, expect, it } from "bun:test"
 import { observeSize } from "../../src/DOM/observeSize"
-import { dom, fakeDOM, fakeElement, resize, resizeWindow } from "./helpers"
+import { dom, fakeDOM, fakeElement, resize, setViewport } from "./helpers"
 
 fakeDOM()
 
 describe("DOM.observeSize", () => {
     it("should measure the layout size right away, which a scale does not change", () => {
         // Scaled to half: getBoundingClientRect has the drawn size, offsetWidth and offsetHeight the one of the layout.
-        const element = Object.assign(new HTMLElement(), { offsetHeight: 100, offsetWidth: 200, getBoundingClientRect: () => ({ height: 50, width: 100 }) })
+        const { element, rect } = fakeElement({ height: 100, left: 0, top: 0, width: 200 })
+        element.getBoundingClientRect = () => ({ ...rect, height: 50, width: 100 }) as DOMRect
         const sizes: Rect[] = []
         observeSize(element, size => sizes.push(size))()
         expect(sizes).toEqual([{ height: 100, left: 0, top: 0, width: 200 }])
@@ -79,11 +80,11 @@ describe("DOM.observeSize", () => {
         it("should listen to resize until it is stopped", () => {
             const widths: number[] = []
             const stop = observeSize(window, size => widths.push(size.width))
-            expect(dom.listeners.size).toBe(1)
-            resizeWindow(1000, 700)
+            setViewport({ height: 700, width: 1000 })
             expect(widths).toEqual([800, 1000])
             stop()
-            expect(dom.listeners.size).toBe(0)
+            setViewport({ width: 1200 })
+            expect(widths).toEqual([800, 1000])
         })
     })
 })

@@ -1,21 +1,25 @@
-import { afterEach, beforeEach } from "bun:test"
+import { GlobalRegistrator } from "@happy-dom/global-registrator"
+import { afterAll, afterEach, beforeAll, beforeEach } from "bun:test"
 
 export interface FakeElement {
-    element: Element
+    element: HTMLElement
     rect: { height: number, left: number, top: number, width: number }
 }
 
-/** What the fake observers and the fake window have seen, reset before every test. */
+/** What the fake observers have seen, reset before every test. */
 export const dom = {
     intersecting: new Set<Element>(),
-    listeners: new Set<() => void>(),
     resizing: new Map<Element, ResizeObserverCallback[]>(),
-    window: { devicePixelRatio: 1, innerHeight: 600, innerWidth: 800 },
 }
 
+/** An element with the layout that happy-dom does not have: `getBoundingClientRect`, `offsetWidth` and `offsetHeight` follow `rect`. */
 export function fakeElement(rect: FakeElement["rect"]): FakeElement {
-    const fake = { rect } as FakeElement
-    fake.element = { getBoundingClientRect: () => ({ ...fake.rect }) } as Element
+    const fake = { element: document.createElement("div"), rect }
+    Object.defineProperties(fake.element, {
+        getBoundingClientRect: { writable: true, value: () => ({ ...fake.rect }) },
+        offsetHeight: { get: () => fake.rect.height },
+        offsetWidth: { get: () => fake.rect.width },
+    })
     return fake
 }
 
@@ -25,9 +29,15 @@ export function resize(fake: FakeElement): void {
     for (const callback of dom.resizing.get(fake.element) ?? []) callback([entry as unknown as ResizeObserverEntry], undefined as never)
 }
 
-export function resizeWindow(innerWidth: number, innerHeight: number): void {
-    Object.assign(dom.window, { innerHeight, innerWidth })
-    for (const listener of dom.listeners) listener()
+interface Viewport {
+    devicePixelRatio?: number
+    height?: number
+    width?: number
+}
+
+/** Changes the size of the window, which sends `resize`, or its device pixel ratio. */
+export function setViewport(viewport: Viewport): void {
+    (window as unknown as { happyDOM: { setViewport: (viewport: Viewport) => void } }).happyDOM.setViewport(viewport)
 }
 
 class FakeResizeObserver {
@@ -66,30 +76,19 @@ class FakeIntersectionObserver {
     }
 }
 
+/** happy-dom in the tests of this file, with observers that the tests drive: happy-dom has no layout to observe. */
 export function fakeDOM(): void {
-    const globals = globalThis as { HTMLElement?: unknown, IntersectionObserver?: unknown, ResizeObserver?: unknown, window?: unknown }
+    beforeAll(() => GlobalRegistrator.register())
+    afterAll(() => GlobalRegistrator.unregister())
 
     beforeEach(() => {
         dom.intersecting.clear()
-        dom.listeners.clear()
         dom.resizing.clear()
-        Object.assign(dom.window, { devicePixelRatio: 1, innerHeight: 600, innerWidth: 800 })
-        // Only for `instanceof`: an element with `offsetWidth` is created from it, the others are plain objects.
-        globals.HTMLElement = class {}
-        globals.ResizeObserver = FakeResizeObserver
-        globals.IntersectionObserver = FakeIntersectionObserver
-        globals.window = Object.assign(dom.window, {
-            addEventListener(_: string, listener: () => void, options: { signal: AbortSignal }) {
-                dom.listeners.add(listener)
-                options.signal.addEventListener("abort", () => dom.listeners.delete(listener))
-            },
-        })
+        setViewport({ devicePixelRatio: 1, height: 600, width: 800 })
+        Object.assign(globalThis, { IntersectionObserver: FakeIntersectionObserver, ResizeObserver: FakeResizeObserver })
     })
 
     afterEach(() => {
-        delete globals.HTMLElement
-        delete globals.ResizeObserver
-        delete globals.IntersectionObserver
-        delete globals.window
+        document.body.replaceChildren()
     })
 }

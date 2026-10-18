@@ -62,6 +62,6 @@ describe("Rect", () => {
         expect(Rect.setCenter(rect, Rect.centerX(rect), 0)).toEqual({ ...rect, top: -33.3 / 2 })
         expect(Rect.moveRightTo(rect, 200)).toEqual({ ...rect, left: 200 - 100.7 })
         expect(Rect.setLeft(rect, 20.1)).toEqual({ ...rect, left: 20.1, width: 10.1 + 100.7 - 20.1 })
-        expect(Rect.takeRightPct(rect, 0.5)).toEqual({ ...rect, left: 10.1 + 100.7 - 50.35, width: 50.35 })
+        expect(Rect.takeRightPct(rect, 0.5)).toEqual({ ...rect, left: 10.1 + (100.7 - 50.35), width: 50.35 })
     })
 })

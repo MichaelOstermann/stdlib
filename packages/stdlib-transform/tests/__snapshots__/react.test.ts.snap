@@ -24,11 +24,68 @@ export const Component = () => {
 }"
 `;
 
-exports[`react Should transform functions containing jsx 1`] = `
+exports[`react Should ignore lowercase functions, even with jsx 1`] = `
+"export const component = () => {
+    const foo = $foo()
+    return <div />
+}"
+`;
+
+exports[`react Should ignore jsx in a callback of a component 1`] = `
+"export function List({ items }) {
+    return <ul>{items.map(item => <li>{item.$name()}</li>)}</ul>
+}"
+`;
+
+exports[`react Should ignore a PascalCase function that returns an object 1`] = `
+"export function Transition($open) {
+    const open = $open()
+    return { open }
+}"
+`;
+
+exports[`react Should ignore a PascalCase function whose last return is not a node 1`] = `
+"export const Factory = () => {
+    const foo = $foo()
+    if (foo) return null
+    return () => foo
+}"
+`;
+
+exports[`react Should ignore a PascalCase function with more params than props and a ref 1`] = `
+"export function Pair(a, b) {
+    const foo = $foo()
+    return <div />
+}"
+`;
+
+exports[`react Should transform a component with props and a ref 1`] = `
 "import { useSignal } from "@monstermann/stdlib-react";
-export const component = () => {
+export function Input(props, inputRef) {
+    const foo = useSignal($foo)
+    return <input ref={inputRef} />
+}"
+`;
+
+exports[`react Should transform memo and forwardRef callbacks 1`] = `
+"import { useSignal } from "@monstermann/stdlib-react";
+export const a = memo(() => {
     const foo = useSignal($foo)
     return <div />
+})
+export const b = React.forwardRef((props, ref) => <div ref={ref}>{useSignal($foo)}</div>)"
+`;
+
+exports[`react Should transform components and hooks named by assignments and properties 1`] = `
+"import { useSignal } from "@monstermann/stdlib-react";
+Component = () => <div>{useSignal($foo)}</div>
+Foo.useHook = () => {
+    const foo = useSignal($foo)
+    return foo
+}
+export const components = {
+    Row: () => <div>{useSignal($foo)}</div>,
+    row: () => <div>{$foo()}</div>,
 }"
 `;
 

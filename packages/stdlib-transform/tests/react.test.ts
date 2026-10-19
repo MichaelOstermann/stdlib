@@ -39,11 +39,85 @@ describe("react", () => {
         `)
     })
 
-    test("Should transform functions containing jsx", () => {
+    test("Should ignore lowercase functions, even with jsx", () => {
         expectSnapshot(`
             export const component = () => {
                 const foo = $foo()
                 return <div />
+            }
+        `)
+    })
+
+    test("Should ignore jsx in a callback of a component", () => {
+        expectSnapshot(`
+            export function List({ items }) {
+                return <ul>{items.map(item => <li>{item.$name()}</li>)}</ul>
+            }
+        `)
+    })
+
+    test("Should ignore a PascalCase function that returns an object", () => {
+        expectSnapshot(`
+            export function Transition($open) {
+                const open = $open()
+                return { open }
+            }
+        `)
+    })
+
+    test("Should ignore a PascalCase function whose last return is not a node", () => {
+        expectSnapshot(`
+            export const Factory = () => {
+                const foo = $foo()
+                if (foo) return null
+                return () => foo
+            }
+        `)
+    })
+
+    test("Should ignore a PascalCase function with more params than props and a ref", () => {
+        expectSnapshot(`
+            export function Pair(a, b) {
+                const foo = $foo()
+                return <div />
+            }
+        `)
+    })
+
+    test("Should ignore a PascalCase function whose param is not props", () => {
+        const code = "export function Count(count: number) {\n    const foo = $foo()\n    return <div />\n}"
+        expect(transform(code, "source.tsx", { react: true })).toBe(undefined)
+    })
+
+    test("Should transform a component with props and a ref", () => {
+        expectSnapshot(`
+            export function Input(props, inputRef) {
+                const foo = $foo()
+                return <input ref={inputRef} />
+            }
+        `)
+    })
+
+    test("Should transform memo and forwardRef callbacks", () => {
+        expectSnapshot(`
+            export const a = memo(() => {
+                const foo = $foo()
+                return <div />
+            })
+            export const b = React.forwardRef((props, ref) => <div ref={ref}>{$foo()}</div>)
+        `)
+    })
+
+    test("Should transform components and hooks named by assignments and properties", () => {
+        expectSnapshot(`
+            Component = () => <div>{$foo()}</div>
+            Foo.useHook = () => {
+                const foo = $foo()
+                return foo
+            }
+            export const components = {
+                Row: () => <div>{$foo()}</div>,
+                row: () => <div>{$foo()}</div>,
             }
         `)
     })

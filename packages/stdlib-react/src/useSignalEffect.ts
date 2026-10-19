@@ -1,3 +1,4 @@
+import type { EffectContext } from "@monstermann/stdlib"
 import { Effect } from "@monstermann/stdlib"
 import { useEffect } from "react"
 
@@ -18,6 +19,6 @@ import { useEffect } from "react"
  * }
  * ```
  */
-export function useSignalEffect(callback: () => (() => void) | void): void {
+export function useSignalEffect(callback: (this: EffectContext) => (() => void) | void): void {
     useEffect(() => Effect(callback), [callback])
 }

@@ -325,6 +325,83 @@ describe("react", () => {
         `)
     })
 
+    test("Should create signals and effects with hooks in components and hooks", () => {
+        expectSnapshot(`
+            export function Counter() {
+                const $count = Signal(0)
+                const $other = Signal(null, { equals })
+                Effect(() => console.log($count()))
+                return <button>{$count()}</button>
+            }
+            export function useCounter() {
+                const $count = Signal(0)
+                Effect(function () {
+                    if ($count() > 10) this.dispose()
+                })
+                return $count
+            }
+        `)
+    })
+
+    test("Should keep the type arguments of a signal", () => {
+        const code = "export function Component() {\n    const $el = Signal<Element | null>(null)\n    return null\n}"
+        expect(transform(code, "source.tsx", { react: true })?.code).toContain("const $el = useSignal<Element | null>(null)")
+    })
+
+    test("Should create signals and effects with hooks without a $ in the file", () => {
+        expectSnapshot(`
+            export function Logger({ message }) {
+                Effect(() => console.log(message))
+                return null
+            }
+        `)
+    })
+
+    test("Should leave signals and effects alone outside of top-level statements", () => {
+        expectSnapshot(`
+            const $global = Signal(0)
+            Effect(() => console.log($global()))
+            export function Component({ open }) {
+                const stop = Effect(() => {})
+                if (open) Effect(() => {})
+                const onClick = () => {
+                    const $local = Signal(0)
+                    Effect(() => {})
+                }
+                const $a = open ? Signal(1) : Signal(2)
+                return <div onClick={onClick} />
+            }
+            export function create() {
+                const $count = Signal(0)
+                Effect(() => {})
+                return $count
+            }
+        `)
+    })
+
+    test("Should not wrap a read in the initial value of a signal", () => {
+        expectSnapshot(`
+            export function Component() {
+                const $copy = Signal($count())
+                return null
+            }
+        `)
+    })
+
+    test("Should follow imports of Signal and Effect", () => {
+        expectSnapshot(`
+            import { Signal as S, Effect as E } from "@monstermann/stdlib"
+            import { Signal } from "some-other-package"
+            import { useSignal as useS } from "@monstermann/stdlib-react"
+            export function Component() {
+                const $a = S(0)
+                const $b = Signal(0)
+                E(() => {})
+                return null
+            }
+        `)
+    })
+
     test("Should skip files without a $", () => {
         expect(transform("export const Component = () => <div />", "source.jsx", { react: true })).toBe(undefined)
     })

@@ -264,3 +264,73 @@ export function useHook() {
     return foo
 }"
 `;
+
+exports[`react Should create signals and effects with hooks in components and hooks 1`] = `
+"import { useSignal } from "@monstermann/stdlib-react";
+import { useSignalEffect } from "@monstermann/stdlib-react";
+import { useReactive } from "@monstermann/stdlib-react";
+export function Counter() {
+    const $count = useSignal(0)
+    const $other = useSignal(null, { equals })
+    useSignalEffect(() => console.log($count()))
+    return <button>{useReactive($count)}</button>
+}
+export function useCounter() {
+    const $count = useSignal(0)
+    useSignalEffect(function () {
+        if ($count() > 10) this.dispose()
+    })
+    return $count
+}"
+`;
+
+exports[`react Should create signals and effects with hooks without a $ in the file 1`] = `
+"import { useSignalEffect } from "@monstermann/stdlib-react";
+export function Logger({ message }) {
+    useSignalEffect(() => console.log(message))
+    return null
+}"
+`;
+
+exports[`react Should leave signals and effects alone outside of top-level statements 1`] = `
+"import { Signal } from "@monstermann/stdlib/Signal.mjs";import { Effect } from "@monstermann/stdlib/Effect.mjs";const $global = Signal(0)
+Effect(() => console.log($global()))
+export function Component({ open }) {
+    const stop = Effect(() => {})
+    if (open) Effect(() => {})
+    const onClick = () => {
+        const $local = Signal(0)
+        Effect(() => {})
+    }
+    const $a = open ? Signal(1) : Signal(2)
+    return <div onClick={onClick} />
+}
+export function create() {
+    const $count = Signal(0)
+    Effect(() => {})
+    return $count
+}"
+`;
+
+
+exports[`react Should follow imports of Signal and Effect 1`] = `
+"import { useSignalEffect } from "@monstermann/stdlib-react";
+import { Signal as S } from "@monstermann/stdlib/Signal.mjs";
+import { Effect as E } from "@monstermann/stdlib/Effect.mjs";
+import { Signal } from "some-other-package"
+import { useSignal as useS } from "@monstermann/stdlib-react"
+export function Component() {
+    const $a = useS(0)
+    const $b = Signal(0)
+    useSignalEffect(() => {})
+    return null
+}"
+`;
+
+exports[`react Should not wrap a read in the initial value of a signal 1`] = `
+"import { useSignal } from "@monstermann/stdlib-react";
+export function Component() {
+    const $copy = useSignal($count())
+    return null
+}"
+`;

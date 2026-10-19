@@ -1,3 +1,4 @@
+import type { SignalOptions } from "@monstermann/stdlib"
 import { Signal } from "@monstermann/stdlib"
 import { useState } from "react"
 
@@ -6,7 +7,7 @@ import { useState } from "react"
  *
  * Creates a signal once per component, `useState` as a signal.
  *
- * - `value` is the initial value: when it changes later, the signal keeps its own
+ * - `value` is the initial value: when it changes later, the signal keeps its own, and so do `options`
  * - `@monstermann/stdlib-transform` writes it for you, wherever a component or a hook calls `Signal`
  *
  * ```tsx
@@ -16,6 +17,6 @@ import { useState } from "react"
  * }
  * ```
  */
-export function useSignal<T>(value: T): Signal<T> {
-    return useState(() => Signal(value))[0]
+export function useSignal<T>(value: T, options?: SignalOptions<NoInfer<T>>): Signal<T> {
+    return useState(() => Signal(value, options))[0]
 }

@@ -1,8 +1,12 @@
+import type { Signal as SignalType } from "@monstermann/stdlib"
 import type { Root } from "react-dom/client"
+import { Signal } from "@monstermann/stdlib"
 import { describe, expect, it, vi } from "bun:test"
 import { act, createElement, StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { useMountEffect } from "../src/useMountEffect"
+import { useSignal } from "../src/useSignal"
+import { useSignalEffect } from "../src/useSignalEffect"
 import { useUnmountEffect } from "../src/useUnmountEffect"
 import { useUpdateEffect } from "../src/useUpdateEffect"
 import { fakeDOM } from "./dom"
@@ -84,4 +88,65 @@ describe("useUpdateEffect", () => {
             expect(cleanup).toHaveBeenCalledTimes(2)
         })
     }
+})
+
+describe("useSignal", () => {
+    it("should create the signal once, and keep its value when the initial one changes", () => {
+        const signals: SignalType<number>[] = []
+        const { rerender } = mount(({ initial }: { initial: number }) => {
+            signals.push(useSignal(initial))
+            return null
+        }, { initial: 1 })
+        signals[0]!(5)
+        rerender({ initial: 2 })
+        expect(signals[1]).toBe(signals[0])
+        expect(signals[1]!()).toBe(5)
+    })
+})
+
+describe("useSignalEffect", () => {
+    it("should run again when a signal changes, and be disposed on unmount", async () => {
+        const $count = Signal(0)
+        const cleanup = vi.fn()
+        const effect = vi.fn(() => {
+            $count()
+            return cleanup
+        })
+        const { unmount } = mount(() => {
+            useSignalEffect(effect)
+            return null
+        }, {})
+        expect(effect).toHaveBeenCalledTimes(1)
+        $count(1)
+        expect(effect).toHaveBeenCalledTimes(2)
+        await unmount()
+        expect(cleanup).toHaveBeenCalledTimes(2)
+        $count(2)
+        expect(effect).toHaveBeenCalledTimes(2)
+    })
+
+    it("should be created again when the callback changes", () => {
+        const first = vi.fn()
+        const second = vi.fn()
+        const { rerender } = mount(({ effect }: { effect: () => void }) => {
+            useSignalEffect(effect)
+            return null
+        }, { effect: first })
+        rerender({ effect: second })
+        expect(first).toHaveBeenCalledTimes(1)
+        expect(second).toHaveBeenCalledTimes(1)
+    })
+
+    it("should be disposed once in StrictMode", async () => {
+        const $count = Signal(0)
+        const effect = vi.fn(() => void $count())
+        const { unmount } = mount(() => {
+            useSignalEffect(effect)
+            return null
+        }, {}, true)
+        effect.mockClear()
+        $count(1)
+        expect(effect).toHaveBeenCalledTimes(1)
+        await unmount()
+    })
 })

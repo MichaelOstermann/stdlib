@@ -1,30 +1,40 @@
-import type { ArrowFunctionExpression, Expression, Function, JSXExpression, Node, ParamPattern } from "oxc-parser"
+import type { ArrowFunctionExpression, CallExpression, Expression, Function, JSXExpression, Node, ParamPattern } from "oxc-parser"
 import MagicString from "magic-string"
 import { parseSync } from "oxc-parser"
 import { walk } from "oxc-walker"
 
 type FunctionNode = Function | ArrowFunctionExpression
 
+type Hook = "useReactive" | "useSignal" | "useSignalEffect"
+
 interface Scope {
+    // Signal(), Effect() calls that become useSignal(), useSignalEffect()
+    creates: Map<CallExpression, Hook>
     expressions: Set<JSXExpression | Expression>
     fn: FunctionNode
     kind: "component" | "hook" | "callback" | undefined
     returnsNonNode: boolean
 }
 
+const hooks: Hook[] = ["useReactive", "useSignal", "useSignalEffect"]
+
 /**
  * Wraps reads of signals in components and hooks with `useReactive`.
  * Signals are recognized by their `$` prefix: `$count()`, `state.$count()`.
+ * `Signal()` and `Effect()` in their top-level statements become `useSignal()` and `useSignalEffect()`.
  */
 export function transformReact(code: string, id: string): MagicString | undefined {
-    // Nothing to do without a `$`, skip parsing.
-    if (!code.includes("$")) return
+    // Nothing to do without a `$`, a signal or an effect, skip parsing.
+    if (!code.includes("$") && !code.includes("Signal") && !code.includes("Effect")) return
 
     const filename = id.split("?", 1)[0]!
     const { program } = parseSync(filename, code)
     const ms = new MagicString(code, { filename })
     const ids = new Set<string>()
-    let useReactive = ""
+    // The local names of the hooks, of `Signal` and of `Effect`.
+    const imported = new Map<Hook, string>()
+    const creates = new Map<string, Hook>([["Effect", "useSignalEffect"], ["Signal", "useSignal"]])
+    const allCreates = new Set<CallExpression>()
     let skip = 0
     const parents: Node[] = []
     const scopes: Scope[] = []
@@ -38,14 +48,16 @@ export function transformReact(code: string, id: string): MagicString | undefine
         return id
     }
 
-    function getUseSignal(): string {
-        if (useReactive) return useReactive
-        useReactive = generateId("useReactive")
-        if (useReactive === "useReactive")
-            ms.appendRight(0, `import { ${useReactive} } from "@monstermann/stdlib-react";\n`)
+    function getImport(hook: Hook): string {
+        let local = imported.get(hook)
+        if (local) return local
+        local = generateId(hook)
+        imported.set(hook, local)
+        if (local === hook)
+            ms.appendRight(0, `import { ${local} } from "@monstermann/stdlib-react";\n`)
         else
-            ms.appendRight(0, `import { useReactive as ${useReactive} } from "@monstermann/stdlib-react";\n`)
-        return useReactive
+            ms.appendRight(0, `import { ${hook} as ${local} } from "@monstermann/stdlib-react";\n`)
+        return local
     }
 
     walk(program, {
@@ -56,6 +68,7 @@ export function transformReact(code: string, id: string): MagicString | undefine
                 || node.type === "ArrowFunctionExpression"
             ) {
                 const scope: Scope = {
+                    creates: new Map(),
                     expressions: new Set(),
                     fn: node,
                     kind: getKind(node, parent),
@@ -73,15 +86,23 @@ export function transformReact(code: string, id: string): MagicString | undefine
             }
 
             else if (node.type === "ImportDeclaration") {
-                if (node.source.value === "@monstermann/stdlib-react") {
-                    for (const specifier of node.specifiers) {
-                        if (
-                            specifier.type === "ImportSpecifier"
-                            && specifier.imported.type === "Identifier"
-                            && specifier.imported.name === (useReactive || "useReactive")
-                        ) {
-                            useReactive = specifier.local.name
-                        }
+                for (const specifier of node.specifiers) {
+                    const name = specifier.type === "ImportSpecifier" && specifier.imported.type === "Identifier"
+                        ? specifier.imported.name
+                        : undefined
+                    const local = specifier.local.name
+                    // import { useReactive as useR } from "@monstermann/stdlib-react"
+                    if (node.source.value === "@monstermann/stdlib-react") {
+                        const hook = hooks.find(hook => hook === name)
+                        if (hook) imported.set(hook, local)
+                    }
+                    // import { Signal as S } from "@monstermann/stdlib"
+                    else if (node.source.value === "@monstermann/stdlib" && (name === "Signal" || name === "Effect")) {
+                        creates.set(local, creates.get(name)!)
+                    }
+                    // A `Signal` or an `Effect` of some other package.
+                    else {
+                        creates.delete(local)
                     }
                 }
             }
@@ -89,9 +110,23 @@ export function transformReact(code: string, id: string): MagicString | undefine
             else if (
                 node.type === "CallExpression"
                 && node.callee.type === "Identifier"
-                && node.callee.name === useReactive
+                && node.callee.name === imported.get("useReactive")
             ) {
                 skip++
+            }
+
+            // const $foo = Signal(), Effect()
+            else if (
+                node.type === "CallExpression"
+                && node.callee.type === "Identifier"
+                && creates.has(node.callee.name)
+            ) {
+                const scope = scopeStack.at(-1)
+                const hook = creates.get(node.callee.name)!
+                if (scope && isTopLevel(scope, parents, node, hook)) {
+                    scope.creates.set(node, hook)
+                    allCreates.add(node)
+                }
             }
 
             // $foo(), $foo(arg), foo.$bar(), foo.$bar.baz()
@@ -111,7 +146,7 @@ export function transformReact(code: string, id: string): MagicString | undefine
             ) {
                 const scope = scopeStack.at(-1)
                 if (scope) {
-                    for (const expression of findWrapTargets(parents, node)) {
+                    for (const expression of findWrapTargets(parents, node, allCreates)) {
                         scope.expressions.add(expression)
                     }
                 }
@@ -127,7 +162,7 @@ export function transformReact(code: string, id: string): MagicString | undefine
             if (
                 node.type === "CallExpression"
                 && node.callee.type === "Identifier"
-                && node.callee.name === useReactive
+                && node.callee.name === imported.get("useReactive")
             ) {
                 skip--
             }
@@ -142,21 +177,41 @@ export function transformReact(code: string, id: string): MagicString | undefine
 
     for (const scope of scopes) {
         if (!isReact(scope)) continue
+        for (const [call, hook] of scope.creates) {
+            ms.overwrite(call.callee.start, call.callee.end, getImport(hook))
+        }
         for (const expression of scope.expressions) {
             // useReactive(() => (expression))
             if (shouldWrap(expression)) {
-                ms.appendRight(expression.start, `${getUseSignal()}(() => (`)
+                ms.appendRight(expression.start, `${getImport("useReactive")}(() => (`)
                 ms.appendRight(expression.end, "))")
             }
             // useReactive(expression)
             else {
-                ms.appendRight(expression.start, `${getUseSignal()}(`)
+                ms.appendRight(expression.start, `${getImport("useReactive")}(`)
                 ms.remove(expression.end - 2, expression.end - 1)
             }
         }
     }
 
     return ms.hasChanged() ? ms : undefined
+}
+
+// Only what runs on every render can become a hook:
+// const $foo = Signal() and Effect() as statements of the component or hook itself.
+function isTopLevel(scope: Scope, parents: Node[], call: CallExpression, hook: Hook): boolean {
+    const body = scope.fn.body
+    if (hook === "useSignal") {
+        const [declaration, declarator] = parents.slice(-2)
+        return declarator?.type === "VariableDeclarator"
+            && declarator.init === call
+            && declaration?.type === "VariableDeclaration"
+            && parents.at(-3) === body
+    }
+    const statement = parents.at(-1)
+    return statement?.type === "ExpressionStatement"
+        && statement.expression === call
+        && parents.at(-2) === body
 }
 
 // Components and hooks are told apart from other functions as React Compiler does it,
@@ -265,7 +320,7 @@ function shouldWrap(node: JSXExpression | Expression): boolean {
 
 // Walks up from a signal read to the expression(s) that should be wrapped with
 // `useReactive(...)` - usually the nearest variable declaration or JSX expression.
-function findWrapTargets(parents: Node[], readNode: Node): (JSXExpression | Expression)[] {
+function findWrapTargets(parents: Node[], readNode: Node, creates: Set<CallExpression>): (JSXExpression | Expression)[] {
     let child: Node = readNode
     let i = parents.length
     while (i--) {
@@ -283,6 +338,11 @@ function findWrapTargets(parents: Node[], readNode: Node): (JSXExpression | Expr
         // The read sits inside a hook call - wrap the argument that contains it, not
         // the enclosing declaration, so the hook call itself is never moved into
         // `useReactive(() => (...))` (rules of hooks).
+        // The initial value of `useSignal()` is only read once, there is nothing to subscribe to.
+        if (node.type === "CallExpression" && creates.has(node)) {
+            return []
+        }
+
         if (node.type === "CallExpression" && isHookCallee(node.callee)) {
             const argument = node.arguments.find(argument => argument === child)
             // A spread argument (`useFoo(...$foo())`) can't be wrapped in place.

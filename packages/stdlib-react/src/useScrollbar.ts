@@ -3,7 +3,7 @@ import { batch, Memo, Timer } from "@monstermann/stdlib"
 import { DOM } from "@monstermann/stdlib-web"
 import { useEffect } from "react"
 import { setScrollTop } from "./internals/setScrollTop"
-import { useCreateSignal } from "./internals/useCreateSignal"
+import { useSignal } from "./useSignal"
 
 export interface Scrollbar {
     /** Whether the pointer is over the element that scrolls. */
@@ -62,11 +62,11 @@ export interface Scrollbar {
  * ```
  */
 export function useScrollbar(scrollElement: HTMLElement | null, contentElement: HTMLElement | null): Scrollbar {
-    const $clientHeight = useCreateSignal(0)
-    const $hovered = useCreateSignal(false)
-    const $scrollHeight = useCreateSignal(0)
-    const $scrolling = useCreateSignal(false)
-    const $scrollTop = useCreateSignal(0)
+    const $clientHeight = useSignal(0)
+    const $hovered = useSignal(false)
+    const $scrollHeight = useSignal(0)
+    const $scrolling = useSignal(false)
+    const $scrollTop = useSignal(0)
     const $overflows = Memo(() => $scrollHeight() > $clientHeight())
     const $progress = Memo(() => {
         const max = $scrollHeight() - $clientHeight()

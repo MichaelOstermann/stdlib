@@ -21,7 +21,7 @@ export interface StdlibPluginOptions extends Omit<StdlibOptions, "debug"> {
      */
     include?: RegExp | RegExp[]
     /**
-     * Whether to wrap reads of signals in React components and hooks with `useSignal`.
+     * Whether to wrap reads of signals in React components and hooks with `useReactive`.
      * @default true when `@monstermann/stdlib-react` is installed
      */
     react?: boolean

@@ -3,7 +3,7 @@ import type { PlacementOptions } from "@monstermann/stdlib-web"
 import type { Popover } from "./Popover"
 import { Placement } from "@monstermann/stdlib-web"
 import { useAnchoredModal } from "./internals/useAnchoredModal"
-import { useCreateEffect } from "./internals/useCreateEffect"
+import { useSignalEffect } from "./useSignalEffect"
 
 export interface UsePopoverOptions extends PlacementOptions {
     /** The trigger of a tooltip on the same element, `triggerRef` of `useTooltip`. */
@@ -35,7 +35,7 @@ export type UsePopover = [mounted: boolean, triggerRef: Signal<Element | null>, 
  * - follows the trigger when it moves
  * - `aria-expanded` on the trigger is whether the popover is open, for styling the trigger with it: `aria-expanded:bg-gray-100`
  * - the trigger is only a ref: the listeners are added to the element, there are no props to merge; an element with a tooltip too passes `$trigger`
- * - `mounted` is the only React state: the component calling the hook renders when the popover mounts and unmounts, `useSignal(popover.$open)` is whether it is open
+ * - `mounted` is the only React state: the component calling the hook renders when the popover mounts and unmounts, `useReactive(popover.$open)` is whether it is open
  * - the listeners and effects are there while the component is mounted, and follow changes of the options
  *
  * ```tsx
@@ -61,7 +61,7 @@ export function usePopover(options: UsePopoverOptions = {}): UsePopover {
     const { $open, $trigger } = popover
 
     // A click on the trigger opens and closes the popover. The stack ignores clicks on the trigger.
-    useCreateEffect(() => {
+    useSignalEffect(() => {
         const trigger = $trigger()
         if (!trigger) return
         const controller = new AbortController()
@@ -69,7 +69,7 @@ export function usePopover(options: UsePopoverOptions = {}): UsePopover {
         return () => controller.abort()
     })
 
-    useCreateEffect(() => {
+    useSignalEffect(() => {
         const trigger = $trigger()
         if (!trigger) return
         trigger.setAttribute("aria-expanded", String($open()))

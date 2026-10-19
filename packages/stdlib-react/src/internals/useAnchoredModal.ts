@@ -4,9 +4,9 @@ import type { Modal } from "../Modals"
 import type { TransitionStatus } from "../useTransitionStatus"
 import { Memo } from "@monstermann/stdlib"
 import { DOM, Rect } from "@monstermann/stdlib-web"
+import { useSignal } from "../useSignal"
+import { useSignalEffect } from "../useSignalEffect"
 import { useTransitionStatus } from "../useTransitionStatus"
-import { useCreateEffect } from "./useCreateEffect"
-import { useCreateSignal } from "./useCreateSignal"
 import { useModalStack } from "./useModalStack"
 
 /** A modal next to its trigger: a tooltip or a popover. */
@@ -29,24 +29,24 @@ export interface AnchoredModalOptions extends PlacementOptions {
 export function useAnchoredModal<K extends "popover" | "tooltip">(kind: K, options: AnchoredModalOptions): [mounted: boolean, modal: AnchoredModal<K>] {
     const { anchorGap, boundaryGap, closeDuration, name, openDuration, placement } = options
     const [mounted, { $open, $status }] = useTransitionStatus({ closeDuration, openDuration })
-    const $floating = useCreateSignal<Element | null>(null)
-    const $ownTrigger = useCreateSignal<Element | null>(null)
+    const $floating = useSignal<Element | null>(null)
+    const $ownTrigger = useSignal<Element | null>(null)
     const $trigger = options.$trigger ?? $ownTrigger
-    const $anchor = useCreateSignal(Rect.origin)
-    const $boundary = useCreateSignal(Rect.origin)
-    const $floatingSize = useCreateSignal(Rect.origin)
+    const $anchor = useSignal(Rect.origin)
+    const $boundary = useSignal(Rect.origin)
+    const $floatingSize = useSignal(Rect.origin)
 
     // Measurements run only while the floating element is rendered. Each effect restarts only when its own element changes.
-    useCreateEffect(() => {
+    useSignalEffect(() => {
         const trigger = $trigger()
         if (!$floating() || !trigger) return
         return DOM.observePosition(trigger, $anchor)
     })
-    useCreateEffect(() => {
+    useSignalEffect(() => {
         if (!$floating()) return
         return DOM.observeSize(window, $boundary)
     })
-    useCreateEffect(() => {
+    useSignalEffect(() => {
         const floating = $floating()
         if (!floating) return
         return DOM.observeSize(floating, $floatingSize)

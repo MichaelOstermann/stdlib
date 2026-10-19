@@ -3,7 +3,7 @@ import type { ComponentProps, ReactNode, SyntheticEvent } from "react"
 import type { AnchoredModal } from "./internals/useAnchoredModal"
 import { createPortal } from "react-dom"
 import { floatingStyle } from "./internals/floatingStyle"
-import { useSignal } from "./useSignal"
+import { useReactive } from "./useReactive"
 
 /** What `usePopover` returns as `popover`, for `<Popover popover={popover}>`. */
 export type Popover = AnchoredModal<"popover">
@@ -33,8 +33,8 @@ export interface PopoverProps extends Omit<ComponentProps<"div">, "popover" | "r
 export function Popover({ children, className, onClick, onContextMenu, onPointerDown, popover, style, ...rest }: PopoverProps): ReactNode {
     // Destructured: React Compiler skips a component that passes `popover.$floating` as `ref`.
     const { $floating, $position, $status } = popover
-    const status = useSignal($status)
-    const position = useSignal($position)
+    const status = useReactive($status)
+    const position = useReactive($position)
     const floating = floatingStyle(position)
     floating.maxHeight = position?.maxHeight
 

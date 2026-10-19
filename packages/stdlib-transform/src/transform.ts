@@ -41,7 +41,7 @@ export interface StdlibOptions {
      */
     hmr?: boolean
     /**
-     * Whether to wrap reads of signals in React components and hooks with `useSignal` from `@monstermann/stdlib-react`.
+     * Whether to wrap reads of signals in React components and hooks with `useReactive` from `@monstermann/stdlib-react`.
      * Signals are recognized by their `$` prefix: `$count()`, `state.$count()`.
      * @default false
      */
@@ -61,7 +61,7 @@ export interface StdlibResult {
  * - `pipe()` calls are replaced with the calls they make
  * - everything else (`pipe`, `Result`, …) is imported from the file it lives in
  * - with `hmr`, effects and emitters are passed what stops them or clears their listeners when their module is replaced
- * - with `react`, reads of signals in components and hooks are wrapped with `useSignal`
+ * - with `react`, reads of signals in components and hooks are wrapped with `useReactive`
  *
  * All of it is available as globals, and can be imported from the package as well.
  *

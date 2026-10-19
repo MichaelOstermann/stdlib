@@ -3,7 +3,7 @@ import type { ComponentProps, ReactNode } from "react"
 import type { AnchoredModal } from "./internals/useAnchoredModal"
 import { createPortal } from "react-dom"
 import { floatingStyle } from "./internals/floatingStyle"
-import { useSignal } from "./useSignal"
+import { useReactive } from "./useReactive"
 
 /** What `useTooltip` returns as `tooltip`, for `<Tooltip tooltip={tooltip}>`. */
 export type Tooltip = AnchoredModal<"tooltip">
@@ -31,8 +31,8 @@ export interface TooltipProps extends Omit<ComponentProps<"div">, "ref"> {
 export function Tooltip({ children, className, style, tooltip, ...rest }: TooltipProps): ReactNode {
     // Destructured: React Compiler skips a component that passes `tooltip.$floating` as `ref`.
     const { $floating, $position, $status } = tooltip
-    const status = useSignal($status)
-    const position = useSignal($position)
+    const status = useReactive($status)
+    const position = useReactive($position)
     const floating = floatingStyle(position)
 
     return createPortal(

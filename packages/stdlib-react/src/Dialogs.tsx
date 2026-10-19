@@ -2,11 +2,11 @@ import type { ComponentType, ReactNode } from "react"
 import type { Dialog } from "./Dialog"
 import { Signal } from "@monstermann/stdlib"
 import { useEffect } from "react"
-import { useCreateEffect } from "./internals/useCreateEffect"
-import { useCreateSignal } from "./internals/useCreateSignal"
 import { useModalStack } from "./internals/useModalStack"
 import { useMountEffect } from "./useMountEffect"
+import { useReactive } from "./useReactive"
 import { useSignal } from "./useSignal"
+import { useSignalEffect } from "./useSignalEffect"
 import { useTransitionStatus } from "./useTransitionStatus"
 import { useUnmountEffect } from "./useUnmountEffect"
 
@@ -54,7 +54,7 @@ let nextId = 0
  * ```
  */
 export function Dialogs(): ReactNode {
-    const entries = useSignal($entries)
+    const entries = useReactive($entries)
     return entries.map(entry => <DialogEntry entry={entry} key={entry.id} />)
 }
 
@@ -99,8 +99,8 @@ function DialogEntry({ entry }: { entry: Entry }): ReactNode {
     const { Component, meta, options, resolve } = entry
     const { closeDuration = 200, name, openDuration = 250 } = options
     const [mounted, { $open, $status }] = useTransitionStatus({ closeDuration, openDuration })
-    const $floating = useCreateSignal<Element | null>(null)
-    const $trigger = useCreateSignal<Element | null>(null)
+    const $floating = useSignal<Element | null>(null)
+    const $trigger = useSignal<Element | null>(null)
 
     // The stack identifies modals by object identity. React Compiler keeps this object for as long as the entry.
     const dialog: Dialog<unknown, unknown> = {
@@ -123,7 +123,7 @@ function DialogEntry({ entry }: { entry: Entry }): ReactNode {
 
     // Resolves with `undefined` when the dialog closes without `done`, and does nothing after `done`.
     // Triggered by `closing` instead of `$open`: `<StrictMode>` runs effect cleanups once more while the dialog is open.
-    useCreateEffect(() => {
+    useSignalEffect(() => {
         if ($status() === "closing") resolve(undefined)
     })
 

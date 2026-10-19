@@ -13,7 +13,7 @@ interface Scope {
 }
 
 /**
- * Wraps reads of signals in components and hooks with `useSignal`.
+ * Wraps reads of signals in components and hooks with `useReactive`.
  * Signals are recognized by their `$` prefix: `$count()`, `state.$count()`.
  */
 export function transformReact(code: string, id: string): MagicString | undefined {
@@ -24,7 +24,7 @@ export function transformReact(code: string, id: string): MagicString | undefine
     const { program } = parseSync(filename, code)
     const ms = new MagicString(code, { filename })
     const ids = new Set<string>()
-    let useSignal = ""
+    let useReactive = ""
     let skip = 0
     const parents: Node[] = []
     const scopes: Scope[] = []
@@ -39,13 +39,13 @@ export function transformReact(code: string, id: string): MagicString | undefine
     }
 
     function getUseSignal(): string {
-        if (useSignal) return useSignal
-        useSignal = generateId("useSignal")
-        if (useSignal === "useSignal")
-            ms.appendRight(0, `import { ${useSignal} } from "@monstermann/stdlib-react";\n`)
+        if (useReactive) return useReactive
+        useReactive = generateId("useReactive")
+        if (useReactive === "useReactive")
+            ms.appendRight(0, `import { ${useReactive} } from "@monstermann/stdlib-react";\n`)
         else
-            ms.appendRight(0, `import { useSignal as ${useSignal} } from "@monstermann/stdlib-react";\n`)
-        return useSignal
+            ms.appendRight(0, `import { useReactive as ${useReactive} } from "@monstermann/stdlib-react";\n`)
+        return useReactive
     }
 
     walk(program, {
@@ -78,9 +78,9 @@ export function transformReact(code: string, id: string): MagicString | undefine
                         if (
                             specifier.type === "ImportSpecifier"
                             && specifier.imported.type === "Identifier"
-                            && specifier.imported.name === (useSignal || "useSignal")
+                            && specifier.imported.name === (useReactive || "useReactive")
                         ) {
-                            useSignal = specifier.local.name
+                            useReactive = specifier.local.name
                         }
                     }
                 }
@@ -89,7 +89,7 @@ export function transformReact(code: string, id: string): MagicString | undefine
             else if (
                 node.type === "CallExpression"
                 && node.callee.type === "Identifier"
-                && node.callee.name === useSignal
+                && node.callee.name === useReactive
             ) {
                 skip++
             }
@@ -127,7 +127,7 @@ export function transformReact(code: string, id: string): MagicString | undefine
             if (
                 node.type === "CallExpression"
                 && node.callee.type === "Identifier"
-                && node.callee.name === useSignal
+                && node.callee.name === useReactive
             ) {
                 skip--
             }
@@ -143,12 +143,12 @@ export function transformReact(code: string, id: string): MagicString | undefine
     for (const scope of scopes) {
         if (!isReact(scope)) continue
         for (const expression of scope.expressions) {
-            // useSignal(() => (expression))
+            // useReactive(() => (expression))
             if (shouldWrap(expression)) {
                 ms.appendRight(expression.start, `${getUseSignal()}(() => (`)
                 ms.appendRight(expression.end, "))")
             }
-            // useSignal(expression)
+            // useReactive(expression)
             else {
                 ms.appendRight(expression.start, `${getUseSignal()}(`)
                 ms.remove(expression.end - 2, expression.end - 1)
@@ -258,13 +258,13 @@ function isNonNode(node: Node | null | undefined): boolean {
 }
 
 function shouldWrap(node: JSXExpression | Expression): boolean {
-    // $foo(arg) needs to be wrapped with a function: useSignal(() => $foo(arg)),
-    // whereas $foo() does not: useSignal($foo).
+    // $foo(arg) needs to be wrapped with a function: useReactive(() => $foo(arg)),
+    // whereas $foo() does not: useReactive($foo).
     return !(node.type === "CallExpression" && node.arguments.length === 0)
 }
 
 // Walks up from a signal read to the expression(s) that should be wrapped with
-// `useSignal(...)` - usually the nearest variable declaration or JSX expression.
+// `useReactive(...)` - usually the nearest variable declaration or JSX expression.
 function findWrapTargets(parents: Node[], readNode: Node): (JSXExpression | Expression)[] {
     let child: Node = readNode
     let i = parents.length
@@ -282,7 +282,7 @@ function findWrapTargets(parents: Node[], readNode: Node): (JSXExpression | Expr
 
         // The read sits inside a hook call - wrap the argument that contains it, not
         // the enclosing declaration, so the hook call itself is never moved into
-        // `useSignal(() => (...))` (rules of hooks).
+        // `useReactive(() => (...))` (rules of hooks).
         if (node.type === "CallExpression" && isHookCallee(node.callee)) {
             const argument = node.arguments.find(argument => argument === child)
             // A spread argument (`useFoo(...$foo())`) can't be wrapped in place.

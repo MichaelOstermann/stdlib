@@ -1,8 +1,8 @@
 import type { ReadonlySignal, Signal } from "@monstermann/stdlib"
 import { Memo, peek, Timer } from "@monstermann/stdlib"
-import { useCreateEffect } from "./internals/useCreateEffect"
-import { useCreateSignal } from "./internals/useCreateSignal"
+import { useReactive } from "./useReactive"
 import { useSignal } from "./useSignal"
+import { useSignalEffect } from "./useSignalEffect"
 
 export type TransitionStatus = "closed" | "closing" | "opened" | "opening"
 
@@ -52,12 +52,12 @@ export type UseTransitionStatus = [mounted: boolean, transition: Transition]
  * ```
  */
 export function useTransitionStatus({ closeDuration, openDuration }: UseTransitionStatusOptions): UseTransitionStatus {
-    const $open = useCreateSignal(false)
-    const $status = useCreateSignal<TransitionStatus>("closed")
+    const $open = useSignal(false)
+    const $status = useSignal<TransitionStatus>("closed")
     const $mounted = Memo(() => $open() || $status() !== "closed")
     const transition: Transition = { $open, $status }
 
-    useCreateEffect(() => {
+    useSignalEffect(() => {
         const open = $open()
         // The pending timer or frame of this run, cancelled when `$open` changes again or the component unmounts.
         let cancel: (() => void) | undefined
@@ -85,7 +85,7 @@ export function useTransitionStatus({ closeDuration, openDuration }: UseTransiti
         return () => cancel?.()
     })
 
-    return [useSignal($mounted), transition]
+    return [useReactive($mounted), transition]
 }
 
 /** Calls `callback` in the second frame from now. The first frame paints what was rendered before the call. */

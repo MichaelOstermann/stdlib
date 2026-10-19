@@ -4,7 +4,7 @@ import type { Tooltip } from "./Tooltip"
 import { Timer } from "@monstermann/stdlib"
 import { DOM, Placement } from "@monstermann/stdlib-web"
 import { useAnchoredModal } from "./internals/useAnchoredModal"
-import { useCreateEffect } from "./internals/useCreateEffect"
+import { useSignalEffect } from "./useSignalEffect"
 
 export interface UseTooltipOptions extends PlacementOptions {
     /** The trigger of a popover on the same element, `triggerRef` of `usePopover`. */
@@ -59,7 +59,7 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltip {
     const { $open, $trigger } = tooltip
 
     // Listeners on the trigger, removed when the trigger changes or unmounts.
-    useCreateEffect(() => {
+    useSignalEffect(() => {
         const trigger = $trigger()
         if (!trigger) return
         const controller = new AbortController()
@@ -98,7 +98,7 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltip {
     })
 
     // Closes when something around the trigger scrolls.
-    useCreateEffect(() => {
+    useSignalEffect(() => {
         const trigger = $trigger()
         return trigger && $open() ? DOM.onAncestorScroll(trigger, () => $open(false)) : undefined
     })

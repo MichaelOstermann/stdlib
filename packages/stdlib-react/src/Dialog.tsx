@@ -4,7 +4,7 @@ import type { ComponentProps, CSSProperties, ReactNode } from "react"
 import type { Modal } from "./Modals"
 import type { TransitionStatus } from "./useTransitionStatus"
 import { createPortal } from "react-dom"
-import { useSignal } from "./useSignal"
+import { useReactive } from "./useReactive"
 
 /** A dialog opened with `Dialogs.open`, passed to its component as `dialog`: `meta` is what `Dialogs.open` was given, `done` what it resolves with. */
 export interface Dialog<T = void, R = void> extends Modal {
@@ -55,7 +55,7 @@ const backdropStyle: CSSProperties = {
 export function Dialog({ children, dialog, ...rest }: DialogProps): ReactNode {
     // Destructured: React Compiler skips a component that passes `dialog.$floating` as `ref`.
     const { $floating, $status } = dialog
-    const status = useSignal($status)
+    const status = useReactive($status)
 
     return createPortal(
         <div className="modal dialog" data-status={status} style={backdropStyle}>

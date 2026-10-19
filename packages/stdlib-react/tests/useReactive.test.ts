@@ -2,18 +2,18 @@ import { Effect, Memo, Signal } from "@monstermann/stdlib"
 import { describe, expect, expectTypeOf, it, vi } from "bun:test"
 import { act, createElement, useLayoutEffect, useState } from "react"
 import { renderToString } from "react-dom/server"
-import { useSignal } from "../src/useSignal"
+import { useReactive } from "../src/useReactive"
 import { fakeDOM, render } from "./dom"
 
-describe("useSignal", () => {
+describe("useReactive", () => {
     it("should render the value of signals, memos and functions", () => {
         const $count = Signal(1)
         const $double = Memo(() => $count() * 2)
 
         function Counter({ offset }: { offset: number }): string {
-            const count = useSignal($count)
-            const double = useSignal($double)
-            const total = useSignal(() => $count() + offset)
+            const count = useReactive($count)
+            const double = useReactive($double)
+            const total = useReactive(() => $count() + offset)
             return [count, double, total].join(" ")
         }
 
@@ -24,7 +24,7 @@ describe("useSignal", () => {
 
     it("should not make an effect depend on what is rendered", () => {
         const $count = Signal(1)
-        const Counter = (): string => String(useSignal($count))
+        const Counter = (): string => String(useReactive($count))
         const spy = vi.fn(() => renderToString(createElement(Counter)))
         Effect(() => void spy())
         $count(2)
@@ -44,7 +44,7 @@ describe("useSignal", () => {
             const container = render(() => {
                 renders()
                 const [initial] = useState(() => $other())
-                return `${useSignal(read)} ${initial}`
+                return `${useReactive(read)} ${initial}`
             })
             expect(container.textContent).toBe("1 1")
 
@@ -63,7 +63,7 @@ describe("useSignal", () => {
 
             const container = render(() => {
                 renders()
-                return useSignal(find)?.name
+                return useReactive(find)?.name
             })
             expect(container.textContent).toBe("a")
 
@@ -83,7 +83,7 @@ describe("useSignal", () => {
             const container = render(() => {
                 // Runs before React subscribes, which happens in a passive effect.
                 useLayoutEffect(() => void $a(2), [])
-                return String(useSignal(read))
+                return String(useReactive(read))
             })
             expect(container.textContent).toBe("20")
 
@@ -100,7 +100,7 @@ describe("useSignal", () => {
             try {
                 const container = render(() => {
                     renders()
-                    return String(useSignal(read).a)
+                    return String(useReactive(read).a)
                 })
                 expect(renders).toHaveBeenCalledTimes(1)
 
@@ -118,11 +118,11 @@ describe("useSignal", () => {
     it("should know what it returns", () => {
         // Never called, hooks only work while rendering.
         const types = (): void => {
-            expectTypeOf(useSignal(Signal(1))).toEqualTypeOf<number>()
-            expectTypeOf(useSignal(Memo(() => "a"))).toEqualTypeOf<string>()
-            expectTypeOf(useSignal(() => true)).toEqualTypeOf<boolean>()
+            expectTypeOf(useReactive(Signal(1))).toEqualTypeOf<number>()
+            expectTypeOf(useReactive(Memo(() => "a"))).toEqualTypeOf<string>()
+            expectTypeOf(useReactive(() => true)).toEqualTypeOf<boolean>()
             // @ts-expect-error not something to read
-            useSignal(1)
+            useReactive(1)
         }
         expect(types).toBeFunction()
     })

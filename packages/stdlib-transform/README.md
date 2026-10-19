@@ -23,7 +23,7 @@ export default defineConfig({
 | `enforce` |                         | `"pre"` or `"post"`.                                                   |
 | `debug`   | `false`                 | `true` or a RegExp matching file paths, prints what is being replaced. |
 | `hmr`     | Vite dev server         | Disposes effects and emitters when their module is replaced.           |
-| `react`   | if it is installed      | Wraps reads of signals in components and hooks with `useSignal`.       |
+| `react`   | if it is installed      | Wraps reads of signals in components and hooks with `useReactive`.     |
 
 Dependencies are always skipped: what a dependency uses of `Array` or `Object` is its own.
 

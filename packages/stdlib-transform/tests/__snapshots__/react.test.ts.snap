@@ -1,25 +1,25 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
 exports[`react Should transform const Component = function() {} 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export const Component = function() {
-    const foo = useSignal($foo)
+    const foo = useReactive($foo)
     return null
 }"
 `;
 
 exports[`react Should transform function Component() {} 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export function Component() {
-    const foo = useSignal($foo)
+    const foo = useReactive($foo)
     return null
 }"
 `;
 
 exports[`react Should transform const Component = () => {} 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export const Component = () => {
-    const foo = useSignal($foo)
+    const foo = useReactive($foo)
     return null
 }"
 `;
@@ -60,55 +60,55 @@ exports[`react Should ignore a PascalCase function with more params than props a
 `;
 
 exports[`react Should transform a component with props and a ref 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export function Input(props, inputRef) {
-    const foo = useSignal($foo)
+    const foo = useReactive($foo)
     return <input ref={inputRef} />
 }"
 `;
 
 exports[`react Should transform memo and forwardRef callbacks 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export const a = memo(() => {
-    const foo = useSignal($foo)
+    const foo = useReactive($foo)
     return <div />
 })
-export const b = React.forwardRef((props, ref) => <div ref={ref}>{useSignal($foo)}</div>)"
+export const b = React.forwardRef((props, ref) => <div ref={ref}>{useReactive($foo)}</div>)"
 `;
 
 exports[`react Should transform components and hooks named by assignments and properties 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
-Component = () => <div>{useSignal($foo)}</div>
+"import { useReactive } from "@monstermann/stdlib-react";
+Component = () => <div>{useReactive($foo)}</div>
 Foo.useHook = () => {
-    const foo = useSignal($foo)
+    const foo = useReactive($foo)
     return foo
 }
 export const components = {
-    Row: () => <div>{useSignal($foo)}</div>,
+    Row: () => <div>{useReactive($foo)}</div>,
     row: () => <div>{$foo()}</div>,
 }"
 `;
 
 exports[`react Should transform const useHook = function() {} 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export const useHook = function() {
-    const foo = useSignal($foo)
+    const foo = useReactive($foo)
     return null
 }"
 `;
 
 exports[`react Should transform function useHook() {} 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export function useHook() {
-    const foo = useSignal($foo)
+    const foo = useReactive($foo)
     return null
 }"
 `;
 
 exports[`react Should transform const useHook = () => {} 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export const useHook = () => {
-    const foo = useSignal($foo)
+    const foo = useReactive($foo)
     return null
 }"
 `;
@@ -121,74 +121,74 @@ exports[`react Should ignore everything else 1`] = `
 `;
 
 exports[`react Should transform nested call expressions 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export const useHook = () => {
-    const foo = useSignal(bar.$baz)
+    const foo = useReactive(bar.$baz)
     return null
 }"
 `;
 
 exports[`react Should transform nested call expressions 2 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export const useHook = () => {
-    const foo = useSignal(bar.$baz.qux)
+    const foo = useReactive(bar.$baz.qux)
     return null
 }"
 `;
 
 exports[`react Should wrap call expressions with arguments in arrow function 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export const useHook = () => {
-    const foo = useSignal(() => (bar.$baz({ a: 1 })))
+    const foo = useReactive(() => (bar.$baz({ a: 1 })))
     return null
 }"
 `;
 
 exports[`react Should transform complex expressions 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export const useHook = () => {
-    const a = useSignal(() => ($a() + $b()))
-    const b = useSignal(() => ({ b: $b() }))
-    const c = useSignal(() => ([$c()]))
-    const d = useSignal(() => (util($d())))
+    const a = useReactive(() => ($a() + $b()))
+    const b = useReactive(() => ({ b: $b() }))
+    const c = useReactive(() => ([$c()]))
+    const d = useReactive(() => (util($d())))
     return null
 }"
 `;
 
 exports[`react Should transform JSX attributes 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export const Component = () => {
     return (
-        <div style={useSignal($style)} />
+        <div style={useReactive($style)} />
     )
 }"
 `;
 
 exports[`react Should transform JSX spread attributes 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export const Component = () => {
     return (
-        <div {...useSignal($style)} />
+        <div {...useReactive($style)} />
     )
 }"
 `;
 
 exports[`react Should transform JSX container expressions 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export const Component = () => {
     return (
         <div>
-            {useSignal($text)}
+            {useReactive($text)}
         </div>
     )
 }"
 `;
 
 exports[`react Should wrap identifier calls with arguments in arrow function 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export const Component = () => {
-    const foo = useSignal(() => ($foo(100)))
-    return <div>{useSignal(() => ($t("key", { a: 1 })))}</div>
+    const foo = useReactive(() => ($foo(100)))
+    return <div>{useReactive(() => ($t("key", { a: 1 })))}</div>
 }"
 `;
 
@@ -204,7 +204,7 @@ exports[`react Should ignore writes in statements and callbacks 1`] = `
 `;
 
 exports[`react Should ignore already decorated signals 1`] = `
-"import { useSignal as useS } from "@monstermann/stdlib-react"
+"import { useReactive as useS } from "@monstermann/stdlib-react"
 export const Component = () => {
     const foo = useS($foo)
     return null
@@ -212,7 +212,7 @@ export const Component = () => {
 `;
 
 exports[`react Should reuse import 1`] = `
-"import { useSignal as useS } from "@monstermann/stdlib-react"
+"import { useReactive as useS } from "@monstermann/stdlib-react"
 export const Component = () => {
     const foo = useS($foo)
     return null
@@ -220,25 +220,25 @@ export const Component = () => {
 `;
 
 exports[`react Should wrap a hook argument, not the hook call, for a direct read 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export function useHook() {
-    const foo = useThing(useSignal($foo))
+    const foo = useThing(useReactive($foo))
     return foo
 }"
 `;
 
 exports[`react Should wrap a hook argument, not the hook call, for a nested read 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export function useHook() {
-    const foo = useThing(useSignal(() => ({ value: $foo() })))
+    const foo = useThing(useReactive(() => ({ value: $foo() })))
     return foo
 }"
 `;
 
 exports[`react Should still wrap the whole expression inside a non-hook call 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export function useHook() {
-    const foo = useSignal(() => (util({ value: $foo() })))
+    const foo = useReactive(() => (util({ value: $foo() })))
     return foo
 }"
 `;
@@ -258,9 +258,9 @@ exports[`react Should not wrap a deeper member access that is never called 1`] =
 `;
 
 exports[`react Should wrap an invoked member-access chain 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
+"import { useReactive } from "@monstermann/stdlib-react";
 export function useHook() {
-    const foo = useSignal(a.$b.c.d)
+    const foo = useReactive(a.$b.c.d)
     return foo
 }"
 `;

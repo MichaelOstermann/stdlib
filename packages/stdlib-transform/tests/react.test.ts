@@ -253,7 +253,7 @@ describe("react", () => {
 
     test("Should ignore already decorated signals", () => {
         expectSnapshot(`
-            import { useSignal as useS } from "@monstermann/stdlib-react"
+            import { useReactive as useS } from "@monstermann/stdlib-react"
             export const Component = () => {
                 const foo = useS($foo)
                 return null
@@ -263,7 +263,7 @@ describe("react", () => {
 
     test("Should reuse import", () => {
         expectSnapshot(`
-            import { useSignal as useS } from "@monstermann/stdlib-react"
+            import { useReactive as useS } from "@monstermann/stdlib-react"
             export const Component = () => {
                 const foo = $foo()
                 return null
@@ -351,8 +351,8 @@ describe("react", () => {
         ].join("\n")
         const result = transform(code, "source.jsx", { hmr: true, react: true })
         expect(result?.code).toContain("import.meta.hot")
-        expect(result?.code).toContain(`import { useSignal } from "@monstermann/stdlib-react";`)
-        expect(result?.code).toContain("{useSignal($count)}")
+        expect(result?.code).toContain(`import { useReactive } from "@monstermann/stdlib-react";`)
+        expect(result?.code).toContain("{useReactive($count)}")
         expect(result?.code).toContain("Effect(() => console.log($count()), meta)")
         expect(result?.code).toContain(`import { Signal } from "@monstermann/stdlib/Signal.mjs";`)
         expect(result?.map.sources).toEqual(["source.jsx"])
@@ -364,7 +364,7 @@ describe("stdlib, with react", () => {
     const code = "export const Component = () => <div>{$count()}</div>"
 
     test("Should pass the react option on", () => {
-        expect(stdlib({ react: true }).transform.handler(code, "/a/b.tsx")?.code).toContain("useSignal($count)")
+        expect(stdlib({ react: true }).transform.handler(code, "/a/b.tsx")?.code).toContain("useReactive($count)")
         expect(stdlib({ react: false }).transform.handler(code, "/a/b.tsx")).toBe(undefined)
     })
 
@@ -380,7 +380,7 @@ describe("stdlib, with react", () => {
         // Found in the directories above as well, which is where a workspace installs it.
         await Bun.write(Path.join(root, "node_modules/@monstermann/stdlib-react/package.json"), "{}")
         plugin.configResolved({ command: "build", root: nested })
-        expect(plugin.transform.handler(code, "/a/b.tsx")?.code).toContain("useSignal($count)")
+        expect(plugin.transform.handler(code, "/a/b.tsx")?.code).toContain("useReactive($count)")
 
         const disabled = stdlib({ react: false })
         disabled.configResolved({ command: "build", root: nested })

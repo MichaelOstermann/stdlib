@@ -22,4 +22,21 @@ describe("transform, then React Compiler", () => {
         expect(code).toContain("\n\tconst $count = useSignal(0);\n")
         expect(code).toContain("\n\tuseSignalEffect(t1);\n")
     })
+
+    // React Compiler reports a hook that is called conditionally, which fails with `panicThreshold: "all_errors"`.
+    it("should only call hooks unconditionally", () => {
+        expect(() => compile(`
+            export function Component({ open, tooltip }) {
+                const big = $count() > 10
+                return (
+                    <div>
+                        {tooltip.$mounted() && <Tooltip tooltip={tooltip} />}
+                        {open && <B x={$x()} />}
+                        {open ? $a() : $b()}
+                        {big}
+                    </div>
+                )
+            }
+        `)).not.toThrow()
+    })
 })

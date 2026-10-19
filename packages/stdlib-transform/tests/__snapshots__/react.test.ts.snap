@@ -69,11 +69,21 @@ export function Input(props, inputRef) {
 
 exports[`react Should transform memo and forwardRef callbacks 1`] = `
 "import { useReactive } from "@monstermann/stdlib-react";
+import { memo } from "react"
 export const a = memo(() => {
     const foo = useReactive($foo)
     return <div />
 })
 export const b = React.forwardRef((props, ref) => <div ref={ref}>{useReactive($foo)}</div>)"
+`;
+
+exports[`react Should ignore a memo that is not the one of react 1`] = `
+"import { memo } from "@monstermann/signals"
+export const $current = memo(() => {
+    const id = $currentId()
+    if (!id) return undefined
+    return $byId.get(id)
+})"
 `;
 
 exports[`react Should transform components and hooks named by assignments and properties 1`] = `
@@ -265,6 +275,51 @@ export function useHook() {
 }"
 `;
 
+exports[`react Should wrap only the read in an expression with jsx 1`] = `
+"import { useReactive } from "@monstermann/stdlib-react";
+export function Component({ tooltip }) {
+    return <div>{useReactive(tooltip.$mounted) && <Tooltip tooltip={tooltip} />}</div>
+}"
+`;
+
+exports[`react Should wrap a read that only runs sometimes together with its condition 1`] = `
+"import { useReactive } from "@monstermann/stdlib-react";
+export function Component({ open, a }) {
+    return (
+        <div>
+            {useReactive(() => (open && $text()))}
+            {useReactive(() => (open && <B x={$x()} />))}
+            {useReactive(() => (a ? <B y={$y()} /> : null))}
+            {useReactive(() => (a?.$z()))}
+        </div>
+    )
+}"
+`;
+
+exports[`react Should wrap the condition of an early return and a read in a return 1`] = `
+"import { useReactive } from "@monstermann/stdlib-react";
+export function Component() {
+    if (useReactive(() => (!$open()))) return null
+    return <div />
+}
+export function useCount() {
+    return useReactive($count)
+}"
+`;
+
+exports[`react Should not throw for reads and writes that are not wrapped 1`] = `
+"export function Component({ open, items }) {
+    if (open) $open(false)
+    for (const item of items) item.$seen(true)
+    if (!open) return null
+    return <div onClick={() => { const x = $x() }} />
+}
+export function create() {
+    if (a) return null
+    const x = $x()
+}"
+`;
+
 exports[`react Should create signals and effects with hooks in components and hooks 1`] = `
 "import { useSignal } from "@monstermann/stdlib-react";
 import { useSignalEffect } from "@monstermann/stdlib-react";
@@ -312,6 +367,13 @@ export function create() {
 }"
 `;
 
+exports[`react Should not wrap a read in the initial value of a signal 1`] = `
+"import { useSignal } from "@monstermann/stdlib-react";
+export function Component() {
+    const $copy = useSignal($count())
+    return null
+}"
+`;
 
 exports[`react Should follow imports of Signal and Effect 1`] = `
 "import { useSignalEffect } from "@monstermann/stdlib-react";
@@ -323,14 +385,6 @@ export function Component() {
     const $a = useS(0)
     const $b = Signal(0)
     useSignalEffect(() => {})
-    return null
-}"
-`;
-
-exports[`react Should not wrap a read in the initial value of a signal 1`] = `
-"import { useSignal } from "@monstermann/stdlib-react";
-export function Component() {
-    const $copy = useSignal($count())
     return null
 }"
 `;

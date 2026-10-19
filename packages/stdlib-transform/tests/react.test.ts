@@ -97,11 +97,23 @@ describe("react", () => {
 
     test("Should transform memo and forwardRef callbacks", () => {
         expectSnapshot(`
+            import { memo } from "react"
             export const a = memo(() => {
                 const foo = $foo()
                 return <div />
             })
             export const b = React.forwardRef((props, ref) => <div ref={ref}>{$foo()}</div>)
+        `)
+    })
+
+    test("Should ignore a memo that is not the one of react", () => {
+        expectSnapshot(`
+            import { memo } from "@monstermann/signals"
+            export const $current = memo(() => {
+                const id = $currentId()
+                if (!id) return undefined
+                return $byId.get(id)
+            })
         `)
     })
 
@@ -318,6 +330,69 @@ describe("react", () => {
             export function useHook() {
                 const foo = a.$b.c.d()
                 return foo
+            }
+        `)
+    })
+
+    test("Should wrap only the read in an expression with jsx", () => {
+        expectSnapshot(`
+            export function Component({ tooltip }) {
+                return <div>{tooltip.$mounted() && <Tooltip tooltip={tooltip} />}</div>
+            }
+        `)
+    })
+
+    test("Should wrap a read that only runs sometimes together with its condition", () => {
+        expectSnapshot(`
+            export function Component({ open, a }) {
+                return (
+                    <div>
+                        {open && $text()}
+                        {open && <B x={$x()} />}
+                        {a ? <B y={$y()} /> : null}
+                        {a?.$z()}
+                    </div>
+                )
+            }
+        `)
+    })
+
+    test("Should wrap the condition of an early return and a read in a return", () => {
+        expectSnapshot(`
+            export function Component() {
+                if (!$open()) return null
+                return <div />
+            }
+            export function useCount() {
+                return $count()
+            }
+        `)
+    })
+
+    test("Should throw for a read after an early return", () => {
+        const code = "export function Component({ open }) {\n    if (!open) return null\n    const x = $x()\n    return <div>{x}</div>\n}"
+        expect(() => transform(code, "source.jsx")).toThrow("source.jsx:3:15: Component reads $x() after an early return, where it cannot become a hook. Read it before, or in a component of its own.")
+    })
+
+    test("Should throw for a read inside an if, a loop, a switch or a try", () => {
+        const read = (statement: string) => () => transform(`export function Component({ a, items }) {\n    ${statement}\n    return <div />\n}`, "source.jsx")
+        expect(read("if (a) { const x = $x() }")).toThrow("Component reads $x() inside an if")
+        expect(read("for (const item of items) { const x = item.$x() }")).toThrow("Component reads item.$x() inside a loop")
+        expect(read("switch (a) { case 1: { const x = $x() } }")).toThrow("Component reads $x() inside a switch")
+        expect(read("try { const x = $x() } catch {}")).toThrow("Component reads $x() inside a try")
+    })
+
+    test("Should not throw for reads and writes that are not wrapped", () => {
+        expectSnapshot(`
+            export function Component({ open, items }) {
+                if (open) $open(false)
+                for (const item of items) item.$seen(true)
+                if (!open) return null
+                return <div onClick={() => { const x = $x() }} />
+            }
+            export function create() {
+                if (a) return null
+                const x = $x()
             }
         `)
     })

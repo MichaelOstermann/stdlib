@@ -10,9 +10,13 @@ type Hook = "useReactive" | "useSignal" | "useSignalEffect"
 interface Scope {
     // Signal(), Effect() calls that become useSignal(), useSignalEffect()
     creates: Map<CallExpression, Hook>
+    // Reads that cannot become hooks.
+    errors: { message: string, node: Node }[]
     expressions: Set<JSXExpression | Expression>
     fn: FunctionNode
     kind: "component" | "hook" | "callback" | undefined
+    name: string
+    returned: boolean
     returnsNonNode: boolean
 }
 
@@ -35,6 +39,8 @@ export function transformReact(code: string, id: string): MagicString | undefine
     const imported = new Map<Hook, string>()
     const creates = new Map<string, Hook>([["Effect", "useSignalEffect"], ["Signal", "useSignal"]])
     const allCreates = new Set<CallExpression>()
+    // The local names of memo and forwardRef from react.
+    const reactApis = new Set<string>()
     let skip = 0
     const parents: Node[] = []
     const scopes: Scope[] = []
@@ -67,11 +73,15 @@ export function transformReact(code: string, id: string): MagicString | undefine
                 || node.type === "FunctionExpression"
                 || node.type === "ArrowFunctionExpression"
             ) {
+                const name = getName(node, parent)
                 const scope: Scope = {
                     creates: new Map(),
+                    errors: [],
                     expressions: new Set(),
                     fn: node,
-                    kind: getKind(node, parent),
+                    kind: getKind(node, parent, reactApis),
+                    name: name ? code.slice(name.start, name.end) : "A component",
+                    returned: false,
                     // () => ({})
                     returnsNonNode: node.body?.type !== "BlockStatement" && isNonNode(node.body),
                 }
@@ -91,8 +101,12 @@ export function transformReact(code: string, id: string): MagicString | undefine
                         ? specifier.imported.name
                         : undefined
                     const local = specifier.local.name
+                    // import { memo } from "react"
+                    if (node.source.value === "react") {
+                        if (name === "memo" || name === "forwardRef") reactApis.add(local)
+                    }
                     // import { useReactive as useR } from "@monstermann/stdlib-react"
-                    if (node.source.value === "@monstermann/stdlib-react") {
+                    else if (node.source.value === "@monstermann/stdlib-react") {
                         const hook = hooks.find(hook => hook === name)
                         if (hook) imported.set(hook, local)
                     }
@@ -146,7 +160,10 @@ export function transformReact(code: string, id: string): MagicString | undefine
             ) {
                 const scope = scopeStack.at(-1)
                 if (scope) {
-                    for (const expression of findWrapTargets(parents, node, allCreates)) {
+                    const { error, read, targets } = findWrapTargets(parents, node, allCreates)
+                    if (error) scope.errors.push({ message: error, node: read })
+                    else if (targets.length && scope.returned) scope.errors.push({ message: "after an early return", node: read })
+                    for (const expression of targets) {
                         scope.expressions.add(expression)
                     }
                 }
@@ -167,6 +184,11 @@ export function transformReact(code: string, id: string): MagicString | undefine
                 skip--
             }
 
+            if (node.type === "ReturnStatement") {
+                const scope = scopeStack.at(-1)
+                if (scope) scope.returned = true
+            }
+
             if (node === scopeStack.at(-1)?.fn) {
                 scopeStack.pop()
             }
@@ -177,6 +199,13 @@ export function transformReact(code: string, id: string): MagicString | undefine
 
     for (const scope of scopes) {
         if (!isReact(scope)) continue
+        if (scope.errors.length) {
+            throw new Error(scope.errors.map(({ message, node }) => {
+                const lines = code.slice(0, node.start).split("\n")
+                const read = code.slice(node.start, node.end)
+                return `${filename}:${lines.length}:${lines.at(-1)!.length + 1}: ${scope.name} reads ${read} ${message}, where it cannot become a hook. Read it before, or in a component of its own.`
+            }).join("\n"))
+        }
         for (const [call, hook] of scope.creates) {
             ms.overwrite(call.callee.start, call.callee.end, getImport(hook))
         }
@@ -223,12 +252,12 @@ function isReact(scope: Scope): boolean {
     return false
 }
 
-function getKind(node: FunctionNode, parent: Node | null): Scope["kind"] {
+function getKind(node: FunctionNode, parent: Node | null, reactApis: Set<string>): Scope["kind"] {
     // memo(() => {}), forwardRef(() => {})
     if (
         parent?.type === "CallExpression"
         && parent.callee !== node
-        && (isReactApi(parent.callee, "memo") || isReactApi(parent.callee, "forwardRef"))
+        && isReactApi(parent.callee, reactApis)
     ) {
         return "callback"
     }
@@ -255,14 +284,14 @@ function getName(node: FunctionNode, parent: Node | null): Node | undefined {
     return undefined
 }
 
-// React.memo, memo
-function isReactApi(callee: Node, name: string): boolean {
-    if (callee.type === "Identifier") return callee.name === name
+// React.memo, or memo imported from react: a `memo` of signals is not one.
+function isReactApi(callee: Node, reactApis: Set<string>): boolean {
+    if (callee.type === "Identifier") return reactApis.has(callee.name)
     return callee.type === "MemberExpression"
         && callee.object.type === "Identifier"
         && callee.object.name === "React"
         && callee.property.type === "Identifier"
-        && callee.property.name === name
+        && (callee.property.name === "memo" || callee.property.name === "forwardRef")
 }
 
 // (), (props), (props, ref)
@@ -318,55 +347,128 @@ function shouldWrap(node: JSXExpression | Expression): boolean {
     return !(node.type === "CallExpression" && node.arguments.length === 0)
 }
 
-// Walks up from a signal read to the expression(s) that should be wrapped with
-// `useReactive(...)` - usually the nearest variable declaration or JSX expression.
-function findWrapTargets(parents: Node[], readNode: Node, creates: Set<CallExpression>): (JSXExpression | Expression)[] {
-    let child: Node = readNode
-    let i = parents.length
-    while (i--) {
+interface WrapTargets {
+    /** Why the read cannot become a hook. */
+    error?: string
+    /** The call that reads: `$foo()`, `foo.$bar.baz()` */
+    read: Node
+    targets: (JSXExpression | Expression)[]
+}
+
+// Walks up from a signal read to what is wrapped with `useReactive(...)`:
+// the nearest variable declaration, JSX expression, hook argument, return value or if condition.
+// Hooks run on every render, so a read that only runs sometimes is wrapped together with its condition,
+// or reported when that condition is a statement.
+function findWrapTargets(parents: Node[], read: Node, creates: Set<CallExpression>): WrapTargets {
+    let readCall: Node | undefined = read.type === "CallExpression" ? read : undefined
+    let child: Node = read
+    let targets: (JSXExpression | Expression)[] | undefined
+    // The outermost expression that only runs the read sometimes: a && $foo(), a ? $foo() : b
+    let conditional: Expression | undefined
+    let isConditionalAboveTargets = false
+    let error: string | undefined
+
+    for (let i = parents.length - 1; i >= 0; i--) {
         const node = parents[i]!
 
-        // The read belongs to an inner function scope - nothing to wrap out here.
+        // The component or hook the read is in, or a callback in it whose reads are left alone.
         if (
             node.type === "FunctionDeclaration"
             || node.type === "FunctionExpression"
             || node.type === "ArrowFunctionExpression"
         ) {
-            return []
+            break
         }
 
-        // The read sits inside a hook call - wrap the argument that contains it, not
-        // the enclosing declaration, so the hook call itself is never moved into
-        // `useReactive(() => (...))` (rules of hooks).
-        // The initial value of `useSignal()` is only read once, there is nothing to subscribe to.
-        if (node.type === "CallExpression" && creates.has(node)) {
-            return []
+        // foo.$bar.baz()
+        if (!readCall && node.type === "CallExpression" && node.callee === child) {
+            readCall = node
         }
 
-        if (node.type === "CallExpression" && isHookCallee(node.callee)) {
-            const argument = node.arguments.find(argument => argument === child)
-            // A spread argument (`useFoo(...$foo())`) can't be wrapped in place.
-            return argument && argument.type !== "SpreadElement" ? [argument] : []
+        if (!targets) {
+            // The initial value of `useSignal()` is only read once, there is nothing to subscribe to.
+            if (node.type === "CallExpression" && creates.has(node)) {
+                return { read, targets: [] }
+            }
+
+            // The read sits inside a hook call: wrap the argument that contains it, not
+            // the enclosing declaration, so the hook call itself is never moved into
+            // `useReactive(() => (...))`.
+            if (node.type === "CallExpression" && isHookCallee(node.callee)) {
+                const argument = node.arguments.find(argument => argument === child)
+                // A spread argument (`useFoo(...$foo())`) can't be wrapped in place.
+                if (!argument || argument.type === "SpreadElement") return { read, targets: [] }
+                targets = [argument]
+            }
+
+            else if (node.type === "VariableDeclaration") {
+                targets = node.declarations
+                    .map(declaration => declaration.init)
+                    .filter((init): init is Expression => init != null)
+            }
+
+            else if (node.type === "JSXExpressionContainer") {
+                if (node.expression.type === "JSXEmptyExpression") return { read, targets: [] }
+                targets = [node.expression]
+            }
+
+            else if (node.type === "JSXSpreadAttribute") {
+                targets = [node.argument]
+            }
+
+            else if (node.type === "ReturnStatement" && node.argument) {
+                targets = [node.argument]
+            }
+
+            else if (node.type === "IfStatement" && node.test === child) {
+                targets = [node.test]
+            }
         }
 
-        if (node.type === "VariableDeclaration") {
-            return node.declarations
-                .map(declaration => declaration.init)
-                .filter((init): init is Expression => init != null)
+        if (
+            (node.type === "LogicalExpression" && node.right === child)
+            || (node.type === "ConditionalExpression" && node.test !== child)
+            || node.type === "ChainExpression"
+        ) {
+            conditional = node
+            if (targets) isConditionalAboveTargets = true
         }
 
-        if (node.type === "JSXExpressionContainer") {
-            return node.expression.type === "JSXEmptyExpression" ? [] : [node.expression]
-        }
-
-        if (node.type === "JSXSpreadAttribute") {
-            return [node.argument]
+        if (node.type === "IfStatement" && node.test !== child) error ??= "inside an if"
+        if (node.type === "SwitchStatement" && node.discriminant !== child) error ??= "inside a switch"
+        if (node.type === "TryStatement") error ??= "inside a try"
+        if (
+            ((node.type === "ForStatement" && node.init !== child)
+                || ((node.type === "ForInStatement" || node.type === "ForOfStatement") && node.right !== child)
+                || node.type === "WhileStatement"
+                || node.type === "DoWhileStatement")) {
+            error ??= "inside a loop"
         }
 
         child = node
     }
 
-    return []
+    if (!targets?.length) return { read, targets: [] }
+    read = readCall ?? read
+    if (error) return { error, read, targets: [] }
+    if (conditional && isConditionalAboveTargets) return { read, targets: [conditional] }
+    // Wrapping all of an expression with JSX would create the JSX inside a memo.
+    if (!targets.some(containsJsx)) return { read, targets }
+    if (conditional) return { read, targets: [conditional] }
+    return { read, targets: [read as Expression] }
+}
+
+function containsJsx(node: Node): boolean {
+    let found = false
+    walk(node, {
+        enter(node) {
+            if (node.type === "JSXElement" || node.type === "JSXFragment") {
+                found = true
+                this.skip()
+            }
+        },
+    })
+    return found
 }
 
 // foo.$bar()       -> true

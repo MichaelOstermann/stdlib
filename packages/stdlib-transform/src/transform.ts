@@ -40,13 +40,6 @@ export interface StdlibOptions {
      * @default false
      */
     hmr?: boolean
-    /**
-     * Whether to wrap reads of signals in React components and hooks with `useReactive` from `@monstermann/stdlib-react`, and to create their signals and effects with its hooks.
-     * Signals are recognized by their `$` prefix: `$count()`, `state.$count()`.
-     * `Signal()` and `Effect()` in the statements of a component or hook itself become `useSignal()` and `useSignalEffect()`.
-     * @default false
-     */
-    react?: boolean
 }
 
 export interface StdlibResult {
@@ -62,7 +55,7 @@ export interface StdlibResult {
  * - `pipe()` calls are replaced with the calls they make
  * - everything else (`pipe`, `Result`, …) is imported from the file it lives in
  * - with `hmr`, effects and emitters are passed what stops them or clears their listeners when their module is replaced
- * - with `react`, reads of signals in components and hooks are wrapped with `useReactive`, and their signals and effects created with `useSignal` and `useSignalEffect`
+ * - in React components and hooks, reads of signals are wrapped with `useReactive` and their signals and effects created with `useSignal` and `useSignalEffect`, all from `@monstermann/stdlib-react`
  *
  * All of it is available as globals, and can be imported from the package as well.
  *
@@ -74,12 +67,10 @@ export function transform(code: string, filePath: string, options: StdlibOptions
     const generateMap = { hires: "boundary", includeContent: true, source: filePath } as const
 
     // Runs first: it looks for names written with a `$`, before other transforms rewrite them.
-    if (options.react) {
-        const react = transformReact(code, filePath)
-        if (react) {
-            code = react.toString()
-            maps.push(react.generateMap(generateMap))
-        }
+    const react = transformReact(code, filePath)
+    if (react) {
+        code = react.toString()
+        maps.push(react.generateMap(generateMap))
     }
 
     const imported = code.includes(from)

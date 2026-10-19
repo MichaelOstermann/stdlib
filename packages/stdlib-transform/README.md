@@ -2,6 +2,8 @@
 
 The build plugin of [`@monstermann/stdlib`](https://github.com/MichaelOstermann/stdlib#readme). It replaces what you use of globals with direct imports, compiles `match` into conditionals, and `pipe` into the calls it makes.
 
+In React components and hooks it writes the hooks of [`@monstermann/stdlib-react`](https://github.com/MichaelOstermann/stdlib/tree/main/packages/stdlib-react#readme): reads of signals are wrapped with `useReactive`, `Signal()` and `Effect()` become `useSignal()` and `useSignalEffect()`. It is installed alongside.
+
 ```sh
 bun add -D @monstermann/stdlib-transform
 ```
@@ -16,14 +18,13 @@ export default defineConfig({
 });
 ```
 
-| Option    | Default                 | Description                                                                                                                                      |
-| --------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `include` | `.js`, `.ts`, `.jsx`, … | RegExp(s), only files whose path matches are transformed.                                                                                        |
-| `exclude` |                         | RegExp(s), files whose path matches are skipped.                                                                                                 |
-| `enforce` |                         | `"pre"` or `"post"`.                                                                                                                             |
-| `debug`   | `false`                 | `true` or a RegExp matching file paths, prints what is being replaced.                                                                           |
-| `hmr`     | Vite dev server         | Disposes effects and emitters when their module is replaced.                                                                                     |
-| `react`   | if it is installed      | Wraps reads of signals in components and hooks with `useReactive`, and creates their signals and effects with `useSignal` and `useSignalEffect`. |
+| Option    | Default                 | Description                                                            |
+| --------- | ----------------------- | ---------------------------------------------------------------------- |
+| `include` | `.js`, `.ts`, `.jsx`, … | RegExp(s), only files whose path matches are transformed.              |
+| `exclude` |                         | RegExp(s), files whose path matches are skipped.                       |
+| `enforce` |                         | `"pre"` or `"post"`.                                                   |
+| `debug`   | `false`                 | `true` or a RegExp matching file paths, prints what is being replaced. |
+| `hmr`     | Vite dev server         | Disposes effects and emitters when their module is replaced.           |
 
 Dependencies are always skipped: what a dependency uses of `Array` or `Object` is its own.
 

@@ -1,6 +1,3 @@
-import { mkdir, mkdtemp, rm } from "node:fs/promises"
-import { tmpdir } from "node:os"
-import Path from "node:path"
 import { describe, expect, test } from "bun:test"
 import { stdlib, transform } from "../src"
 
@@ -8,7 +5,7 @@ function expectSnapshot(code: string): void {
     const lines = code.trimEnd().split("\n").filter((line, i) => i > 0 || line.trim())
     const indent = Math.min(...lines.filter(line => line.trim()).map(line => line.search(/\S/)))
     const source = lines.map(line => line.slice(indent)).join("\n")
-    expect(transform(source, "source.jsx", { react: true })?.code ?? source).toMatchSnapshot()
+    expect(transform(source, "source.jsx")?.code ?? source).toMatchSnapshot()
 }
 
 describe("react", () => {
@@ -86,7 +83,7 @@ describe("react", () => {
 
     test("Should ignore a PascalCase function whose param is not props", () => {
         const code = "export function Count(count: number) {\n    const foo = $foo()\n    return <div />\n}"
-        expect(transform(code, "source.tsx", { react: true })).toBe(undefined)
+        expect(transform(code, "source.tsx")).toBe(undefined)
     })
 
     test("Should transform a component with props and a ref", () => {
@@ -345,7 +342,7 @@ describe("react", () => {
 
     test("Should keep the type arguments of a signal", () => {
         const code = "export function Component() {\n    const $el = Signal<Element | null>(null)\n    return null\n}"
-        expect(transform(code, "source.tsx", { react: true })?.code).toContain("const $el = useSignal<Element | null>(null)")
+        expect(transform(code, "source.tsx")?.code).toContain("const $el = useSignal<Element | null>(null)")
     })
 
     test("Should create signals and effects with hooks without a $ in the file", () => {
@@ -403,19 +400,15 @@ describe("react", () => {
     })
 
     test("Should skip files without a $", () => {
-        expect(transform("export const Component = () => <div />", "source.jsx", { react: true })).toBe(undefined)
+        expect(transform("export const Component = () => <div />", "source.jsx")).toBe(undefined)
     })
 
     test("Should return nothing when there is nothing to wrap", () => {
-        expect(transform("export const $count = signal(0)", "source.ts", { react: true })).toBe(undefined)
-    })
-
-    test("Should do nothing without the option", () => {
-        expect(transform("export const Component = () => <div>{$count()}</div>", "source.jsx")).toBe(undefined)
+        expect(transform("export const $count = signal(0)", "source.ts")).toBe(undefined)
     })
 
     test("Should return a sourcemap", () => {
-        const result = transform("export const Component = () => <div>{$count()}</div>", "source.jsx", { react: true })
+        const result = transform("export const Component = () => <div>{$count()}</div>", "source.jsx")
         expect(result?.map.sources).toEqual(["source.jsx"])
     })
 
@@ -426,7 +419,7 @@ describe("react", () => {
             `Effect(() => console.log($count()))`,
             `export const Counter = () => <button>{$count()}</button>`,
         ].join("\n")
-        const result = transform(code, "source.jsx", { hmr: true, react: true })
+        const result = transform(code, "source.jsx", { hmr: true })
         expect(result?.code).toContain("import.meta.hot")
         expect(result?.code).toContain(`import { useReactive } from "@monstermann/stdlib-react";`)
         expect(result?.code).toContain("{useReactive($count)}")
@@ -438,31 +431,8 @@ describe("react", () => {
 })
 
 describe("stdlib, with react", () => {
-    const code = "export const Component = () => <div>{$count()}</div>"
-
-    test("Should pass the react option on", () => {
-        expect(stdlib({ react: true }).transform.handler(code, "/a/b.tsx")?.code).toContain("useReactive($count)")
-        expect(stdlib({ react: false }).transform.handler(code, "/a/b.tsx")).toBe(undefined)
-    })
-
-    test("Should be enabled when @monstermann/stdlib-react is installed, unless it is said otherwise", async () => {
-        const root = await mkdtemp(Path.join(tmpdir(), "stdlib-react-"))
-        const nested = Path.join(root, "apps/web")
-        await mkdir(nested, { recursive: true })
-
-        const plugin = stdlib()
-        plugin.configResolved({ command: "build", root: nested })
-        expect(plugin.transform.handler(code, "/a/b.tsx")).toBe(undefined)
-
-        // Found in the directories above as well, which is where a workspace installs it.
-        await Bun.write(Path.join(root, "node_modules/@monstermann/stdlib-react/package.json"), "{}")
-        plugin.configResolved({ command: "build", root: nested })
-        expect(plugin.transform.handler(code, "/a/b.tsx")?.code).toContain("useReactive($count)")
-
-        const disabled = stdlib({ react: false })
-        disabled.configResolved({ command: "build", root: nested })
-        expect(disabled.transform.handler(code, "/a/b.tsx")).toBe(undefined)
-
-        await rm(root, { recursive: true })
+    test("Should transform components in the plugins", () => {
+        const code = "export const Component = () => <div>{$count()}</div>"
+        expect(stdlib().transform.handler(code, "/a/b.tsx")?.code).toContain("useReactive($count)")
     })
 })

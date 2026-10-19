@@ -92,3 +92,56 @@ export function fakeDOM(): void {
         document.body.replaceChildren()
     })
 }
+
+/** Animation frames that the tests run, at the time they choose. */
+export const frames = {
+    callbacks: new Map<number, FrameRequestCallback>(),
+    id: 0,
+    now: 0,
+
+    /** Moves the time ahead by `ms` and runs the frames that were requested until then. */
+    run(ms = 16): void {
+        this.now += ms
+        const callbacks = [...this.callbacks.values()]
+        this.callbacks.clear()
+        for (const callback of callbacks) callback(this.now)
+    },
+}
+
+/** `requestAnimationFrame` and `performance.now` driven by `frames`, in the tests of this file. */
+export function fakeFrames(): void {
+    let original: { cancelAnimationFrame: typeof cancelAnimationFrame, now: typeof performance.now, requestAnimationFrame: typeof requestAnimationFrame }
+
+    beforeEach(() => {
+        original = { cancelAnimationFrame, now: performance.now, requestAnimationFrame }
+        frames.callbacks.clear()
+        frames.now = 0
+        globalThis.requestAnimationFrame = (callback) => {
+            frames.callbacks.set(++frames.id, callback)
+            return frames.id
+        }
+        globalThis.cancelAnimationFrame = id => frames.callbacks.delete(id)
+        performance.now = () => frames.now
+    })
+
+    afterEach(() => {
+        Object.assign(globalThis, { cancelAnimationFrame: original.cancelAnimationFrame, requestAnimationFrame: original.requestAnimationFrame })
+        performance.now = original.now
+    })
+}
+
+/** An element that can scroll by `width` and `height` more than it shows. */
+export function scrollable(element: HTMLElement, { height = 0, width = 0 }: { height?: number, width?: number }): HTMLElement {
+    let left = 0
+    let top = 0
+    Object.defineProperties(element, {
+        clientHeight: { value: 100 },
+        clientWidth: { value: 100 },
+        scrollBy: { value: (x: number, y: number) => Object.assign(element, { scrollLeft: left + x, scrollTop: top + y }) },
+        scrollHeight: { value: 100 + height },
+        scrollLeft: { get: () => left, set: value => left = Math.min(Math.max(0, value), width) },
+        scrollTop: { get: () => top, set: value => top = Math.min(Math.max(0, value), height) },
+        scrollWidth: { value: 100 + width },
+    })
+    return element
+}

@@ -486,23 +486,6 @@ describe("react", () => {
         const result = transform("export const Component = () => <div>{$count()}</div>", "source.jsx")
         expect(result?.map.sources).toEqual(["source.jsx"])
     })
-
-    test("Should work together with hmr", () => {
-        const code = [
-            `import "@monstermann/stdlib/globals"`,
-            `const $count = Signal(0)`,
-            `Effect(() => console.log($count()))`,
-            `export const Counter = () => <button>{$count()}</button>`,
-        ].join("\n")
-        const result = transform(code, "source.jsx", { hmr: true })
-        expect(result?.code).toContain("import.meta.hot")
-        expect(result?.code).toContain(`import { useReactive } from "@monstermann/stdlib-react";`)
-        expect(result?.code).toContain("{useReactive($count)}")
-        expect(result?.code).toContain("Effect(() => console.log($count()), meta)")
-        expect(result?.code).toContain(`import { Signal } from "@monstermann/stdlib/Signal.mjs";`)
-        expect(result?.map.sources).toEqual(["source.jsx"])
-        expect(result?.map.mappings.length).toBeGreaterThan(0)
-    })
 })
 
 describe("stdlib, with react", () => {

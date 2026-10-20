@@ -1,8 +1,6 @@
-import type { MetaParam } from "@monstermann/meta"
 import type { Helpers } from "./match"
 import remapping from "@jridgewell/remapping"
 import { transform as treeshake } from "@monstermann/barrels-treeshake"
-import { transform as transformMeta } from "@monstermann/meta"
 import { SourceMap } from "magic-string"
 import { transformGlobals } from "./globals"
 import { globals, values } from "./globals.manifest"
@@ -21,25 +19,9 @@ const globalsOptions = {
     resolve: (global: string, name: string): string => `${from}/${global}/${name}.mjs`,
 }
 
-// Effects and emitters only receive `hmr`, which is enough to stop effects and clear the listeners of emitters.
-const hmrOnly: MetaParam["meta"] = ({ hmr }) => ({ hmr })
-
-/** Functions whose results are stopped or cleared when their module is replaced. At this point each one is imported from its own file, however the source referred to it. */
-const hmrParams: MetaParam[] = [
-    { function: "Effect", meta: hmrOnly, module: `${from}/Effect.mjs`, position: 2 },
-    { function: "Effect.watch", meta: hmrOnly, module: `${from}/Effect.mjs`, position: 4 },
-    { function: "Emitter", meta: hmrOnly, module: `${from}/Emitter.mjs`, position: 2 },
-    { function: "AsyncEmitter", meta: hmrOnly, module: `${from}/Emitter.mjs`, position: 2 },
-]
-
 export interface StdlibOptions {
     /** Prints what is being replaced. */
     debug?: boolean
-    /**
-     * Whether to stop effects and clear the listeners of emitters when their module is replaced.
-     * @default false
-     */
-    hmr?: boolean
 }
 
 export interface StdlibResult {
@@ -54,7 +36,6 @@ export interface StdlibResult {
  * - `match()` chains are compiled into conditional expressions
  * - `pipe()` calls are replaced with the calls they make
  * - everything else (`pipe`, `Result`, …) is imported from the file it lives in
- * - with `hmr`, effects and emitters are passed what stops them or clears their listeners when their module is replaced
  * - in React components and hooks, reads of signals are wrapped with `useReactive` and their signals and effects created with `useSignal` and `useSignalEffect`, all from `@monstermann/stdlib-react`
  *
  * All of it is available as globals, and can be imported from the package as well.
@@ -126,15 +107,6 @@ export function transform(code: string, filePath: string, options: StdlibOptions
     if (replaced) {
         code = replaced.toString()
         maps.push(replaced.generateMap(generateMap))
-    }
-
-    // After everything else: by now effects and emitters are imported from where they live.
-    if (options.hmr && code.includes(from)) {
-        const meta = transformMeta(code, filePath, { hmr: true, params: hmrParams })
-        if (meta) {
-            code = meta.code
-            maps.push(meta.map)
-        }
     }
 
     if (!maps.length) return

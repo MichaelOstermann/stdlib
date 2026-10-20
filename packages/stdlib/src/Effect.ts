@@ -1,6 +1,4 @@
-import type { Meta } from "./internals/hmr"
 import type { ReadonlySignal } from "./Signal"
-import { hmr } from "./internals/hmr"
 import { pauseTracking, resumeTracking } from "./internals/reactivity"
 import { RawEffect } from "./internals/system"
 import { Memo } from "./Memo"
@@ -26,7 +24,7 @@ export interface WatchOptions<T> {
  * - the function that `computation` returns is called before the next run and when the effect is stopped
  * - `this.dispose()` stops it from the inside, also during the first run: `computation` is a `function` for that, not an arrow function
  * - what `computation` throws is thrown by what created the effect, or by what changed the signal
- * - during development it is stopped when its module is replaced, the plugin passes the metadata for that as the last argument
+ * - a module that is replaced during development creates it again, `if (import.meta.hot) import.meta.hot.dispose(stop)` stops the one before. Not `import.meta.hot?.dispose(Effect(…))`: where that call is removed, in a build, the effect is never created
  *
  * ```ts
  * const $count = Signal(0);
@@ -55,7 +53,7 @@ export interface WatchOptions<T> {
  * ```
  */
 export const Effect: {
-    (computation: (this: EffectContext) => (() => void) | void, meta?: Meta): () => void
+    (computation: (this: EffectContext) => (() => void) | void): () => void
     /** Runs an effect until it calls `resolve` or `reject`, and returns a promise of that. It is stopped afterwards, and stopping it before rejects. */
     defer: <T = void>(computation: (this: EffectContext, resolve: (value: T) => void, reject: (reason?: unknown) => void) => (() => void) | void) => Promise<T>
     /**
@@ -63,21 +61,19 @@ export const Effect: {
      * Unlike an effect it does not run right away, and does not depend on what `computation` reads.
      * The function that `computation` returns is called like the one of an effect. What stops the watcher is returned, and `this.dispose()` stops it from the inside, like an effect.
      */
-    watch: <T>(dependencies: ReadonlySignal<T> | Memo<T> | (() => T), computation: (this: EffectContext, next: NoInfer<T>, prev: NoInfer<T>) => (() => void) | void, options?: WatchOptions<NoInfer<T>>, meta?: Meta) => () => void
+    watch: <T>(dependencies: ReadonlySignal<T> | Memo<T> | (() => T), computation: (this: EffectContext, next: NoInfer<T>, prev: NoInfer<T>) => (() => void) | void, options?: WatchOptions<NoInfer<T>>) => () => void
 } = Object.assign(create, {
     defer,
     watch,
 })
 
-function create(computation: (this: EffectContext) => (() => void) | void, meta?: Meta): () => void {
+function create(computation: (this: EffectContext) => (() => void) | void): () => void {
     const effect = new RawEffect(computation)
     effect.run()
-    const stop = (): void => effect.dispose()
-    if (meta?.hmr && effect.fn) afterDispose(effect, hmr(stop, meta)!)
-    return stop
+    return () => effect.dispose()
 }
 
-/** Gives `effect` a `dispose` of its own, which calls `then` afterwards. Only for what is rare: `Effect.defer`, and modules that can be replaced during development. */
+/** Gives `effect` a `dispose` of its own, which calls `then` afterwards. Only for what is rare: `Effect.defer`. */
 function afterDispose(effect: RawEffect, then: () => void): void {
     effect.dispose = function () {
         RawEffect.prototype.dispose.call(this)
@@ -97,7 +93,7 @@ function defer<T = void>(computation: (this: EffectContext, resolve: (value: T) 
     }).finally(() => effect?.dispose())
 }
 
-function watch<T>(dependencies: ReadonlySignal<T> | Memo<T> | (() => T), computation: (this: EffectContext, next: T, prev: T) => (() => void) | void, options?: WatchOptions<T>, meta?: Meta): () => void {
+function watch<T>(dependencies: ReadonlySignal<T> | Memo<T> | (() => T), computation: (this: EffectContext, next: T, prev: T) => (() => void) | void, options?: WatchOptions<T>): () => void {
     // A function is turned into a memo, to only run when it returns something else.
     const read = "kind" in dependencies ? dependencies : Memo(dependencies, options)
     let init = false
@@ -111,5 +107,5 @@ function watch<T>(dependencies: ReadonlySignal<T> | Memo<T> | (() => T), computa
         pauseTracking()
         try { return computation.call(this, value, prev) }
         finally { resumeTracking() }
-    }, meta)
+    })
 }

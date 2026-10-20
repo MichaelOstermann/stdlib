@@ -117,24 +117,6 @@ describe("stdlib", () => {
     })
 })
 
-describe("stdlib, with hmr", () => {
-    const code = `import "@monstermann/stdlib/globals";\nEffect(() => {});`
-
-    it("should be enabled for the dev server of Vite, unless it is said otherwise", () => {
-        const plugin = stdlib()
-        expect(plugin.transform.handler(code, "/a/b.ts")?.code).not.toContain("import.meta.hot")
-        plugin.configResolved({ command: "build" })
-        expect(plugin.transform.handler(code, "/a/b.ts")?.code).not.toContain("import.meta.hot")
-        plugin.configResolved({ command: "serve" })
-        expect(plugin.transform.handler(code, "/a/b.ts")?.code).toContain("import.meta.hot")
-
-        const disabled = stdlib({ hmr: false })
-        disabled.configResolved({ command: "serve" })
-        expect(disabled.transform.handler(code, "/a/b.ts")?.code).not.toContain("import.meta.hot")
-        expect(stdlib({ hmr: true }).transform.handler(code, "/a/b.ts")?.code).toContain("import.meta.hot")
-    })
-})
-
 describe("stdlibBun", () => {
     it("should work as a plugin of Bun.build", async () => {
         const result = await Bun.build({

@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-redeclare -- Emitter and AsyncEmitter are a type and what creates it */
-import type { Meta } from "./internals/hmr"
-import { hmr } from "./internals/hmr"
 import { endBatch, pauseTracking, resumeTracking, startBatch } from "./internals/reactivity"
 
 type AnyFn = (...args: any[]) => any
@@ -49,7 +47,6 @@ export interface AsyncEmitter<T = void> extends ReadonlyAsyncEmitter<T> {
  * - `dispatch` replaces how listeners are called, to wrap it or to catch what they throw
  * - sending is batched and untracked: effects run once every listener has been called, and what listeners read is not depended on
  * - nothing to dispose: `listeners.clear()` removes the listeners, an emitter that is no longer referenced is garbage collected with them
- * - during development its listeners are removed when its module is replaced, the plugin passes the metadata for that as the last argument
  *
  * ```ts
  * const onMessage = Emitter<string>();
@@ -65,7 +62,7 @@ export interface AsyncEmitter<T = void> extends ReadonlyAsyncEmitter<T> {
  * const onChange: ReadonlyEmitter<string> = onMessage;
  * ```
  */
-export function Emitter<T = void>(dispatch?: (listeners: Set<Listener<T>>, message: T) => void, meta?: Meta): [T] extends [AnyFn] ? never : Emitter<T> {
+export function Emitter<T = void>(dispatch?: (listeners: Set<Listener<T>>, message: T) => void): [T] extends [AnyFn] ? never : Emitter<T> {
     const listeners = new Set<Listener<T>>()
 
     const emitter = (input: Listener<T> | T): unknown => {
@@ -90,7 +87,6 @@ export function Emitter<T = void>(dispatch?: (listeners: Set<Listener<T>>, messa
     }
 
     emitter.listeners = listeners
-    hmr(() => listeners.clear(), meta)
     return emitter as never
 }
 
@@ -111,7 +107,7 @@ export function Emitter<T = void>(dispatch?: (listeners: Set<Listener<T>>, messa
  * await onShutdown("SIGTERM");
  * ```
  */
-export function AsyncEmitter<T = void>(dispatch: (listeners: Set<AsyncListener<T>>, message: T) => Promise<void> = send, meta?: Meta): [T] extends [AnyFn] ? never : AsyncEmitter<T> {
+export function AsyncEmitter<T = void>(dispatch: (listeners: Set<AsyncListener<T>>, message: T) => Promise<void> = send): [T] extends [AnyFn] ? never : AsyncEmitter<T> {
     const listeners = new Set<AsyncListener<T>>()
 
     const emitter = (input: AsyncListener<T> | T): unknown => {
@@ -120,7 +116,6 @@ export function AsyncEmitter<T = void>(dispatch: (listeners: Set<AsyncListener<T
     }
 
     emitter.listeners = listeners
-    hmr(() => listeners.clear(), meta)
     return emitter as never
 }
 

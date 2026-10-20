@@ -37,6 +37,18 @@ describe("DOM.autoscroll", () => {
         stop()
     })
 
+    it("should scroll within the edge, at the speed", () => {
+        const container = scrollable(fakeElement({ height: 400, left: 0, top: 0, width: 400 }).element, { height: 1000 })
+        const stop = autoscroll(() => [container], { edge: 50, speed: 40 })
+        move(200, 340)
+        frames.run()
+        expect(container.scrollTop).toBe(0)
+        move(200, 375)
+        frames.run()
+        expect(container.scrollTop).toBe(10)
+        stop()
+    })
+
     it("should only scroll containers that the pointer is inside of", () => {
         const container = scrollable(fakeElement({ height: 400, left: 0, top: 0, width: 400 }).element, { height: 1000 })
         const stop = autoscroll(() => [container])
@@ -49,7 +61,7 @@ describe("DOM.autoscroll", () => {
     it("should call onScroll after frames that scrolled", () => {
         const container = scrollable(fakeElement({ height: 400, left: 0, top: 0, width: 400 }).element, { height: 15 })
         let scrolls = 0
-        const stop = autoscroll(() => [container], () => scrolls++)
+        const stop = autoscroll(() => [container], { onScroll: () => scrolls++ })
         move(200, 399)
         frames.run()
         frames.run()

@@ -1,5 +1,5 @@
 import type { Node } from "oxc-parser"
-import type { Chain, Context, Subject } from "./types"
+import type { Chain, Context, Step, Subject } from "./types"
 import { walk } from "oxc-walker"
 import { compileShape } from "./compileShape"
 import { abort, unwrap } from "./helpers"
@@ -29,49 +29,66 @@ export function compileChain(node: Node, chain: Chain, ctx: Context): string {
     // `await` and `yield` can not be moved into a function.
     if (params.length && hasAwaitOrYield(node)) abort()
 
-    const branches: string[] = []
-    for (const step of chain.steps) {
-        if (step.args.some((arg) => arg.type === "SpreadElement")) abort()
-
-        if (step.name === "case" || step.name === "onCase" || step.name === "shape" || step.name === "onShape") {
-            const result = step.args.at(-1)
-            const patterns = step.args.slice(0, -1)
-            if (!result || !patterns.length) abort()
-            const isCase = step.name === "case" || step.name === "onCase"
-            // An array that has just been created is not the same as anything.
-            const tests = patterns.map((pattern) => !isCase ? compileShape(subject, pattern, ctx) : subject.kind === "value" ? `(${subject.name} === (${src(pattern)}))` : "false")
-            const test = tests.length > 1 ? `(${tests.join(" || ")})` : tests[0]
-            branches.push(`${test} ? (${step.name === "case" || step.name === "shape" ? src(result) : compileCall(subject, result, ctx)})`)
-        }
-
-        else if (step.name === "cond" || step.name === "onCond") {
-            const [predicate, result] = step.args
-            if (!predicate || !result || step.args.length !== 2) abort()
-            branches.push(`(${compileCall(subject, predicate, ctx)}) ? (${step.name === "cond" ? src(result) : compileCall(subject, result, ctx)})`)
-        }
-
-        else if (step.name === "unwrapOr") {
-            const [result] = step.args
-            if (!result || step.args.length !== 1) abort()
-            // As the whole chain, the result may be called right away. `(0, a.b)` keeps that call from passing `a` as `this`, which `(a.b)` would do.
-            branches.push(chain.steps.length > 1 ? `(${src(result)})` : `(0, ${src(result)})`)
-        }
-
-        else if (step.name === "unwrapOrElse") {
-            const [fn] = step.args
-            if (!fn || step.args.length !== 1) abort()
-            branches.push(`(${compileCall(subject, fn, ctx)})`)
-        }
-
-        else {
-            branches.push(`${ctx.helper("throwUnmatched")}(${valueOf(subject)})`)
-        }
-    }
+    const branches = chain.steps.map((step) => compileStep(step, subject, chain, ctx))
 
     const result = branches.join("\n: ")
     return params.length
         ? `((${params.join(", ")}) => ${result})(${args.join(", ")})`
         : `(${result})`
+}
+
+/** Turns one step of a chain into a branch of the conditional expression. */
+function compileStep(step: Step, subject: Subject, chain: Chain, ctx: Context): string {
+    const src = (node: Node): string => ctx.code.slice(node.start, node.end)
+    if (step.args.some((arg) => arg.type === "SpreadElement")) abort()
+
+    switch (step.name) {
+        case "case":
+        case "onCase":
+        case "shape":
+        case "onShape": {
+            const result = step.args.at(-1)
+            const patterns = step.args.slice(0, -1)
+            if (!result || !patterns.length) abort()
+            const tests = patterns.map((pattern) => compilePattern(step, subject, pattern, ctx))
+            const test = tests.length > 1 ? `(${tests.join(" || ")})` : tests[0]
+            const isCall = step.name === "onCase" || step.name === "onShape"
+            const value = isCall ? compileCall(subject, result, ctx) : src(result)
+            return `${test} ? (${value})`
+        }
+
+        case "cond":
+        case "onCond": {
+            const [predicate, result] = step.args
+            if (!predicate || !result || step.args.length !== 2) abort()
+            const value = step.name === "cond" ? src(result) : compileCall(subject, result, ctx)
+            return `(${compileCall(subject, predicate, ctx)}) ? (${value})`
+        }
+
+        case "unwrapOr": {
+            const [result] = step.args
+            if (!result || step.args.length !== 1) abort()
+            // As the whole chain, the result may be called right away. `(0, a.b)` keeps that call from passing `a` as `this`, which `(a.b)` would do.
+            return chain.steps.length > 1 ? `(${src(result)})` : `(0, ${src(result)})`
+        }
+
+        case "unwrapOrElse": {
+            const [fn] = step.args
+            if (!fn || step.args.length !== 1) abort()
+            return `(${compileCall(subject, fn, ctx)})`
+        }
+
+        case "unwrap":
+            return `${ctx.helper("throwUnmatched")}(${valueOf(subject)})`
+    }
+}
+
+/** Tests the value against one pattern of a `case` or `shape` step. */
+function compilePattern(step: Step, subject: Subject, pattern: Node, ctx: Context): string {
+    if (step.name === "shape" || step.name === "onShape") return compileShape(subject, pattern, ctx)
+    // An array that has just been created is not the same as anything.
+    if (subject.kind === "tuple") return "false"
+    return `(${subject.name} === (${ctx.code.slice(pattern.start, pattern.end)}))`
 }
 
 /** Calls a function with the value. */

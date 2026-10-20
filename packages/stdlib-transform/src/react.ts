@@ -145,21 +145,7 @@ export function transformReact(code: string, id: string): MagicString | undefine
                 }
             }
 
-            // $foo(), $foo(arg), foo.$bar(), foo.$bar.baz()
-            else if (
-                !skip
-                && (
-                    // $foo(), $foo(arg)
-                    (node.type === "CallExpression"
-                        && node.callee.type === "Identifier"
-                        && node.callee.name.startsWith("$"))
-                    // foo.$bar(), foo.$bar.baz()
-                    || (node.type === "MemberExpression"
-                        && node.property.type === "Identifier"
-                        && node.property.name.startsWith("$")
-                        && isInvoked(node, parents))
-                )
-            ) {
+            else if (!skip && isSignalRead(node, parents)) {
                 const scope = scopeStack.at(-1)
                 if (scope) {
                     const { error, read, targets } = findWrapTargets(parents, node, allCreates)
@@ -442,12 +428,13 @@ function findWrapTargets(parents: Node[], read: Node, creates: Set<CallExpressio
         if (node.type === "SwitchStatement" && node.discriminant !== child) error ??= "inside a switch"
         if (node.type === "TryStatement") error ??= "inside a try"
         if (
-            ((node.type === "ForStatement" && node.init !== child)
-                || ((node.type === "ForInStatement" || node.type === "ForOfStatement") && node.right !== child)
-                || node.type === "WhileStatement"
-                || node.type === "DoWhileStatement")) {
-                    error ??= "inside a loop"
-                }
+            (node.type === "ForStatement" && node.init !== child)
+            || ((node.type === "ForInStatement" || node.type === "ForOfStatement") && node.right !== child)
+            || node.type === "WhileStatement"
+            || node.type === "DoWhileStatement"
+        ) {
+            error ??= "inside a loop"
+        }
 
         child = node
     }
@@ -477,6 +464,17 @@ function containsJsx(node: Node): boolean {
 
 // foo.$bar()       -> true
 // foo.$bar.baz()   -> true
+// $foo(), $foo(arg), foo.$bar(), foo.$bar.baz()
+function isSignalRead(node: Node, parents: Node[]): boolean {
+    if (node.type === "CallExpression") {
+        return node.callee.type === "Identifier" && node.callee.name.startsWith("$")
+    }
+    if (node.type === "MemberExpression") {
+        return node.property.type === "Identifier" && node.property.name.startsWith("$") && isInvoked(node, parents)
+    }
+    return false
+}
+
 // a.$b.c.d()       -> true
 // foo.$bar         -> false
 // foo.$bar.baz     -> false

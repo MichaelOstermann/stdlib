@@ -5,7 +5,7 @@ import { describe, expect, it } from "bun:test"
 import { rolldown } from "rolldown"
 import { stdlib, stdlibBun } from "../src"
 import { globals, values } from "../src/globals.manifest"
-import { functions, guards, namespaces } from "../src/manifest"
+import { functions, guards, namespaces, packages } from "../src/manifest"
 
 const entry = Path.join(import.meta.dirname, "__fixtures__/entry.ts")
 const src = Path.resolve(import.meta.dirname, "../../stdlib/src")
@@ -35,6 +35,16 @@ describe("manifest", () => {
         for (const [name, file] of functions) expect(name in await import(Path.join(src, `${file}.ts`))).toBe(true)
         for (const name of guards) expect(await Bun.file(Path.join(src, `${name}.ts`)).exists()).toBe(true)
         for (const [name, file] of Object.entries(values)) expect(name in await import(Path.join(src, file))).toBe(true)
+    })
+
+    it("should list everything @monstermann/stdlib-web exports, each member of a namespace in a file of its own", async () => {
+        const web = Path.resolve(import.meta.dirname, "../../stdlib-web/src")
+        const { functions, namespaces } = packages.get("@monstermann/stdlib-web")!
+        const exports = await import(Path.join(web, "index"))
+        expect([...namespaces, ...functions.keys()].sort()).toEqual(Object.keys(exports).sort())
+        for (const name of namespaces) {
+            for (const member of Object.keys(exports[name])) expect(member in await import(Path.join(web, name, `${member}.ts`))).toBe(true)
+        }
     })
 
     it("should list everything @monstermann/stdlib makes available on globals", async () => {

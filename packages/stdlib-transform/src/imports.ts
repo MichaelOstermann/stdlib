@@ -1,11 +1,11 @@
 import MagicString from "magic-string"
 import { parseSync } from "oxc-parser"
 import { importEnd } from "./globals"
-import { functions, namespaces } from "./manifest"
+import { packages } from "./manifest"
 
 /**
- * Rewrites the remaining imports from `from` to the files that export them,
- * so the entry of the package, which imports everything, is never loaded:
+ * Rewrites the remaining imports from `@monstermann/stdlib` and `@monstermann/stdlib-web` to the files that export them,
+ * so the entry of a package, which imports everything, is never loaded:
  *
  * ```ts
  * import { pipe, Arr, type Result } from "@monstermann/stdlib";
@@ -17,11 +17,14 @@ import { functions, namespaces } from "./manifest"
  * import { Arr } from "@monstermann/stdlib/Arr/index.mjs";
  * ```
  */
-export function transformImports(code: string, filePath: string, from: string, unused: ReadonlySet<string>): MagicString {
+export function transformImports(code: string, filePath: string, unused: ReadonlySet<string>): MagicString {
     const ms = new MagicString(code, { filename: filePath })
 
     for (const node of parseSync(filePath, code).program.body) {
-        if (node.type !== "ImportDeclaration" || node.importKind === "type" || node.source.value !== from) continue
+        if (node.type !== "ImportDeclaration" || node.importKind === "type") continue
+        const from = node.source.value
+        const pkg = packages.get(from)
+        if (!pkg) continue
         // import * as Fn from "@monstermann/stdlib"
         if (!node.specifiers.length || node.specifiers.some(specifier => specifier.type !== "ImportSpecifier")) continue
 
@@ -35,8 +38,8 @@ export function transformImports(code: string, filePath: string, from: string, u
             const text = code.slice(specifier.imported.start, specifier.end)
             if (specifier.importKind === "type") types.push(text)
             else if (unused.has(name)) continue
-            else if (namespaces.has(name)) imports.push(`import { ${text} } from "${from}/${name}/index.mjs";`)
-            else if (functions.has(name)) imports.push(`import { ${text} } from "${from}/${functions.get(name)}.mjs";`)
+            else if (pkg.namespaces.has(name)) imports.push(`import { ${text} } from "${from}/${name}/index.mjs";`)
+            else if (pkg.functions.has(name)) imports.push(`import { ${text} } from "${from}/${pkg.functions.get(name)}.mjs";`)
             else rest.push(text)
         }
 

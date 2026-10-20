@@ -97,6 +97,33 @@ describe("transform", () => {
         `))
     })
 
+    it("should import the members of the namespaces of @monstermann/stdlib-web directly", () => {
+        expect(run(`
+            import { DOM, Rect } from "@monstermann/stdlib-web";
+            import { Duration } from "@monstermann/stdlib";
+            const rect: Rect = Rect.origin;
+            DOM.scrollBy(element, { duration: Duration.SECOND });
+        `)).toBe(dedent(`
+            import { scrollBy as _scrollBy } from "@monstermann/stdlib-web/DOM/scrollBy.mjs";
+            import { origin as _origin } from "@monstermann/stdlib-web/Rect/origin.mjs";
+            import type { Rect } from "@monstermann/stdlib-web";
+            import { SECOND as _SECOND } from "@monstermann/stdlib/Duration/SECOND.mjs";
+            const rect: Rect = _origin;
+            _scrollBy(element, { duration: _SECOND });
+        `))
+    })
+
+    it("should import the namespaces of @monstermann/stdlib-web that are used as a value from their own file", () => {
+        expect(run(`
+            import { Rect, type Placement } from "@monstermann/stdlib-web";
+            call(Rect);
+        `)).toBe(dedent(`
+            import type { Placement } from "@monstermann/stdlib-web";
+            import { Rect } from "@monstermann/stdlib-web/Rect/index.mjs";
+            call(Rect);
+        `))
+    })
+
     it("should keep types", () => {
         expect(run(`
             import { Duration, type Result, pipe } from "@monstermann/stdlib";

@@ -1,4 +1,12 @@
-/** The namespaces of @monstermann/stdlib, each member is a file of the same name: `Duration.parse` → `Duration/parse.mjs`. */
+/** What a package exports, for importing each of it from the file it lives in. */
+export interface Package {
+    /** Everything that is not a namespace, and the file it lives in: `pipe` → `pipe.mjs`. */
+    functions: ReadonlyMap<string, string>
+    /** Each member is a file of the same name: `Duration.parse` → `Duration/parse.mjs`. */
+    namespaces: ReadonlySet<string>
+}
+
+/** The namespaces of @monstermann/stdlib. */
 export const namespaces: ReadonlySet<string> = new Set([
     "Bytes",
     "Duration",
@@ -6,7 +14,7 @@ export const namespaces: ReadonlySet<string> = new Set([
     "Timer",
 ])
 
-/** Everything else @monstermann/stdlib exports, and the file it lives in: `pipe` → `pipe.mjs`. */
+/** Everything else @monstermann/stdlib exports. */
 export const functions: ReadonlyMap<string, string> = new Map([
     ["_", "_"],
     ["Action", "Action"],
@@ -27,6 +35,12 @@ export const functions: ReadonlyMap<string, string> = new Map([
     ["Semaphore", "Semaphore"],
     ["SemaphoreFullError", "Semaphore"],
     ["Signal", "Signal"],
+])
+
+/** The packages whose imports are pointed at the files they live in, by what they are imported from. */
+export const packages: ReadonlyMap<string, Package> = new Map([
+    ["@monstermann/stdlib", { functions, namespaces }],
+    ["@monstermann/stdlib-web", { functions: new Map(), namespaces: new Set(["DOM", "Placement", "Rect"]) }],
 ])
 
 /** Files that only exist for running the code untransformed. */

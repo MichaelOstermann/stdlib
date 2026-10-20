@@ -7,7 +7,7 @@ import { SourceMap } from "magic-string"
 import { transformGlobals } from "./globals"
 import { globals, values } from "./globals.manifest"
 import { transformImports } from "./imports"
-import { guards, namespaces } from "./manifest"
+import { guards, packages } from "./manifest"
 import { transformMatches } from "./match"
 import { transformPipes } from "./pipe"
 import { transformReact } from "./react"
@@ -50,7 +50,7 @@ export interface StdlibResult {
 /**
  * Makes using `@monstermann/stdlib` free:
  *
- * - `Array.removeAll()` and `Duration.parse()` become direct imports of `removeAll` and `parse`
+ * - `Array.removeAll()` and `Duration.parse()` become direct imports of `removeAll` and `parse`, and so do `Rect.bottom()` and the others of `@monstermann/stdlib-web`
  * - `match()` chains are compiled into conditional expressions
  * - `pipe()` calls are replaced with the calls they make
  * - everything else (`pipe`, `Result`, …) is imported from the file it lives in
@@ -100,13 +100,13 @@ export function transform(code: string, filePath: string, options: StdlibOptions
         }
     }
 
-    // Nothing has been imported when the package is not mentioned, skip parsing.
+    // Nothing has been imported when the package is not mentioned, skip parsing. `@monstermann/stdlib-web` mentions it too.
     if (imported) {
         const shaken = treeshake(code, filePath, {
             debug: options.debug,
             resolve({ importAlias, importName, importPath, propertyName }) {
-                if (importPath !== from || !importName || !namespaces.has(importName)) return
-                return `import { ${propertyName} as ${importAlias} } from "${from}/${importName}/${propertyName}.mjs";`
+                if (!importName || !packages.get(importPath)?.namespaces.has(importName)) return
+                return `import { ${propertyName} as ${importAlias} } from "${importPath}/${importName}/${propertyName}.mjs";`
             },
         })
         if (shaken) {
@@ -114,7 +114,7 @@ export function transform(code: string, filePath: string, options: StdlibOptions
             maps.push(shaken.map)
         }
 
-        const imports = transformImports(code, filePath, from, unused)
+        const imports = transformImports(code, filePath, unused)
         if (imports.hasChanged()) {
             code = imports.toString()
             maps.push(imports.generateMap(generateMap))

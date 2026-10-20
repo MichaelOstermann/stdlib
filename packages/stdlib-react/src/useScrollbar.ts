@@ -1,5 +1,5 @@
 import type { ReadonlySignal } from "@monstermann/stdlib"
-import { batch, Memo, Timer } from "@monstermann/stdlib"
+import { batch, Memo } from "@monstermann/stdlib"
 import { DOM } from "@monstermann/stdlib-web"
 import { useEffect } from "react"
 import { setScrollTop } from "./internals/setScrollTop"
@@ -79,7 +79,7 @@ export function useScrollbar(scrollElement: HTMLElement | null, contentElement: 
 
         const controller = new AbortController()
         const options = { passive: true, signal: controller.signal }
-        let stopScrolling: (() => void) | undefined
+        let timer: ReturnType<typeof setTimeout> | undefined
 
         const measure = (): void => batch(() => {
             $clientHeight(scrollElement.clientHeight)
@@ -88,8 +88,8 @@ export function useScrollbar(scrollElement: HTMLElement | null, contentElement: 
         })
 
         scrollElement.addEventListener("scroll", () => {
-            stopScrolling?.()
-            stopScrolling = Timer.timeout(500, () => $scrolling(false))
+            clearTimeout(timer)
+            timer = setTimeout(() => $scrolling(false), 500)
             batch(() => {
                 $scrollTop(scrollElement.scrollTop)
                 $scrolling(true)
@@ -105,7 +105,7 @@ export function useScrollbar(scrollElement: HTMLElement | null, contentElement: 
             controller.abort()
             stopScroll()
             stopContent()
-            stopScrolling?.()
+            clearTimeout(timer)
             batch(() => {
                 $hovered(false)
                 $scrolling(false)

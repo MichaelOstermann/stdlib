@@ -1,5 +1,5 @@
 import type { ReadonlySignal, Signal } from "@monstermann/stdlib"
-import { Memo, peek, Timer } from "@monstermann/stdlib"
+import { Memo, peek } from "@monstermann/stdlib"
 import { useReactive } from "./useReactive"
 import { useSignal } from "./useSignal"
 import { useSignalEffect } from "./useSignalEffect"
@@ -65,9 +65,10 @@ export function useTransitionStatus({ closeDuration, openDuration }: UseTransiti
         const enter = (status: "closing" | "opening") => {
             cancel?.()
             $status(status)
-            cancel = status === "opening"
-                ? Timer.timeout(openDuration, () => $status("opened"))
-                : Timer.timeout(closeDuration, () => $status("closed"))
+            const timer = status === "opening"
+                ? setTimeout(() => $status("opened"), openDuration)
+                : setTimeout(() => $status("closed"), closeDuration)
+            cancel = () => clearTimeout(timer)
         }
 
         // `peek`: the effect depends only on `$open`. The current status decides where the transition starts.

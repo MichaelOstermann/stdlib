@@ -1,5 +1,4 @@
 import { Emitter } from "../Emitter"
-import { timeout } from "./timeout"
 
 /** The longest delay of `setTimeout`, about 24.8 days: a longer one fires right away, and the clock would tick without end. */
 const MAX_INTERVAL = 2_147_483_647
@@ -64,7 +63,7 @@ export function aligned(every: number, fn: (now: number) => void): () => void {
 function start(every: number): Clock {
     const onTick = Emitter<number>()
     let next = boundary(Date.now(), every)
-    let cancel = timeout(next - Date.now(), tick)
+    let timer = setTimeout(tick, next - Date.now())
     let isStopped = false
 
     function tick(): void {
@@ -76,14 +75,14 @@ function start(every: number): Clock {
             // The last listener stopped during the tick.
             if (isStopped) return
         }
-        cancel = timeout(next - now, tick)
+        timer = setTimeout(tick, next - now)
     }
 
     return {
         onTick,
         stop: () => {
             isStopped = true
-            cancel()
+            clearTimeout(timer)
         },
     }
 }

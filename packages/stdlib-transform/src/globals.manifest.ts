@@ -14,7 +14,7 @@ export const globals: Readonly<Record<string, readonly string[]>> = {
     Retry: ["again", "run"],
     Set: ["add", "delete", "isShallowEqual"],
     String: ["camelCase", "capitalize", "constantCase", "dedent", "escapeHTML", "graphemes", "kebabCase", "pascalCase", "score", "slugify", "snakeCase", "titleCase", "uncapitalize", "words"],
-    Timer: ["aligned", "interval", "timeout"],
+    Timer: ["aligned"],
 }
 
 /** Globals that are values themselves, and the file each one lives in: `pipe` → `pipe.mjs`. */

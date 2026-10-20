@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, jest, vi } from "bun:test"
 import { Duration } from "../../src/Duration/index"
 import { Timer } from "../../src/Timer/index"
 
-const { DAY, MINUTE, SECOND } = Duration
+const { DAY, MINUTE } = Duration
 const START = 10 * MINUTE + 30_000
 
 describe("Timer", () => {
@@ -12,38 +12,6 @@ describe("Timer", () => {
 
     afterEach(() => {
         jest.useRealTimers()
-    })
-
-    describe("timeout", () => {
-        it("should call fn once after the delay", () => {
-            const fn = vi.fn()
-            Timer.timeout(SECOND, fn)
-            jest.advanceTimersByTime(SECOND - 1)
-            expect(fn).toHaveBeenCalledTimes(0)
-            jest.advanceTimersByTime(1)
-            jest.advanceTimersByTime(SECOND)
-            expect(fn).toHaveBeenCalledTimes(1)
-        })
-
-        it("should not call fn once cancelled", () => {
-            const fn = vi.fn()
-            Timer.timeout(SECOND, fn)()
-            jest.advanceTimersByTime(SECOND)
-            expect(fn).toHaveBeenCalledTimes(0)
-            expect(jest.getTimerCount()).toBe(0)
-        })
-    })
-
-    describe("interval", () => {
-        it("should call fn every delay until stopped", () => {
-            const fn = vi.fn()
-            const stop = Timer.interval(SECOND, fn)
-            jest.advanceTimersByTime(3 * SECOND)
-            expect(fn).toHaveBeenCalledTimes(3)
-            stop()
-            jest.advanceTimersByTime(3 * SECOND)
-            expect(fn).toHaveBeenCalledTimes(3)
-        })
     })
 
     describe("aligned", () => {
@@ -129,28 +97,5 @@ describe("Timer", () => {
             expect(fn.mock.calls).toEqual([[2 * MINUTE + 30_000], [3 * MINUTE]])
             stop()
         })
-    })
-})
-
-describe("Timer with unref", () => {
-    it("should let the process exit while a timer is pending", () => {
-        const setTimeout = vi.spyOn(globalThis, "setTimeout")
-        const setInterval = vi.spyOn(globalThis, "setInterval")
-        const cancelTimeout = Timer.timeout(MINUTE, () => {}, { unref: true })
-        const stopInterval = Timer.interval(MINUTE, () => {}, { unref: true })
-        expect((setTimeout.mock.results[0]!.value as { hasRef: () => boolean }).hasRef()).toBe(false)
-        expect((setInterval.mock.results[0]!.value as { hasRef: () => boolean }).hasRef()).toBe(false)
-        cancelTimeout()
-        stopInterval()
-        setTimeout.mockRestore()
-        setInterval.mockRestore()
-    })
-
-    it("should keep the process alive without it", () => {
-        const setTimeout = vi.spyOn(globalThis, "setTimeout")
-        const cancel = Timer.timeout(MINUTE, () => {})
-        expect((setTimeout.mock.results[0]!.value as { hasRef: () => boolean }).hasRef()).toBe(true)
-        cancel()
-        setTimeout.mockRestore()
     })
 })

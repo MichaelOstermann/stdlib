@@ -1,0 +1,24 @@
+[package]
+name = "dprint-plugin-stdlib-style"
+version = "0.0.0"
+edition = "2024"
+description = "The formatter of @monstermann/stdlib-style for JavaScript and TypeScript, as a dprint plugin"
+license = "MIT"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+anyhow = "1"
+dprint-core = { version = "0.70", features = ["wasm"] }
+dprint-plugin-json = { version = "0.25.2", default-features = false }
+jsonc-parser = { version = "0.34.0", features = ["serde"] }
+oxc_allocator = "0.153"
+oxc_ast = "0.153"
+oxc_ast_visit = "0.153"
+oxc_parser = "0.153"
+oxc_span = "0.153"
+oxc_syntax = "0.153"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }

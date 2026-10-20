@@ -1,0 +1,51 @@
+{
+    "name": "@monstermann/stdlib-style",
+    "type": "module",
+    "version": "0.1.0",
+    "description": "How my code looks: a dprint formatter, an Oxlint config and a TypeScript config.",
+    "author": "Michael Ostermann <michaelostermann@me.com>",
+    "license": "MIT",
+    "homepage": "https://github.com/MichaelOstermann/stdlib",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/MichaelOstermann/stdlib.git"
+    },
+    "bugs": {
+        "url": "https://github.com/MichaelOstermann/stdlib/issues"
+    },
+    "keywords": [
+        "dprint",
+        "oxlint",
+        "stdlib",
+        "style",
+        "tsconfig"
+    ],
+    "sideEffects": false,
+    "exports": {
+        "./oxlint": {
+            "types": "./dist/oxlint.d.mts",
+            "import": "./dist/oxlint.mjs"
+        },
+        "./dprint.json": "./dprint.json",
+        "./dprint-plugin.wasm": "./dist/dprint-plugin.wasm",
+        "./tsconfig.json": "./tsconfig.json"
+    },
+    "files": [
+        "dist",
+        "dprint.json",
+        "tsconfig.json"
+    ],
+    "scripts": {
+        "bundle": "tsdown && cargo build --release --target wasm32-unknown-unknown -p dprint-plugin-stdlib-style && cp ../../target/wasm32-unknown-unknown/release/dprint_plugin_stdlib_style.wasm dist/dprint-plugin.wasm"
+    },
+    "peerDependencies": {
+        "dprint": "^0.61.1",
+        "oxlint": "^1.87.0",
+        "oxlint-tsgolint": "^7.0.2003"
+    },
+    "dependencies": {
+        "@eslint-react/eslint-plugin": "^5.23.1",
+        "eslint-plugin-better-tailwindcss": "^4.7.0",
+        "eslint-plugin-regexp": "^3.3.1"
+    }
+}

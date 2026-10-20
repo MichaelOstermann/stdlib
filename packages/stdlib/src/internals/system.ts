@@ -200,8 +200,7 @@ function prepareSources(target: RawMemo | RawEffect) {
     }
 }
 
-// @ts-expect-error ignore
-export declare class RawSignal<T = any> {
+export interface RawSignal<T = any> {
     node: ReactiveNode | undefined
     notified: number
     snapshot: BatchSnapshot | undefined
@@ -209,23 +208,21 @@ export declare class RawSignal<T = any> {
     value: T
     version: number
 
-    constructor(value?: T)
-    get(): T
-    refresh(): boolean
-    set(value: T): void
-    subscribe(node: ReactiveNode): void
-    unsubscribe(node: ReactiveNode): void
+    get: () => T
+    refresh: () => boolean
+    set: (value: T) => void
+    subscribe: (node: ReactiveNode) => void
+    unsubscribe: (node: ReactiveNode) => void
 }
 
-// @ts-expect-error ignore
-export function RawSignal(this: RawSignal, value?: unknown) {
+export const RawSignal = function (this: RawSignal, value?: unknown) {
     this.node = undefined
     this.targets = undefined
     this.snapshot = undefined
     this.notified = 0
     this.value = value
     this.version = 0
-}
+} as unknown as { (this: RawSignal, value?: unknown): void, new <T>(value?: T): RawSignal<T>, prototype: RawSignal }
 
 RawSignal.prototype.refresh = function () {
     return true
@@ -299,25 +296,24 @@ RawSignal.prototype.set = function<T> (this: RawSignal<T>, value: T): void {
     endBatch()
 }
 
-export declare class RawMemo<T = any> extends RawSignal<T> {
+export interface RawMemo<T = any> extends RawSignal<T> {
     flags: number
-    fn: () => T
     globalVersion: number
     sources?: ReactiveNode
+    fn: () => T
 
-    constructor(fn: () => T)
-    get(): T
-    notify(): void
+    get: () => T
+    notify: () => void
 }
 
-export function RawMemo(this: RawMemo, fn: () => unknown) {
+export const RawMemo = function (this: RawMemo, fn: () => unknown) {
     RawSignal.call(this, undefined)
 
     this.fn = fn
     this.sources = undefined
     this.globalVersion = version - 1
     this.flags = OUTDATED
-}
+} as unknown as { new <T>(fn: () => T): RawMemo<T>, prototype: RawMemo }
 
 RawMemo.prototype = new RawSignal() as RawMemo
 
@@ -439,30 +435,27 @@ RawMemo.prototype.get = function<T> (this: RawMemo<T>): T {
 /** Runs with the effect as `this`, and returns what cleans up after it: called before the next run, and when the effect is disposed. */
 type EffectFn = (this: RawEffect) => (() => void) | void
 
-// @ts-expect-error ignore
-export declare class RawEffect {
+export interface RawEffect {
     cleanup: (() => void) | void
     flags: number
     fn?: EffectFn
     nextBatchedEffect?: RawEffect
     sources?: ReactiveNode
 
-    constructor(fn: EffectFn)
-    dispose(): void
-    end(): void
-    notify(): void
-    run(): void
-    start(): void
+    dispose: () => void
+    end: () => void
+    notify: () => void
+    run: () => void
+    start: () => void
 }
 
-// @ts-expect-error ignore
-export function RawEffect(this: RawEffect, fn: EffectFn) {
+export const RawEffect = function (this: RawEffect, fn: EffectFn) {
     this.cleanup = undefined
     this.fn = fn
     this.sources = undefined
     this.nextBatchedEffect = undefined
     this.flags = TRACKING
-}
+} as unknown as { new (fn: EffectFn): RawEffect, prototype: RawEffect }
 
 RawEffect.prototype.notify = function () {
     if (!(this.flags & NOTIFIED)) {

@@ -19,34 +19,34 @@ export interface Matcher<
     case: [Input] extends [never]
         ? MatchError<"Match is exhaustive">
         : <const P extends Patterns<Extract<Input, Primitive>>, O extends Bound>(
-                ...args: [...patterns: P, result: ValidFor<Input, Seen, P, O>]
-            ) => Matcher<DropAll<Input, P>, Next<Output, Bound, Widen<O>>, Bound, Remember<Seen, P>>
+            ...args: [...patterns: P, result: ValidFor<Input, Seen, P, O>]
+        ) => Matcher<DropAll<Input, P>, Next<Output, Bound, Widen<O>>, Bound, Remember<Seen, P>>
 
     cond: [Input] extends [never]
         ? MatchError<"Match is exhaustive">
         : <F extends (value: Input) => unknown, O extends Bound>(
-                predicate: F,
-                result: O,
-            ) => Matcher<Unguarded<Input, F>, Next<Output, Bound, O>, Bound, Seen>
+            predicate: F,
+            result: O,
+        ) => Matcher<Unguarded<Input, F>, Next<Output, Bound, O>, Bound, Seen>
 
     onCase: [Input] extends [never]
         ? MatchError<"Match is exhaustive">
         : <const P extends Patterns<Extract<Input, Primitive>>, O extends Bound>(
-                ...args: [...patterns: P, fn: ValidFor<Input, Seen, P, (value: Readonly<Narrow<Input, P[number]>>) => O>]
-            ) => Matcher<DropAll<Input, P>, Next<Output, Bound, O>, Bound, Remember<Seen, P>>
+            ...args: [...patterns: P, fn: ValidFor<Input, Seen, P, (value: Readonly<Narrow<Input, P[number]>>) => O>]
+        ) => Matcher<DropAll<Input, P>, Next<Output, Bound, O>, Bound, Remember<Seen, P>>
 
     onCond: [Input] extends [never]
         ? MatchError<"Match is exhaustive">
         : <F extends (value: Input) => unknown, O extends Bound>(
-                predicate: F,
-                fn: (value: Readonly<Guarded<Input, F>>) => O,
-            ) => Matcher<Unguarded<Input, F>, Next<Output, Bound, O>, Bound, Seen>
+            predicate: F,
+            fn: (value: Readonly<Guarded<Input, F>>) => O,
+        ) => Matcher<Unguarded<Input, F>, Next<Output, Bound, O>, Bound, Seen>
 
     onShape: [Input] extends [never]
         ? MatchError<"Match is exhaustive">
         : <const P extends Patterns<Exclude<Input, Primitive>>, O extends Bound>(
-                ...args: [...patterns: P, fn: ValidFor<Input, Seen, P, (value: Readonly<Narrow<Input, P[number]>>) => O>]
-            ) => Matcher<DropAll<Input, P>, Next<Output, Bound, O>, Bound, Remember<Seen, P>>
+            ...args: [...patterns: P, fn: ValidFor<Input, Seen, P, (value: Readonly<Narrow<Input, P[number]>>) => O>]
+        ) => Matcher<DropAll<Input, P>, Next<Output, Bound, O>, Bound, Remember<Seen, P>>
 
     returnType: [Output] extends [never]
         ? <O>() => Matcher<Input, O, O, Seen>
@@ -55,8 +55,8 @@ export interface Matcher<
     shape: [Input] extends [never]
         ? MatchError<"Match is exhaustive">
         : <const P extends Patterns<Exclude<Input, Primitive>>, O extends Bound>(
-                ...args: [...patterns: P, result: ValidFor<Input, Seen, P, O>]
-            ) => Matcher<DropAll<Input, P>, Next<Output, Bound, Widen<O>>, Bound, Remember<Seen, P>>
+            ...args: [...patterns: P, result: ValidFor<Input, Seen, P, O>]
+        ) => Matcher<DropAll<Input, P>, Next<Output, Bound, Widen<O>>, Bound, Remember<Seen, P>>
 
     unwrap: [Input] extends [never]
         ? () => Output

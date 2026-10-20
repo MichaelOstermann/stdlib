@@ -14,7 +14,7 @@ const from = "@monstermann/stdlib"
 
 const globalsOptions = {
     globals,
-    guards: guards.map(name => `${from}/${name}`),
+    guards: guards.map((name) => `${from}/${name}`),
     values: Object.fromEntries(Object.entries(values).map(([name, file]) => [name, `${from}/${file}.mjs`])),
     resolve: (global: string, name: string): string => `${from}/${global}/${name}.mjs`,
 }

@@ -14,9 +14,9 @@ describe("match.tag", () => {
 
     it("should call the handler of the member", () => {
         const area = (shape: Shape): number => match.tag(shape, "kind", {
-            circle: circle => Math.PI * circle.radius ** 2,
+            circle: (circle) => Math.PI * circle.radius ** 2,
             point: () => 0,
-            square: square => square.size ** 2,
+            square: (square) => square.size ** 2,
         })
         expect(shapes.map(area)).toEqual([Math.PI, 4, 0])
     })
@@ -24,7 +24,7 @@ describe("match.tag", () => {
     it("should narrow the value, and return what handlers return", () => {
         const result = match.tag(shapes[0]!, "kind", {
             point: () => "point" as const,
-            square: square => square.size > 1,
+            square: (square) => square.size > 1,
             circle: (circle) => {
                 expectType<Equal<typeof circle, { kind: "circle", radius: number }>>()
                 return circle.radius
@@ -67,16 +67,16 @@ describe("match.tag", () => {
     it("should handle tags that are no strings by what they are written as", () => {
         type Loaded = { error: string, ok: false } | { ok: true, value: number }
         const describe = (result: Loaded): number | string => match.tag(result, "ok", {
-            false: failed => failed.error,
-            true: loaded => loaded.value,
+            false: (failed) => failed.error,
+            true: (loaded) => loaded.value,
         })
         expect(describe({ ok: true, value: 1 })).toBe(1)
         expect(describe({ error: "failed", ok: false })).toBe("failed")
 
         type Versioned = { name: string, version: 2 } | { title: string, version: 1 } | { version?: undefined }
         const title = (value: Versioned): string => match.tag(value, "version", {
-            1: old => old.title,
-            2: current => current.name,
+            1: (old) => old.title,
+            2: (current) => current.name,
             undefined: () => "none",
         })
         expect([title({ title: "a", version: 1 }), title({ name: "b", version: 2 }), title({})]).toEqual(["a", "b", "none"])
@@ -86,8 +86,8 @@ describe("match.tag", () => {
         type Event = { type: "blur" } | { key: string, type: "keydown" | "keyup" }
         const describe = (event: Event): string => match.tag(event, "type", {
             blur: () => "blur",
-            keydown: event => `down ${event.key}`,
-            keyup: event => `up ${event.key}`,
+            keydown: (event) => `down ${event.key}`,
+            keyup: (event) => `up ${event.key}`,
         })
         expect(describe({ key: "a", type: "keyup" })).toBe("up a")
     })

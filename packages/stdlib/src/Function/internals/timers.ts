@@ -17,7 +17,8 @@ export function createTimer(timeout: number, callback: () => void): Timer {
 export function clearTimer(timer: Timers): void {
     if (isIterable(timer)) return Array.from(timer).forEach(clearTimer)
     if (timer.timeout < 0) return
-    timer.tid = void clearTimeout(timer.tid)
+    clearTimeout(timer.tid)
+    timer.tid = undefined
 }
 
 export function startTimer(timer: Timers): void {

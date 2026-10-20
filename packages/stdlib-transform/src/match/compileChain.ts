@@ -22,8 +22,8 @@ export function compileChain(node: Node, chain: Chain, ctx: Context): string {
     }
 
     const elements = chain.subject.type === "ArrayExpression" ? chain.subject.elements : undefined
-    const subject: Subject = elements?.every(element => element && element.type !== "SpreadElement")
-        ? { kind: "tuple", names: elements.map(element => bind(element!)) }
+    const subject: Subject = elements?.every((element) => element && element.type !== "SpreadElement")
+        ? { kind: "tuple", names: elements.map((element) => bind(element!)) }
         : { kind: "value", name: bind(chain.subject) }
 
     // `await` and `yield` can not be moved into a function.
@@ -31,7 +31,7 @@ export function compileChain(node: Node, chain: Chain, ctx: Context): string {
 
     const branches: string[] = []
     for (const step of chain.steps) {
-        if (step.args.some(arg => arg.type === "SpreadElement")) abort()
+        if (step.args.some((arg) => arg.type === "SpreadElement")) abort()
 
         if (step.name === "case" || step.name === "onCase" || step.name === "shape" || step.name === "onShape") {
             const result = step.args.at(-1)
@@ -39,7 +39,7 @@ export function compileChain(node: Node, chain: Chain, ctx: Context): string {
             if (!result || !patterns.length) abort()
             const isCase = step.name === "case" || step.name === "onCase"
             // An array that has just been created is not the same as anything.
-            const tests = patterns.map(pattern => !isCase ? compileShape(subject, pattern, ctx) : subject.kind === "value" ? `(${subject.name} === (${src(pattern)}))` : "false")
+            const tests = patterns.map((pattern) => !isCase ? compileShape(subject, pattern, ctx) : subject.kind === "value" ? `(${subject.name} === (${src(pattern)}))` : "false")
             const test = tests.length > 1 ? `(${tests.join(" || ")})` : tests[0]
             branches.push(`${test} ? (${step.name === "case" || step.name === "shape" ? src(result) : compileCall(subject, result, ctx)})`)
         }

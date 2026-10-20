@@ -20,13 +20,13 @@ declare const mixed: (Task | string)[]
 describe("Array", () => {
     it("should return something mutable for something mutable", () => {
         expectTypeOf(removeAll(mutable, [])).toEqualTypeOf<Task[]>()
-        expectTypeOf(map(mutable, task => task.id)).toEqualTypeOf<string[]>()
+        expectTypeOf(map(mutable, (task) => task.id)).toEqualTypeOf<string[]>()
         expectTypeOf(removeFirst([1, 2, 3], 1)).toEqualTypeOf<number[]>()
     })
 
     it("should return something readonly for something readonly", () => {
         expectTypeOf(removeAll(readonly, [])).toEqualTypeOf<readonly Task[]>()
-        expectTypeOf(map(readonly, task => task.id)).toEqualTypeOf<readonly string[]>()
+        expectTypeOf(map(readonly, (task) => task.id)).toEqualTypeOf<readonly string[]>()
         expectTypeOf(removeFirst([1, 2, 3] as const, 1)).toEqualTypeOf<readonly (1 | 2 | 3)[]>()
     })
 
@@ -35,14 +35,14 @@ describe("Array", () => {
         // @ts-expect-error something readonly can not be changed
         removeAll(readonly, [], { mut: true })
         // @ts-expect-error something readonly can not be changed
-        mapFirstWhere(readonly, task => task.id === "a", task => task, { mut: true })
-        mapLastWhere(readonly, task => task.id === "a", task => task)
+        mapFirstWhere(readonly, (task) => task.id === "a", (task) => task, { mut: true })
+        mapLastWhere(readonly, (task) => task.id === "a", (task) => task)
     })
 
     it("should narrow with type guards", () => {
-        expectTypeOf(filter(mixed, value => typeof value === "string")).toEqualTypeOf<string[]>()
-        expectTypeOf(filter(mixed, value => value !== "a")).toEqualTypeOf<(Task | string)[]>()
-        expectTypeOf(mapFirstWhere(mixed, value => typeof value === "string", value => value.toUpperCase())).toEqualTypeOf<(Task | string)[]>()
+        expectTypeOf(filter(mixed, (value) => typeof value === "string")).toEqualTypeOf<string[]>()
+        expectTypeOf(filter(mixed, (value) => value !== "a")).toEqualTypeOf<(Task | string)[]>()
+        expectTypeOf(mapFirstWhere(mixed, (value) => typeof value === "string", (value) => value.toUpperCase())).toEqualTypeOf<(Task | string)[]>()
     })
 
     it("should reject what does not fit", () => {
@@ -51,7 +51,7 @@ describe("Array", () => {
         // @ts-expect-error not a task
         replaceFirst(readonly, readonly[0]!, "a")
         // @ts-expect-error a task has to be returned
-        mapFirstWhere(readonly, task => task.id === "a", () => 1)
+        mapFirstWhere(readonly, (task) => task.id === "a", () => 1)
         // @ts-expect-error there is no such option
         removeFirst(mutable, mutable[0]!, { last: true })
     })
@@ -66,10 +66,10 @@ describe("Array", () => {
 
     it("should only change an array into what it holds", () => {
         const numbers = [1, 2]
-        expectTypeOf(map(numbers, value => value + 1, { mut: true })).toEqualTypeOf<number[]>()
-        expectTypeOf(map(numbers, value => `${value}`)).toEqualTypeOf<string[]>()
+        expectTypeOf(map(numbers, (value) => value + 1, { mut: true })).toEqualTypeOf<number[]>()
+        expectTypeOf(map(numbers, (value) => `${value}`)).toEqualTypeOf<string[]>()
         // @ts-expect-error the array would hold strings while it says numbers
-        map(numbers, value => `${value}`, { mut: true })
+        map(numbers, (value) => `${value}`, { mut: true })
     })
 
     it("should not take a string for several values", () => {

@@ -164,7 +164,7 @@ export function transformMatches(code: string, filePath: string, from: string, h
     })
 
     // Without an import to put them next to, they are added to an existing line, so every line stays where it is.
-    const first = program.body.find(node => node.type !== "ExpressionStatement" || !node.directive)
+    const first = program.body.find((node) => node.type !== "ExpressionStatement" || !node.directive)
     for (const name of added) {
         const helper = `import { ${name} as ${helpers[name]} } from "${from}/internals/match/${name}.mjs";`
         if (match.node) ctx.ms.appendLeft(match.node.end, `\n${helper}`)
@@ -211,8 +211,8 @@ export function startsStatement(node: Node, parents: Map<Node, Node | null>): bo
 /** The names that are assigned to: `a = 1`, `[a, { b }] = c`, `a++`, `for (a of b)` */
 export function collectTargets(node: Node, names: Set<string>): void {
     if (node.type === "Identifier") names.add(node.name)
-    else if (node.type === "ArrayPattern") node.elements.forEach(element => element && collectTargets(element, names))
-    else if (node.type === "ObjectPattern") node.properties.forEach(property => collectTargets(property.type === "Property" ? property.value : property, names))
+    else if (node.type === "ArrayPattern") node.elements.forEach((element) => element && collectTargets(element, names))
+    else if (node.type === "ObjectPattern") node.properties.forEach((property) => collectTargets(property.type === "Property" ? property.value : property, names))
     else if (node.type === "AssignmentPattern") collectTargets(node.left, names)
     else if (node.type === "RestElement") collectTargets(node.argument, names)
     else if (node.type === "ParenthesizedExpression" || node.type === "TSAsExpression" || node.type === "TSNonNullExpression" || node.type === "TSSatisfiesExpression" || node.type === "TSTypeAssertion") collectTargets(node.expression, names)

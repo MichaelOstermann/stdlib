@@ -55,7 +55,7 @@ describe("Dialogs", () => {
         expect(panel()?.className).toBe("w-120")
         expect(panel()?.style.marginTop).toBe("40px")
         expect(backdrop()?.className).toBe("modal dialog")
-        expect(Modals.stack.map(modal => [modal.kind, modal.name])).toEqual([["dialog", "rename"]])
+        expect(Modals.stack.map((modal) => [modal.kind, modal.name])).toEqual([["dialog", "rename"]])
 
         send(panel()!.querySelector("button")!, "click")
         expect(await result).toBe("Task!")

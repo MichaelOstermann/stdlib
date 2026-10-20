@@ -8,10 +8,10 @@ export interface GlobalsOptions {
     globals: Readonly<Record<string, readonly string[]>>
     /** Files that only exist for running the code untransformed. Imports of them are removed. */
     guards: readonly string[]
-    /** Where a member is imported from, it is exported there under its own name. */
-    resolve: (global: string, name: string) => string
     /** Globals that are values themselves, and where each one is imported from: `{ pipe: "@monstermann/stdlib/pipe.mjs" }` */
     values?: Readonly<Record<string, string>>
+    /** Where a member is imported from, it is exported there under its own name. */
+    resolve: (global: string, name: string) => string
 }
 
 /** Nodes of TypeScript that contain code, every other one is about types. */
@@ -63,7 +63,7 @@ const mentions = new WeakMap<GlobalsOptions["globals"], (code: string) => boolea
  */
 export function transformGlobals(code: string, filePath: string, options: GlobalsOptions): MagicString | undefined {
     // Nothing to do when nothing is mentioned, skip parsing.
-    if (!options.guards.some(guard => code.includes(guard)) && !mentioned(options)(code)) return
+    if (!options.guards.some((guard) => code.includes(guard)) && !mentioned(options)(code)) return
 
     const { program } = parseSync(filePath, code)
     const ms = new MagicString(code, { filename: filePath })
@@ -180,7 +180,7 @@ export function transformGlobals(code: string, filePath: string, options: Global
     if (!ms.hasChanged() && !imports.length) return
 
     // Directives need to stay the first thing in a file.
-    const first = program.body.find(node => node.type !== "ExpressionStatement" || !node.directive)
+    const first = program.body.find((node) => node.type !== "ExpressionStatement" || !node.directive)
     if (imports.length) ms.appendLeft(first?.start ?? code.length, imports.join(""))
 
     return ms
@@ -196,7 +196,7 @@ function mentioned(options: GlobalsOptions): (code: string) => boolean {
     const values = Object.keys(options.values ?? {})
     const anything = values.length ? new RegExp(`\\b(?:${values.join("|")})\\b`) : undefined
     const members = Object.entries(options.globals).map(([global, names]) => [new RegExp(`\\b${global}\\b`), new RegExp(`\\b(?:${names.join("|")})\\b`)] as const)
-    result = code => !!anything?.test(code) || members.some(([global, names]) => global.test(code) && names.test(code))
+    result = (code) => !!anything?.test(code) || members.some(([global, names]) => global.test(code) && names.test(code))
     mentions.set(options.globals, result)
     return result
 }

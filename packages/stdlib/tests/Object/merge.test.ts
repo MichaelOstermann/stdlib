@@ -35,7 +35,7 @@ describe("Object.merge", () => {
     })
 
     it("should treat __proto__ as a key like any other", () => {
-        const source = JSON.parse("{ \"__proto__\": { \"a\": 1 }, \"b\": 2 }") as Record<string, unknown>
+        const source = JSON.parse('{ "__proto__": { "a": 1 }, "b": 2 }') as Record<string, unknown>
         const result = Object.assign({}, merge({ b: 1 } as Record<string, unknown>, source))
         expect(Object.keys(merge({ b: 1 } as Record<string, unknown>, source))).toEqual(["b", "__proto__"])
         expect(Object.getPrototypeOf(merge({ b: 1 } as Record<string, unknown>, source))).toBe(Object.prototype)

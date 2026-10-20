@@ -19,7 +19,7 @@ describe("useAlignedTimer", () => {
 
     it("should return what select returns", () => {
         const Label = (): string => {
-            const label = useAlignedTimer(MINUTE, now => now === START)
+            const label = useAlignedTimer(MINUTE, (now) => now === START)
             expectTypeOf(label).toEqualTypeOf<boolean>()
             expectTypeOf(useAlignedTimer(MINUTE)).toEqualTypeOf<number>()
             return String(label)
@@ -69,7 +69,7 @@ describe("useAlignedTimer", () => {
             const renders = vi.fn()
             const container = render(() => {
                 renders()
-                return useAlignedTimer(SECOND, now => `${Math.floor((now - START) / MINUTE)} minutes`)
+                return useAlignedTimer(SECOND, (now) => `${Math.floor((now - START) / MINUTE)} minutes`)
             })
             expect(container.textContent).toBe("0 minutes")
 
@@ -85,7 +85,7 @@ describe("useAlignedTimer", () => {
             const container = render(() => {
                 const [offset, setOffset] = useState(0)
                 increment = () => setOffset(offset + MINUTE)
-                return String(useAlignedTimer(MINUTE, now => Math.floor((now + offset) / (2 * MINUTE))))
+                return String(useAlignedTimer(MINUTE, (now) => Math.floor((now + offset) / (2 * MINUTE))))
             })
             act(() => increment())
             expect(container.textContent).toBe("5")

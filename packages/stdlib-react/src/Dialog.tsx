@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-redeclare -- Dialog is a type and the component that renders it */
 import type { ReadonlySignal } from "@monstermann/stdlib"
 import type { ComponentProps, CSSProperties, ReactNode } from "react"
 import type { Modal } from "./Modals"
@@ -10,10 +9,10 @@ import { useReactive } from "./useReactive"
 export interface Dialog<T = void, R = void> extends Modal {
     readonly $status: ReadonlySignal<TransitionStatus>
     readonly kind: "dialog"
-    /** Closes the dialog, `Dialogs.open` resolves with `value`. */
-    readonly done: (value: R) => void
     /** What `Dialogs.open` was given after the component. */
     readonly meta: T
+    /** Closes the dialog, `Dialogs.open` resolves with `value`. */
+    readonly done: (value: R) => void
 }
 
 export interface DialogProps extends Omit<ComponentProps<"div">, "ref"> {

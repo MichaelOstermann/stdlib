@@ -59,10 +59,12 @@ export function transformReact(code: string, id: string): MagicString | undefine
         if (local) return local
         local = generateId(hook)
         imported.set(hook, local)
-        if (local === hook)
+        if (local === hook) {
             ms.appendRight(0, `import { ${local} } from "@monstermann/stdlib-react";\n`)
-        else
+        }
+        else {
             ms.appendRight(0, `import { ${hook} as ${local} } from "@monstermann/stdlib-react";\n`)
+        }
         return local
     }
 
@@ -107,7 +109,7 @@ export function transformReact(code: string, id: string): MagicString | undefine
                     }
                     // import { useReactive as useR } from "@monstermann/stdlib-react"
                     else if (node.source.value === "@monstermann/stdlib-react") {
-                        const hook = hooks.find(hook => hook === name)
+                        const hook = hooks.find((hook) => hook === name)
                         if (hook) imported.set(hook, local)
                     }
                     // import { Signal as S } from "@monstermann/stdlib"
@@ -320,8 +322,9 @@ function isPropsType(type: Node): boolean {
         case "TSSymbolKeyword":
         case "TSTupleType":
             return false
+        default:
+            return true
     }
-    return true
 }
 
 // What a component cannot return: return {}, return () => {}, return new Foo(), return;
@@ -337,8 +340,9 @@ function isNonNode(node: Node | null | undefined): boolean {
             return true
         case "Literal":
             return typeof node.value === "bigint"
+        default:
+            return false
     }
-    return false
 }
 
 function shouldWrap(node: JSXExpression | Expression): boolean {
@@ -395,7 +399,7 @@ function findWrapTargets(parents: Node[], read: Node, creates: Set<CallExpressio
             // the enclosing declaration, so the hook call itself is never moved into
             // `useReactive(() => (...))`.
             if (node.type === "CallExpression" && isHookCallee(node.callee)) {
-                const argument = node.arguments.find(argument => argument === child)
+                const argument = node.arguments.find((argument) => argument === child)
                 // A spread argument (`useFoo(...$foo())`) can't be wrapped in place.
                 if (!argument || argument.type === "SpreadElement") return { read, targets: [] }
                 targets = [argument]
@@ -403,7 +407,7 @@ function findWrapTargets(parents: Node[], read: Node, creates: Set<CallExpressio
 
             else if (node.type === "VariableDeclaration") {
                 targets = node.declarations
-                    .map(declaration => declaration.init)
+                    .map((declaration) => declaration.init)
                     .filter((init): init is Expression => init != null)
             }
 
@@ -442,8 +446,8 @@ function findWrapTargets(parents: Node[], read: Node, creates: Set<CallExpressio
                 || ((node.type === "ForInStatement" || node.type === "ForOfStatement") && node.right !== child)
                 || node.type === "WhileStatement"
                 || node.type === "DoWhileStatement")) {
-            error ??= "inside a loop"
-        }
+                    error ??= "inside a loop"
+                }
 
         child = node
     }

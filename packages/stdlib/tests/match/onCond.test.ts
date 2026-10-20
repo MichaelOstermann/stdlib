@@ -5,9 +5,9 @@ describe("onCond", () => {
     describe("implementation", () => {
         test("should return matching predicate", () => {
             const result = match(2 as 1 | 2 | 3)
-                .onCond(v => v === 1, () => "one")
-                .onCond(v => v === 2, () => "two")
-                .onCond(v => v === 3, () => "three")
+                .onCond((v) => v === 1, () => "one")
+                .onCond((v) => v === 2, () => "two")
+                .onCond((v) => v === 3, () => "three")
                 .unwrapOr(null)
 
             expect(result).toBe("two")
@@ -17,9 +17,9 @@ describe("onCond", () => {
     describe("types", () => {
         test("inferred return type", () => {
             const result = match(0 as 0 | 1 | 2)
-                .onCond(v => v === 0, () => 0)
-                .onCond(v => v === 1, () => "1")
-                .onCond(v => v === 2, () => true)
+                .onCond((v) => v === 0, () => 0)
+                .onCond((v) => v === 1, () => "1")
+                .onCond((v) => v === 2, () => true)
                 .unwrapOr(null)
 
             expectTypeOf(result).toEqualTypeOf<number | string | boolean | null>()
@@ -28,9 +28,9 @@ describe("onCond", () => {
         test("strict return type", () => {
             match(0 as 0 | 1)
                 .returnType<number>()
-                .onCond(v => v === 0, () => 0)
+                .onCond((v) => v === 0, () => 0)
                 // @ts-expect-error test case.
-                .onCond(v => v === 1, "1")
+                .onCond((v) => v === 1, "1")
         })
     })
 })

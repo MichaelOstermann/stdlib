@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-redeclare -- Emitter and AsyncEmitter are a type and what creates it */
 import { endBatch, pauseTracking, resumeTracking, startBatch } from "./internals/reactivity"
 
 type AnyFn = (...args: any[]) => any

@@ -441,6 +441,15 @@ impl<'a> Visit<'a> for Context<'_> {
         walk::walk_import_expression(self, it);
     }
 
+    // `typeof import("./a")` and `import("./a").B` in a type, which is not an import expression.
+    fn visit_ts_import_type(&mut self, it: &TSImportType<'a>) {
+        let paren = self.tokens[self.index_at(it.span.start)..].iter().find(|token| token.kind == Kind::LParen);
+        if let Some(paren) = paren.filter(|paren| paren.start < it.source.span.start as usize) {
+            self.tight_before.insert(paren.start);
+        }
+        walk::walk_ts_import_type(self, it);
+    }
+
     fn visit_tagged_template_expression(&mut self, it: &TaggedTemplateExpression<'a>) {
         self.tight_before.insert(it.quasi.span.start as usize);
         walk::walk_tagged_template_expression(self, it);
@@ -831,6 +840,7 @@ mod tests {
         assert_eq!(format("const a = (b)as[C]\nconst d = {}satisfies{}\n"), "const a = (b) as [C]\nconst d = {} satisfies {}\n");
         assert_eq!(format("if (a) {}else{}\n"), "if (a) {}\nelse {}\n");
         assert_eq!(format("a.catch(b).finally(c)\na.delete(d)\nconst e = await import(\"f\")\n"), "a.catch(b).finally(c)\na.delete(d)\nconst e = await import(\"f\")\n");
+        assert_eq!(format("type A = typeof import (\"a\").A\ntype B = import (\"b\").B<C>\n"), "type A = typeof import(\"a\").A\ntype B = import(\"b\").B<C>\n");
         assert_eq!(format("class A { static of() {} delete() {} }\n"), "class A { static of() {} delete() {} }\n");
     }
 

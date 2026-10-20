@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-redeclare -- Placement is a type and the functions that make one */
 import type { Rect } from "../Rect"
 import { create } from "./create"
 import { popover } from "./popover"

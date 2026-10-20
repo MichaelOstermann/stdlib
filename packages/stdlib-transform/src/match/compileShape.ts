@@ -12,19 +12,19 @@ export function compileShape(subject: Subject, pattern: Node, ctx: Context): str
         if (fields) return `(${[`typeof ${subject.name} === "object"`, `${subject.name} !== null`, ...fields].join(" && ")})`
     }
 
-    if (node.type === "ArrayExpression" && node.elements.every(element => element && element.type !== "SpreadElement")) {
-        const elements = node.elements.map(element => element!)
+    if (node.type === "ArrayExpression" && node.elements.every((element) => element && element.type !== "SpreadElement")) {
+        const elements = node.elements.map((element) => element!)
         const compare = (at: (index: number) => string): string[] => elements.flatMap((element, index) => {
             return isWildcard(element, ctx) ? [] : [`${at(index)} === (${src(element)})`]
         })
 
         if (subject.kind === "tuple") {
             if (elements.length !== subject.names.length) return "false"
-            const checks = compare(index => subject.names[index]!)
+            const checks = compare((index) => subject.names[index]!)
             return checks.length ? `(${checks.join(" && ")})` : "true"
         }
 
-        const checks = compare(index => `${subject.name}[${index}]`)
+        const checks = compare((index) => `${subject.name}[${index}]`)
         return `(${[`Array.isArray(${subject.name})`, `${subject.name}.length === ${elements.length}`, ...checks].join(" && ")})`
     }
 

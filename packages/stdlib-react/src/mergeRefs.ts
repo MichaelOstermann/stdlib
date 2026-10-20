@@ -18,7 +18,7 @@ import type { Ref } from "react"
  * ```
  */
 export function mergeRefs<T>(...refs: (Ref<T> | undefined)[]): Ref<T> {
-    const defined = refs.filter(ref => ref != null)
+    const defined = refs.filter((ref) => ref != null)
     if (defined.length <= 1) return defined[0] ?? null
     return (value) => {
         const cleanups = defined.map((ref) => {
@@ -29,6 +29,6 @@ export function mergeRefs<T>(...refs: (Ref<T> | undefined)[]): Ref<T> {
             const cleanup = ref(value)
             return typeof cleanup === "function" ? cleanup : () => ref(null)
         })
-        return () => cleanups.forEach(cleanup => cleanup())
+        return () => cleanups.forEach((cleanup) => cleanup())
     }
 }

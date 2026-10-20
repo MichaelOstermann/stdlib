@@ -78,7 +78,6 @@ function evaluate(chain: string, compiled: boolean): { code: string, result: str
         return results;`
     const transformed = transformMatches(`import { _, match } from "${from}";\n${body}`, "source.ts", from)!.ms.toString().replace(/^(?:import .*\n)+/, "")
     const code = compiled ? transformed : body
-    // eslint-disable-next-line no-new-func
     const result = new Function("match", "_", "matches0", "throwUnmatched0", `"use strict";${code}`)(match, _, matches, throwUnmatched)
     return { code, result: Bun.inspect(result, { depth: 6 }) }
 }

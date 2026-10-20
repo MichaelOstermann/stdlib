@@ -16,8 +16,8 @@ describe("match", () => {
 
         test("shapes", () => {
             const run = (value: Message) => match(value)
-                .onShape({ type: "text" }, v => v.value)
-                .onShape({ type: "image" }, v => v.url)
+                .onShape({ type: "text" }, (v) => v.value)
+                .onShape({ type: "image" }, (v) => v.url)
                 .shape({ type: "ping" }, "ping")
                 .unwrap()
 
@@ -42,8 +42,8 @@ describe("match", () => {
             const run = (value: Message | string | null) => match(value)
                 .case(null, "nothing")
                 .shape({ type: "ping" }, "ping")
-                .onCond(v => typeof v === "string", v => v.toUpperCase())
-                .unwrapOrElse(v => v.type)
+                .onCond((v) => typeof v === "string", (v) => v.toUpperCase())
+                .unwrapOrElse((v) => v.type)
 
             expect(run(null)).toBe("nothing")
             expect(run("text")).toBe("TEXT")
@@ -70,10 +70,10 @@ describe("match", () => {
         test("functions are results, unless they are asked to be called", () => {
             const double = (value: number): number => value * 2
             expect(match(2 as number).case(2, double).unwrapOr(0)).toBe(double)
-            expect(match(2 as number).cond(v => v > 1, double).unwrapOr(0)).toBe(double)
+            expect(match(2 as number).cond((v) => v > 1, double).unwrapOr(0)).toBe(double)
             expect(match(3 as number).case(2, 0).unwrapOr(double)).toBe(double)
             expect(match(2 as number).onCase(2, double).unwrapOr(0)).toBe(4)
-            expect(match(2 as number).onCond(v => v > 1, double).unwrapOr(0)).toBe(4)
+            expect(match(2 as number).onCond((v) => v > 1, double).unwrapOr(0)).toBe(4)
             expect(match(3 as number).case(2, 0).unwrapOrElse(double)).toBe(6)
         })
 
@@ -308,10 +308,10 @@ describe("match", () => {
 
         test("predicates that tell what the value is", () => {
             match(1 as number | string)
-                .onCond(value => typeof value === "string", (value) => {
+                .onCond((value) => typeof value === "string", (value) => {
                     expectTypeOf(value).toEqualTypeOf<string>()
                 })
-                .onCond(value => value > 1, (value) => {
+                .onCond((value) => value > 1, (value) => {
                     expectTypeOf(value).toEqualTypeOf<number>()
                 })
                 .unwrapOrElse((value) => {
@@ -319,7 +319,7 @@ describe("match", () => {
                 })
 
             match(1 as number | string)
-                .cond(value => typeof value === "string", true)
+                .cond((value) => typeof value === "string", true)
                 .unwrapOrElse((value) => {
                     expectTypeOf(value).toEqualTypeOf<number>()
                 })
@@ -438,7 +438,7 @@ describe("match", () => {
 
         test("functions as results", () => {
             const add = (a: number, b: number): number => a + b
-            const result = match(1 as number).case(1, add).cond(value => value > 1, add).unwrapOr(add)
+            const result = match(1 as number).case(1, add).cond((value) => value > 1, add).unwrapOr(add)
             expectTypeOf(result).toEqualTypeOf<(a: number, b: number) => number>()
 
             match(1 as number)

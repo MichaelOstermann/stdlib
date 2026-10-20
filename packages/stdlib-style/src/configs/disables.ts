@@ -13,6 +13,14 @@ export function disables(): Config {
             rules: {
                 "no-console": "off",
             },
+        }, {
+            files: ["**/*.test.{ts,tsx}", "**/*.test-d.{ts,tsx}", "**/tests/**"],
+            rules: {
+                // Tests run compiled code to compare it with the original.
+                "no-implied-eval": "off",
+                "no-new-func": "off",
+                "typescript/no-implied-eval": "off",
+            },
         }],
     }
 }

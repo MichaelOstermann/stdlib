@@ -72,7 +72,7 @@ const globals: Record<string, string[]> = {}
 
 for (const global of Object.keys(interfaces)) {
     const files = await readdir(Path.join(src, global)).catch(() => [])
-    const names = files.filter(isFunction).map(file => file.slice(0, -3)).sort()
+    const names = files.filter(isFunction).map((file) => file.slice(0, -3)).sort()
     if (names.length) globals[global] = names
 }
 
@@ -81,12 +81,12 @@ const members: Record<string, string[]> = { ...globals }
 
 for (const namespace of namespaces) {
     const files = await readdir(Path.join(src, namespace)).catch(() => [])
-    members[namespace] = files.filter(isFunction).map(file => file.slice(0, -3)).sort()
+    members[namespace] = files.filter(isFunction).map((file) => file.slice(0, -3)).sort()
 }
 
 function imports(type: string): string {
     return entries
-        .flatMap(([global, names]) => names.map(name => `import ${type}{ ${name} as ${global}_${name} } from "./${global}/${name}"`))
+        .flatMap(([global, names]) => names.map((name) => `import ${type}{ ${name} as ${global}_${name} } from "./${global}/${name}"`))
         .join("\n")
 }
 
@@ -95,7 +95,7 @@ ${imports("type ")}
 
 // Properties instead of methods: a method of the same name as a native one silently becomes an overload of it.
 declare global {
-${entries.map(([global, names]) => `    interface ${interfaces[global]} {\n${names.map(name => `        ${name}: typeof ${global}_${name}`).join("\n")}\n    }`).join("\n\n")}
+${entries.map(([global, names]) => `    interface ${interfaces[global]} {\n${names.map((name) => `        ${name}: typeof ${global}_${name}`).join("\n")}\n    }`).join("\n\n")}
 
 ${Object.entries(values).map(([name, file]) => `    const ${name}: typeof import("./${file}").${name}`).join("\n")}
 
@@ -111,10 +111,10 @@ import { define } from "./internals/define"
 ${imports("")}
 ${Object.entries(values).map(([name, file]) => `import { ${name} } from "./${file}"`).join("\n")}
 
-${entries.map(([global, names]) => `define(${global}, "${global}", {\n${names.map(name => `    ${name}: ${global}_${name},`).join("\n")}\n})`).join("\n\n")}
+${entries.map(([global, names]) => `define(${global}, "${global}", {\n${names.map((name) => `    ${name}: ${global}_${name},`).join("\n")}\n})`).join("\n\n")}
 
 define(globalThis, "globalThis", {
-${Object.keys(values).map(name => `    ${name},`).join("\n")}
+${Object.keys(values).map((name) => `    ${name},`).join("\n")}
 })
 
 Object.defineProperty(globalThis, Symbol.for("@monstermann/stdlib/patch"), { configurable: true, value: true })
@@ -123,7 +123,7 @@ Object.defineProperty(globalThis, Symbol.for("@monstermann/stdlib/patch"), { con
 await write("packages/stdlib-transform/src/globals.manifest.ts", `${header}
 /** What @monstermann/stdlib makes available on globals, each is a file of the same name: \`Array.map\` → \`Array/map.mjs\`. */
 export const globals: Readonly<Record<string, readonly string[]>> = {
-${Object.entries(members).sort(([a], [b]) => a.localeCompare(b)).map(([global, names]) => `    ${global}: [${names.map(name => `"${name}"`).join(", ")}],`).join("\n")}
+${Object.entries(members).sort(([a], [b]) => a.localeCompare(b)).map(([global, names]) => `    ${global}: [${names.map((name) => `"${name}"`).join(", ")}],`).join("\n")}
 }
 
 /** Globals that are values themselves, and the file each one lives in: \`pipe\` → \`pipe.mjs\`. */

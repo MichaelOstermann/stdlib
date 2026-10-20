@@ -50,7 +50,7 @@ export function autoscroll(containers: () => Iterable<HTMLElement>, { edge = 100
         frame = requestAnimationFrame(tick)
         if (!pointer) return
         // All rects are read before anything scrolls, which would make the browser lay out again for the next read.
-        const scrolls = Array.from(containers(), container => ({ container, ...amounts(fromElement(container), pointer!) }))
+        const scrolls = Array.from(containers(), (container) => ({ container, ...amounts(fromElement(container), pointer!) }))
         let scrolled = false
         for (const { container, x, y } of scrolls) {
             if (!x && !y) continue

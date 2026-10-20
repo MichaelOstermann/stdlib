@@ -23,7 +23,7 @@ describe("DOM.scrollBy", () => {
 
     it("should scroll with the easing", () => {
         const element = scrollable(document.createElement("div"), { height: 1000 })
-        scrollBy(element, { duration: 100, y: 100, easing: progress => progress })
+        scrollBy(element, { duration: 100, y: 100, easing: (progress) => progress })
         frames.run(25)
         expect(element.scrollTop).toBe(25)
     })

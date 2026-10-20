@@ -117,7 +117,7 @@ describe("onShape", () => {
                     expectTypeOf(value).toEqualTypeOf<{ readonly foo: "foo" }>()
                     return true
                 })
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .unwrap()
 
             match({ foo: "foo" as "foo" | "bar" })
@@ -136,7 +136,7 @@ describe("onShape", () => {
                     expectTypeOf(value).toEqualTypeOf<{ readonly foo: "foo" }>()
                     return true
                 })
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .unwrap()
 
             match({ foo: "foo" as string })
@@ -155,7 +155,7 @@ describe("onShape", () => {
                     expectTypeOf(value).toEqualTypeOf<{ readonly foo: string }>()
                     return true
                 })
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .unwrap()
 
             match({ foo: "foo" as string })
@@ -174,7 +174,7 @@ describe("onShape", () => {
                     expectTypeOf(value).toEqualTypeOf<{ readonly foo: true }>()
                     return true
                 })
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .unwrap()
 
             match({ foo: true as boolean })
@@ -193,7 +193,7 @@ describe("onShape", () => {
                     expectTypeOf(value).toEqualTypeOf<{ readonly foo: 0 }>()
                     return true
                 })
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .unwrap()
 
             match({ foo: 0 as 0 | 1 })
@@ -212,7 +212,7 @@ describe("onShape", () => {
                     expectTypeOf(value).toEqualTypeOf<{ readonly foo: 0 }>()
                     return true
                 })
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .unwrap()
 
             match({ foo: 0 as number })
@@ -231,7 +231,7 @@ describe("onShape", () => {
                     expectTypeOf(value).toEqualTypeOf<{ readonly foo: number }>()
                     return true
                 })
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .unwrap()
 
             match({ foo: 0 as number })
@@ -250,7 +250,7 @@ describe("onShape", () => {
                     expectTypeOf(value).toEqualTypeOf<{ readonly foo: "foo" }>()
                     return true
                 })
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .unwrap()
 
             match({ foo: "foo" as "foo" | null })
@@ -269,7 +269,7 @@ describe("onShape", () => {
                     expectTypeOf(value).toEqualTypeOf<{ readonly foo: null }>()
                     return true
                 })
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .unwrap()
 
             match({ foo: null as "foo" | null })
@@ -288,7 +288,7 @@ describe("onShape", () => {
                     expectTypeOf(value).toEqualTypeOf<{ readonly foo: "foo" }>()
                     return true
                 })
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .unwrap()
 
             match({ foo: "foo" } as { foo?: "foo" })
@@ -307,7 +307,7 @@ describe("onShape", () => {
                     expectTypeOf(value).toEqualTypeOf<{ readonly foo: undefined }>()
                     return true
                 })
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .unwrap()
 
             match({ foo: undefined } as { foo?: "foo" })
@@ -326,7 +326,7 @@ describe("onShape", () => {
                     expectTypeOf(value).toEqualTypeOf<{ readonly foo: "foo" }>()
                     return true
                 })
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .unwrap()
 
             match({ foo: "foo" } as { foo: "foo" } | { bar: "bar" })
@@ -342,86 +342,86 @@ describe("onShape", () => {
         test("duplicated patterns #1", () => {
             match({ foo: "foo" as "foo" | "bar" })
                 .onShape({ foo: "foo" }, () => true)
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .onShape({ foo: "foo" }, () => true)
         })
 
         test("duplicated patterns #2", () => {
             match({ foo: "foo" as string })
                 .onShape({ foo: "foo" }, () => true)
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .onShape({ foo: "foo" }, () => true)
         })
 
         test("duplicated patterns #3", () => {
             match({ foo: 0 as 0 | 1 })
                 .onShape({ foo: 0 }, () => true)
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .onShape({ foo: 0 }, () => true)
         })
 
         test("duplicated patterns #4", () => {
             match({ foo: 0 as number })
                 .onShape({ foo: 0 }, () => true)
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .onShape({ foo: 0 }, () => true)
         })
 
         test("duplicated patterns #5", () => {
             match({ foo: true })
                 .onShape({ foo: true }, () => true)
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .onShape({ foo: true }, () => true)
         })
 
         test("duplicated patterns #6", () => {
             match({ foo: true as boolean })
                 .onShape({ foo: true }, () => true)
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .onShape({ foo: true }, () => true)
         })
 
         test("duplicated patterns #7", () => {
             match({ foo: null as string | null })
                 .onShape({ foo: null }, () => true)
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .onShape({ foo: null }, () => true)
         })
 
         test("duplicated patterns #8", () => {
             match({ foo: undefined } as { foo?: string })
                 .onShape({ foo: undefined }, () => true)
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .onShape({ foo: undefined }, () => true)
         })
 
         test("invalid patterns #1", () => {
             match({ foo: true })
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .onShape({ bar: true }, () => true)
         })
 
         test("invalid patterns #2", () => {
             match({ foo: true })
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .onShape({ bar: true, baz: true }, () => true)
         })
 
         test("invalid patterns #3", () => {
             match({ foo: ["foo"] })
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .onShape({ foo: ["foo"] }, () => true)
         })
 
         test("invalid patterns #4", () => {
             match({ foo: true })
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .onShape({ foo: undefined }, () => true)
         })
 
         test("invalid patterns #5", () => {
             match({ foo: true })
-            // @ts-expect-error test case.
+                // @ts-expect-error test case.
                 .onShape({}, () => true)
         })
     })

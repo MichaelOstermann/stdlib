@@ -7,8 +7,8 @@ function run(code: string): string | undefined {
 
 function dedent(code: string): string {
     const lines = code.split("\n").filter((line, i, lines) => line.trim() || (i > 0 && i < lines.length - 1))
-    const indent = Math.min(...lines.filter(line => line.trim()).map(line => line.match(/^ */)![0].length))
-    return lines.map(line => line.slice(indent)).join("\n")
+    const indent = Math.min(...lines.filter((line) => line.trim()).map((line) => line.match(/^ */)![0].length))
+    return lines.map((line) => line.slice(indent)).join("\n")
 }
 
 describe("transform", () => {

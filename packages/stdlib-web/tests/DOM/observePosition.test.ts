@@ -8,7 +8,7 @@ describe("DOM.observePosition", () => {
     it("should observe the element until it is stopped", () => {
         const a = fakeElement({ height: 10, left: 5, top: 6, width: 20 })
         const lefts: number[] = []
-        const stop = observePosition(a.element, rect => lefts.push(rect.left))
+        const stop = observePosition(a.element, (rect) => lefts.push(rect.left))
         expect([dom.resizing.has(a.element), dom.intersecting.has(a.element)]).toEqual([true, true])
 
         a.rect.left = 50
@@ -22,7 +22,7 @@ describe("DOM.observePosition", () => {
     it("should only report a rect that changed in whole pixels", () => {
         const a = fakeElement({ height: 10, left: 5, top: 6, width: 20 })
         const lefts: number[] = []
-        observePosition(a.element, rect => lefts.push(rect.left))
+        observePosition(a.element, (rect) => lefts.push(rect.left))
         resize(a)
         a.rect.left = 5.3
         resize(a)

@@ -55,7 +55,7 @@ let nextId = 0
  */
 export function Dialogs(): ReactNode {
     const entries = useReactive($entries)
-    return entries.map(entry => <DialogEntry entry={entry} key={entry.id} />)
+    return entries.map((entry) => <DialogEntry entry={entry} key={entry.id} />)
 }
 
 /**
@@ -89,7 +89,7 @@ function open<T, R>(
 ): Promise<R | undefined> {
     return new Promise((resolve) => {
         const entry: Entry = { Component, id: nextId++, meta, options, resolve: resolve as (value: unknown) => void }
-        $entries(entries => [...entries, entry])
+        $entries((entries) => [...entries, entry])
     })
 }
 
@@ -132,7 +132,7 @@ function DialogEntry({ entry }: { entry: Entry }): ReactNode {
     // Resolves too, which does nothing after `done` or `closing`. A dialog closed before `opening` never reaches `closing`, and this call resolves it.
     const remove = () => {
         resolve(undefined)
-        $entries(entries => entries.filter(other => other !== entry))
+        $entries((entries) => entries.filter((other) => other !== entry))
     }
 
     // Removed once the closing transition ends and `mounted` turns `false`.

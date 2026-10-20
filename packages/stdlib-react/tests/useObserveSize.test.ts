@@ -11,7 +11,7 @@ describe("useObserveSize", () => {
         Object.defineProperty(element, "offsetWidth", { value: 30 })
         const heights: number[] = []
         render(() => {
-            useObserveSize(element, size => heights.push(size.height))
+            useObserveSize(element, (size) => heights.push(size.height))
             return null
         })
         expect(heights).toEqual([20])

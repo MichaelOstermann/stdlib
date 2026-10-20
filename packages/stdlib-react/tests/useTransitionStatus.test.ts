@@ -58,7 +58,7 @@ async function sleep(ms: number): Promise<void> {
 }
 
 function set(open: boolean): void {
-    act(() => void transition.$open(open))
+    act(() => transition.$open(open))
 }
 
 describe("useTransitionStatus", () => {

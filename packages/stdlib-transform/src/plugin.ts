@@ -44,8 +44,8 @@ export function stdlib({ debug, enforce, exclude = [], include = modules }: Stdl
             filter: { id },
             handler(code, path) {
                 // Bundlers that do not know hook filters call the handler for every file.
-                if (id.exclude.some(pattern => pattern.test(path))) return
-                if (!id.include.some(pattern => pattern.test(path))) return
+                if (id.exclude.some((pattern) => pattern.test(path))) return
+                if (!id.include.some((pattern) => pattern.test(path))) return
                 return transform(code, path, { debug: debug instanceof RegExp ? debug.test(path) : debug })
             },
         },
@@ -84,7 +84,7 @@ export function stdlibBun({ debug, exclude = [], include = modules }: Omit<Stdli
             for (const filter of [include].flat()) {
                 build.onLoad({ filter }, async ({ loader, path }) => {
                     const code = await readFile(path, "utf8")
-                    if (excluded.some(pattern => pattern.test(path))) return { contents: code, loader }
+                    if (excluded.some((pattern) => pattern.test(path))) return { contents: code, loader }
                     const result = transform(code, path, { debug: debug instanceof RegExp ? debug.test(path) : debug })
                     return { contents: result?.code ?? code, loader }
                 })

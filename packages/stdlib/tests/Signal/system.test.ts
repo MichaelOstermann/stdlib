@@ -445,7 +445,7 @@ describe("effect()", () => {
         const a = signal(0)
         const spy = vi.fn(() => {
             if (a() === 0) {
-                a(v => v + 1)
+                a((v) => v + 1)
             }
         })
         effect(spy)
@@ -567,9 +567,9 @@ describe("effect()", () => {
             return undefined
         })
         expect(spy).not.toHaveBeenCalled()
-        expect(() => a(v => v + 1)).toThrow("hello")
+        expect(() => a((v) => v + 1)).toThrow("hello")
         expect(spy).not.toHaveBeenCalled()
-        a(v => v + 1)
+        a((v) => v + 1)
         expect(spy).not.toHaveBeenCalled()
     })
 
@@ -607,8 +607,8 @@ describe("effect()", () => {
         const a = signal(0)
         let i = 0
 
-        const fn = () =>
-            effect(() => {
+        const fn = () => {
+            return effect(() => {
                 // Prevent test suite from spinning if limit is not hit
                 if (i++ > 200) {
                     throw new Error("test failed")
@@ -616,6 +616,7 @@ describe("effect()", () => {
                 a()
                 a(Number.NaN)
             })
+        }
 
         expect(fn).toThrow(/Cycle detected/)
     })
@@ -630,14 +631,15 @@ describe("effect()", () => {
             return Number.NaN
         })
 
-        const fn = () =>
-            effect(() => {
+        const fn = () => {
+            return effect(() => {
                 // Prevent test suite from spinning if limit is not hit
                 if (i++ > 200) {
                     throw new Error("test failed")
                 }
                 c()
             })
+        }
 
         expect(fn).toThrow(/Cycle detected/)
     })
@@ -1132,11 +1134,11 @@ describe("memo()", () => {
                 return
             }
             const s = signal(0)
-            const ref = new WeakRef(memo(() => s()));
+            const ref = new WeakRef(memo(() => s()))
 
-            (gc as () => void)()
-            await new Promise(resolve => setTimeout(resolve, 0));
-            (gc as () => void)()
+            ;(gc as () => void)()
+            await new Promise((resolve) => setTimeout(resolve, 0))
+            ;(gc as () => void)()
             expect(ref.deref()).toBeUndefined()
         })
 
@@ -1147,8 +1149,8 @@ describe("memo()", () => {
             const s = signal(0)
 
             let ref: WeakRef<any>
-            let dispose: () => void;
-            (function () {
+            let dispose: () => void
+            ;(function () {
                 const c = memo(() => s())
                 ref = new WeakRef(c)
                 dispose = effect(() => {
@@ -1156,10 +1158,10 @@ describe("memo()", () => {
                 })
             })()
 
-            dispose();
-            (gc as () => void)()
-            await new Promise(resolve => setTimeout(resolve, 0));
-            (gc as () => void)()
+            dispose()
+            ;(gc as () => void)()
+            await new Promise((resolve) => setTimeout(resolve, 0))
+            ;(gc as () => void)()
             expect(ref.deref()).toBeUndefined()
         })
     })
@@ -1550,17 +1552,16 @@ describe("batch/transaction", () => {
     })
 
     it("should throw errors thrown from the callback", () => {
-        expect(() =>
-            batch(() => {
+        expect(() => {
+            return batch(() => {
                 throw new Error("hello")
-            }),
-        ).toThrow("hello")
+            })
+        }).toThrow("hello")
     })
 
     it("should throw non-errors thrown from the callback", () => {
         try {
             batch(() => {
-                // eslint-disable-next-line no-throw-literal
                 throw undefined
             })
             expect.unreachable()
@@ -1600,11 +1601,11 @@ describe("batch/transaction", () => {
 
         batch(() => {
             batch(() => {
-                a(v => `${v} inner`)
-                b(v => `${v} inner`)
+                a((v) => `${v} inner`)
+                b((v) => `${v} inner`)
             })
-            a(v => `${v} outer`)
-            b(v => `${v} outer`)
+            a((v) => `${v} outer`)
+            b((v) => `${v} outer`)
         })
 
         // If the inner batch() would have flushed the update
@@ -1736,13 +1737,13 @@ describe("batch/transaction", () => {
         spy1.mockClear()
         spy2.mockClear()
 
-        expect(() =>
-            batch(() => {
-                a(v => v + 1)
-                b(v => v + 1)
+        expect(() => {
+            return batch(() => {
+                a((v) => v + 1)
+                b((v) => v + 1)
                 throw new Error("hello")
-            }),
-        ).toThrow("hello")
+            })
+        }).toThrow("hello")
 
         expect(spy1).toHaveBeenCalledTimes(1)
         expect(spy2).toHaveBeenCalledTimes(1)
@@ -1776,11 +1777,11 @@ describe("batch/transaction", () => {
         spy1.mockClear()
         spy2.mockClear()
 
-        expect(() =>
-            batch(() => {
-                a(v => v + 1)
-            }),
-        ).toThrow("hello")
+        expect(() => {
+            return batch(() => {
+                a((v) => v + 1)
+            })
+        }).toThrow("hello")
 
         expect(spy1).toHaveBeenCalledTimes(1)
         expect(spy2).toHaveBeenCalledTimes(1)
@@ -1817,11 +1818,11 @@ describe("untracked", () => {
         const s = signal(1)
         const spy = vi.fn(() => s())
 
-        untrack(() =>
-            effect(() => {
+        untrack(() => {
+            return effect(() => {
                 untrack(spy)
-            }),
-        )
+            })
+        })
         expect(spy).toHaveBeenCalledTimes(1)
 
         s(2)
@@ -1835,7 +1836,7 @@ describe("untracked", () => {
         const dispose = effect(() => {
             a()
             untrack(() => {
-                aChangedTime(v => v + 1)
+                aChangedTime((v) => v + 1)
             })
         })
 

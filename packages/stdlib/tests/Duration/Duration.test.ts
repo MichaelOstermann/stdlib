@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, spyOn } from "bun:test"
 import { Duration } from "../../src/Duration/index"
 
 describe("Duration", () => {
-    afterEach(() => void spyOn(Math, "random").mockRestore())
+    afterEach(() => spyOn(Math, "random").mockRestore())
 
     it("should have units in milliseconds", () => {
         expect(Duration.SECOND).toBe(1000)

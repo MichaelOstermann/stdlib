@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test"
 import { throttle } from "../../src/Function/throttle"
 
-const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 
 describe("Function.throttle", () => {
     it("should call at most once per wait with the last arguments", async () => {
@@ -61,7 +61,7 @@ describe("Function.throttle", () => {
         const releases: (() => void)[] = []
         const fn = throttle(async (n: number) => {
             calls.push(n)
-            await new Promise<void>(resolve => releases.push(resolve))
+            await new Promise<void>((resolve) => releases.push(resolve))
         }, { wait: 30 })
 
         fn(1)
@@ -89,7 +89,7 @@ describe("Function.throttle", () => {
         const releases: (() => void)[] = []
         const fn = throttle(async (n: number) => {
             calls.push(n)
-            await new Promise<void>(resolve => releases.push(resolve))
+            await new Promise<void>((resolve) => releases.push(resolve))
         }, { wait: 30 })
 
         fn(1)

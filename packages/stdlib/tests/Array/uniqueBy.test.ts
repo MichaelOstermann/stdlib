@@ -8,24 +8,24 @@ describe("Array.uniqueBy", () => {
         const c = { id: 1, title: "c" }
         const d = { id: 3, title: "d" }
         const e = { id: 2, title: "e" }
-        expect(uniqueBy([a, b, c, d, e], task => task.id)).toEqual([a, b, d])
+        expect(uniqueBy([a, b, c, d, e], (task) => task.id)).toEqual([a, b, d])
     })
 
     it("should return the same array when there are no duplicates", () => {
         const target = [1, 2, 3]
-        expect(uniqueBy(target, value => value)).toBe(target)
-        expect(uniqueBy([], value => value)).toEqual([])
+        expect(uniqueBy(target, (value) => value)).toBe(target)
+        expect(uniqueBy([], (value) => value)).toEqual([])
     })
 
     it("should not change what it was given", () => {
         const target = ["a", "A", "b"]
-        expect(uniqueBy(target, text => text.toLowerCase())).toEqual(["a", "b"])
+        expect(uniqueBy(target, (text) => text.toLowerCase())).toEqual(["a", "b"])
         expect(target).toEqual(["a", "A", "b"])
     })
 
     it("should change what it was given when asked to", () => {
         const target = ["a", "A", "b", "B", "c"]
-        expect(uniqueBy(target, text => text.toLowerCase(), { mut: true })).toBe(target)
+        expect(uniqueBy(target, (text) => text.toLowerCase(), { mut: true })).toBe(target)
         expect(target).toEqual(["a", "b", "c"])
     })
 

@@ -218,7 +218,6 @@ export declare class RawSignal<T = any> {
 }
 
 // @ts-expect-error ignore
-// eslint-disable-next-line @typescript-eslint/no-redeclare
 export function RawSignal(this: RawSignal, value?: unknown) {
     this.node = undefined
     this.targets = undefined
@@ -266,7 +265,7 @@ RawSignal.prototype.unsubscribe = function (node: ReactiveNode) {
     }
 }
 
-RawSignal.prototype.get = function<T>(this: RawSignal<T>): T {
+RawSignal.prototype.get = function<T> (this: RawSignal<T>): T {
     const node = addDependency(this)
     if (node !== undefined) {
         node.version = this.version
@@ -274,7 +273,7 @@ RawSignal.prototype.get = function<T>(this: RawSignal<T>): T {
     return this.value
 }
 
-RawSignal.prototype.set = function<T>(this: RawSignal<T>, value: T): void {
+RawSignal.prototype.set = function<T> (this: RawSignal<T>, value: T): void {
     if (batchIteration > 100) {
         throw new Error("Cycle detected")
     }
@@ -311,7 +310,6 @@ export declare class RawMemo<T = any> extends RawSignal<T> {
     notify(): void
 }
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
 export function RawMemo(this: RawMemo, fn: () => unknown) {
     RawSignal.call(this, undefined)
 
@@ -423,7 +421,7 @@ RawMemo.prototype.notify = function () {
     }
 }
 
-RawMemo.prototype.get = function<T>(this: RawMemo<T>): T {
+RawMemo.prototype.get = function<T> (this: RawMemo<T>): T {
     if (this.flags & RUNNING) {
         throw new Error("Cycle detected")
     }
@@ -458,7 +456,6 @@ export declare class RawEffect {
 }
 
 // @ts-expect-error ignore
-// eslint-disable-next-line @typescript-eslint/no-redeclare
 export function RawEffect(this: RawEffect, fn: EffectFn) {
     this.cleanup = undefined
     this.fn = fn

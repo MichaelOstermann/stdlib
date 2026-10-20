@@ -59,7 +59,7 @@ describe("useReactive", () => {
         it("should only render again when a function returns something else", () => {
             const $list = Signal([{ id: 1, name: "a" }, { id: 2, name: "b" }])
             const renders = vi.fn()
-            const find = (): { id: number, name: string } | undefined => $list().find(item => item.id === 1)
+            const find = (): { id: number, name: string } | undefined => $list().find((item) => item.id === 1)
 
             const container = render(() => {
                 renders()
@@ -67,11 +67,11 @@ describe("useReactive", () => {
             })
             expect(container.textContent).toBe("a")
 
-            act(() => $list(list => list.map(item => item.id === 2 ? { ...item, name: "c" } : item)))
-            act(() => $list(list => [...list, { id: 3, name: "d" }]))
+            act(() => $list((list) => list.map((item) => item.id === 2 ? { ...item, name: "c" } : item)))
+            act(() => $list((list) => [...list, { id: 3, name: "d" }]))
             expect(renders).toHaveBeenCalledTimes(1)
 
-            act(() => $list(list => list.map(item => item.id === 1 ? { ...item, name: "e" } : item)))
+            act(() => $list((list) => list.map((item) => item.id === 1 ? { ...item, name: "e" } : item)))
             expect(renders).toHaveBeenCalledTimes(2)
             expect(container.textContent).toBe("e")
         })
@@ -82,7 +82,7 @@ describe("useReactive", () => {
 
             const container = render(() => {
                 // Runs before React subscribes, which happens in a passive effect.
-                useLayoutEffect(() => void $a(2), [])
+                useLayoutEffect(() => $a(2), [])
                 return String(useReactive(read))
             })
             expect(container.textContent).toBe("20")
@@ -117,13 +117,13 @@ describe("useReactive", () => {
 
     it("should know what it returns", () => {
         // Never called, hooks only work while rendering.
-        const types = (): void => {
+        const useTypes = (): void => {
             expectTypeOf(useReactive(Signal(1))).toEqualTypeOf<number>()
             expectTypeOf(useReactive(Memo(() => "a"))).toEqualTypeOf<string>()
             expectTypeOf(useReactive(() => true)).toEqualTypeOf<boolean>()
             // @ts-expect-error not something to read
             useReactive(1)
         }
-        expect(types).toBeFunction()
+        expect(useTypes).toBeFunction()
     })
 })

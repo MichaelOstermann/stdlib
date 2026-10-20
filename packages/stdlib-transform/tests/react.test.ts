@@ -3,8 +3,8 @@ import { stdlib, transform } from "../src"
 
 function expectSnapshot(code: string): void {
     const lines = code.trimEnd().split("\n").filter((line, i) => i > 0 || line.trim())
-    const indent = Math.min(...lines.filter(line => line.trim()).map(line => line.search(/\S/)))
-    const source = lines.map(line => line.slice(indent)).join("\n")
+    const indent = Math.min(...lines.filter((line) => line.trim()).map((line) => line.search(/\S/)))
+    const source = lines.map((line) => line.slice(indent)).join("\n")
     expect(transform(source, "source.jsx")?.code ?? source).toMatchSnapshot()
 }
 

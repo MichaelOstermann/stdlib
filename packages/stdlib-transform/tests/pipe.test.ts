@@ -1,4 +1,4 @@
-/* eslint-disable no-new-func, no-template-curly-in-string -- what is replaced is run, to compare it to what it replaces */
+/* eslint-disable no-template-curly-in-string -- what is replaced is run, to compare it to what it replaces */
 import { describe, expect, it } from "bun:test"
 import { transformPipes } from "../src/pipe"
 
@@ -106,8 +106,10 @@ describe("transformPipes", () => {
     it("should return the same as the call it replaces", () => {
         const scope = {
             list: [1, 2, 3],
-            o: { n: 2, f(this: unknown) { return this === undefined ? "function" : "method" } },
             double: (n: number) => n * 2,
+            o: { n: 2, f(this: unknown) {
+                return this === undefined ? "function" : "method"
+            } },
         }
         const cases = [
             `pipe(list, xs => xs.map(x => x * 2), xs => xs.filter(x => x > 2), xs => xs.length)`,

@@ -8,7 +8,7 @@ describe("Signal", () => {
         expect($count()).toBe(0)
         $count(1)
         expect($count()).toBe(1)
-        $count(count => count + 1)
+        $count((count) => count + 1)
         expect($count()).toBe(2)
         expect($count.kind).toBe("Signal")
     })
@@ -35,7 +35,7 @@ describe("Signal", () => {
         const spy = vi.fn(() => void $count())
         effect(spy)
         $count(0)
-        $count(count => count)
+        $count((count) => count)
         expect(spy).toHaveBeenCalledTimes(1)
     })
 

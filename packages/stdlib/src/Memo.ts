@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-redeclare -- Memo is a type and what creates it */
 import { RawMemo } from "./internals/system"
 
 /** A value that is computed from signals and other memos: call it to read. */
@@ -64,11 +63,11 @@ function create<T>(computation: () => T, options?: MemoOptions<NoInfer<T>>): Mem
 
     const raw = new RawMemo<T>(equals
         ? () => {
-                const next = computation()
-                if (init && (prev === next || equals(prev, next))) return prev
-                init = true
-                return prev = next
-            }
+            const next = computation()
+            if (init && (prev === next || equals(prev, next))) return prev
+            init = true
+            return prev = next
+        }
         : computation)
 
     const memo = (() => raw.get()) as { kind: "Memo" } & Memo<T>
@@ -115,7 +114,7 @@ function indexed<T, K, V>(target: () => readonly T[], by: (value: NoInfer<T>) =>
         return memo
     }
 
-    index.get = key => index.for(key)()
+    index.get = (key) => index.for(key)()
 
     return index
 }

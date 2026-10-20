@@ -31,13 +31,13 @@ export function matcher(values: Iterable<unknown>): ((value: unknown) => boolean
     if (Array.isArray(values) && values.length <= 4) {
         if (!values.length) return
         // eslint-disable-next-line no-self-compare
-        return value => value === value && values.includes(value)
+        return (value) => value === value && values.includes(value)
     }
 
     const set = new Set(values)
     set.delete(Number.NaN)
     if (!set.size) return
-    return value => set.has(value)
+    return (value) => set.has(value)
 }
 
 export function setAt(target: unknown[], index: number, value: unknown, options: Mut | undefined): unknown[] {
@@ -99,7 +99,7 @@ export function sortByKeys<K>(target: unknown[], keys: K[], compare: (a: K, b: K
     const order = keys.map((_, index) => index).sort((a, b) => direction * compare(keys[a]!, keys[b]!) || a - b)
     if (order.every((from, to) => from === to)) return target
 
-    const result = order.map(index => target[index])
+    const result = order.map((index) => target[index])
     if (!options?.mut) return result
     for (let i = 0; i < result.length; i++) target[i] = result[i]
     return target

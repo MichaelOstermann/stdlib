@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test"
 import { debounce } from "../../src/Function/debounce"
 
-const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 
 describe("Function.debounce", () => {
     it("should call with the last arguments once calls stop", async () => {
@@ -83,7 +83,7 @@ describe("Function.debounce", () => {
         const releases: (() => void)[] = []
         const fn = debounce(async (n: number) => {
             calls.push(n)
-            await new Promise<void>(resolve => releases.push(resolve))
+            await new Promise<void>((resolve) => releases.push(resolve))
         }, { wait: 30 })
 
         fn(1)
@@ -111,7 +111,7 @@ describe("Function.debounce", () => {
         const releases: (() => void)[] = []
         const fn = debounce(async (n: number) => {
             calls.push(n)
-            await new Promise<void>(resolve => releases.push(resolve))
+            await new Promise<void>((resolve) => releases.push(resolve))
         }, { wait: 30 })
 
         fn(1)

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-redeclare -- Tooltip is a type and the component that renders it */
 import type { ComponentProps, ReactNode } from "react"
 import type { AnchoredModal } from "./internals/useAnchoredModal"
 import { createPortal } from "react-dom"

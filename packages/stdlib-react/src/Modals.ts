@@ -107,7 +107,7 @@ function dismiss(modal: Modal): void {
 
 /** The modal that clicks and Esc go to: the last one that opened, tooltips aside. */
 function top(): Modal | undefined {
-    return modals.findLast(modal => modal.kind !== "tooltip")
+    return modals.findLast((modal) => modal.kind !== "tooltip")
 }
 
 function listen(): () => void {

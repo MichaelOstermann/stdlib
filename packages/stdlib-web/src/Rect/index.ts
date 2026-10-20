@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-redeclare -- Rect is a type and the functions that take it */
 import { area } from "./area"
 import { bottom } from "./bottom"
 import { centerX } from "./centerX"

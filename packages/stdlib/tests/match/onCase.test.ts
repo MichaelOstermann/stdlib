@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars */
 import { describe, expect, expectTypeOf, test } from "bun:test"
 import { match } from "../../src/match"
 

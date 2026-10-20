@@ -46,7 +46,7 @@ export function aligned(every: number, fn: (now: number) => void): () => void {
     if (!clock) clocks.set(every, clock = start(every))
 
     // A function of its own, so the same `fn` twice is two listeners: the emitter keeps them in a `Set`.
-    const remove = clock.onTick(now => fn(now))
+    const remove = clock.onTick((now) => fn(now))
     let isStopped = false
 
     return () => {

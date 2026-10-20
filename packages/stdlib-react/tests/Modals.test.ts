@@ -79,8 +79,8 @@ describe("Modals", () => {
 
     it("should send onOpen and onClose with the modal", () => {
         const events: string[] = []
-        disposers.push(onOpen(modal => events.push(`open ${modal.name}`)))
-        disposers.push(onClose(modal => events.push(`close ${modal.name}`)))
+        disposers.push(onOpen((modal) => events.push(`open ${modal.name}`)))
+        disposers.push(onClose((modal) => events.push(`close ${modal.name}`)))
         const a = modal("dialog", "a")
         a.open()
         close(a)

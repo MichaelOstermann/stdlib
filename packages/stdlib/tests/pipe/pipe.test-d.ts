@@ -10,8 +10,8 @@ describe("pipe", () => {
     it("should handle type transformations", () => {
         expectTypeOf(pipe(
             0,
-            num => String(num),
-            str => [str],
+            (num) => String(num),
+            (str) => [str],
         )).toEqualTypeOf<string[]>()
     })
 })

@@ -18,21 +18,21 @@ describe("ResultAsync", () => {
         }
         expect(await ResultAsync.try(async () => 1)).toEqual(Ok(1))
         expect((await ResultAsync.try(fail)).value).toBe(error)
-        expect(await ResultAsync.try(async () => fail(), e => (e as Error).message)).toEqual(Err("a"))
+        expect(await ResultAsync.try(async () => fail(), (e) => (e as Error).message)).toEqual(Err("a"))
         expect(await ResultAsync.promise(Promise.resolve(1))).toEqual(Ok(1))
-        expect(await ResultAsync.promise(Promise.reject(error), e => (e as Error).message)).toEqual(Err("a"))
+        expect(await ResultAsync.promise(Promise.reject(error), (e) => (e as Error).message)).toEqual(Err("a"))
     })
 
     it("should map values and errors", async () => {
-        expect(await parse("1").map(async value => value + 1)).toEqual(Ok(2))
-        expect(await parse("a").map(value => value + 1)).toEqual(Err("nan"))
-        expect(await parse("1").mapErr(error => error.length)).toEqual(Ok(1))
-        expect(await parse("a").mapErr(async error => error.length)).toEqual(Err(3))
+        expect(await parse("1").map(async (value) => value + 1)).toEqual(Ok(2))
+        expect(await parse("a").map((value) => value + 1)).toEqual(Err("nan"))
+        expect(await parse("1").mapErr((error) => error.length)).toEqual(Ok(1))
+        expect(await parse("a").mapErr(async (error) => error.length)).toEqual(Err(3))
     })
 
     it("should chain results", async () => {
-        expect(await parse("1").andThen(value => Ok(value + 1))).toEqual(Ok(2))
-        expect(await parse("1").andThen(value => parse(`${value}a`))).toEqual(Err("nan"))
+        expect(await parse("1").andThen((value) => Ok(value + 1))).toEqual(Ok(2))
+        expect(await parse("1").andThen((value) => parse(`${value}a`))).toEqual(Err("nan"))
         expect(await parse("a").andThen(() => Ok(0))).toEqual(Err("nan"))
         expect(await parse("a").orElse(() => Ok(0))).toEqual(Ok(0))
         expect(await parse("1").orElse(async () => Ok(0))).toEqual(Ok(1))
@@ -40,14 +40,14 @@ describe("ResultAsync", () => {
 
     it("should inspect without changing anything", async () => {
         const seen: unknown[] = []
-        expect(await parse("1").inspect(value => void seen.push(value)).inspectErr(error => void seen.push(error))).toEqual(Ok(1))
-        expect(await parse("a").inspect(value => void seen.push(value)).inspectErr(async error => void seen.push(error))).toEqual(Err("nan"))
+        expect(await parse("1").inspect((value) => void seen.push(value)).inspectErr((error) => void seen.push(error))).toEqual(Ok(1))
+        expect(await parse("a").inspect((value) => void seen.push(value)).inspectErr(async (error) => void seen.push(error))).toEqual(Err("nan"))
         expect(seen).toEqual([1, "nan"])
     })
 
     it("should match", async () => {
-        expect(await parse("1").match({ Err: error => error, Ok: async value => value })).toBe(1)
-        expect(await parse("a").match({ Err: error => error, Ok: value => value })).toBe("nan")
+        expect(await parse("1").match({ Err: (error) => error, Ok: async (value) => value })).toBe(1)
+        expect(await parse("a").match({ Err: (error) => error, Ok: (value) => value })).toBe("nan")
     })
 
     it("should unwrap", async () => {
@@ -55,9 +55,9 @@ describe("ResultAsync", () => {
         expect(parse("a").unwrap()).rejects.toBe("nan")
         expect(await parse("1").unwrapOr(0)).toBe(1)
         expect(await parse("a").unwrapOr(0)).toBe(0)
-        expect(await parse("1").unwrapOrElse(error => error.length)).toBe(1)
-        expect(await parse("a").unwrapOrElse(async error => error.length)).toBe(3)
-        expectTypeOf(parse("a").unwrapOrElse(async error => error)).toEqualTypeOf<Promise<number | "nan">>()
+        expect(await parse("1").unwrapOrElse((error) => error.length)).toBe(1)
+        expect(await parse("a").unwrapOrElse(async (error) => error.length)).toBe(3)
+        expectTypeOf(parse("a").unwrapOrElse(async (error) => error)).toEqualTypeOf<Promise<number | "nan">>()
     })
 
     describe("all", () => {
@@ -69,7 +69,7 @@ describe("ResultAsync", () => {
         })
 
         it("should return the first one that failed, by where it is", async () => {
-            const slow = new ResultAsync<number, "slow">(new Promise(resolve => setTimeout(resolve, 10, Err("slow"))))
+            const slow = new ResultAsync<number, "slow">(new Promise((resolve) => setTimeout(resolve, 10, Err("slow"))))
             const result = await ResultAsync.all([OkAsync(1), slow, ErrAsync("fast" as const)])
             const typed: Result<[number, number, never], "fast" | "slow"> = result
             expect<unknown>(typed).toEqual(Err("slow"))

@@ -5,7 +5,10 @@
 //! The exceptions are `=` and commas, which end the line before.
 //!
 //! A ternary follows the first break. With a break before its `?` or right after it, `?` and `:` each start
-//! a line; without one, the whole ternary is joined.
+//! a line. With the first break before its `:`, it is a list of cases and keeps that break: `a ? b`, then
+//! `: c ? d` and `: e` on lines of their own. Without a break, the whole ternary is joined.
+
+use std::collections::HashSet;
 
 use oxc_ast::ast::*;
 use oxc_ast_visit::Visit;
@@ -19,7 +22,7 @@ use crate::source::Source;
 use crate::source::Token;
 
 pub fn run(source: &Source, edits: &mut Edits) {
-    let mut operators = Operators { text: source.text, tokens: &source.tokens, edits };
+    let mut operators = Operators { text: source.text, tokens: &source.tokens, edits, cases: HashSet::new() };
     operators.commas();
     operators.visit_program(source.program);
 }
@@ -28,6 +31,8 @@ struct Operators<'s> {
     text: &'s str,
     tokens: &'s [Token],
     edits: &'s mut Edits,
+    /// The alternates of ternaries that are a list of cases, which continue the list.
+    cases: HashSet<Span>,
 }
 
 impl Operators<'_> {
@@ -81,7 +86,8 @@ impl Operators<'_> {
         self.token_before(value.start as usize).filter(|token| token.kind == Kind::Eq)
     }
 
-    fn ternary(&mut self, test: Span, consequent: Span) {
+    /// `span` is the whole ternary, `chained` whether its alternate is a ternary as well.
+    fn ternary(&mut self, span: Span, test: Span, consequent: Span, alternate_span: Span, chained: bool) {
         let Some(question) = self.token_at(test.end).filter(|token| token.kind == Kind::Question) else { return };
         let Some(colon) = self.token_at(consequent.end).filter(|token| token.kind == Kind::Colon) else { return };
         let Some(alternate) = self.token_at(colon.end as u32) else { return };
@@ -92,11 +98,17 @@ impl Operators<'_> {
         }
 
         let spread = self.broken(gaps[0].0, gaps[0].1) || self.broken(gaps[1].0, gaps[1].1);
+        // Without a break around the `?`, one before the `:` of a chain of ternaries makes a list of cases, one
+        // per line: `a ? b`, `: c ? d`, `: e`. A single ternary is joined.
+        let cases = !spread && self.broken(gaps[2].0, gaps[2].1) && (chained || self.cases.contains(&span));
+        if cases {
+            self.cases.insert(alternate_span);
+        }
         for (index, &(start, end)) in gaps.iter().enumerate() {
             let before_operator = index % 2 == 0;
             match (spread && before_operator, self.broken(start, end)) {
                 (true, false) => self.edits.replace(start, end, "\n"),
-                (false, true) => self.edits.replace(start, end, " "),
+                (false, true) if !(cases && index == 2) => self.edits.replace(start, end, " "),
                 _ => {}
             }
         }
@@ -142,12 +154,12 @@ impl<'a> Visit<'a> for Operators<'_> {
     }
 
     fn visit_conditional_expression(&mut self, it: &ConditionalExpression<'a>) {
-        self.ternary(it.test.span(), it.consequent.span());
+        self.ternary(it.span, it.test.span(), it.consequent.span(), it.alternate.span(), matches!(it.alternate.without_parentheses(), Expression::ConditionalExpression(_)));
         walk::walk_conditional_expression(self, it);
     }
 
     fn visit_ts_conditional_type(&mut self, it: &TSConditionalType<'a>) {
-        self.ternary(it.extends_type.span(), it.true_type.span());
+        self.ternary(it.span, it.extends_type.span(), it.true_type.span(), it.false_type.span(), matches!(it.false_type, TSType::TSConditionalType(_)));
         walk::walk_ts_conditional_type(self, it);
     }
 
@@ -251,6 +263,8 @@ mod tests {
         assert_eq!(format("const a = b ? c\n    : d\n"), "const a = b ? c : d\n");
         assert_eq!(format("type A = B extends C ?\n    D :\n    E\n"), "type A = B extends C\n    ? D\n    : E\n");
         assert_eq!(format("const a = b\n    ? c\n    : d ? e : f\n"), "const a = b\n    ? c\n    : d ? e : f\n");
+        unchanged("const a = b ? c\n    : d ? e\n    : f\n");
+        unchanged("type A = B extends C ? D\n    : E extends F ? G\n    : H extends I ? J\n    : K\n");
         unchanged("const a = b ? c : d\n");
         unchanged("const a = b ? {\n    c,\n} : d\n");
         unchanged("const a = b // note\n    ? c\n    : d\n");

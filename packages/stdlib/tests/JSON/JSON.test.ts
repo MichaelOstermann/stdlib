@@ -33,7 +33,6 @@ describe("JSON.tryStringify", () => {
         circular["self"] = circular
         const thrower = {
             toJSON() {
-                // eslint-disable-next-line no-throw-literal
                 throw "no"
             },
         }

@@ -85,7 +85,7 @@ export function transformPipes(code: string, filePath: string, from: string): Pi
             if (pipe ? declaration?.type !== "Import" : declaration) return
 
             const [first, ...steps] = node.arguments
-            if (!first || node.arguments.some(argument => argument.type === "SpreadElement")) return
+            if (!first || node.arguments.some((argument) => argument.type === "SpreadElement")) return
             if (!steps.every(isStep)) return
 
             let value: Value = {

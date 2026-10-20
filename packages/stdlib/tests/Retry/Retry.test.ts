@@ -38,11 +38,11 @@ describe("Retry", () => {
 
     it("should wait longer every time, and as long as asked for", async () => {
         const delays: number[] = []
-        await Retry.run(attempt => attempt === 2 ? Retry.again("busy", 50) : attempt < 5 ? Retry.again("busy") : Ok(), {
+        await Retry.run((attempt) => attempt === 2 ? Retry.again("busy", 50) : attempt < 5 ? Retry.again("busy") : Ok(), {
             jitter: 0,
             maxDelay: 5000,
             minDelay: 1000,
-            sleep: async delay => void delays.push(delay),
+            sleep: async (delay) => void delays.push(delay),
         })
         expect(delays).toEqual([1000, 2000, 50, 5000, 5000])
     })
@@ -86,7 +86,7 @@ describe("Retry", () => {
 
     it("should wait with a timer by default", async () => {
         const start = performance.now()
-        const result = await Retry.run(attempt => attempt ? Ok(attempt) : Retry.again("busy"), { jitter: 0, minDelay: 20 })
+        const result = await Retry.run((attempt) => attempt ? Ok(attempt) : Retry.again("busy"), { jitter: 0, minDelay: 20 })
         expect(result).toEqual(Ok(1))
         expect(performance.now() - start).toBeGreaterThanOrEqual(15)
     })

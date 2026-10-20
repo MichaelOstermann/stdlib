@@ -147,8 +147,8 @@ export function useVirtualizer(scrollElement: HTMLElement | null, options: UseVi
 /** The items in view, and `overscan` more on both sides. */
 function visibleRange({ count, ends, overscan, starts }: Layout, view: { height: number, top: number }): Range {
     const bottom = view.top + view.height
-    const start = Math.max(0, firstIndex(count, i => ends[i]! > view.top) - overscan)
-    const end = Math.min(count, firstIndex(count, i => starts[i]! >= bottom) + overscan)
+    const start = Math.max(0, firstIndex(count, (i) => ends[i]! > view.top) - overscan)
+    const end = Math.min(count, firstIndex(count, (i) => starts[i]! >= bottom) + overscan)
     return { end, start }
 }
 

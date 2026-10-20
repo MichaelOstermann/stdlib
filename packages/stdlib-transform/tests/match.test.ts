@@ -18,7 +18,6 @@ function compile(body: string, imports = `import { _, match } from "${from}";`):
 /** Runs a function body as it is, and compiled. */
 function run(body: string): { compiled: unknown, original: unknown, unused: string[] } {
     const { code, unused } = compile(body)
-    // eslint-disable-next-line no-new-func
     const evaluate = (source: string): unknown => new Function("match", "_", ...helpers, `"use strict";${source}`)(match, _, matches, throwUnmatched)
     return { compiled: evaluate(code), original: evaluate(body), unused }
 }

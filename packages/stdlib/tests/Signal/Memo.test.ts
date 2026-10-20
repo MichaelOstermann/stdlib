@@ -68,7 +68,7 @@ describe("indexed", () => {
 
     it("should index by key", () => {
         const items = signal<Item[]>([{ id: 1, name: "a" }, { id: 2, name: "b" }])
-        const names = indexed(items, item => [item.id, item.name])
+        const names = indexed(items, (item) => [item.id, item.name])
 
         expect(names()).toEqual(new Map([[1, "a"], [2, "b"]]))
         expect(names.get(1)).toBe("a")
@@ -79,7 +79,7 @@ describe("indexed", () => {
 
     it("should reuse the previous index when nothing changed", () => {
         const items = signal<Item[]>([{ id: 1, name: "a" }, { id: 2, name: "b" }])
-        const names = indexed(items, item => [item.id, item.name])
+        const names = indexed(items, (item) => [item.id, item.name])
         const spy = vi.fn(() => void names())
         effect(spy)
         const before = names()
@@ -96,7 +96,7 @@ describe("indexed", () => {
 
     it("should notice added and removed keys", () => {
         const items = signal<Item[]>([{ id: 1, name: "a" }])
-        const names = indexed(items, item => [item.id, item.name])
+        const names = indexed(items, (item) => [item.id, item.name])
 
         items([{ id: 1, name: "a" }, { id: 2, name: "b" }])
         expect(names().size).toBe(2)
@@ -110,7 +110,7 @@ describe("indexed", () => {
 
     it("should distinguish a missing key from an undefined value", () => {
         const items = signal<{ id: number, name?: string }[]>([{ id: 1 }])
-        const names = indexed(items, item => [item.id, item.name])
+        const names = indexed(items, (item) => [item.id, item.name])
         const before = names()
 
         items([{ id: 2 }])
@@ -121,7 +121,7 @@ describe("indexed", () => {
     it("should call equals with the previous value first", () => {
         const items = signal<Item[]>([{ id: 1, name: "a" }])
         const equals = vi.fn((before: Item, after: Item) => before.name === after.name)
-        const index = indexed(items, item => [item.id, item], { equals })
+        const index = indexed(items, (item) => [item.id, item], { equals })
         const before = index()
 
         const next = { id: 1, name: "a" }
@@ -136,7 +136,7 @@ describe("indexed", () => {
     it("should keep the values of equal entries when another entry changes", () => {
         const make = (changed: number): Item[] => Array.from({ length: 5 }, (_, id) => ({ id, name: id === changed ? "changed" : "same" }))
         const items = signal(make(-1))
-        const index = indexed(items, item => [item.id, item], { equals: (before, after) => before.name === after.name })
+        const index = indexed(items, (item) => [item.id, item], { equals: (before, after) => before.name === after.name })
         const spies = Array.from({ length: 5 }, (_, id) => {
             const entry = index.for(id)
             const spy = vi.fn(() => void entry())
@@ -149,6 +149,6 @@ describe("indexed", () => {
 
         expect(index.get(0)).toBe(before)
         expect(index.get(3)?.name).toBe("changed")
-        expect(spies.map(spy => spy.mock.calls.length)).toEqual([1, 1, 1, 2, 1])
+        expect(spies.map((spy) => spy.mock.calls.length)).toEqual([1, 1, 1, 2, 1])
     })
 })

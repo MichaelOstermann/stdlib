@@ -32,7 +32,7 @@ function scroll(top: number): void {
     act(() => element.dispatchEvent(new Event("scroll")))
 }
 
-const indices = (): number[] => virtualizer.items.map(item => item.index)
+const indices = (): number[] => virtualizer.items.map((item) => item.index)
 
 describe("useVirtualizer", () => {
     it("should render the items in view and the overscan", () => {
@@ -60,9 +60,9 @@ describe("useVirtualizer", () => {
     })
 
     it("should size each item with a function", () => {
-        mount({ count: 4, size: index => (index + 1) * 10 })
+        mount({ count: 4, size: (index) => (index + 1) * 10 })
         expect(virtualizer.height).toBe(100)
-        expect(virtualizer.items.map(item => item.start)).toEqual([0, 10, 30, 60])
+        expect(virtualizer.items.map((item) => item.start)).toEqual([0, 10, 30, 60])
     })
 
     it("should move the items from the gap down", () => {

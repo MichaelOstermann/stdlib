@@ -5,7 +5,7 @@ import { transform } from "../../stdlib-transform/src"
 function compile(code: string): string {
     const transformed = transform(code, "source.tsx")!.code
     const result = transformSync("source.tsx", transformed, { jsx: "preserve", lang: "tsx", reactCompiler: { panicThreshold: "all_errors" }, sourceType: "module" })
-    if (result.errors.length) throw new Error(result.errors.map(error => error.message).join("\n"))
+    if (result.errors.length) throw new Error(result.errors.map((error) => error.message).join("\n"))
     return result.code
 }
 

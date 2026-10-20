@@ -70,7 +70,7 @@ export function compileTag(node: Node, tag: Tag, ctx: Context): string {
         // `await` and `yield` can not be moved into a function.
         if (hasAwaitOrYield(node)) abort()
         subject = ctx.id("match")
-        wrap = result => `((${subject}) => ${result})(${src(tag.subject)})`
+        wrap = (result) => `((${subject}) => ${result})(${src(tag.subject)})`
     }
 
     const value = /^[a-z_$][\w$]*$/i.test(key) ? `${subject}.${key}` : `${subject}[${JSON.stringify(key)}]`

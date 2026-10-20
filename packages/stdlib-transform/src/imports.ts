@@ -26,7 +26,7 @@ export function transformImports(code: string, filePath: string, unused: Readonl
         const pkg = packages.get(from)
         if (!pkg) continue
         // import * as Fn from "@monstermann/stdlib"
-        if (!node.specifiers.length || node.specifiers.some(specifier => specifier.type !== "ImportSpecifier")) continue
+        if (!node.specifiers.length || node.specifiers.some((specifier) => specifier.type !== "ImportSpecifier")) continue
 
         const types: string[] = []
         const rest: string[] = []

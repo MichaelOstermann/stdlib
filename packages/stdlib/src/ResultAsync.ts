@@ -136,17 +136,17 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
 
     /** Resolves to the value when this succeeded, and rejects with the error when it failed. */
     unwrap(): Promise<T> {
-        return this.promise.then(result => result.unwrap())
+        return this.promise.then((result) => result.unwrap())
     }
 
     /** Resolves to the value when this succeeded, and to `fallback` when it failed. */
     unwrapOr<U>(fallback: U): Promise<T | U> {
-        return this.promise.then(result => result.unwrapOr(fallback))
+        return this.promise.then((result) => result.unwrapOr(fallback))
     }
 
     /** Resolves to the value when this succeeded, and to what `fn` returns for the error when it failed. */
     unwrapOrElse<U>(fn: (error: E) => U): Promise<Awaited<U> | T> {
-        return this.promise.then(result => result.unwrapOrElse(fn)) as Promise<Awaited<U> | T>
+        return this.promise.then((result) => result.unwrapOrElse(fn)) as Promise<Awaited<U> | T>
     }
 }
 

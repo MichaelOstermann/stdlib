@@ -93,9 +93,9 @@ describe("usage", () => {
 
     test("one of several kinds of objects", async () => {
         const resolve = (target: DropTarget) => match(target)
-            .onShape({ type: "TASK" }, target => `${target.id}:${target.direction}`)
-            .onShape({ type: "SECTION" }, target => target.id)
-            .onShape({ type: "PROJECT" }, async target => target.id)
+            .onShape({ type: "TASK" }, (target) => `${target.id}:${target.direction}`)
+            .onShape({ type: "SECTION" }, (target) => target.id)
+            .onShape({ type: "PROJECT" }, async (target) => target.id)
             .unwrap()
 
         expect(resolve({ direction: "ABOVE", id: "a", type: "TASK" })).toBe("a:ABOVE")
@@ -104,7 +104,7 @@ describe("usage", () => {
 
         // Awaited as a whole.
         const awaited = async (target: DropTarget) => await match(target)
-            .onShape({ type: "PROJECT" }, async target => target.id)
+            .onShape({ type: "PROJECT" }, async (target) => target.id)
             .unwrapOr(null)
 
         expect(await awaited({ id: "c", type: "PROJECT" })).toBe("c")

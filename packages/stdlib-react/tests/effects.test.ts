@@ -19,7 +19,7 @@ function mount<P extends object>(component: (props: P) => null, props: P, strict
     const element = (props: P) => strict ? createElement(StrictMode, null, createElement(component, props)) : createElement(component, props)
     act(() => root.render(element(props)))
     return {
-        rerender: props => act(() => root.render(element(props))),
+        rerender: (props) => act(() => root.render(element(props))),
         // The microtask of `useUnmountEffect` runs before `act` returns.
         unmount: async () => act(async () => root.unmount()),
     }

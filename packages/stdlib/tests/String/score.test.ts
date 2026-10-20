@@ -4,10 +4,10 @@ import { score } from "../../src/String/score"
 /** The haystacks in the order they are found in, the best one first, without the ones that are not found. */
 function rank(needle: string, haystacks: string[]): string[] {
     return haystacks
-        .map(haystack => ({ haystack, score: score(haystack, needle) }))
-        .filter(result => result.score > 0)
+        .map((haystack) => ({ haystack, score: score(haystack, needle) }))
+        .filter((result) => result.score > 0)
         .sort((a, b) => b.score - a.score)
-        .map(result => result.haystack)
+        .map((result) => result.haystack)
 }
 
 describe("String.score", () => {

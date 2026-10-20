@@ -35,7 +35,7 @@ export function dedent(target: string): string
 export function dedent(strings: TemplateStringsArray, ...values: unknown[]): string
 export function dedent(target: string | TemplateStringsArray, ...values: unknown[]): string {
     const strings = typeof target === "string" ? [target] : target
-    const chunks = strings.map(string => string.split("\n"))
+    const chunks = strings.map((string) => string.split("\n"))
 
     // Every line but the first one of a string starts a line, the very first one does as well.
     let indent = Infinity

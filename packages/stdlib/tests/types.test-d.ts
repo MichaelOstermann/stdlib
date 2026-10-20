@@ -16,8 +16,8 @@ declare const readonlySet: ReadonlySet<number>
 
 describe("types", () => {
     it("should partition by type guards", () => {
-        expectTypeOf(partition(mixed, value => typeof value === "string")).toEqualTypeOf<[string[], number[]]>()
-        expectTypeOf(partition(mixed, value => value !== 1)).toEqualTypeOf<[(number | string)[], (number | string)[]]>()
+        expectTypeOf(partition(mixed, (value) => typeof value === "string")).toEqualTypeOf<[string[], number[]]>()
+        expectTypeOf(partition(mixed, (value) => value !== 1)).toEqualTypeOf<[(number | string)[], (number | string)[]]>()
     })
 
     it("should return something mutable for something mutable", () => {

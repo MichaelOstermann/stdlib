@@ -16,14 +16,14 @@ function task<T>(log: string[], name: string, value: T): { finish: () => void, r
     }
 }
 
-const tick = (): Promise<void> => new Promise(resolve => setTimeout(resolve, 0))
+const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0))
 
 describe("Semaphore", () => {
     it("should run as many at the same time as asked for, the others in order", async () => {
         const log: string[] = []
         const semaphore = Semaphore({ concurrency: 2 })
-        const [a, b, c, d] = ["a", "b", "c", "d"].map(name => task(log, name, name)) as [ReturnType<typeof task<string>>, ReturnType<typeof task<string>>, ReturnType<typeof task<string>>, ReturnType<typeof task<string>>]
-        const results = Promise.all([a, b, c, d].map(it => semaphore.run(it.run)))
+        const [a, b, c, d] = ["a", "b", "c", "d"].map((name) => task(log, name, name)) as [ReturnType<typeof task<string>>, ReturnType<typeof task<string>>, ReturnType<typeof task<string>>, ReturnType<typeof task<string>>]
+        const results = Promise.all([a, b, c, d].map((it) => semaphore.run(it.run)))
 
         expect(log).toEqual(["start a", "start b"])
         expect(semaphore.size).toBe(4)

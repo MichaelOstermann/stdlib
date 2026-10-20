@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-redeclare -- Popover is a type and the component that renders it */
 import type { ComponentProps, ReactNode, SyntheticEvent } from "react"
 import type { AnchoredModal } from "./internals/useAnchoredModal"
 import { createPortal } from "react-dom"

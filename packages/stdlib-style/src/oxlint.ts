@@ -30,11 +30,11 @@ export default function (options: Options = {}): OxlintConfig {
         categories: { correctness: "off" },
         env: { browser: true, builtin: true, es2024: true, node: true },
         ignorePatterns: ignores(options),
-        jsPlugins: configs.flatMap(config => config.jsPlugins ?? []),
+        jsPlugins: configs.flatMap((config) => config.jsPlugins ?? []),
         options: { reportUnusedDisableDirectives: "error", typeAware: true },
-        overrides: [...configs.flatMap(config => config.overrides ?? []), ...options.overrides ?? []],
-        plugins: configs.flatMap(config => config.plugins ?? []),
-        rules: Object.assign({}, ...configs.map(config => config.rules)),
-        settings: Object.assign({}, ...configs.map(config => config.settings)),
+        overrides: [...configs.flatMap((config) => config.overrides ?? []), ...options.overrides ?? []],
+        plugins: configs.flatMap((config) => config.plugins ?? []),
+        rules: Object.assign({}, ...configs.map((config) => config.rules)),
+        settings: Object.assign({}, ...configs.map((config) => config.settings)),
     }
 }

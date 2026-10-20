@@ -9,8 +9,8 @@ describe("Emitter", () => {
     it("should call listeners with the message, in the order they were added", () => {
         const log: string[] = []
         const onMessage = Emitter<string>()
-        onMessage(message => log.push(`a ${message}`))
-        onMessage(message => log.push(`b ${message}`))
+        onMessage((message) => log.push(`a ${message}`))
+        onMessage((message) => log.push(`b ${message}`))
         onMessage("hello")
         expect(log).toEqual(["a hello", "b hello"])
     })
@@ -64,7 +64,7 @@ describe("Emitter", () => {
     it("should send messages that are nothing, or objects", () => {
         const log: unknown[] = []
         const onValue = Emitter<{ id: number } | null | undefined>()
-        onValue(value => log.push(value))
+        onValue((value) => log.push(value))
         onValue(null)
         onValue(undefined)
         onValue({ id: 1 })
@@ -88,7 +88,7 @@ describe("Emitter", () => {
         onMessage(() => {
             throw new Error("failed")
         })
-        onMessage(message => log.push(message))
+        onMessage((message) => log.push(message))
         onMessage("hello")
         expect(log).toEqual(["before", "caught", "hello", "after"])
     })
@@ -121,10 +121,10 @@ describe("AsyncEmitter", () => {
         const onShutdown = AsyncEmitter<string>()
         onShutdown(async (reason) => {
             log.push(`a ${reason}`)
-            await new Promise(resolve => setTimeout(resolve, 5))
+            await new Promise((resolve) => setTimeout(resolve, 5))
             log.push("a done")
         })
-        onShutdown(reason => void log.push(`b ${reason}`))
+        onShutdown((reason) => void log.push(`b ${reason}`))
         const done = onShutdown("stop")
         expect(log).toEqual(["a stop"])
         await done
@@ -159,9 +159,9 @@ describe("AsyncEmitter", () => {
     it("should let listeners be called another way", async () => {
         const log: number[] = []
         const onTick = AsyncEmitter<number>(async (listeners, message) => {
-            await Promise.all([...listeners].map(listener => listener(message * 2)))
+            await Promise.all([...listeners].map((listener) => listener(message * 2)))
         })
-        onTick(value => void log.push(value))
+        onTick((value) => void log.push(value))
         await onTick(2)
         expect(log).toEqual([4])
     })
@@ -175,8 +175,8 @@ describe("Emitter, with signals", () => {
         effect(() => void seen.push([$a(), $b()]))
 
         const onTick = Emitter<number>()
-        onTick(value => $a(value))
-        onTick(value => $b(value))
+        onTick((value) => $a(value))
+        onTick((value) => $b(value))
         onTick(1)
         expect(seen).toEqual([[0, 0], [1, 1]])
     })
@@ -201,7 +201,7 @@ describe("Emitter, with signals", () => {
             $a(message + 1)
             if (message === 3) throw new Error("dispatch")
         })
-        onTick(value => $a(value))
+        onTick((value) => $a(value))
         onTick(1)
         expect(seen).toEqual([0, 2])
         expect(() => onTick(3)).toThrow("dispatch")

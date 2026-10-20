@@ -1,5 +1,5 @@
 const entities: Record<string, string> = {
-    "\"": "&quot;",
+    '"': "&quot;",
     "&": "&amp;",
     "'": "&#39;",
     "<": "&lt;",
@@ -24,5 +24,5 @@ const entities: Record<string, string> = {
  *
  */
 export function escapeHTML(target: string): string {
-    return target.replace(/[&<>"']/g, character => entities[character]!)
+    return target.replace(/[&<>"']/g, (character) => entities[character]!)
 }

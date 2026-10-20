@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-redeclare -- Ok, Err and Result are a type and what creates it */
 /** Success or failure as a value: either an `Ok` with a value, or an `Err` with an error. `result.ok` tells which. */
 export type Result<T, E> = Ok<T, E> | Err<E, T>
 /** A successful result that holds `value`. */

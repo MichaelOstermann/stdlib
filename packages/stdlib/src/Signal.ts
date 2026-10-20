@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-redeclare -- Signal is a type and what creates it */
 import { RawSignal } from "./internals/system"
 
 /** A value that changes over time: call it to read, and with a value or a function to write. */

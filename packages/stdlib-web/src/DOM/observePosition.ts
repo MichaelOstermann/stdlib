@@ -34,7 +34,7 @@ import { isEqual } from "../Rect/isEqual"
  */
 export function observePosition(element: Element, onChange: (rect: Rect) => void): () => void {
     const report = roundedAndDeduped(onChange)
-    return observe(element, rect => report(fromDOMRect(rect)))
+    return observe(element, (rect) => report(fromDOMRect(rect)))
 }
 
 /**

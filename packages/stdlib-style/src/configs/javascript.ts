@@ -50,7 +50,6 @@ export function javascript(): Config {
             "no-shadow-restricted-names": "error",
             "no-sparse-arrays": "error",
             "no-template-curly-in-string": "error",
-            "no-throw-literal": "error",
             "no-unexpected-multiline": "error",
             "no-unmodified-loop-condition": "error",
             "no-unneeded-ternary": ["error", { defaultAssignment: false }],

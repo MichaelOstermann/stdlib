@@ -25,19 +25,19 @@ describe("Result", () => {
         }
         expect(Result.try(() => 1)).toEqual(Ok(1))
         expect(Result.try(fail).value).toBe(error)
-        expect(Result.try(fail, e => (e as Error).message)).toEqual(Err("a"))
+        expect(Result.try(fail, (e) => (e as Error).message)).toEqual(Err("a"))
     })
 
     it("should map values and errors", () => {
-        expect(parse("1").map(value => value + 1)).toEqual(Ok(2))
-        expect(parse("a").map(value => value + 1)).toEqual(Err("nan"))
-        expect(parse("1").mapErr(error => error.length)).toEqual(Ok(1))
-        expect(parse("a").mapErr(error => error.length)).toEqual(Err(3))
+        expect(parse("1").map((value) => value + 1)).toEqual(Ok(2))
+        expect(parse("a").map((value) => value + 1)).toEqual(Err("nan"))
+        expect(parse("1").mapErr((error) => error.length)).toEqual(Ok(1))
+        expect(parse("a").mapErr((error) => error.length)).toEqual(Err(3))
     })
 
     it("should chain results", () => {
-        expect(parse("1").andThen(value => value > 0 ? Ok(value) : Err("negative"))).toEqual(Ok(1))
-        expect(parse("-1").andThen(value => value > 0 ? Ok(value) : Err("negative"))).toEqual(Err("negative"))
+        expect(parse("1").andThen((value) => value > 0 ? Ok(value) : Err("negative"))).toEqual(Ok(1))
+        expect(parse("-1").andThen((value) => value > 0 ? Ok(value) : Err("negative"))).toEqual(Err("negative"))
         expect(parse("a").andThen(() => Ok(0))).toEqual(Err("nan"))
         expect(parse("a").orElse(() => Ok(0))).toEqual(Ok(0))
         expect(parse("1").orElse(() => Ok(0))).toEqual(Ok(1))
@@ -47,14 +47,14 @@ describe("Result", () => {
         const seen: unknown[] = []
         const a = parse("1")
         const b = parse("a")
-        expect(a.inspect(value => seen.push(value)).inspectErr(error => seen.push(error))).toBe(a)
-        expect(b.inspect(value => seen.push(value)).inspectErr(error => seen.push(error))).toBe(b)
+        expect(a.inspect((value) => seen.push(value)).inspectErr((error) => seen.push(error))).toBe(a)
+        expect(b.inspect((value) => seen.push(value)).inspectErr((error) => seen.push(error))).toBe(b)
         expect(seen).toEqual([1, "nan"])
     })
 
     it("should match", () => {
-        expect(parse("1").match({ Err: error => error, Ok: value => value })).toBe(1)
-        expect(parse("a").match({ Err: error => error, Ok: value => value })).toBe("nan")
+        expect(parse("1").match({ Err: (error) => error, Ok: (value) => value })).toBe(1)
+        expect(parse("a").match({ Err: (error) => error, Ok: (value) => value })).toBe("nan")
     })
 
     it("should unwrap", () => {
@@ -62,9 +62,9 @@ describe("Result", () => {
         expect(() => parse("a").unwrap()).toThrow("nan")
         expect(parse("1").unwrapOr(0)).toBe(1)
         expect(parse("a").unwrapOr(0)).toBe(0)
-        expect(parse("1").unwrapOrElse(error => error.length)).toBe(1)
-        expect(parse("a").unwrapOrElse(error => error.length)).toBe(3)
-        expectTypeOf(parse("a").unwrapOrElse(error => error)).toEqualTypeOf<number | "nan">()
+        expect(parse("1").unwrapOrElse((error) => error.length)).toBe(1)
+        expect(parse("a").unwrapOrElse((error) => error.length)).toBe(3)
+        expectTypeOf(parse("a").unwrapOrElse((error) => error)).toEqualTypeOf<number | "nan">()
     })
 
     describe("all", () => {

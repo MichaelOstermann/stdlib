@@ -1,4 +1,4 @@
-let segmenter: Intl.Segmenter
+let segmenter: Intl.Segmenter | undefined
 
 /**
  * # words

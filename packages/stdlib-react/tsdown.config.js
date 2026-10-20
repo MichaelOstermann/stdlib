@@ -22,7 +22,7 @@ function reactCompiler() {
         transform(code, id) {
             if (!/\/src\/.+\.tsx?$/.test(id)) return
             const result = transformSync(id, code, { jsx: "preserve", lang: id.endsWith(".tsx") ? "tsx" : "ts", reactCompiler: { panicThreshold: "all_errors" }, sourcemap: true, sourceType: "module" })
-            if (result.errors.length) throw new Error(`${id}\n${result.errors.map(error => error.message).join("\n")}`)
+            if (result.errors.length) throw new Error(`${id}\n${result.errors.map((error) => error.message).join("\n")}`)
             return { code: result.code, map: result.map }
         },
     }

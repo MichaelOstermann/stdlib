@@ -65,7 +65,7 @@ export function usePopover(options: UsePopoverOptions = {}): UsePopover {
         const trigger = $trigger()
         if (!trigger) return
         const controller = new AbortController()
-        trigger.addEventListener("click", () => $open(open => !open), { signal: controller.signal })
+        trigger.addEventListener("click", () => $open((open) => !open), { signal: controller.signal })
         return () => controller.abort()
     })
 

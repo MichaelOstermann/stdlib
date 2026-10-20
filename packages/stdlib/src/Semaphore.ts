@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-redeclare -- Semaphore is a type and what creates it */
 import { Err, Ok } from "./Result"
 import { ResultAsync } from "./ResultAsync"
 
@@ -9,8 +8,6 @@ export class SemaphoreFullError extends Error {
 
 /** Runs functions, a limited number of them at the same time. The others wait for their turn, in the order they came in. */
 export interface Semaphore {
-    /** Resolves once nothing is running or waiting, right away when that is the case already. */
-    idle: () => Promise<void>
     /**
      * Calls `fn` once it is its turn, and resolves or rejects with what it does.
      * With a `key`, the limit is the one of that key: functions of different keys do not wait for each other.
@@ -18,6 +15,8 @@ export interface Semaphore {
     run: (<T>(fn: () => PromiseLike<T> | T) => Promise<Awaited<T>>) & (<T>(key: PropertyKey, fn: () => PromiseLike<T> | T) => Promise<Awaited<T>>)
     /** How many functions are running or waiting. */
     readonly size: number
+    /** Resolves once nothing is running or waiting, right away when that is the case already. */
+    idle: () => Promise<void>
 }
 
 /** A semaphore that only lets a limited number wait, and fails for the ones beyond that. */
@@ -81,7 +80,7 @@ export function Semaphore(options: { concurrency: number, maxWaiting?: number })
 
         if (maxWaiting !== undefined && slot.waiting.length >= maxWaiting) return false
         size++
-        return new Promise(resolve => slot.waiting.push(resolve))
+        return new Promise((resolve) => slot.waiting.push(resolve))
     }
 
     function release(key: unknown): void {
@@ -115,7 +114,7 @@ export function Semaphore(options: { concurrency: number, maxWaiting?: number })
     const full = Symbol("full")
 
     return {
-        idle: () => size === 0 ? Promise.resolve() : new Promise(resolve => idle.push(resolve)),
+        idle: () => size === 0 ? Promise.resolve() : new Promise((resolve) => idle.push(resolve)),
         run(...args: [fn: Fn] | [key: PropertyKey, fn: Fn]): never {
             const [key, fn] = args.length === 1 ? [slots, args[0]] : args
             if (maxWaiting === undefined) return run(key, fn, full) as never

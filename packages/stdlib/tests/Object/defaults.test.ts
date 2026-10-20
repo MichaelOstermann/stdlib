@@ -37,7 +37,7 @@ describe("Object.defaults", () => {
     })
 
     it("should treat __proto__ as a key like any other", () => {
-        const source = JSON.parse("{ \"__proto__\": { \"a\": 1 }, \"b\": 2 }") as Record<string, unknown>
+        const source = JSON.parse('{ "__proto__": { "a": 1 }, "b": 2 }') as Record<string, unknown>
         const result = defaults({ b: 1 } as Record<string, unknown>, source)
         expect(Object.keys(result)).toEqual(["b", "__proto__"])
         expect(Object.getPrototypeOf(result)).toBe(Object.prototype)

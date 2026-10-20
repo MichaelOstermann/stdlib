@@ -6,18 +6,18 @@
     ],
     "scripts": {
         "globals": "bun scripts/globals.ts",
-        "checks": "bun run eslint && bun run tsc && bun test",
+        "checks": "bun run style && dprint check && oxlint && tsc && bun test",
         "bundles": "bun run --filter '*' bundle",
         "docs:dev": "blume dev",
-        "docs:build": "blume build"
+        "docs:build": "blume build",
+        "style": "bun run --filter @monstermann/stdlib-style bundle",
+        "format": "dprint fmt && oxlint --fix"
     },
     "devDependencies": {
-        "@monstermann/eslint-config": "^0.8.0",
-        "@monstermann/tsconfig": "^0.0.0",
+        "@monstermann/stdlib-style": "workspace:*",
         "@types/bun": "^1.4.2",
         "blume": "^2.2.3",
         "dprint": "^0.61.1",
-        "eslint": "^10.11.0",
         "oxlint": "^1.87.0",
         "oxlint-tsgolint": "^7.0.2003",
         "tsdown": "^0.23.0",

@@ -56,7 +56,7 @@ class FakeResizeObserver {
 
     unobserve(element: Element): void {
         if (!this.observed.delete(element)) return
-        const callbacks = dom.resizing.get(element)!.filter(callback => callback !== this.callback)
+        const callbacks = dom.resizing.get(element)!.filter((callback) => callback !== this.callback)
         if (callbacks.length) dom.resizing.set(element, callbacks)
         else dom.resizing.delete(element)
     }
@@ -120,7 +120,7 @@ export function fakeFrames(): void {
             frames.callbacks.set(++frames.id, callback)
             return frames.id
         }
-        globalThis.cancelAnimationFrame = id => frames.callbacks.delete(id)
+        globalThis.cancelAnimationFrame = (id) => frames.callbacks.delete(id)
         performance.now = () => frames.now
     })
 
@@ -139,8 +139,8 @@ export function scrollable(element: HTMLElement, { height = 0, width = 0 }: { he
         clientWidth: { value: 100 },
         scrollBy: { value: (x: number, y: number) => Object.assign(element, { scrollLeft: left + x, scrollTop: top + y }) },
         scrollHeight: { value: 100 + height },
-        scrollLeft: { get: () => left, set: value => left = Math.min(Math.max(0, value), width) },
-        scrollTop: { get: () => top, set: value => top = Math.min(Math.max(0, value), height) },
+        scrollLeft: { get: () => left, set: (value) => left = Math.min(Math.max(0, value), width) },
+        scrollTop: { get: () => top, set: (value) => top = Math.min(Math.max(0, value), height) },
         scrollWidth: { value: 100 + width },
     })
     return element

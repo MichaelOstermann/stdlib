@@ -36,7 +36,7 @@ let collator: Intl.Collator | undefined
 export function sortByLocale<T extends readonly unknown[]>(target: T, by: (value: T[number], index: number, target: T) => string, options?: LocaleOptions & MutOptions<T>): Updated<T>
 export function sortByLocale(target: unknown[], by: (value: unknown, index: number, target: unknown[]) => string, options?: LocaleOptions & Mut): unknown[] {
     let compare: (a: string, b: string) => number
-    if (options && Object.keys(options).some(key => key !== "mut" && key !== "order")) {
+    if (options && Object.keys(options).some((key) => key !== "mut" && key !== "order")) {
         const { locales, mut: _mut, order: _order, ...rest } = options
         compare = new Intl.Collator(locales, rest).compare
     }

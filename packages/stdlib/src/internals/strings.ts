@@ -2,9 +2,9 @@
 
 type IsStringLiteral<T extends string> = [T] extends [string]
     ? [string] extends [T] ? false
-            : Uppercase<T> extends Uppercase<Lowercase<T>>
-                ? Lowercase<T> extends Lowercase<Uppercase<T>> ? true : false
-                : false
+        : Uppercase<T> extends Uppercase<Lowercase<T>>
+            ? Lowercase<T> extends Lowercase<Uppercase<T>> ? true : false
+            : false
     : false
 
 type Join<T extends readonly string[], D extends string = ""> = IsStringLiteral<D | T[number]> extends true
@@ -41,23 +41,21 @@ type IsSpecial<T extends string> = IsStringLiteral<T> extends true ? T extends "
 
 type RemoveApostrophe<T extends string> = ReplaceAll<T, "'">
 
-/* eslint-disable @stylistic/indent -- a list of cases, the first one that applies wins */
 /** The words of an identifier, `S` being what is left of it, `W` the word so far and `P` the previous character. */
 type Words<S extends string, W extends string = "", P extends string = ""> = IsStringLiteral<P | S | W> extends true
     ? S extends `${infer C}${infer Rest}`
         ? IsSeparator<C> extends true ? Reject<[W, ...Words<Rest>], "">
-        : P extends "" ? Reject<Words<Rest, C, C>, "">
-        : [false, true] extends [IsDigit<P>, IsDigit<C>] ? [W, ...Words<Rest, C, C>]
-        : [true, false] extends [IsDigit<P>, IsDigit<C>] ? [W, ...Words<Rest, C, C>]
-        : [false, true] extends [IsSpecial<P>, IsSpecial<C>] ? [W, ...Words<Rest, C, C>]
-        : [true, false] extends [IsSpecial<P>, IsSpecial<C>] ? [W, ...Words<Rest, C, C>]
-        : [true, true] extends [IsDigit<P>, IsDigit<C>] ? Reject<Words<Rest, `${W}${C}`, C>, "">
-        : [true, true] extends [IsLower<P>, IsUpper<C>] ? [W, ...Words<Rest, C, C>]
-        : [true, true] extends [IsUpper<P>, IsLower<C>] ? [DropSuffix<W, P>, ...Words<Rest, `${P}${C}`, C>]
-        : Reject<Words<Rest, `${W}${C}`, C>, "">
+            : P extends "" ? Reject<Words<Rest, C, C>, "">
+            : [false, true] extends [IsDigit<P>, IsDigit<C>] ? [W, ...Words<Rest, C, C>]
+            : [true, false] extends [IsDigit<P>, IsDigit<C>] ? [W, ...Words<Rest, C, C>]
+            : [false, true] extends [IsSpecial<P>, IsSpecial<C>] ? [W, ...Words<Rest, C, C>]
+            : [true, false] extends [IsSpecial<P>, IsSpecial<C>] ? [W, ...Words<Rest, C, C>]
+            : [true, true] extends [IsDigit<P>, IsDigit<C>] ? Reject<Words<Rest, `${W}${C}`, C>, "">
+            : [true, true] extends [IsLower<P>, IsUpper<C>] ? [W, ...Words<Rest, C, C>]
+            : [true, true] extends [IsUpper<P>, IsLower<C>] ? [DropSuffix<W, P>, ...Words<Rest, `${P}${C}`, C>]
+            : Reject<Words<Rest, `${W}${C}`, C>, "">
         : Reject<[W], "">
     : string[]
-/* eslint-enable @stylistic/indent */
 
 export type DelimiterCase<T extends string, D extends string> = Join<Words<RemoveApostrophe<T>>, D>
 export type PascalCase<T extends string> = Join<PascalCaseAll<Words<RemoveApostrophe<T>>>>

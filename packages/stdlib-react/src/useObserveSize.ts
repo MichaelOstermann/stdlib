@@ -31,6 +31,6 @@ export function useObserveSize(target: Element | Window | null | undefined, onCh
 
     useLayoutEffect(() => {
         if (!target) return
-        return DOM.observeSize(target, size => latest.current(size))
+        return DOM.observeSize(target, (size) => latest.current(size))
     }, [target, latest])
 }

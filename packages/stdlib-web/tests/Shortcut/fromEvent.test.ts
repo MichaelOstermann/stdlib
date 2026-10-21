@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test"
 import { Shortcut } from "../../src/Shortcut"
-import { ev } from "./helpers"
+import { ev, ks } from "./helpers"
 
 const recorded = (...args: Parameters<typeof ev>): string => Shortcut.serialize([Shortcut.fromEvent(ev(...args))])
 
@@ -38,8 +38,8 @@ describe("Shortcut.fromEvent", () => {
     })
 
     it("should take a modifier on its own as the modifiers that are held", () => {
-        expect(Shortcut.fromEvent(ev("Control", "ControlLeft", "ctrl"))).toEqual({ ctrl: true })
-        expect(Shortcut.fromEvent(ev("Shift", "ShiftLeft", "ctrl", "shift"))).toEqual({ ctrl: true, shift: true })
+        expect(Shortcut.fromEvent(ev("Control", "ControlLeft", "ctrl"))).toEqual(ks({ ctrl: true }))
+        expect(Shortcut.fromEvent(ev("Shift", "ShiftLeft", "ctrl", "shift"))).toEqual(ks({ ctrl: true, shift: true }))
     })
 
     it("should record what matches the same event", () => {

@@ -25,14 +25,14 @@ export function matchesEvent(keystroke: Keystroke, event: ShortcutEvent): boolea
     const eventKey = keyOf(event)
     const altGraph = event.getModifierState?.("AltGraph") === true
 
-    const meta = !!keystroke.meta === event.metaKey
-    const ctrlAlt = !!keystroke.ctrl === event.ctrlKey && !!keystroke.alt === event.altKey
-    const shift = !!keystroke.shift === event.shiftKey
+    const meta = keystroke.meta === event.metaKey
+    const ctrlAlt = keystroke.ctrl === event.ctrlKey && keystroke.alt === event.altKey
+    const shift = keystroke.shift === event.shiftKey
 
     if (!meta) return false
 
     // Only modifiers: { ctrl: true }
-    if (key === undefined) return ctrlAlt && shift && modifierOf(eventKey) !== undefined
+    if (!key) return ctrlAlt && shift && modifierOf(eventKey) !== undefined
 
     // Names: Enter, ArrowDown, Numpad1, ContextMenu
     if (Array.from(key).length > 1) {

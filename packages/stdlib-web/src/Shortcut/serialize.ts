@@ -31,6 +31,6 @@ export function serializeKeystroke(keystroke: Keystroke): string {
     if (ctrl) parts.push("ctrl")
     if (alt) parts.push("alt")
     if (shift) parts.push("shift")
-    if (key !== undefined) parts.push(key)
+    if (key) parts.push(key)
     return parts.join("+")
 }

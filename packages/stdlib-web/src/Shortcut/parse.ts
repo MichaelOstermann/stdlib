@@ -1,6 +1,6 @@
 import type { Keystroke } from "."
 import { modifierOf } from "./internals/keys"
-import { normalize } from "./internals/normalize"
+import { keystrokeOf, normalize } from "./internals/normalize"
 import { mod } from "./mod"
 
 /**
@@ -23,13 +23,13 @@ import { mod } from "./mod"
  *
  * ```ts
  * Shortcut.parse("ctrl+k ctrl+t");
- * // [{ ctrl: true, key: "k" }, { ctrl: true, key: "t" }]
+ * // [{ ctrl: true, key: "k", … }, { ctrl: true, key: "t", … }]
  *
  * Shortcut.parse("cmd+shift+esc");
- * // [{ meta: true, shift: true, key: "Escape" }]
+ * // [{ key: "Escape", meta: true, shift: true, … }]
  *
  * Shortcut.parse("mod+K");
- * // macOS: [{ meta: true, shift: true, key: "k" }]
+ * // macOS: [{ key: "k", meta: true, shift: true, … }]
  * ```
  */
 export function parse(shortcut: string): Keystroke[] {
@@ -37,11 +37,11 @@ export function parse(shortcut: string): Keystroke[] {
 }
 
 function parseKeystroke(press: string): Keystroke {
-    const keystroke: Keystroke = {}
+    const keystroke = keystrokeOf("")
     for (const part of split(press)) {
         const modifier = part.toLowerCase() === "mod" ? mod() : modifierOf(part)
         if (modifier) keystroke[modifier] = true
-        else if (!part || keystroke.key !== undefined) return { key: press }
+        else if (!part || keystroke.key) return keystrokeOf(press)
         else keystroke.key = part
     }
     return normalize(keystroke)

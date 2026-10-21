@@ -1,7 +1,7 @@
 import type { ShortcutEvent } from "../../src/Shortcut"
 import { afterEach, describe, expect, it } from "bun:test"
 import { Shortcut } from "../../src/Shortcut"
-import { ev } from "./helpers"
+import { ev, ks } from "./helpers"
 
 afterEach(() => void Shortcut.mod(null))
 
@@ -198,9 +198,9 @@ describe("Shortcut.matches, shortcuts and keystrokes", () => {
     })
 
     it("should take keystrokes on both sides", () => {
-        expect(Shortcut.matches([{ ctrl: true, key: "K" }], "ctrl+shift+k")).toBe(true)
-        expect(Shortcut.matches("ctrl+k ctrl+t", [{ ctrl: true, key: "k" }])).toBe("partial")
-        expect(Shortcut.matches("esc", [{ key: "esc" }])).toBe(true)
+        expect(Shortcut.matches([ks({ ctrl: true, key: "K" })], "ctrl+shift+k")).toBe(true)
+        expect(Shortcut.matches("ctrl+k ctrl+t", [ks({ ctrl: true, key: "k" })])).toBe("partial")
+        expect(Shortcut.matches("esc", [ks({ key: "esc" })])).toBe(true)
     })
 
     it("should parse mod as it is when matching", () => {

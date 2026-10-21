@@ -7,12 +7,11 @@ import { serialize } from "./serialize"
 
 /** One press of a shortcut: a key, and the modifiers held with it. What `Shortcut.parse` returns, eg. to render `<kbd>` from. */
 export interface Keystroke {
-    alt?: boolean
-    ctrl?: boolean
-    /** The name events report (`Enter`, `ArrowDown`), or the character in lowercase. Not set when the keystroke is only modifiers. */
-    key?: string
-    meta?: boolean
-    shift?: boolean
+    alt: boolean
+    ctrl: boolean
+    key: string
+    meta: boolean
+    shift: boolean
 }
 
 /** A shortcut and what it runs. Apps add what they need by declaring it again, see `Shortcut.bindings`. */

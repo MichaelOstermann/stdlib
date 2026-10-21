@@ -1,4 +1,4 @@
-import type { ShortcutEvent } from "../../src/Shortcut"
+import type { Keystroke, ShortcutEvent } from "../../src/Shortcut"
 
 type Modifiers = "alt" | "altGraph" | "composing" | "ctrl" | "meta" | "shift"
 
@@ -14,4 +14,9 @@ export function ev(key: string, code: string, ...modifiers: Modifiers[]): Shortc
         shiftKey: modifiers.includes("shift"),
         getModifierState: (name) => name === "AltGraph" && modifiers.includes("altGraph"),
     }
+}
+
+/** A keystroke with what is not given as `false` and `""`: `ks({ ctrl: true, key: "k" })`. */
+export function ks(fields: Partial<Keystroke>): Keystroke {
+    return { alt: false, ctrl: false, key: "", meta: false, shift: false, ...fields }
 }

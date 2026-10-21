@@ -17,7 +17,7 @@ const asciiLetterOrDigit = /^[a-z\d]$/i
  * - Latin letters and digits as reported, without caps lock: `ctrl+z` on a German layout too
  * - With ctrl, alt or meta, other keys by their position: `ctrl+c` on a cyrillic layout, `alt+a` on macOS where it types "å"
  * - Otherwise what is typed, with `shift` only for letters that have a case: `?`, `@` with AltGr, `shift+ö`
- * - A modifier on its own is the modifiers that are held: `{ ctrl: true }`
+ * - A modifier on its own is the modifiers that are held, with `key` as `""`
  *
  * ## Example
  *
@@ -34,6 +34,7 @@ export function fromEvent(event: ShortcutEvent): Keystroke {
     const keystroke: Keystroke = {
         alt: event.altKey,
         ctrl: event.ctrlKey,
+        key: "",
         meta: event.metaKey,
         shift: event.shiftKey,
     }

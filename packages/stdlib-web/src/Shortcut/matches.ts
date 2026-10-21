@@ -70,7 +70,7 @@ export function matches(shortcut: string | Keystroke[], input: string | Keystrok
         const keystroke = keystrokes[matched]
         if (!keystroke) return false
         if ("code" in press) {
-            if (keystroke.key !== undefined && isModifierPress(press)) continue
+            if (keystroke.key && isModifierPress(press)) continue
             if (!matchesEvent(keystroke, press)) return false
         }
         else if (serializeKeystroke(keystroke) !== serializeKeystroke(press)) {

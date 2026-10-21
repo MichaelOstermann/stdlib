@@ -1,0 +1,122 @@
+---
+title: Primitives
+---
+
+Wherever possible, this library focuses on exposing well designed primitives: Building blocks that allow you to cover your own scenarios by building on top, instead of faking simplicity by hiding complexity under the carpet.
+
+## Examples
+
+### Popover
+
+Instead of a popover positioning library shipping a convoluted middleware system with tons of cryptic options, we are firstly exposing a good-enough primitive for describing a position:
+
+`Rect` `{ top, left, width, height }`, including straight-forward helpers like `Rect.translateY(rect, 100)`
+
+Positioning a popover now becomes a single function, where everything going in and coming out is a `Rect`:
+
+```ts
+{
+    position: ({ anchor, boundary, floating }) => {
+        // Below the anchor, horizontally centered:
+        const below = Rect.moveTopTo(floating, Rect.bottom(anchor) + 4)
+        return Rect.setCenterX(below, Rect.centerX(anchor))
+    }
+}
+```
+
+This is enough for you to quickly ship every possible scenario you might encounter.
+
+A typical positioning library exports around 40 types/interfaces: Different shapes for a rectangle (coordinates, dimensions, sides, coordinates with dimensions, coordinates with dimensions and sides, a pair of rects), more than a handful of different sets of options, middleware state, etc. Here it is one: `Rect`.
+
+We ship additional utility functions, mostly to cover our own scenarios:
+
+```ts
+{
+    position: (measurements) => {
+        // Given an anchor, which sides have more room?
+        // Often this is more than enough to figure out
+        // whether a popover should be placed eg. below
+        // or above the anchor:
+        const room = Placement.room(measurements)
+        room.horizontal // "left" | "right"
+        room.vertical // "up" | "down"
+    }
+}
+```
+
+There is no reasonable way to ship a "standard" positioning algorithm that one-shots everything, a few examples:
+
+- Sometimes popovers can dynamically change height and what should happen here (Should it flip to the opposite side when it no longer fits? Should we fake extra height and compute the ideal position AOT?) is ambiguous
+- The rules for the ideal position of a toolbar in rich text editors are complicated, for example generally speaking as close to the caret as possible, but without overlapping too much text behind it
+
+### Hotkeys
+
+The possibilities for what you might want out of a hotkey/shortcut library are seemingly endless:
+
+- Per-hotkey arbitrary metadata
+- Programmatically triggering shortcuts
+- Binding to document, a specific focusable element, React refs, React callbacks, third-party libraries
+- Listening to keydown, keyup, keypress, input, beforeinput, with or without `{ capture: true }`
+- Resolving shortcut conflicts
+- Building a UI around currently bound shortcuts
+- Recording and replaying keypresses
+- Shortcut sequences, of which there are several possible behaviors
+- Grouping shortcuts together into scopes, enabling/disabling scopes
+- Different keybindings enabled only for macOS/Windows
+- Support for sticky keys for accessibility reasons
+- Pausing and resuming event listeners
+- Ignoring keys during IME composition
+- Support for user provided shortcut configurations
+- Telemetry (which shortcuts are used, which ones were attempted but not implemented)
+
+So the first thing you'd want is a good type definition to express any keystroke:
+
+```ts
+export interface Keystroke {
+    alt: boolean
+    ctrl: boolean
+    key: string
+    meta: boolean
+    shift: boolean
+}
+```
+
+And secondly a good shortcut parser:
+
+```ts
+const keystrokes = Shortcut.parse("ctrl+k") // Keystroke[]
+const shortcut = Shortcut.serialize(keystrokes)
+```
+
+And lastly the hard part, figuring out whether a keyboard event matches a shortcut, regardless of keyboard layout, IME composition or sequences:
+
+```ts
+window.addEventListener("keydown", (event) => {
+    if (Shortcut.matches("mod+k", event)) openPalette()
+})
+```
+
+Everything from the list above is now just your own code around that `if`, eg.:
+
+```ts
+window.addEventListener("keydown", (event) => {
+    // Scopes:
+    if (scope !== "editor") return
+    // User provided shortcut configurations:
+    if (Shortcut.matches(config.palette, event)) return openPalette()
+    // Telemetry for shortcuts that were attempted but not implemented:
+    track(Shortcut.serialize([Shortcut.fromEvent(event)]))
+})
+```
+
+And for per-hotkey arbitrary metadata, you can extend the type of a binding yourself:
+
+```ts
+declare module "@monstermann/stdlib-web" {
+    interface ShortcutBinding {
+        description?: string
+    }
+}
+```
+
+And while our library provides a few more utilities, this is enough to cover all your scenarios.

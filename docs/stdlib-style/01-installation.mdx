@@ -1,0 +1,125 @@
+---
+title: Installation
+---
+
+```package-install
+npm i -D @monstermann/stdlib-style dprint oxlint oxlint-tsgolint
+```
+
+## Setup
+
+```json dprint.json
+{
+    "extends": "./node_modules/@monstermann/stdlib-style/dprint.json"
+}
+```
+
+```ts oxlint.config.ts
+import oxlint from "@monstermann/stdlib-style/oxlint"
+
+export default oxlint({
+    tailwind: `${import.meta.dirname}/src/index.css`,
+    ignores: ["src-tauri/target"],
+    overrides: [{
+        files: ["cli/**"],
+        rules: { "no-console": "off" },
+    }],
+})
+```
+
+| Option      | Description                                                                            |
+| ----------- | -------------------------------------------------------------------------------------- |
+| `tailwind`  | The CSS file that imports Tailwind. Lints classes, including those its `@theme` adds. |
+| `ignores`   | Globs that are not linted, next to `node_modules`, `dist`, lockfiles, …                |
+| `overrides` | Oxlint overrides, after the ones of the config.                                        |
+
+`tsconfig.json`, one per runtime:
+
+<CodeGroup>
+
+```json Web
+{ "extends": "@monstermann/stdlib-style/tsconfig.web.json" }
+```
+
+```json Bun
+{ "extends": "@monstermann/stdlib-style/tsconfig.bun.json" }
+```
+
+</CodeGroup>
+
+## Editor integration
+
+### Zed
+
+- [Oxc](https://zed.dev/extensions/oxc)
+- [Dprint](https://zed.dev/extensions/dprint)
+
+```json .zed/settings.json
+{
+    "languages": {
+        "TypeScript": {
+            "format_on_save": "on",
+            "formatter": [
+                { "code_action": "source.fixAll.oxc" },
+                { "language_server": { "name": "dprint" } }
+            ]
+        },
+        "TSX": {
+            "format_on_save": "on",
+            "formatter": [
+                { "code_action": "source.fixAll.oxc" },
+                { "language_server": { "name": "dprint" } }
+            ]
+        },
+        "JavaScript": {
+            "format_on_save": "on",
+            "formatter": [
+                { "code_action": "source.fixAll.oxc" },
+                { "language_server": { "name": "dprint" } }
+            ]
+        },
+        "JSON": {
+            "format_on_save": "on",
+            "formatter": { "language_server": { "name": "dprint" } }
+        },
+        "JSONC": {
+            "format_on_save": "on",
+            "formatter": { "language_server": { "name": "dprint" } }
+        },
+        "Markdown": {
+            "format_on_save": "on",
+            "formatter": { "language_server": { "name": "dprint" } }
+        },
+        "CSS": {
+            "format_on_save": "on",
+            "formatter": { "language_server": { "name": "dprint" } }
+        },
+        "HTML": {
+            "format_on_save": "on",
+            "formatter": { "language_server": { "name": "dprint" } }
+        }
+    },
+    "lsp": {
+        "oxlint": {
+            "initialization_options": {
+                "settings": { "typeAware": true }
+            }
+        }
+    }
+}
+```
+
+### VSCode
+
+- [Oxc](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode)
+- [Dprint](https://marketplace.visualstudio.com/items?itemName=dprint.dprint)
+
+```json .vscode/settings.json
+{
+    "editor.defaultFormatter": "dprint.dprint",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.oxc": "explicit"
+    }
+}
+```

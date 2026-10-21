@@ -1,0 +1,418 @@
+---
+title: Introduction
+---
+
+`stdlib-style` is a collection of opinionated setups for:
+
+- [dprint](https://dprint.dev/): Formatting TypeScript, JSON, JSONC, Markdown, CSS, SCSS, Less, HTML, Vue, Svelte, Astro
+- [oxlint](https://oxc.rs/docs/guide/usage/linter): Linting TypeScript, with React & Tailwind
+- **tsconfig**: Base configs for web & bun runtimes
+
+## Dprint
+
+TypeScript, JavaScript and JSON are formatted by a custom dprint plugin written in Rust, shipped as WebAssembly inside this package. In JSON it also puts the keys of package.json and tsconfig.json into their usual order. Markdown, CSS and HTML use dprint's own plugins.
+
+The TypeScript plugin is greatly inspired by many different ESLint plugins such as [Perfectionist](https://perfectionist.dev/), [Stylistic](https://eslint.style/) and other popular plugins we found in the wild, often times directly ported to Rust.
+
+### Easy to edit
+
+Generally speaking the primary focus is not necessarily to reduce visual noise, but rather to make code easy to edit. For example sometimes ESLint setups do this:
+
+```ts
+// Before:
+foo((bar) => baz(bar))
+
+// After:
+foo(bar => baz(bar))
+```
+
+While the latter may be more visually pleasing to some, adding a type annotation, adding new parameters, or turning it into a nullary function now requires extra work.
+
+Another example:
+
+```ts
+// Before:
+if (foo) {
+    bar()
+}
+else {
+    baz()
+}
+
+// After:
+if (foo)
+    bar()
+else
+    baz()
+```
+
+Again while the latter may be more visually pleasing, squeezing in another line doesn't work:
+
+```
+SyntaxError: Unexpected token (4:1)
+  2 |     bar()
+  3 |     qux()
+> 4 | else
+    | ^
+  5 |     baz()
+  6 |
+```
+
+What happens instead: You can write the latter because it is slightly quicker, but our dprint formatter will add the curly brackets.
+
+### Manual line breaks
+
+What sets our plugin apart from something like [Prettier](https://prettier.io/) or other formatters is that control over how something should be formatted is handed off to you:
+
+```ts
+foo().bar().baz()
+```
+
+Whether something should be on one line or multiple lines is determined by the first line break, so if you'd prefer the above to be on multiple lines, add a newline and save:
+
+```ts
+foo()
+.bar().baz()
+```
+
+After saving:
+
+```ts
+foo()
+    .bar()
+    .baz()
+```
+
+If you'd prefer this to be on one line again:
+
+```ts
+foo().bar()
+    .baz()
+```
+
+And again after saving:
+
+```ts
+foo().bar().baz()
+```
+
+Additional examples:
+
+#### Arrays, objects and destructuring
+
+<Tabs sync={false} hash={false}>
+<Tab title="Expand">
+
+```ts
+// Before:
+const point = {
+    x: 1, y: 2 }
+
+// After:
+const point = {
+    x: 1,
+    y: 2,
+}
+```
+
+</Tab>
+<Tab title="Collapse">
+
+```ts
+// Before:
+const point = { x: 1,
+    y: 2,
+}
+
+// After:
+const point = { x: 1, y: 2 }
+```
+
+</Tab>
+</Tabs>
+
+The same goes for arrays, `const { x, y } = point` and `const [a, b] = pair`.
+
+#### Parameters and arguments
+
+<Tabs sync={false} hash={false}>
+<Tab title="Expand">
+
+```ts
+// Before:
+function move(
+    x: number, y: number) {}
+
+// After:
+function move(
+    x: number,
+    y: number,
+) {}
+```
+
+</Tab>
+<Tab title="Collapse">
+
+```ts
+// Before:
+function move(x: number,
+    y: number,
+) {}
+
+// After:
+function move(x: number, y: number) {}
+```
+
+</Tab>
+</Tabs>
+
+The same goes for the arguments of a call and of `new`.
+
+#### Imports and exports
+
+<Tabs sync={false} hash={false}>
+<Tab title="Expand">
+
+```ts
+// Before:
+import {
+    filter, map } from "./array"
+
+// After:
+import {
+    filter,
+    map,
+} from "./array"
+```
+
+</Tab>
+<Tab title="Collapse">
+
+```ts
+// Before:
+import { filter,
+    map,
+} from "./array"
+
+// After:
+import { filter, map } from "./array"
+```
+
+</Tab>
+</Tabs>
+
+#### Types
+
+Members of interfaces and object types are separated by commas on one line, and by line breaks alone when each has a line of its own.
+
+<Tabs sync={false} hash={false}>
+<Tab title="Expand">
+
+```ts
+// Before:
+interface Point {
+    x: number, y: number }
+
+// After:
+interface Point {
+    x: number
+    y: number
+}
+```
+
+</Tab>
+<Tab title="Collapse">
+
+```ts
+// Before:
+interface Point { x: number
+    y: number
+}
+
+// After:
+interface Point { x: number, y: number }
+```
+
+</Tab>
+</Tabs>
+
+The same goes for object types, tuples, enums, type parameters and type arguments.
+
+#### JSX props
+
+<Tabs sync={false} hash={false}>
+<Tab title="Expand">
+
+```tsx
+// Before:
+const el = <Button
+    onClick={save} size="sm" />
+
+// After:
+const el = (
+    <Button
+        onClick={save}
+        size="sm"
+    />
+)
+```
+
+</Tab>
+<Tab title="Collapse">
+
+```tsx
+// Before:
+const el = (
+    <Button onClick={save}
+        size="sm"
+    />
+)
+
+// After:
+const el = (
+    <Button onClick={save} size="sm" />
+)
+```
+
+</Tab>
+</Tabs>
+
+#### JSX children
+
+Children follow their own first line break, separately from the props.
+
+<Tabs sync={false} hash={false}>
+<Tab title="Expand">
+
+```tsx
+// Before:
+const el = <Row>
+    <Cell /><Cell /></Row>
+
+// After:
+const el = (
+    <Row>
+        <Cell />
+        <Cell />
+    </Row>
+)
+```
+
+</Tab>
+<Tab title="Collapse">
+
+```tsx
+// Before:
+const el = (
+    <Row><Cell />
+        <Cell />
+    </Row>
+)
+
+// After:
+const el = (
+    <Row><Cell /><Cell /></Row>
+)
+```
+
+</Tab>
+</Tabs>
+
+A space between text and an element that a new line would lose is kept as `{" "}`.
+
+#### Ternaries
+
+<Tabs sync={false} hash={false}>
+<Tab title="Expand">
+
+```ts
+// Before:
+const label = done
+    ? "Done" : "Open"
+
+// After:
+const label = done
+    ? "Done"
+    : "Open"
+```
+
+</Tab>
+<Tab title="Collapse">
+
+```ts
+// Before:
+const label = done ? "Done"
+    : "Open"
+
+// After:
+const label = done ? "Done" : "Open"
+```
+
+</Tab>
+</Tabs>
+
+A chain of ternaries with its first break before a `:` is a list of cases, one per line, and stays as it is:
+
+```ts
+const label = done ? "Done"
+    : failed ? "Failed"
+    : "Open"
+```
+
+#### if/else and try
+
+Here the first line break is the one after `if (…)` or its `{`, and it decides for every branch. Collapsed branches lose their braces. A branch with several statements can't collapse, so it keeps every branch expanded.
+
+<Tabs sync={false} hash={false}>
+<Tab title="Expand">
+
+```ts
+// Before:
+if (ready)
+    start()
+else stop()
+
+// After:
+if (ready) {
+    start()
+}
+else {
+    stop()
+}
+```
+
+</Tab>
+<Tab title="Collapse">
+
+```ts
+// Before:
+if (ready) { start()
+}
+else {
+    stop()
+}
+
+// After:
+if (ready) start()
+else stop()
+```
+
+</Tab>
+</Tabs>
+
+The blocks of a `try` work the same way: `try { run() }` keeps `catch { log() }` on one line as well.
+
+## Oxlint
+
+Oxlint is used for issues in code, or what a formatter can't decide on its own. No rules are on by default: each one is picked by hand, and a rule that flags too much correct code, or misses too much to be trusted, gets turned off again.
+
+| Area                | Rules                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------ |
+| JavaScript          | Core rules                                                                                 |
+| TypeScript          | `typescript-eslint` rules, type-aware ones through `oxlint-tsgolint`                       |
+| Imports             | Type imports at the top level, no duplicates, imports first                                |
+| React               | Rules of Hooks, the React Compiler's rules, [`@eslint-react`](https://eslint-react.xyz/)   |
+| Regular expressions | [`eslint-plugin-regexp`](https://ota-meshi.github.io/eslint-plugin-regexp/)                |
+| Tailwind            | [`better-tailwindcss`](https://github.com/schoero/eslint-plugin-better-tailwindcss), when `tailwind` is passed |
+| Unicorn             | A few [`unicorn`](https://github.com/sindresorhus/eslint-plugin-unicorn) rules             |
+| Operators           | `no-mixed-operators`, ported from [`@stylistic`](https://eslint.style/rules/no-mixed-operators) |

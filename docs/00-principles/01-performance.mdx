@@ -1,0 +1,205 @@
+---
+title: Performance
+---
+
+This monorepo addresses performance almost fanatically, including spending hundreds of USD worth of tokens to:
+
+- Find performance improvements ad-hoc ("Pump perf, make no mistakes" - you never know)
+- Orchestrate sub-agents for experiments
+- Learn techniques from 3rd-party libraries
+
+If anything can be shaved off, and neither readability nor simplicity are sacrificed in doing so (which is often the case), it gets shipped. If performance can be increased by reducing the API surface area, it might get shipped.
+
+## Why
+
+There are two extremes: Not thinking about performance at all, or thinking about it *too much*.
+
+Ideally we would find a balance between the two on a case-by-case basis, which is hard, especially because it has to hold up over time: What was fast enough yesterday might suddenly become too slow tomorrow.
+
+When we don't think about performance at all, our products become slower and slower over time, and we get used to it, we might not even notice it.
+
+When we think about it too much, sleepless nights thinking about how to pump performance, historically that would have taken a lot of time, while turning code into something that can only be described as an abomination (and earned us a "premature optimization" talk).
+
+We (and AI) also run into the danger of optimizing the wrong thing: Improving few Effects reading many Signals, which is unrealistic, while decreasing the performance of many Effects reading few Signals, which is much more realistic.
+
+Today, coding agents make this much easier and faster to explore than ever before, even if they have to be steered incredibly carefully.
+
+The worst performance problem is death by a thousand cuts: Not a single particular thing that sticks out in profiles, but dozens of slightly unoptimized things that compound, which nobody wants to touch.
+
+The more code we ship that is performance considerate, the more we can afford to be sloppy elsewhere.
+
+## Build-time optimizations
+
+Our `stdlib-transform` uses the fantastic [oxc](https://oxc.rs/) toolchain to provide several build-time optimizations, in some cases offering 0-cost abstractions. oxc is fast enough to blast through 1000 files in less than a second, so there is no particular reason to not do that.
+
+As an example, our pattern matching tool featuring type-level exhaustiveness checks, greatly inspired by [ts-pattern](https://github.com/gvergnaud/ts-pattern):
+
+```ts
+type Shape =
+    | { kind: "circle"; radius: number }
+    | { kind: "square"; size: number };
+    
+const label = (value: Shape | null) => match(value)
+    .case(null, "Nothing")
+    .shape({ kind: "circle" }, "A circle")
+    .shape({ kind: "square" }, "A square")
+    .unwrap()
+```
+
+Gets lowered into:
+
+```ts
+import { throwUnmatched } from "@monstermann/stdlib/internals/match/throwUnmatched.mjs";
+
+const label = (value: Shape | null) =>
+    value === null ? "Nothing"
+    : typeof value === "object" && value !== null && value.kind === "circle" ? "A circle"
+    : typeof value === "object" && value !== null && value.kind === "square" ? "A square"
+    : throwUnmatched(value);
+```
+
+No chain of objects and closures created on every call, just comparisons:
+
+| | Time per call | Bytes per call |
+|---|---|---|
+| Without `stdlib-transform` | V8 34 ns · JSC 9 ns | 205 B |
+| With `stdlib-transform` | V8 3 ns · JSC 2 ns | 0 B |
+
+The main challenge here is that code needs to be designed around this: As of today, a transformer can't easily use type information, so it has to understand what's happening purely by looking at the syntax.
+
+This only works because `match` has `.case()`, `.shape()` and `.cond()` instead of a single `.with()`: Whether `.with(x)` compares a value, a shape or runs a predicate depends on the type of `x`, so it can't be compiled, while each of ours can only mean one thing. [pattycake](https://github.com/aidenybai/pattycake), a compiler for ts-pattern, has been stuck as "highly experimental" since early 2024, falling back to ts-pattern for whatever it can't compile.
+
+## Memory allocations
+
+In JavaScript, more often than not functions create a shallow copy even when nothing changed:
+
+```ts
+const a = [1, 2, 3]
+const b = a.map(i => i)
+a === b // false
+```
+
+Sometimes this can be a deal breaker, for example in React and signal libraries, all of which depend on `===` checks to skip work.
+
+So now you'll come to find that libraries often ship something like this:
+
+```ts
+function map(target, fn) {
+    let didChange = false;
+    const result = target.map((before) => {
+        const after = fn(before);
+        didChange ||= before !== after;
+        return after;
+    });
+    return didChange ? result : target;
+}
+```
+
+While this implementation does return the original reference when possible, it still creates a copy every time, even when nothing changed.
+
+In JavaScript, these allocations don't show up where they happen: They end up as GC time spread across the whole profile, which no single function owns.
+
+We generally speaking try to avoid this by doing something similar to:
+
+```ts
+function map(target, fn) {
+    let copy;
+    for (let i = 0; i < target.length; i++) {
+        const before = target[i];
+        const after = fn(before);
+        if (before === after) continue;
+        // Copy once now that we know we are actually going to write:
+        copy ??= [...target];
+        copy[i] = after;
+    }
+    return copy ?? target;
+}
+```
+
+For the keen eye: There is a difference in behavior when using sparse arrays. If you have a serious use case for sparse arrays, you probably shouldn't hand them to any 3rd-party library anyway.
+
+Bytes allocated per call, measured with Node:
+
+| | Copy first | Copy on write |
+|---|---|---|
+| 10 items, nothing changed | 254 B | 0 B |
+| 10 items, something changed | 251 B | 135 B |
+| 1000 items, nothing changed | 8254 B | 0 B |
+| 1000 items, something changed | 8215 B | 8194 B |
+
+Time per call, in V8 (Node 26) and JavaScriptCore (Bun), each run in its own process:
+
+| | Copy first | Copy on write |
+|---|---|---|
+| 10 items, nothing changed | V8 33 ns · JSC 26 ns | V8 3 ns · JSC 5 ns |
+| 10 items, everything changed | V8 27 ns · JSC 24 ns | V8 23 ns · JSC 36 ns |
+| 1000 items, nothing changed | V8 2.2 µs · JSC 1.2 µs | V8 0.2 µs · JSC 0.2 µs |
+| 1000 items, first item changed | V8 2.0 µs · JSC 1.7 µs | V8 1.1 µs · JSC 1.8 µs |
+| 1000 items, everything changed | V8 2.0 µs · JSC 1.3 µs | V8 1.4 µs · JSC 2.1 µs |
+
+In JavaScriptCore, copy on write is slower when something changed. We take that trade, since most calls change nothing, and when you don't need the original reference back, `Array.prototype.map` is always there.
+
+Compared to other libraries, measured with Node 26, each run in its own process, production builds with default settings:
+
+Mapping over an array (`Array.map`, remeda `map`, immer `produce` and mutative `create` assigning each item):
+
+| | stdlib | remeda | immer | mutative |
+|---|---|---|---|---|
+| 10 items, nothing changed | 9 ns · 6 B | 67 ns · 202 B | 4.6 µs · 3.1 KB | 2.8 µs · 2.4 KB |
+| 10 items, something changed | 22 ns · 136 B | 58 ns · 200 B | 5.0 µs · 3.5 KB | 2.9 µs · 2.8 KB |
+| 1000 items, nothing changed | 1.1 µs · 115 B | 4.8 µs · 8.3 KB | 433 µs · 146 KB | 243 µs · 66 KB |
+| 1000 items, something changed | 1.5 µs · 8.3 KB | 5.1 µs · 8.3 KB | 451 µs · 155 KB | 268 µs · 75 KB |
+
+Setting `state.user.settings.theme` (`Object.set` three times, remeda `setPath`, immer `produce` and mutative `create` assigning the field):
+
+| | stdlib | remeda | immer | mutative |
+|---|---|---|---|---|
+| Nothing changed | 22 ns · 6 B | 594 ns · 1.0 KB | 680 ns · 2.8 KB | 436 ns · 2.7 KB |
+| Something changed | 53 ns · 208 B | 535 ns · 1.0 KB | 1.5 µs · 3.8 KB | 626 ns · 3.6 KB |
+
+Remeda copies on every call and never returns the original reference. Immer and mutative do return it, but only after allocating drafts to find out that nothing changed.
+
+## Mutation
+
+We tried shipping opt-in mutation as a fast path, twice. First with [remmi](https://github.com/MichaelOstermann/remmi), which lets every function mutate inside a `withMutations` scope, copying each value only the first time it gets changed:
+
+```ts
+const before = []
+
+const after = withMutations(() => {
+    const a = push(before, 0) // Copies
+    const b = push(a, 1) // Mutates
+    const c = push(b, 2) // Mutates
+    return c
+})
+
+before // []
+after // [0, 1, 2]
+```
+
+Then with a `{ mut: true }` option on individual functions, for arrays we already own:
+
+```ts
+const tasks = Array.map(all, toView)
+Array.filter(tasks, isOpen, { mut: true })
+Array.filter(tasks, isVisible, { mut: true })
+```
+
+Neither beat plain mutation. From remmi's own benchmarks, pushing values into an empty array (Apple M1 Max, Node 24):
+
+| | Time per op |
+|---|---|
+| Mutation | 34 ns |
+| remmi (`withMutations`) | 148 ns |
+| Copy + mutation | 253 ns |
+| mutative | 7 µs |
+| immer | 12 µs |
+
+The big win remmi gave us came from a single loop, which applied hundreds of updates one at a time and copied the entire array for each one. Copying once by hand did the same.
+
+So there is no mutation mode to opt into. Instead look at hot paths, look at anything that loops, and optimize those by hand. A copy nobody else holds a reference to can just be changed with plain JavaScript:
+
+```ts
+const next = [...tracks]
+for (const track of updates) next[index.get(track.id)] = track
+```

@@ -2,10 +2,6 @@
     line-height: 1.8;
 }
 
-.prose > :where(pre[data-language][data-icon])::before {
-    --blume-border: transparent;
-}
-
 [data-blume-page-actions] {
     display: none;
 }

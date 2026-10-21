@@ -137,7 +137,7 @@ Time per call, in V8 (Node 26) and JavaScriptCore (Bun), each run in its own pro
 | 1000 items, first item changed | V8 2.0 µs · JSC 1.7 µs | V8 1.1 µs · JSC 1.8 µs |
 | 1000 items, everything changed | V8 2.0 µs · JSC 1.3 µs | V8 1.4 µs · JSC 2.1 µs |
 
-In JavaScriptCore, copy on write is slower when something changed. We take that trade, since most calls change nothing, and when you don't need the original reference back, `Array.prototype.map` is always there.
+In JavaScriptCore, copy on write is slower when something changed. Where that matters, `Array.prototype.map` is always there.
 
 Compared to other libraries, measured with Node 26, each run in its own process, production builds with default settings:
 

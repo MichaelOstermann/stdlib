@@ -2,15 +2,15 @@
 title: Primitives
 ---
 
-Wherever possible, this library focuses on exposing well designed primitives: Building blocks that allow you to cover your own scenarios by building on top, instead of faking simplicity by hiding complexity under the carpet.
+Wherever possible, this library focuses on exposing well designed primitives: Building blocks that allow you to cover your own scenarios by building on top, instead of hiding the complexity behind options.
 
 ## Examples
 
 ### Popover
 
-Instead of a popover positioning library shipping a convoluted middleware system with tons of cryptic options, we are firstly exposing a good-enough primitive for describing a position:
+Instead of a middleware system with options for every case, the first thing we expose is a primitive for describing a position:
 
-`Rect` `{ top, left, width, height }`, including straight-forward helpers like `Rect.translateY(rect, 100)`
+`Rect` `{ top, left, width, height }`, including straightforward helpers like `Rect.translateY(rect, 100)`
 
 Positioning a popover now becomes a single function, where everything going in and coming out is a `Rect`:
 
@@ -24,9 +24,9 @@ Positioning a popover now becomes a single function, where everything going in a
 }
 ```
 
-This is enough for you to quickly ship every possible scenario you might encounter.
+Everything else is code you write around it.
 
-A typical positioning library exports around 40 types/interfaces: Different shapes for a rectangle (coordinates, dimensions, sides, coordinates with dimensions, coordinates with dimensions and sides, a pair of rects), more than a handful of different sets of options, middleware state, etc. Here it is one: `Rect`.
+Positioning libraries often export dozens of types: Different shapes for a rectangle (coordinates, dimensions, sides, coordinates with dimensions, coordinates with dimensions and sides, a pair of rects), more than a handful of different sets of options, middleware state, etc. Here it is one: `Rect`.
 
 We ship additional utility functions, mostly to cover our own scenarios:
 
@@ -35,7 +35,7 @@ We ship additional utility functions, mostly to cover our own scenarios:
     position: (measurements) => {
         // Given an anchor, which sides have more room?
         // Often this is more than enough to figure out
-        // whether a popover should be placed eg. below
+        // whether a popover should be placed e.g. below
         // or above the anchor:
         const room = Placement.room(measurements)
         room.horizontal // "left" | "right"
@@ -46,7 +46,7 @@ We ship additional utility functions, mostly to cover our own scenarios:
 
 There is no reasonable way to ship a "standard" positioning algorithm that one-shots everything, a few examples:
 
-- Sometimes popovers can dynamically change height and what should happen here (Should it flip to the opposite side when it no longer fits? Should we fake extra height and compute the ideal position AOT?) is ambiguous
+- Sometimes popovers can dynamically change height and what should happen here (Should it flip to the opposite side when it no longer fits? Should we fake extra height and compute the ideal position ahead of time?) is ambiguous
 - The rules for the ideal position of a toolbar in rich text editors are complicated, for example generally speaking as close to the caret as possible, but without overlapping too much text behind it
 
 ### Hotkeys
@@ -96,7 +96,7 @@ window.addEventListener("keydown", (event) => {
 })
 ```
 
-Everything from the list above is now just your own code around that `if`, eg.:
+Everything from the list above is now just your own code around that `if`, e.g.:
 
 ```ts
 window.addEventListener("keydown", (event) => {
@@ -119,4 +119,4 @@ declare module "@monstermann/stdlib-web" {
 }
 ```
 
-And while our library provides a few more utilities, this is enough to cover all your scenarios.
+The library has a few more helpers, but these three are the core.

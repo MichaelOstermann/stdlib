@@ -1,0 +1,10 @@
+{
+    "extends": "./packages/stdlib-style/tsconfig.web.json",
+    "compilerOptions": {
+        "paths": {
+            "@monstermann/stdlib": ["./packages/stdlib/src/index.ts"],
+            "@monstermann/stdlib/*": ["./packages/stdlib/src/*"],
+            "@monstermann/stdlib-web": ["./packages/stdlib-web/src/index.ts"]
+        }
+    }
+}

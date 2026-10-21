@@ -1,5 +1,5 @@
 export interface Timer {
-    tid: NodeJS.Timeout | undefined
+    tid: ReturnType<typeof setTimeout> | undefined
     timeout: number
     callback: () => void
 }

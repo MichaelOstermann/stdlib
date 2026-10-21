@@ -1,13 +1,12 @@
 {
-    "extends": "./packages/stdlib-style/tsconfig.json",
+    "extends": "./packages/stdlib-style/tsconfig.bun.json",
     "compilerOptions": {
-        "lib": ["DOM", "DOM.Iterable", "ES2023", "ES2025.Intl", "ESNext.Disposable"],
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
         "paths": {
             "@monstermann/stdlib": ["./packages/stdlib/src/index.ts"],
             "@monstermann/stdlib/*": ["./packages/stdlib/src/*"],
             "@monstermann/stdlib-web": ["./packages/stdlib-web/src/index.ts"]
-        },
-        "types": ["bun"]
+        }
     },
     "exclude": [
         "**/dist/**",

@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "jsx": "react-jsx",
+        "moduleDetection": "force",
+        "module": "ESNext",
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "noUncheckedIndexedAccess": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "declaration": true,
+        "noEmit": true,
+        "verbatimModuleSyntax": true,
+        "skipLibCheck": true
+    }
+}

@@ -6,7 +6,7 @@
     ],
     "scripts": {
         "globals": "bun scripts/globals.ts",
-        "checks": "bun run style && dprint check && oxlint && tsc && bun test",
+        "checks": "bun run style && dprint check && oxlint && tsc && tsc -p packages/stdlib && tsc -p packages/stdlib-web && tsc -p packages/stdlib-react && bun test",
         "bundles": "bun run --filter '*' bundle",
         "docs:dev": "blume dev",
         "docs:build": "blume build",

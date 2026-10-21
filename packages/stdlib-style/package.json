@@ -28,12 +28,15 @@
         },
         "./dprint.json": "./dprint.json",
         "./dprint-plugin.wasm": "./dist/dprint-plugin.wasm",
-        "./tsconfig.json": "./tsconfig.json"
+        "./tsconfig.bun.json": "./tsconfig.bun.json",
+        "./tsconfig.web.json": "./tsconfig.web.json"
     },
     "files": [
         "dist",
         "dprint.json",
-        "tsconfig.json"
+        "tsconfig.base.json",
+        "tsconfig.bun.json",
+        "tsconfig.web.json"
     ],
     "scripts": {
         "bundle": "tsdown && cargo build --release --target wasm32-unknown-unknown -p dprint-plugin-stdlib-style && cp ../../target/wasm32-unknown-unknown/release/dprint_plugin_stdlib_style.wasm dist/dprint-plugin.wasm"

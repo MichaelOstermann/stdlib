@@ -15,7 +15,7 @@ dprint-core = { version = "0.70", features = ["wasm"] }
 dprint-plugin-json = { version = "0.25.2", default-features = false }
 jsonc-parser = { version = "0.34.0", features = ["serde"] }
 oxc_allocator = "0.153"
-oxc_ast = "0.153"
+oxc_ast = "0.155"
 oxc_ast_visit = "0.153"
 oxc_parser = "0.153"
 oxc_span = "0.153"

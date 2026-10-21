@@ -21,5 +21,8 @@ import { isSame } from "../internals/arrays"
  */
 export function set<T extends object, K extends keyof T>(target: T, key: K, value: T[K]): T {
     if (isSame(target[key], value) && key in target) return target
-    return { ...target, [key]: value }
+    // V8 slows `{ ...target, [key]: value }` down a lot once it sees more than one shape, a plain spread copes with up to four:
+    const copy = { ...target }
+    copy[key] = value
+    return copy
 }

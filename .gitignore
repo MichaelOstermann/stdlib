@@ -7,3 +7,4 @@ playground/*
 /.blume
 /dist
 target
+.blume-verify/

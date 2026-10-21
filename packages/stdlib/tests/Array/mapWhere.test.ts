@@ -18,10 +18,4 @@ describe("Array.mapWhere", () => {
         mapWhere(target, (x) => x > 1, (x) => x * 10)
         expect(target).toEqual([1, 2, 3])
     })
-
-    it("should change what it was given when asked to", () => {
-        const target = [1, 2, 3]
-        expect(mapWhere(target, (x) => x > 1, (x) => x * 10, { mut: true })).toBe(target)
-        expect(target).toEqual([1, 20, 30])
-    })
 })

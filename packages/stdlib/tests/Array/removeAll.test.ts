@@ -20,12 +20,6 @@ describe("Array.removeAll", () => {
         expect(target).toEqual([1, 2, 3])
     })
 
-    it("should change what it was given when asked to", () => {
-        const target = [1, 2, 3, 2, 4]
-        expect(removeAll(target, [2, 4], { mut: true })).toBe(target)
-        expect(target).toEqual([1, 3])
-    })
-
     it("should work the same for a few and for many values", () => {
         const target = [1, 2, 3, 4, 5, 6, 7, Number.NaN]
         expect(removeAll(target, [1, 2])).toEqual([3, 4, 5, 6, 7, Number.NaN])

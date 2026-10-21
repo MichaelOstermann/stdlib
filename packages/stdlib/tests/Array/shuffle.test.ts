@@ -13,11 +13,4 @@ describe("Array.shuffle", () => {
         const target = Array.from({ length: 50 }, (_, i) => i)
         expect(shuffle(target)).not.toEqual(target)
     })
-
-    it("should change what it was given when asked to", () => {
-        const target = Array.from({ length: 50 }, (_, i) => i)
-        expect(shuffle(target, { mut: true })).toBe(target)
-        expect(target).not.toEqual(Array.from({ length: 50 }, (_, i) => i))
-        expect(target.toSorted((a, b) => a - b)).toEqual(Array.from({ length: 50 }, (_, i) => i))
-    })
 })

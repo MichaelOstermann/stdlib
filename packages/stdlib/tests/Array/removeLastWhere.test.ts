@@ -16,10 +16,4 @@ describe("Array.removeLastWhere", () => {
         expect(removeLastWhere(target, (x) => x === 1)).toEqual([1, 2])
         expect(target).toEqual([1, 2, 1])
     })
-
-    it("should change what it was given when asked to", () => {
-        const target = [1, 2, 1]
-        expect(removeLastWhere(target, (x) => x === 1, { mut: true })).toBe(target)
-        expect(target).toEqual([1, 2])
-    })
 })

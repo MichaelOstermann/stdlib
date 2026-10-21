@@ -23,12 +23,6 @@ describe("Array.uniqueBy", () => {
         expect(target).toEqual(["a", "A", "b"])
     })
 
-    it("should change what it was given when asked to", () => {
-        const target = ["a", "A", "b", "B", "c"]
-        expect(uniqueBy(target, (text) => text.toLowerCase(), { mut: true })).toBe(target)
-        expect(target).toEqual(["a", "b", "c"])
-    })
-
     it("should call by once for each element, with its index and the array", () => {
         const target = ["a", "a", "b"]
         const calls: unknown[] = []

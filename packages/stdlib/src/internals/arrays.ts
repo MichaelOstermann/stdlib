@@ -1,5 +1,3 @@
-import type { Mut } from "./types"
-
 /**
  * Whether replacing `a` with `b` changes nothing: like `===`, except that `NaN` is the same as `NaN`.
  * Not `Object.is`, which is considerably slower where this is called for every element.
@@ -40,23 +38,19 @@ export function matcher(values: Iterable<unknown>): ((value: unknown) => boolean
     return (value) => set.has(value)
 }
 
-export function setAt(target: unknown[], index: number, value: unknown, options: Mut | undefined): unknown[] {
+export function setAt(target: unknown[], index: number, value: unknown): unknown[] {
     if (index === -1 || isSame(target[index], value)) return target
-    if (!options?.mut) return target.with(index, value)
-    target[index] = value
-    return target
+    return target.with(index, value)
 }
 
-export function removeAt(target: unknown[], index: number, options: Mut | undefined): unknown[] {
+export function removeAt(target: unknown[], index: number): unknown[] {
     if (index === -1) return target
-    if (!options?.mut) return target.toSpliced(index, 1)
-    target.splice(index, 1)
-    return target
+    return target.toSpliced(index, 1)
 }
 
 /** Replaces every element that satisfies `predicate` with what `map` returns for it. */
-export function mapWhere(target: unknown[], predicate: Predicate | undefined, map: Mapper, options: Mut | undefined): unknown[] {
-    let result = options?.mut ? target : undefined
+export function mapWhere(target: unknown[], predicate: Predicate | undefined, map: Mapper): unknown[] {
+    let result: unknown[] | undefined
     for (let i = 0; i < target.length; i++) {
         const prev = target[i]
         if (predicate && !predicate(prev, i, target)) continue
@@ -71,13 +65,13 @@ export function mapWhere(target: unknown[], predicate: Predicate | undefined, ma
 }
 
 /** Removes every element that satisfies `predicate`. */
-export function removeWhere(target: unknown[], predicate: Predicate, options: Mut | undefined): unknown[] {
+export function removeWhere(target: unknown[], predicate: Predicate): unknown[] {
     let i = 0
     while (i < target.length && !predicate(target[i], i, target)) i++
     if (i === target.length) return target
 
     // Everything before the first removal stays where it is.
-    const result = options?.mut ? target : target.slice(0, i)
+    const result = target.slice(0, i)
     let length = i
     for (i++; i < target.length; i++) {
         const value = target[i]
@@ -94,13 +88,10 @@ export type Comparable = bigint | boolean | Date | number | string
  * Sorts by a key of each element, which is only asked for once. Elements of the same key stay in the order they are in, in both directions.
  * Returns `target` itself when it is in order already.
  */
-export function sortByKeys<K>(target: unknown[], keys: K[], compare: (a: K, b: K) => number, options: (Mut & { order?: "asc" | "desc" }) | undefined): unknown[] {
+export function sortByKeys<K>(target: unknown[], keys: K[], compare: (a: K, b: K) => number, options: { order?: "asc" | "desc" } | undefined): unknown[] {
     const direction = options?.order === "desc" ? -1 : 1
     const order = keys.map((_, index) => index).sort((a, b) => direction * compare(keys[a]!, keys[b]!) || a - b)
     if (order.every((from, to) => from === to)) return target
 
-    const result = order.map((index) => target[index])
-    if (!options?.mut) return result
-    for (let i = 0; i < result.length; i++) target[i] = result[i]
-    return target
+    return order.map((index) => target[index])
 }

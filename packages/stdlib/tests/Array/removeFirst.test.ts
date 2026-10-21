@@ -23,10 +23,4 @@ describe("Array.removeFirst", () => {
         removeFirst(target, 2)
         expect(target).toEqual([1, 2, 3])
     })
-
-    it("should change what it was given when asked to", () => {
-        const target = [1, 2, 1]
-        expect(removeFirst(target, 1, { mut: true })).toBe(target)
-        expect(target).toEqual([2, 1])
-    })
 })

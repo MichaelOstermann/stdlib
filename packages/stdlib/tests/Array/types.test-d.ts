@@ -2,7 +2,6 @@ import { describe, expectTypeOf, it } from "bun:test"
 import { filter } from "../../src/Array/filter"
 import { map } from "../../src/Array/map"
 import { mapFirstWhere } from "../../src/Array/mapFirstWhere"
-import { mapLastWhere } from "../../src/Array/mapLastWhere"
 import { removeAll } from "../../src/Array/removeAll"
 import { removeFirst } from "../../src/Array/removeFirst"
 import { replaceFirst } from "../../src/Array/replaceFirst"
@@ -30,15 +29,6 @@ describe("Array", () => {
         expectTypeOf(removeFirst([1, 2, 3] as const, 1)).toEqualTypeOf<readonly (1 | 2 | 3)[]>()
     })
 
-    it("should only change what can be changed", () => {
-        expectTypeOf(removeAll(mutable, [], { mut: true })).toEqualTypeOf<Task[]>()
-        // @ts-expect-error something readonly can not be changed
-        removeAll(readonly, [], { mut: true })
-        // @ts-expect-error something readonly can not be changed
-        mapFirstWhere(readonly, (task) => task.id === "a", (task) => task, { mut: true })
-        mapLastWhere(readonly, (task) => task.id === "a", (task) => task)
-    })
-
     it("should narrow with type guards", () => {
         expectTypeOf(filter(mixed, (value) => typeof value === "string")).toEqualTypeOf<string[]>()
         expectTypeOf(filter(mixed, (value) => value !== "a")).toEqualTypeOf<(Task | string)[]>()
@@ -60,16 +50,6 @@ describe("Array", () => {
         const union = mixed as number[] | string[]
         expectTypeOf(unique(union)).toEqualTypeOf<number[] | string[]>()
         expectTypeOf(removeFirst(union as number[] | readonly string[], 1 as never)).toEqualTypeOf<number[] | readonly string[]>()
-        // @ts-expect-error one of them is readonly
-        unique(union as number[] | readonly string[], { mut: true })
-    })
-
-    it("should only change an array into what it holds", () => {
-        const numbers = [1, 2]
-        expectTypeOf(map(numbers, (value) => value + 1, { mut: true })).toEqualTypeOf<number[]>()
-        expectTypeOf(map(numbers, (value) => `${value}`)).toEqualTypeOf<string[]>()
-        // @ts-expect-error the array would hold strings while it says numbers
-        map(numbers, (value) => `${value}`, { mut: true })
     })
 
     it("should not take a string for several values", () => {

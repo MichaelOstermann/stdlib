@@ -16,10 +16,4 @@ describe("Array.replaceLastWhere", () => {
         expect(replaceLastWhere(target, (x) => x === 1, 3)).toEqual([1, 2, 3])
         expect(target).toEqual([1, 2, 1])
     })
-
-    it("should change what it was given when asked to", () => {
-        const target = [1, 2, 1]
-        expect(replaceLastWhere(target, (x) => x === 1, 3, { mut: true })).toBe(target)
-        expect(target).toEqual([1, 2, 3])
-    })
 })

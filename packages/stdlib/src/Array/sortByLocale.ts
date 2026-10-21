@@ -1,4 +1,4 @@
-import type { Mut, MutOptions, Updated } from "../internals/types"
+import type { Updated } from "../internals/types"
 import { sortByKeys } from "../internals/arrays"
 
 type LocaleOptions = Intl.CollatorOptions & {
@@ -22,8 +22,6 @@ let collator: Intl.Collator | undefined
  *
  * Elements of the same text stay in the order they are in. Returns `target` itself when it is sorted already.
  *
- * With `{ mut: true }`, `target` itself is changed and returned.
- *
  * ## Example
  *
  * ```ts
@@ -33,11 +31,11 @@ let collator: Intl.Collator | undefined
  * Array.sortByLocale(["ä", "z"], text => text, { locales: "sv" }); // ["z", "ä"]
  * ```
  */
-export function sortByLocale<T extends readonly unknown[]>(target: T, by: (value: T[number], index: number, target: T) => string, options?: LocaleOptions & MutOptions<T>): Updated<T>
-export function sortByLocale(target: unknown[], by: (value: unknown, index: number, target: unknown[]) => string, options?: LocaleOptions & Mut): unknown[] {
+export function sortByLocale<T extends readonly unknown[]>(target: T, by: (value: T[number], index: number, target: T) => string, options?: LocaleOptions): Updated<T>
+export function sortByLocale(target: unknown[], by: (value: unknown, index: number, target: unknown[]) => string, options?: LocaleOptions): unknown[] {
     let compare: (a: string, b: string) => number
-    if (options && Object.keys(options).some((key) => key !== "mut" && key !== "order")) {
-        const { locales, mut: _mut, order: _order, ...rest } = options
+    if (options && Object.keys(options).some((key) => key !== "order")) {
+        const { locales, order: _order, ...rest } = options
         compare = new Intl.Collator(locales, rest).compare
     }
     else {

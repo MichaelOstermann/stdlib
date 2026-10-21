@@ -16,10 +16,4 @@ describe("Array.unique", () => {
         expect(unique(target)).not.toBe(target)
         expect(target).toEqual([1, 1])
     })
-
-    it("should change what it was given when asked to", () => {
-        const target = [1, 2, 1, 3, 2]
-        expect(unique(target, { mut: true })).toBe(target)
-        expect(target).toEqual([1, 2, 3])
-    })
 })

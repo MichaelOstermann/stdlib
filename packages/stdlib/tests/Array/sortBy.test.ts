@@ -31,12 +31,6 @@ describe("Array.sortBy", () => {
         expect(target).toEqual([1, 2, 2, 3])
     })
 
-    it("should change what it was given when asked to", () => {
-        const target = [3, 1, 2]
-        expect(sortBy(target, (value) => value, { mut: true })).toBe(target)
-        expect(target).toEqual([1, 2, 3])
-    })
-
     it("should only ask once for each element", () => {
         let calls = 0
         sortBy([5, 4, 3, 2, 1], (value) => {
@@ -64,13 +58,5 @@ describe("Array.sortByLocale", () => {
         expect(sortByLocale(["a", "c", "b"], (text) => text, { order: "desc" })).toEqual(["c", "b", "a"])
         const items = [{ id: 1, title: "a" }, { id: 2, title: "b" }, { id: 3, title: "a" }]
         expect(sortByLocale(items, (item) => item.title, { order: "desc" }).map((item) => item.id)).toEqual([2, 1, 3])
-    })
-
-    it("should return what it was given when it is sorted already, and change it when asked to", () => {
-        const sorted = ["a", "b"]
-        expect(sortByLocale(sorted, (text) => text)).toBe(sorted)
-        const target = ["b", "a"]
-        expect(sortByLocale(target, (text) => text, { mut: true })).toBe(target)
-        expect(target).toEqual(["a", "b"])
     })
 })

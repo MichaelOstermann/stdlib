@@ -1,5 +1,5 @@
 import type { Comparable } from "../internals/arrays"
-import type { Mut, MutOptions, Updated } from "../internals/types"
+import type { Updated } from "../internals/types"
 import { sortByKeys } from "../internals/arrays"
 
 /**
@@ -13,8 +13,6 @@ import { sortByKeys } from "../internals/arrays"
  *
  * Elements of the same value stay in the order they are in. Returns `target` itself when it is sorted already.
  *
- * With `{ mut: true }`, `target` itself is changed and returned.
- *
  * ## Example
  *
  * ```ts
@@ -23,8 +21,8 @@ import { sortByKeys } from "../internals/arrays"
  * Array.sortBy([3, 1, 2], value => value); // [1, 2, 3]
  * ```
  */
-export function sortBy<T extends readonly unknown[]>(target: T, by: (value: T[number], index: number, target: T) => Comparable, options?: MutOptions<T> & { order?: "asc" | "desc" }): Updated<T>
-export function sortBy(target: unknown[], by: (value: unknown, index: number, target: unknown[]) => Comparable, options?: Mut & { order?: "asc" | "desc" }): unknown[] {
+export function sortBy<T extends readonly unknown[]>(target: T, by: (value: T[number], index: number, target: T) => Comparable, options?: { order?: "asc" | "desc" }): Updated<T>
+export function sortBy(target: unknown[], by: (value: unknown, index: number, target: unknown[]) => Comparable, options?: { order?: "asc" | "desc" }): unknown[] {
     return sortByKeys(target, target.map(by), compare, options)
 }
 

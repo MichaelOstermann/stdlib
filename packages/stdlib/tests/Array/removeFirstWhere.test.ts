@@ -18,10 +18,4 @@ describe("Array.removeFirstWhere", () => {
         removeFirstWhere(target, (x) => x > 1)
         expect(target).toEqual([1, 2, 3])
     })
-
-    it("should change what it was given when asked to", () => {
-        const target = [1, 2, 3]
-        expect(removeFirstWhere(target, (x) => x > 1, { mut: true })).toBe(target)
-        expect(target).toEqual([1, 3])
-    })
 })

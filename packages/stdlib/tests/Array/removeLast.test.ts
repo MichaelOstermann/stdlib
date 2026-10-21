@@ -16,10 +16,4 @@ describe("Array.removeLast", () => {
         expect(removeLast(target, 1)).toEqual([1, 2])
         expect(target).toEqual([1, 2, 1])
     })
-
-    it("should change what it was given when asked to", () => {
-        const target = [1, 2, 1]
-        expect(removeLast(target, 1, { mut: true })).toBe(target)
-        expect(target).toEqual([1, 2])
-    })
 })

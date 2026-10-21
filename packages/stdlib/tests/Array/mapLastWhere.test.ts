@@ -16,10 +16,4 @@ describe("Array.mapLastWhere", () => {
         expect(mapLastWhere(target, (x) => x === 1, (x) => x * 3)).toEqual([1, 2, 3])
         expect(target).toEqual([1, 2, 1])
     })
-
-    it("should change what it was given when asked to", () => {
-        const target = [1, 2, 1]
-        expect(mapLastWhere(target, (x) => x === 1, (x) => x * 3, { mut: true })).toBe(target)
-        expect(target).toEqual([1, 2, 3])
-    })
 })

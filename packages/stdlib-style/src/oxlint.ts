@@ -20,7 +20,7 @@ export default function (options: Options = {}): OxlintConfig {
         imports(),
         local(),
         regex(),
-        react(options),
+        react(),
         tailwind(options),
         unicorn(),
         disables(),

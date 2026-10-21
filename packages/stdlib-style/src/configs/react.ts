@@ -1,10 +1,8 @@
-import type { Config, Options } from "../types.js"
+import type { Config } from "../types.js"
 import { GLOB_REACT } from "../constants.js"
 import { plugin } from "../plugin.js"
 
-export function react(options: Options): Config {
-    if (options.react !== true) return {}
-
+export function react(): Config {
     return {
         plugins: ["react"],
         jsPlugins: [

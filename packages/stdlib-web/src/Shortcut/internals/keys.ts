@@ -70,6 +70,11 @@ const names: Record<string, string> = {
     "uparrow": "ArrowUp",
 }
 
+/** What `mod` stands for: meta (Command) on Apple platforms, ctrl everywhere else. */
+export function mod(): "ctrl" | "meta" {
+    return /Mac|iPhone|iPad/.test(navigator.platform) ? "meta" : "ctrl"
+}
+
 /** The modifier a name stands for, as written in a shortcut (`cmd`, `Control`) or reported by an event (`Meta`). */
 export function modifierOf(name: string): Modifier | undefined {
     const lower = name.toLowerCase()

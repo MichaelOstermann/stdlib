@@ -1,7 +1,6 @@
 import { bindings } from "./bindings"
 import { fromEvent } from "./fromEvent"
 import { matches } from "./matches"
-import { mod } from "./mod"
 import { parse } from "./parse"
 import { serialize } from "./serialize"
 
@@ -36,7 +35,6 @@ export const Shortcut = {
     bindings,
     fromEvent,
     matches,
-    mod,
     parse,
     serialize,
 }

@@ -1,4 +1,5 @@
 import type { Keystroke, ShortcutEvent } from "../../src/Shortcut"
+import { onTestFinished } from "bun:test"
 
 type Modifiers = "alt" | "altGraph" | "composing" | "ctrl" | "meta" | "shift"
 
@@ -14,6 +15,16 @@ export function ev(key: string, code: string, ...modifiers: Modifiers[]): Shortc
         shiftKey: modifiers.includes("shift"),
         getModifierState: (name) => name === "AltGraph" && modifiers.includes("altGraph"),
     }
+}
+
+/** Pretends to run on `name`, as `navigator.platform` reports it, until the end of the test. */
+export function platform(name: string): void {
+    const descriptor = Object.getOwnPropertyDescriptor(navigator, "platform")
+    Object.defineProperty(navigator, "platform", { configurable: true, value: name })
+    onTestFinished(() => {
+        if (descriptor) Object.defineProperty(navigator, "platform", descriptor)
+        else Reflect.deleteProperty(navigator, "platform")
+    })
 }
 
 /** A keystroke with what is not given as `false` and `""`: `ks({ ctrl: true, key: "k" })`. */

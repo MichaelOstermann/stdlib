@@ -1,9 +1,7 @@
 import type { ShortcutEvent } from "../../src/Shortcut"
-import { afterEach, describe, expect, it } from "bun:test"
+import { describe, expect, it } from "bun:test"
 import { Shortcut } from "../../src/Shortcut"
-import { ev, ks } from "./helpers"
-
-afterEach(() => void Shortcut.mod(null))
+import { ev, ks, platform } from "./helpers"
 
 const is = (shortcut: string, event: ShortcutEvent): boolean | "partial" => Shortcut.matches(shortcut, event)
 
@@ -203,10 +201,10 @@ describe("Shortcut.matches, shortcuts and keystrokes", () => {
         expect(Shortcut.matches("esc", [ks({ key: "esc" })])).toBe(true)
     })
 
-    it("should parse mod as it is when matching", () => {
-        Shortcut.mod("meta")
+    it("should take mod for the modifier of the platform", () => {
+        platform("MacIntel")
         expect(Shortcut.matches("mod+k", ev("k", "KeyK", "meta"))).toBe(true)
-        Shortcut.mod("ctrl")
+        platform("Linux x86_64")
         expect(Shortcut.matches("mod+k", ev("k", "KeyK", "meta"))).toBe(false)
         expect(Shortcut.matches("mod+k", ev("k", "KeyK", "ctrl"))).toBe(true)
     })

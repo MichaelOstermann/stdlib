@@ -1,11 +1,8 @@
 import type { Keystroke, ShortcutEvent } from "."
 import { isModifierPress, matchesEvent } from "./internals/matchesEvent"
 import { normalize } from "./internals/normalize"
-import { mod } from "./mod"
 import { parse } from "./parse"
 import { serializeKeystroke } from "./serialize"
-
-const parsed = new Map<string, Keystroke[]>()
 
 /**
  * # matches
@@ -19,7 +16,7 @@ const parsed = new Map<string, Keystroke[]>()
  *
  * Whether `input` is `shortcut`: `true` when it is all of it, `"partial"` when it is the beginning of it and more has to come, `false` otherwise.
  *
- * `input` is what was pressed so far, the events since the last match, or another shortcut, eg. to tell which bindings a recorded shortcut conflicts with. Shortcuts that are strings are parsed once.
+ * `input` is what was pressed so far, the events since the last match, or another shortcut, eg. to tell which bindings a recorded shortcut conflicts with.
  *
  * Against events:
  *
@@ -84,10 +81,5 @@ export function matches(shortcut: string | Keystroke[], input: string | Keystrok
 }
 
 function keystrokesOf(shortcut: string | Keystroke[]): Keystroke[] {
-    if (typeof shortcut !== "string") return shortcut.map(normalize)
-    // `mod` is part of the key, it is resolved when parsing and can be overridden.
-    const key = `${mod()} ${shortcut}`
-    let keystrokes = parsed.get(key)
-    if (!keystrokes) parsed.set(key, keystrokes = parse(shortcut))
-    return keystrokes
+    return typeof shortcut === "string" ? parse(shortcut) : shortcut.map(normalize)
 }

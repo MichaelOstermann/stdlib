@@ -1,8 +1,6 @@
-import { afterEach, describe, expect, it } from "bun:test"
+import { describe, expect, it } from "bun:test"
 import { Shortcut } from "../../src/Shortcut"
-import { ks } from "./helpers"
-
-afterEach(() => void Shortcut.mod(null))
+import { ks, platform } from "./helpers"
 
 describe("Shortcut.parse", () => {
     it("should parse keys, modifiers and sequences", () => {
@@ -51,11 +49,15 @@ describe("Shortcut.parse", () => {
         expect(Shortcut.parse("   ")).toEqual([])
     })
 
-    it("should resolve mod when parsing", () => {
-        Shortcut.mod("meta")
-        expect(Shortcut.parse("mod+k")).toEqual([ks({ key: "k", meta: true })])
-        Shortcut.mod("ctrl")
-        expect(Shortcut.parse("Mod+shift+k")).toEqual([ks({ ctrl: true, key: "k", shift: true })])
+    it("should take mod for meta on Apple platforms and for ctrl everywhere else", () => {
+        for (const name of ["MacIntel", "iPhone", "iPad"]) {
+            platform(name)
+            expect(Shortcut.parse("mod+k")).toEqual([ks({ key: "k", meta: true })])
+        }
+        for (const name of ["Linux x86_64", "Win32"]) {
+            platform(name)
+            expect(Shortcut.parse("Mod+shift+k")).toEqual([ks({ ctrl: true, key: "k", shift: true })])
+        }
     })
 })
 
@@ -71,31 +73,5 @@ describe("Shortcut.serialize", () => {
         for (const shortcut of ["ctrl++ alt+shift+up", "meta+Escape", "?", "ctrl+ContextMenu", "a+b", "ctrl+", "space g g"]) {
             expect(Shortcut.parse(Shortcut.serialize(Shortcut.parse(shortcut)))).toEqual(Shortcut.parse(shortcut))
         }
-    })
-})
-
-describe("Shortcut.mod", () => {
-    it("should detect the platform", () => {
-        const platform = Object.getOwnPropertyDescriptor(navigator, "platform")
-        try {
-            Object.defineProperty(navigator, "platform", { configurable: true, value: "MacIntel" })
-            expect(Shortcut.mod()).toBe("meta")
-            Object.defineProperty(navigator, "platform", { configurable: true, value: "iPhone" })
-            expect(Shortcut.mod()).toBe("meta")
-            Object.defineProperty(navigator, "platform", { configurable: true, value: "Linux x86_64" })
-            expect(Shortcut.mod()).toBe("ctrl")
-            Object.defineProperty(navigator, "platform", { configurable: true, value: "Win32" })
-            expect(Shortcut.mod()).toBe("ctrl")
-        }
-        finally {
-            if (platform) Object.defineProperty(navigator, "platform", platform)
-        }
-    })
-
-    it("should be overridable", () => {
-        expect(Shortcut.mod("meta")).toBe("meta")
-        expect(Shortcut.mod()).toBe("meta")
-        expect(Shortcut.mod("ctrl")).toBe("ctrl")
-        expect(Shortcut.mod()).toBe("ctrl")
     })
 })

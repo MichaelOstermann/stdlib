@@ -1,0 +1,100 @@
+import { afterEach, describe, expect, it } from "bun:test"
+import { Shortcut } from "../../src/Shortcut"
+
+afterEach(() => void Shortcut.mod(null))
+
+describe("Shortcut.parse", () => {
+    it("should parse keys, modifiers and sequences", () => {
+        expect(Shortcut.parse("a")).toEqual([{ key: "a" }])
+        expect(Shortcut.parse("ctrl+a")).toEqual([{ ctrl: true, key: "a" }])
+        expect(Shortcut.parse("meta+shift+k")).toEqual([{ key: "k", meta: true, shift: true }])
+        expect(Shortcut.parse("alt+ArrowDown")).toEqual([{ alt: true, key: "ArrowDown" }])
+        expect(Shortcut.parse(" ctrl+k   ctrl+b ")).toEqual([{ ctrl: true, key: "k" }, { ctrl: true, key: "b" }])
+        expect(Shortcut.parse("ctrl+shift")).toEqual([{ ctrl: true, shift: true }])
+    })
+
+    it("should resolve aliases and ignore the case of names", () => {
+        expect(Shortcut.parse("cmd+esc")).toEqual([{ key: "Escape", meta: true }])
+        expect(Shortcut.parse("CTRL+ENTER")).toEqual([{ ctrl: true, key: "Enter" }])
+        expect(Shortcut.parse("option+up")).toEqual([{ alt: true, key: "ArrowUp" }])
+        expect(Shortcut.parse("space")).toEqual([{ key: "Space" }])
+        expect(Shortcut.parse("f12")).toEqual([{ key: "F12" }])
+        expect(Shortcut.parse("ctrl+Control")).toEqual([{ ctrl: true }])
+    })
+
+    it("should take an uppercase letter for shift", () => {
+        expect(Shortcut.parse("K")).toEqual([{ key: "k", shift: true }])
+        expect(Shortcut.parse("Ö")).toEqual([{ key: "ö", shift: true }])
+        expect(Shortcut.parse("shift+1")).toEqual([{ key: "1", shift: true }])
+    })
+
+    it("should parse the plus key", () => {
+        expect(Shortcut.parse("+")).toEqual([{ key: "+" }])
+        expect(Shortcut.parse("ctrl++")).toEqual([{ ctrl: true, key: "+" }])
+        expect(Shortcut.parse("ctrl+shift++ +")).toEqual([{ ctrl: true, key: "+", shift: true }, { key: "+" }])
+    })
+
+    it("should keep names that are not listed as written", () => {
+        expect(Shortcut.parse("ctrl+ContextMenu")).toEqual([{ ctrl: true, key: "ContextMenu" }])
+        expect(Shortcut.parse("foo")).toEqual([{ key: "foo" }])
+        expect(Shortcut.parse("toString")).toEqual([{ key: "toString" }])
+    })
+
+    it("should not throw, a press with two keys or an empty part is a key of that name", () => {
+        expect(Shortcut.parse("mdo+k")).toEqual([{ key: "mdo+k" }])
+        expect(Shortcut.parse("a+b")).toEqual([{ key: "a+b" }])
+        expect(Shortcut.parse("ctrl+")).toEqual([{ key: "ctrl+" }])
+        expect(Shortcut.parse("+k")).toEqual([{ key: "+k" }])
+        expect(Shortcut.parse("ctrl+k a+b")).toEqual([{ ctrl: true, key: "k" }, { key: "a+b" }])
+        expect(Shortcut.parse("")).toEqual([])
+        expect(Shortcut.parse("   ")).toEqual([])
+    })
+
+    it("should resolve mod when parsing", () => {
+        Shortcut.mod("meta")
+        expect(Shortcut.parse("mod+k")).toEqual([{ key: "k", meta: true }])
+        Shortcut.mod("ctrl")
+        expect(Shortcut.parse("Mod+shift+k")).toEqual([{ ctrl: true, key: "k", shift: true }])
+    })
+})
+
+describe("Shortcut.serialize", () => {
+    it("should be the same string for the same keystrokes", () => {
+        expect(Shortcut.serialize(Shortcut.parse("shift+ctrl+K cmd+esc"))).toBe("ctrl+shift+k meta+Escape")
+        expect(Shortcut.serialize([{ key: "A" }])).toBe(Shortcut.serialize([{ key: "a", shift: true }]))
+        expect(Shortcut.serialize([{ key: "Control", shift: true }])).toBe("ctrl+shift")
+        expect(Shortcut.serialize([])).toBe("")
+    })
+
+    it("should be read back by parse", () => {
+        for (const shortcut of ["ctrl++ alt+shift+up", "meta+Escape", "?", "ctrl+ContextMenu", "a+b", "ctrl+", "space g g"]) {
+            expect(Shortcut.parse(Shortcut.serialize(Shortcut.parse(shortcut)))).toEqual(Shortcut.parse(shortcut))
+        }
+    })
+})
+
+describe("Shortcut.mod", () => {
+    it("should detect the platform", () => {
+        const platform = Object.getOwnPropertyDescriptor(navigator, "platform")
+        try {
+            Object.defineProperty(navigator, "platform", { configurable: true, value: "MacIntel" })
+            expect(Shortcut.mod()).toBe("meta")
+            Object.defineProperty(navigator, "platform", { configurable: true, value: "iPhone" })
+            expect(Shortcut.mod()).toBe("meta")
+            Object.defineProperty(navigator, "platform", { configurable: true, value: "Linux x86_64" })
+            expect(Shortcut.mod()).toBe("ctrl")
+            Object.defineProperty(navigator, "platform", { configurable: true, value: "Win32" })
+            expect(Shortcut.mod()).toBe("ctrl")
+        }
+        finally {
+            if (platform) Object.defineProperty(navigator, "platform", platform)
+        }
+    })
+
+    it("should be overridable", () => {
+        expect(Shortcut.mod("meta")).toBe("meta")
+        expect(Shortcut.mod()).toBe("meta")
+        expect(Shortcut.mod("ctrl")).toBe("ctrl")
+        expect(Shortcut.mod()).toBe("ctrl")
+    })
+})

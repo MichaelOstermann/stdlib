@@ -1,4 +1,5 @@
 import { autoscroll } from "./autoscroll"
+import { isEditable } from "./isEditable"
 import { measureTextHeight } from "./measureTextHeight"
 import { nearest } from "./nearest"
 import { observePosition } from "./observePosition"
@@ -10,6 +11,7 @@ import { scrollParent } from "./scrollParent"
 
 export const DOM = {
     autoscroll,
+    isEditable,
     measureTextHeight,
     nearest,
     observePosition,

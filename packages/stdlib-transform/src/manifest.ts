@@ -40,7 +40,7 @@ export const functions: ReadonlyMap<string, string> = new Map([
 /** The packages whose imports are pointed at the files they live in, by what they are imported from. */
 export const packages: ReadonlyMap<string, Package> = new Map([
     ["@monstermann/stdlib", { functions, namespaces }],
-    ["@monstermann/stdlib-web", { functions: new Map(), namespaces: new Set(["DOM", "Placement", "Rect"]) }],
+    ["@monstermann/stdlib-web", { functions: new Map(), namespaces: new Set(["DOM", "Placement", "Rect", "Shortcut"]) }],
 ])
 
 /** Files that only exist for running the code untransformed. */

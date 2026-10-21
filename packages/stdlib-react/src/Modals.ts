@@ -2,6 +2,7 @@ import type { Memo, ReadonlyEmitter, ReadonlySignal, Signal } from "@monstermann
 import type { PlacementPosition } from "@monstermann/stdlib-web"
 import type { TransitionStatus } from "./useTransitionStatus"
 import { Emitter } from "@monstermann/stdlib"
+import { DOM } from "@monstermann/stdlib-web"
 
 /** Something that opens over the page and is closed by a click outside of it or by Esc. */
 export interface Modal {
@@ -125,8 +126,7 @@ function listen(): () => void {
 
     document.addEventListener("keydown", (event) => {
         if (event.key !== "Escape") return
-        const target = event.target as HTMLElement | null
-        if (target?.nodeName === "INPUT" || target?.nodeName === "TEXTAREA" || target?.isContentEditable) return
+        if (DOM.isEditable(event.target)) return
         const modal = top()
         if (modal) dismiss(modal)
     }, { signal })

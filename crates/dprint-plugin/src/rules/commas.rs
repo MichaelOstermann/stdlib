@@ -16,13 +16,16 @@ use crate::source::Source;
 use crate::source::Token;
 
 pub fn run(source: &Source, edits: &mut Edits) {
-    Commas { text: source.text, tokens: &source.tokens, edits }.visit_program(source.program);
+    Commas { text: source.text, tokens: &source.tokens, edits, jsx: source.program.source_type.is_jsx(), generic_arrow: None }.visit_program(source.program);
 }
 
 struct Commas<'s> {
     text: &'s str,
     tokens: &'s [Token],
     edits: &'s mut Edits,
+    jsx: bool,
+    /// The type parameters of the arrow function being visited, if they are a lone `<T>` in a file with JSX.
+    generic_arrow: Option<Span>,
 }
 
 impl Commas<'_> {
@@ -175,9 +178,16 @@ impl<'a> Visit<'a> for Commas<'_> {
         walk::walk_ts_type_parameter_instantiation(self, it);
     }
 
+    fn visit_arrow_function_expression(&mut self, it: &ArrowFunctionExpression<'a>) {
+        let lone = it.type_parameters.as_ref().filter(|parameters| matches!(parameters.params.as_slice(), [parameter] if parameter.constraint.is_none()));
+        self.generic_arrow = lone.filter(|_| self.jsx).map(|parameters| parameters.span);
+        walk::walk_arrow_function_expression(self, it);
+    }
+
     fn visit_ts_type_parameter_declaration(&mut self, it: &TSTypeParameterDeclaration<'a>) {
-        // On one line the comma may be load-bearing: `<T,>(a: T) => a` in a `.tsx` file.
-        if self.text[it.span.start as usize..it.span.end as usize].contains('\n') {
+        // Without the comma, `<T,>(a: T) => a` in a `.tsx` file reads as a JSX tag.
+        let tag_like = self.generic_arrow == Some(it.span) && !self.text[it.span.start as usize..it.span.end as usize].contains('\n');
+        if !tag_like {
             self.trailing(it.params.last().map(|parameter| parameter.span), true);
         }
         walk::walk_ts_type_parameter_declaration(self, it);
@@ -230,6 +240,15 @@ mod tests {
         assert_eq!(format("const a = [1, , ]\n"), "const a = [1, ,]\n");
         assert_eq!(format("foo(a, {\n    b,\n})\n"), "foo(a, {\n    b,\n})\n");
         assert_eq!(format("import a from \"a\"\nconst b = (c) => c\nfoo()\n"), "import a from \"a\"\nconst b = (c) => c\nfoo()\n");
+    }
+
+    #[test]
+    fn type_parameters() {
+        assert_eq!(format("type A<B, C,> = [B, C]\nfunction d<E, F,>() {}\nconst g = <H,>(h: H) => h\n"), "type A<B, C> = [B, C]\nfunction d<E, F>() {}\nconst g = <H>(h: H) => h\n");
+        assert_eq!(format("type A<\n    B,\n    C,\n> = [B, C]\n"), "type A<\n    B,\n    C,\n> = [B, C]\n");
+        let tsx = |text: &str| format_text(Path::new("test.tsx"), text, &Configuration::default()).unwrap().unwrap_or_else(|| text.to_string());
+        assert_eq!(tsx("const a = <B,>(b: B) => b\n"), "const a = <B,>(b: B) => b\n");
+        assert_eq!(tsx("const a = <B extends C,>(b: B) => b\nconst d = <E, F,>(e: E, f: F) => e\n"), "const a = <B extends C>(b: B) => b\nconst d = <E, F>(e: E, f: F) => e\n");
     }
 
     #[test]

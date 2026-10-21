@@ -138,7 +138,7 @@ mod tests {
     #[test]
     fn top_level_functions() {
         assert_eq!(format("const f = (a: string): number => {\n    return 1\n}\n"), "function f(a: string): number {\n    return 1\n}\n");
-        assert_eq!(format("export const f = async <T,>(a: T) => {\n    await a\n}\n"), "export async function f<T,>(a: T) {\n    await a\n}\n");
+        assert_eq!(format("export const f = async <T,>(a: T) => {\n    await a\n}\n"), "export async function f<T>(a: T) {\n    await a\n}\n");
         assert_eq!(format("const f = a => {\n    return a\n}\n"), "function f(a) {\n    return a\n}\n");
         assert_eq!(format("const f = function (a) {\n    return a\n}\n"), "function f(a) {\n    return a\n}\n");
         assert_eq!(format("const f = (a) => g(\n    a,\n)\n"), "function f(a) {\n    return g(\n        a,\n    )\n}\n");

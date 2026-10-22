@@ -93,15 +93,53 @@ describe("Emitter", () => {
         expect(log).toEqual(["before", "caught", "hello", "after"])
     })
 
-    it("should stop at a listener that throws", () => {
+    it("should call every listener, then throw what one threw", () => {
         let calls = 0
+        const failed = new Error("failed")
         const onTick = Emitter<number>()
+        onTick(() => {
+            throw failed
+        })
+        onTick(() => calls++)
+        expect(() => onTick(1)).toThrow(failed)
+        expect(calls).toBe(1)
+    })
+
+    it("should throw an AggregateError when several listeners threw", () => {
+        const a = new Error("a")
+        const b = new Error("b")
+        const onTick = Emitter<number>()
+        onTick(() => {
+            throw a
+        })
+        onTick(() => {
+            throw b
+        })
+        try {
+            onTick(1)
+            expect.unreachable()
+        }
+        catch (error) {
+            expect(error).toBeInstanceOf(AggregateError)
+            expect((error as AggregateError).errors).toEqual([a, b])
+            expect((error as AggregateError).message).toBe("Emitter")
+        }
+    })
+
+    it("should pass the default dispatch to one of its own", () => {
+        const caught: unknown[] = []
+        const log: number[] = []
+        const onTick = Emitter<number>((listeners, message, dispatch) => {
+            try { dispatch(listeners, message) }
+            catch (error) { caught.push(error) }
+        })
         onTick(() => {
             throw new Error("failed")
         })
-        onTick(() => calls++)
-        expect(() => onTick(1)).toThrow("failed")
-        expect(calls).toBe(0)
+        onTick((value) => log.push(value))
+        onTick(1)
+        expect(log).toEqual([1])
+        expect(caught).toEqual([new Error("failed")])
     })
 
     it("should be something that can only be listened to", () => {
@@ -131,7 +169,7 @@ describe("AsyncEmitter", () => {
         expect(log).toEqual(["a stop", "a done", "b stop"])
     })
 
-    it("should reject with what a listener throws, without calling the rest", async () => {
+    it("should call every listener, then reject with what one threw", async () => {
         let calls = 0
         const onTick = AsyncEmitter<number>()
         onTick(async () => {
@@ -140,7 +178,34 @@ describe("AsyncEmitter", () => {
         onTick(() => void calls++)
         expect(onTick(1)).rejects.toThrow("failed")
         await Promise.resolve()
-        expect(calls).toBe(0)
+        expect(calls).toBe(1)
+    })
+
+    it("should reject with an AggregateError when several listeners threw", async () => {
+        const onTick = AsyncEmitter<number>()
+        onTick(async () => {
+            throw new Error("a")
+        })
+        onTick(() => {
+            throw new Error("b")
+        })
+        expect(onTick(1)).rejects.toThrow(new AggregateError([], "AsyncEmitter"))
+    })
+
+    it("should pass the default dispatch to one of its own", async () => {
+        const caught: unknown[] = []
+        const log: number[] = []
+        const onTick = AsyncEmitter<number>(async (listeners, message, dispatch) => {
+            try { await dispatch(listeners, message) }
+            catch (error) { caught.push(error) }
+        })
+        onTick(async () => {
+            throw new Error("failed")
+        })
+        onTick((value) => void log.push(value))
+        await onTick(1)
+        expect(log).toEqual([1])
+        expect(caught).toEqual([new Error("failed")])
     })
 
     it("should remove listeners, one and all", async () => {

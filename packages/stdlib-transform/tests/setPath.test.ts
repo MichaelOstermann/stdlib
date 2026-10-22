@@ -18,7 +18,7 @@ describe("transformSetPaths", () => {
         expect(run(`const a = Object.setPath(state, "user.settings.theme", "dark")`)).toBe(`const a = setPath0(state, "dark")
 function setPath0(t, v) {
     const t0 = t.user, t1 = t0.settings, t2 = t1.theme
-    if ((t2 === v || (t2 !== t2 && v !== v)) && "theme" in t1) return t
+    if (t2 === v && "theme" in t1) return t
     return { ...t, user: { ...t0, settings: { ...t1, theme: v } } }
 }
 `)
@@ -54,8 +54,6 @@ function setPath0(t, v) {
         expect(both("user.settings.theme", state, "dark")).toEqual([setPath(state, "user.settings.theme", "dark"), setPath(state, "user.settings.theme", "dark")])
         expect(both("a-b.c", state, 2)[0]).toEqual({ ...state, "a-b": { c: 2 } })
         expect(both("user", state, undefined)[0]).toEqual({ ...state, user: undefined })
-        const nan = { a: Number.NaN }
-        expect(both("a", nan, Number.NaN)[0]).toBe(nan)
         const missing: { a?: number } = {}
         expect(both("a", missing, undefined)[0]).toEqual({ a: undefined })
     })

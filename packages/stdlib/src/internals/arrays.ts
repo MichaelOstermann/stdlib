@@ -1,5 +1,3 @@
-import { isSame } from "./isSame"
-
 type Predicate = (value: any, index: number, target: any) => boolean
 type Mapper = (value: any, index: number, target: any) => unknown
 
@@ -32,7 +30,7 @@ export function matcher(values: Iterable<unknown>): ((value: unknown) => boolean
 }
 
 export function setAt(target: unknown[], index: number, value: unknown): unknown[] {
-    if (index === -1 || isSame(target[index], value)) return target
+    if (index === -1 || target[index] === value) return target
     return target.with(index, value)
 }
 
@@ -48,9 +46,7 @@ export function mapWhere(target: unknown[], predicate: Predicate | undefined, ma
         const prev = target[i]
         if (predicate && !predicate(prev, i, target)) continue
         const next = map(prev, i, target)
-        // isSame, written out: it is not inlined here, which doubles the time this takes.
-        // eslint-disable-next-line no-self-compare
-        if (prev === next || (prev !== prev && next !== next)) continue
+        if (prev === next) continue
         result ??= [...target]
         result[i] = next
     }

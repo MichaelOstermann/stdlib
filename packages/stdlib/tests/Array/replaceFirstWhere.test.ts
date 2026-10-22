@@ -17,9 +17,4 @@ describe("Array.replaceFirstWhere", () => {
         replaceFirstWhere(target, (x) => x > 1, 0)
         expect(target).toEqual([1, 2, 3])
     })
-
-    it("should not take NaN for a change", () => {
-        const target = [Number.NaN]
-        expect(replaceFirstWhere(target, Number.isNaN, Number.NaN)).toBe(target)
-    })
 })

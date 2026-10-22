@@ -15,7 +15,7 @@ import { ScopeTracker, walk } from "oxc-walker"
  *
  * function setPath0(t, v) {
  *     const t0 = t.user, t1 = t0.settings, t2 = t1.theme
- *     if ((t2 === v || (t2 !== t2 && v !== v)) && "theme" in t1) return t
+ *     if (t2 === v && "theme" in t1) return t
  *     return { ...t, user: { ...t0, settings: { ...t1, theme: v } } }
  * }
  * ```
@@ -110,8 +110,7 @@ function compile(name: string, keys: string[]): string {
     return [
         `function ${name}(t, v) {`,
         `    const ${reads}`,
-        // Not Object.is, the same comparison as Object.set: NaN is the same as NaN.
-        `    if ((${current} === v || (${current} !== ${current} && v !== v)) && ${JSON.stringify(keys[last])} in ${parent(last)}) return t`,
+        `    if (${current} === v && ${JSON.stringify(keys[last])} in ${parent(last)}) return t`,
         `    return ${copy}`,
         `}`,
     ].join("\n")

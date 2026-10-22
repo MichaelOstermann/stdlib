@@ -1,5 +1,4 @@
 import type { AnyMap, MapKey, MapValue, UpdatedMap } from "../internals/types"
-import { isSame } from "../internals/isSame"
 
 /**
  * # set
@@ -21,6 +20,6 @@ import { isSame } from "../internals/isSame"
  */
 export function set<T extends AnyMap>(target: T, key: MapKey<T>, value: MapValue<T>): UpdatedMap<T>
 export function set(target: Map<unknown, unknown>, key: unknown, value: unknown): Map<unknown, unknown> {
-    if (isSame(target.get(key), value) && (value !== undefined || target.has(key))) return target
+    if (target.get(key) === value && (value !== undefined || target.has(key))) return target
     return new Map(target).set(key, value)
 }

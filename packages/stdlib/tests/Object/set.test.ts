@@ -21,9 +21,8 @@ describe("Object.set", () => {
         expect(set(target, "a" as const, 2)).toEqual({ a: 2, b: "b" })
     })
 
-    it("should add a key that is set to undefined, and not take NaN for a change", () => {
-        const target: { a: number, b?: number } = { a: Number.NaN }
-        expect(set(target, "a", Number.NaN)).toBe(target)
+    it("should add a key that is set to undefined", () => {
+        const target: { a: number, b?: number } = { a: 1 }
         const result = set(target, "b", undefined)
         expect("b" in result).toBe(true)
         expect(set(result, "b", undefined)).toBe(result)

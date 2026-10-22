@@ -19,9 +19,4 @@ describe("Map.set", () => {
         const result = set(new Map<string, number | undefined>(), "a", undefined)
         expect(result.has("a")).toBe(true)
     })
-
-    it("should not take NaN for a change", () => {
-        const target = new Map([["a", Number.NaN]])
-        expect(set(target, "a", Number.NaN)).toBe(target)
-    })
 })

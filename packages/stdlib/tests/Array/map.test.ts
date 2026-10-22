@@ -19,8 +19,8 @@ describe("Array.map", () => {
         expect(target).toEqual([1, 2, 3])
     })
 
-    it("should not take NaN for a change", () => {
-        const target = [Number.NaN, 1, 0]
+    it("should not take -0 for a change", () => {
+        const target = [1, 0]
         expect(map(target, (x) => x)).toBe(target)
         expect(map(target, (x) => x === 0 ? -0 : x)).toBe(target)
     })

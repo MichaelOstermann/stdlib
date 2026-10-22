@@ -29,11 +29,6 @@ describe("Object.merge", () => {
         expect(merge(result, { b: undefined })).toBe(result)
     })
 
-    it("should not take NaN for a change", () => {
-        const target = { a: Number.NaN }
-        expect(merge(target, { a: Number.NaN })).toBe(target)
-    })
-
     it("should treat __proto__ as a key like any other", () => {
         const source = JSON.parse('{ "__proto__": { "a": 1 }, "b": 2 }') as Record<string, unknown>
         const result = Object.assign({}, merge({ b: 1 } as Record<string, unknown>, source))

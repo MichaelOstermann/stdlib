@@ -18,9 +18,4 @@ describe("Array.mapFirstWhere", () => {
         mapFirstWhere(target, (x) => x === 2, (x) => x * 10)
         expect(target).toEqual([1, 2, 3])
     })
-
-    it("should not take NaN for a change", () => {
-        const target = [Number.NaN]
-        expect(mapFirstWhere(target, Number.isNaN, (x) => x)).toBe(target)
-    })
 })

@@ -1,5 +1,3 @@
-import { isSame } from "../internals/isSame"
-
 type Key<T> = [T] extends [readonly unknown[]] ? never : [T] extends [object] ? keyof T & string : never
 
 type PathOf<T, P extends string, Done extends string = ""> =
@@ -39,7 +37,7 @@ export function setPath<T extends object, P extends string>(target: T, path: Pat
     let node: any = target
     for (let i = 0; i < last; i++) node = node[keys[i]!]
     const key = keys[last]!
-    if (isSame(node[key], value) && key in node) return target
+    if (node[key] === value && key in node) return target
     return copy(target, keys, value, 0)
 }
 

@@ -34,18 +34,10 @@ export interface BoundedSemaphore extends Omit<Semaphore, "run"> {
     run: (<T>(fn: () => PromiseLike<T> | T, options?: SemaphoreRunOptions) => ResultAsync<Awaited<T>, SemaphoreFullError>) & (<T>(key: PropertyKey, fn: () => PromiseLike<T> | T, options?: SemaphoreRunOptions) => ResultAsync<Awaited<T>, SemaphoreFullError>)
 }
 
-/** One that waits for its turn, linked to the ones before and after it: taking the first and leaving from the middle do not move the others. */
-interface Waiting {
-    next: undefined | Waiting
-    previous: undefined | Waiting
-    resolve: () => void
-}
-
 interface Slot {
     active: number
-    first: undefined | Waiting
-    last: undefined | Waiting
-    waiting: number
+    /** What starts each one that waits, in the order they came in. */
+    waiting: (() => void)[]
 }
 
 type Fn = () => unknown
@@ -89,7 +81,7 @@ export function Semaphore(options: { concurrency: number, maxWaiting?: number })
     /** Whether it is the turn of the caller, a promise of that when it has to wait, or `false` when it is not allowed to. */
     function acquire(key: unknown, signal: AbortSignal | undefined): boolean | Promise<void> {
         let slot = slots.get(key)
-        if (!slot) slots.set(key, slot = { active: 0, first: undefined, last: undefined, waiting: 0 })
+        if (!slot) slots.set(key, slot = { active: 0, waiting: [] })
 
         if (slot.active < concurrency) {
             slot.active++
@@ -97,31 +89,29 @@ export function Semaphore(options: { concurrency: number, maxWaiting?: number })
             return true
         }
 
-        if (maxWaiting !== undefined && slot.waiting >= maxWaiting) return false
+        if (maxWaiting !== undefined && slot.waiting.length >= maxWaiting) return false
         size++
         return wait(slot, signal)
     }
 
     function wait(slot: Slot, signal: AbortSignal | undefined): Promise<void> {
         return new Promise((resolve, reject) => {
-            const waiting: Waiting = { next: undefined, previous: slot.last, resolve }
-            if (slot.last) slot.last.next = waiting
-            else slot.first = waiting
-            slot.last = waiting
-            slot.waiting++
-            if (!signal) return
+            if (!signal) return void slot.waiting.push(resolve)
 
-            // Something runs while this one waits, so neither the slot nor `idle` can be done with.
-            const abort = (): void => {
-                leave(slot, waiting)
-                size--
-                reject(signal.reason)
+            // Something runs while this one waits, so neither the slot nor `idle` can be done with when it is aborted.
+            const waiting = {
+                abort: (): void => {
+                    slot.waiting.splice(slot.waiting.indexOf(waiting.start), 1)
+                    size--
+                    reject(signal.reason)
+                },
+                start: (): void => {
+                    signal.removeEventListener("abort", waiting.abort)
+                    resolve()
+                },
             }
-            signal.addEventListener("abort", abort, { once: true })
-            waiting.resolve = () => {
-                signal.removeEventListener("abort", abort)
-                resolve()
-            }
+            slot.waiting.push(waiting.start)
+            signal.addEventListener("abort", waiting.abort, { once: true })
         })
     }
 
@@ -130,11 +120,8 @@ export function Semaphore(options: { concurrency: number, maxWaiting?: number })
         size--
 
         // The next one takes over the turn.
-        const next = slot.first
-        if (next) {
-            leave(slot, next)
-            return next.resolve()
-        }
+        const next = slot.waiting.shift()
+        if (next) return next()
 
         if (--slot.active === 0) slots.delete(key)
         if (size === 0) {
@@ -172,12 +159,4 @@ export function Semaphore(options: { concurrency: number, maxWaiting?: number })
             return size
         },
     }
-}
-
-function leave(slot: Slot, waiting: Waiting): void {
-    if (waiting.previous) waiting.previous.next = waiting.next
-    else slot.first = waiting.next
-    if (waiting.next) waiting.next.previous = waiting.previous
-    else slot.last = waiting.previous
-    slot.waiting--
 }

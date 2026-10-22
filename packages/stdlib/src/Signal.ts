@@ -52,7 +52,7 @@ export function Signal<T>(value: T, options?: SignalOptions<NoInfer<T>>): Signal
     const raw = new RawSignal(value)
     const equals = options?.equals
 
-    // `arguments` instead of a rest parameter: JavaScriptCore allocates the rest array on every call.
+    // `arguments` instead of a rest parameter, which allocates an array on every call where the function is not inlined.
     const signal = function (next?: T | ((value: T) => T)): T | void {
         if (arguments.length === 0) return raw.get()
         const prev = raw.value

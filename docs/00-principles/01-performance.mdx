@@ -10,6 +10,8 @@ This monorepo addresses performance almost fanatically, including spending hundr
 
 If anything can be shaved off, and neither readability nor simplicity are sacrificed in doing so (which is often the case), it gets shipped. If performance can be increased by reducing the API surface area, it might get shipped.
 
+Numbers are per call, in V8 (Node 26). The details, JavaScriptCore (Bun) included, are in `benchmarks/` (`bun run benchmarks`).
+
 ## Why
 
 There are two extremes: Not thinking about performance at all, or thinking about it *too much*.
@@ -27,47 +29,6 @@ Today, coding agents make this much easier and faster to explore than ever befor
 The worst performance problem is death by a thousand cuts: Not a single particular thing that sticks out in profiles, but dozens of slightly unoptimized things that compound, which nobody wants to touch.
 
 The more code we ship that is performance considerate, the more we can afford to be sloppy elsewhere.
-
-## Build-time optimizations
-
-Our `stdlib-transform` uses the fantastic [oxc](https://oxc.rs/) toolchain to provide several build-time optimizations, in some cases offering 0-cost abstractions. oxc is fast enough to blast through 1000 files in less than a second, so there is no particular reason to not do that.
-
-As an example, our pattern matching tool featuring type-level exhaustiveness checks, greatly inspired by [ts-pattern](https://github.com/gvergnaud/ts-pattern):
-
-```ts
-type Shape =
-    | { kind: "circle"; radius: number }
-    | { kind: "square"; size: number };
-    
-const label = (value: Shape | null) => match(value)
-    .case(null, "Nothing")
-    .shape({ kind: "circle" }, "A circle")
-    .shape({ kind: "square" }, "A square")
-    .unwrap()
-```
-
-Gets lowered into:
-
-```ts
-import { throwUnmatched } from "@monstermann/stdlib/internals/match/throwUnmatched.mjs";
-
-const label = (value: Shape | null) =>
-    value === null ? "Nothing"
-    : typeof value === "object" && value !== null && value.kind === "circle" ? "A circle"
-    : typeof value === "object" && value !== null && value.kind === "square" ? "A square"
-    : throwUnmatched(value);
-```
-
-No chain of objects and closures created on every call, just comparisons:
-
-| | Time per call | Bytes per call |
-|---|---|---|
-| Without `stdlib-transform` | V8 34 ns · JSC 9 ns | 205 B |
-| With `stdlib-transform` | V8 2 ns · JSC 2 ns | 0 B |
-
-The main challenge here is that code needs to be designed around this: As of today, a transformer can't easily use type information, so it has to understand what's happening purely by looking at the syntax.
-
-This only works because `match` has `.case()`, `.shape()` and `.cond()` instead of a single `.with()`: Whether `.with(x)` compares a value, a shape or runs a predicate depends on the type of `x`, so it can't be compiled, while each of ours can only mean one thing. [pattycake](https://github.com/aidenybai/pattycake), a compiler for ts-pattern, has been stuck as "highly experimental" since early 2024, falling back to ts-pattern for whatever it can't compile.
 
 ## Memory allocations
 
@@ -118,48 +79,172 @@ function map(target, fn) {
 
 For the keen eye: There is a difference in behavior when using sparse arrays. If you have a serious use case for sparse arrays, you probably shouldn't hand them to any 3rd-party library anyway.
 
-Bytes allocated per call, measured with Node:
-
 | | Copy first | Copy on write |
 |---|---|---|
-| 10 items, nothing changed | 232 B | 0 B |
-| 10 items, something changed | 232 B | 128 B |
-| 1000 items, nothing changed | 8.2 KB | 2 B |
-| 1000 items, something changed | 8.3 KB | 8.2 KB |
+| 10 items, nothing changed | 30 ns · 232 B | 3 ns · 0 B |
+| 10 items, something changed | 29 ns · 232 B | 27 ns · 128 B |
+| 1000 items, nothing changed | 2.0 µs · 8.3 KB | 187 ns · 15 B |
+| 1000 items, something changed | 2.0 µs · 8.2 KB | 875 ns · 8.2 KB |
 
-Time per call, in V8 (Node 26) and JavaScriptCore (Bun), each run in its own process:
+## Build-time optimizations
 
-| | Copy first | Copy on write |
+Our `stdlib-transform` uses the fantastic [oxc](https://oxc.rs/) toolchain to provide several build-time optimizations, in some cases offering 0-cost abstractions. oxc is fast enough to blast through 1000 files in less than a second, so there is no particular reason to not do that.
+
+The main challenge here is that code needs to be designed around this: As of today, a transformer can't easily use type information, so it has to understand what's happening purely by looking at the syntax.
+
+A few examples:
+
+### `match`
+
+Our pattern matching tool featuring type-level exhaustiveness checks, greatly inspired by [ts-pattern](https://github.com/gvergnaud/ts-pattern):
+
+<Tabs sync={false} hash={false}>
+<Tab title="Before">
+
+```ts
+type Shape =
+    | { kind: "circle"; radius: number }
+    | { kind: "square"; size: number };
+    
+const label = (value: Shape | null) => match(value)
+    .case(null, "Nothing")
+    .shape({ kind: "circle" }, "A circle")
+    .shape({ kind: "square" }, "A square")
+    .unwrap()
+```
+
+</Tab>
+<Tab title="After">
+
+```ts
+import { throwUnmatched } from "@monstermann/stdlib/internals/match/throwUnmatched.mjs";
+
+const label = (value: Shape | null) =>
+    value === null ? "Nothing"
+    : typeof value === "object" && value !== null && value.kind === "circle" ? "A circle"
+    : typeof value === "object" && value !== null && value.kind === "square" ? "A square"
+    : throwUnmatched(value);
+```
+
+</Tab>
+</Tabs>
+
+| | `match` | `match`, compiled | ts-pattern |
+|---|---|---|---|
+| Per call | 35 ns · 152 B | 2 ns · 0 B | 187 ns · 1.7 KB |
+
+This only works because `match` has `.case()`, `.shape()` and `.cond()` instead of a single `.with()`: Whether `.with(x)` compares a value, a shape or runs a predicate depends on the type of `x`, so it can't be compiled, while each of ours can only mean one thing. [pattycake](https://github.com/aidenybai/pattycake), a compiler for ts-pattern, has been stuck as "highly experimental" since early 2024, falling back to ts-pattern for whatever it can't compile.
+
+### `Object.setPath`
+
+Other functions like `Object.setPath` also sometimes have an opportunity to be optimized into handwritten code:
+
+<Tabs sync={false} hash={false}>
+<Tab title="Before">
+
+```ts
+const next = Object.setPath(state, "user.settings.theme", "dark")
+```
+
+</Tab>
+<Tab title="After">
+
+```ts
+const next = setPath0(state, "dark")
+
+function setPath0(t, v) {
+    const t0 = t.user, t1 = t0.settings, t2 = t1.theme
+    if (Object.is(t2, v) && "theme" in t1) return t
+    return { ...t, user: { ...t0, settings: { ...t1, theme: v } } }
+}
+```
+
+</Tab>
+</Tabs>
+
+| | `Object.setPath` | `Object.setPath`, compiled |
 |---|---|---|
-| 10 items, nothing changed | V8 29 ns · JSC 22 ns | V8 3 ns · JSC 3 ns |
-| 10 items, everything changed | V8 36 ns · JSC 31 ns | V8 26 ns · JSC 37 ns |
-| 1000 items, nothing changed | V8 2.2 µs · JSC 1.2 µs | V8 0.2 µs · JSC 0.2 µs |
-| 1000 items, first item changed | V8 2.0 µs · JSC 1.7 µs | V8 1.1 µs · JSC 1.9 µs |
-| 1000 items, everything changed | V8 2.1 µs · JSC 1.4 µs | V8 1.5 µs · JSC 2.1 µs |
+| Nothing changed | 36 ns · 32 B | 2 ns · 0 B |
+| Something changed | 97 ns · 233 B | 31 ns · 200 B |
 
-In JavaScriptCore, copy on write is slower when something changed. Where that matters, `Array.prototype.map` is always there.
+The price is bundle size: About 150 bytes per path, minified, once per module that uses it.
 
-Compared to other libraries, measured with Node 26, each run in its own process, production builds with default settings:
+### pipe
 
-Mapping over an array (`Array.map`, remeda `map`, immer `produce` and mutative `create` assigning each item):
+`pipe` is another example that can be optimized:
 
-| | stdlib | remeda | immer | mutative |
-|---|---|---|---|---|
-| 10 items, nothing changed | 3 ns · 0 B | 62 ns · 192 B | 4.8 µs · 3.0 KB | 2.8 µs · 2.3 KB |
-| 10 items, something changed | 23 ns · 128 B | 62 ns · 192 B | 5.0 µs · 3.5 KB | 2.9 µs · 2.7 KB |
-| 1000 items, nothing changed | 190 ns · 0 B | 4.1 µs · 8.3 KB | 420 µs · 168 KB | 258 µs · 67 KB |
-| 1000 items, something changed | 1.1 µs · 8.2 KB | 4.4 µs · 8.2 KB | 439 µs · 170 KB | 247 µs · 76 KB |
+<Tabs sync={false} hash={false}>
+<Tab title="Before">
 
-Setting `state.user.settings.theme` (`Object.setPath` compiled by `stdlib-transform`, remeda `setPath`, immer `produce` and mutative `create` assigning the field):
+```ts
+const result = pipe(value, (v) => v + 1, (v) => v * 2)
+```
 
-| | stdlib | remeda | immer | mutative |
-|---|---|---|---|---|
-| Nothing changed | 2 ns · 0 B | 546 ns · 1.0 KB | 645 ns · 2.8 KB | 411 ns · 2.7 KB |
-| Something changed | 31 ns · 200 B | 529 ns · 1.0 KB | 1.5 µs · 3.8 KB | 575 ns · 3.5 KB |
+</Tab>
+<Tab title="After">
 
-Remeda copies on every call and never returns the original reference. Immer and mutative do return it, but only after allocating drafts to find out that nothing changed.
+```ts
+const result = ((value + 1) * 2)
+```
 
-## Mutation
+</Tab>
+</Tabs>
+
+Depending on what you do, engines can inline functions already, so the boost is there, but tiny:
+
+| | `pipe` | `pipe`, compiled |
+|---|---|---|
+| Cheap steps | 1.4 ns · 0 B | 0.8 ns · 0 B |
+| Bigger steps | 63 ns · 264 B | 60 ns · 208 B |
+
+Contrary to the previous example of `Object.setPath` which slightly increases bundle size, this one comes at absolutely no cost, so we left it in.
+
+## Engine details
+
+Smaller things, which only show once you measure them the way an app uses them.
+
+### Computed properties
+
+```ts
+const copy = { ...target, [key]: value }
+
+const copy = { ...target }
+copy[key] = value
+```
+
+The above performs differently depending on whether engines treat `copy` as monomorphic, polymorphic or megamorphic:
+
+| | Computed property | Spread, then assign |
+|---|---|---|
+| One shape | 10 ns · 40 B | 10 ns · 40 B |
+| Four shapes | 206 ns · 242 B | 37 ns · 240 B |
+
+A naive benchmark would test `Object.set(foo, "bar", true)` only, where the engine sees only one shape, however that's not what is going to happen.
+
+### `Object.is`
+
+V8 slows down when comparing two objects with `===` instead of `Object.is`, whereas other types stay consistently fast. Mapping over 1000 objects where nothing changes:
+
+| | `===` | `Object.is` |
+|---|---|---|
+| 1000 objects | 790 ns · 6 B | 186 ns · 1 B |
+
+### Switching data structures by size
+
+Sometimes performance can be boosted by switching between data structures depending on the size of the input, for example between an `Array` and a `Set`.
+
+`Array.removeAll(target, values)` removes every occurrence of each of `values`. With up to 4 values, it checks each element against them with `includes`. With more, it builds a `Set` of them first, which costs something up front but answers faster:
+
+| | `includes` | `Set` |
+|---|---|---|
+| 2 values | 415 ns · 2.4 KB | 427 ns · 2.6 KB |
+| 4 values | 491 ns · 2.4 KB | 446 ns · 2.6 KB |
+| 8 values | 641 ns · 2.4 KB | 520 ns · 2.6 KB |
+| 32 values | 1.5 µs · 1.2 KB | 768 ns · 2.5 KB |
+
+## What didn't work
+
+### Mutation fast paths
 
 We tried shipping opt-in mutation as a fast path, twice. First with [remmi](https://github.com/MichaelOstermann/remmi), which lets every function mutate inside a `withMutations` scope, copying each value only the first time it gets changed:
 

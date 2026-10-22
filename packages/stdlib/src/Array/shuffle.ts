@@ -17,7 +17,7 @@ import type { Updated } from "../internals/types"
  */
 export function shuffle<T extends readonly unknown[]>(target: T): Updated<T>
 export function shuffle(target: unknown[]): unknown[] {
-    const result = [...target]
+    const result = target.slice()
     for (let i = 0; i < result.length; i++) {
         const random = i + Math.floor(Math.random() * (result.length - i))
         const value = result[random]

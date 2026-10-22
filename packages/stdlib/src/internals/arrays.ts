@@ -47,7 +47,7 @@ export function mapWhere(target: unknown[], predicate: Predicate | undefined, ma
         if (predicate && !predicate(prev, i, target)) continue
         const next = map(prev, i, target)
         if (Object.is(prev, next)) continue
-        result ??= [...target]
+        result ??= target.slice()
         result[i] = next
     }
     return result ?? target

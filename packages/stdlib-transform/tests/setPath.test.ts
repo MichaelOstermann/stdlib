@@ -18,7 +18,7 @@ describe("transformSetPaths", () => {
         expect(run(`const a = Object.setPath(state, "user.settings.theme", "dark")`)).toBe(`const a = setPath0(state, "dark")
 function setPath0(t, v) {
     const t0 = t.user, t1 = t0.settings, t2 = t1.theme
-    if (t2 === v && "theme" in t1) return t
+    if (Object.is(t2, v) && "theme" in t1) return t
     return { ...t, user: { ...t0, settings: { ...t1, theme: v } } }
 }
 `)

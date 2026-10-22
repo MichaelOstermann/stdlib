@@ -94,14 +94,14 @@ function recordBatchSnapshot(source: RawSignal, value: unknown): void {
     if (batchDepth === 0 || batchIteration !== 0) return
 
     if (source.snapshot !== undefined) {
-        if (source.value === value) source.snapshot.value = UNKNOWN
+        if (Object.is(source.value, value)) source.snapshot.value = UNKNOWN
         return
     }
 
     batchSnapshots = source.snapshot = {
         next: batchSnapshots,
         source,
-        value: source.value === value ? UNKNOWN : source.value,
+        value: Object.is(source.value, value) ? UNKNOWN : source.value,
         version: source.version,
     }
 }
@@ -116,7 +116,7 @@ function reconcileBatchSnapshots(): void {
         // The value is back to what it was before the batch: Fast-forward the targets
         // that have seen that value, so they do not consider the signal to have changed.
         // Versions are never rolled back, something may have seen the ones in between.
-        if (source.value === snapshot.value) {
+        if (Object.is(source.value, snapshot.value)) {
             for (
                 let node = source.targets;
                 node !== undefined;
@@ -349,7 +349,7 @@ RawMemo.prototype.refresh = function () {
         const value = this.fn()
         if (
             this.flags & HAS_ERROR
-            || this.value !== value
+            || !Object.is(this.value, value)
             || this.version === 0
         ) {
             this.value = value

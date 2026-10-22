@@ -64,7 +64,7 @@ function create<T>(computation: () => T, options?: MemoOptions<NoInfer<T>>): Mem
     const raw = new RawMemo<T>(equals
         ? () => {
             const next = computation()
-            if (init && (prev === next || equals(prev, next))) return prev
+            if (init && (Object.is(prev, next) || equals(prev, next))) return prev
             init = true
             return prev = next
         }
@@ -92,7 +92,7 @@ function indexed<T, K, V>(target: () => readonly T[], by: (value: NoInfer<T>) =>
             if (prevIdx.has(key)) {
                 const prevVal = prevIdx.get(key) as V
                 // Equal entries keep their previous value, so what reads them does not see a change.
-                if (prevVal === nextVal || equals?.(prevVal, nextVal) === true) {
+                if (Object.is(prevVal, nextVal) || equals?.(prevVal, nextVal) === true) {
                     nextIdx.set(key, prevVal)
                     continue
                 }

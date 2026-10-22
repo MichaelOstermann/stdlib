@@ -20,6 +20,6 @@ import type { AnyMap, MapKey, MapValue, UpdatedMap } from "../internals/types"
  */
 export function set<T extends AnyMap>(target: T, key: MapKey<T>, value: MapValue<T>): UpdatedMap<T>
 export function set(target: Map<unknown, unknown>, key: unknown, value: unknown): Map<unknown, unknown> {
-    if (target.get(key) === value && (value !== undefined || target.has(key))) return target
+    if (Object.is(target.get(key), value) && (value !== undefined || target.has(key))) return target
     return new Map(target).set(key, value)
 }

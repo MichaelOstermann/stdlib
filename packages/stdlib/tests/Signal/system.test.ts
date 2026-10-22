@@ -613,8 +613,7 @@ describe("effect()", () => {
                 if (i++ > 200) {
                     throw new Error("test failed")
                 }
-                a()
-                a(Number.NaN)
+                a(a() + 1)
             })
         }
 
@@ -626,9 +625,9 @@ describe("effect()", () => {
         let i = 0
 
         const c = memo(() => {
-            a()
-            a(Number.NaN)
-            return Number.NaN
+            const value = a()
+            a(value + 1)
+            return value
         })
 
         const fn = () => {

@@ -57,7 +57,7 @@ export function Signal<T>(value: T, options?: SignalOptions<NoInfer<T>>): Signal
         if (arguments.length === 0) return raw.get()
         const prev = raw.value
         if (typeof next === "function") next = (next as (value: T) => T)(prev)
-        if (prev === next || equals?.(prev, next as T)) return
+        if (Object.is(prev, next) || equals?.(prev, next as T)) return
         raw.set(next as T)
     } as { kind: "Signal" } & Signal<T>
 

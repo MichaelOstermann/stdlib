@@ -20,7 +20,7 @@ import { ownKeys, setOwn } from "../internals/objects"
 export function merge<T extends object>(target: T, source: Partial<NoInfer<T>>): T {
     const keys = ownKeys(source) as (keyof T)[]
     for (const key of keys) {
-        if (target[key] === source[key] && key in target) continue
+        if (Object.is(target[key], source[key]) && key in target) continue
         // Not { ...target, ...source }, which takes twice as long.
         const result = { ...target }
         for (const key of keys) {

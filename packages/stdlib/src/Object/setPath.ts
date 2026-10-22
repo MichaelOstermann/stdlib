@@ -37,7 +37,7 @@ export function setPath<T extends object, P extends string>(target: T, path: Pat
     let node: any = target
     for (let i = 0; i < last; i++) node = node[keys[i]!]
     const key = keys[last]!
-    if (node[key] === value && key in node) return target
+    if (Object.is(node[key], value) && key in node) return target
     return copy(target, keys, value, 0)
 }
 

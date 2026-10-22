@@ -30,7 +30,7 @@ export function matcher(values: Iterable<unknown>): ((value: unknown) => boolean
 }
 
 export function setAt(target: unknown[], index: number, value: unknown): unknown[] {
-    if (index === -1 || target[index] === value) return target
+    if (index === -1 || Object.is(target[index], value)) return target
     return target.with(index, value)
 }
 
@@ -46,7 +46,7 @@ export function mapWhere(target: unknown[], predicate: Predicate | undefined, ma
         const prev = target[i]
         if (predicate && !predicate(prev, i, target)) continue
         const next = map(prev, i, target)
-        if (prev === next) continue
+        if (Object.is(prev, next)) continue
         result ??= [...target]
         result[i] = next
     }

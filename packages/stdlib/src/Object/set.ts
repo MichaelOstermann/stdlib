@@ -18,7 +18,7 @@
  * ```
  */
 export function set<T extends object, K extends keyof T>(target: T, key: K, value: T[K]): T {
-    if (target[key] === value && key in target) return target
+    if (Object.is(target[key], value) && key in target) return target
     // V8 slows `{ ...target, [key]: value }` down a lot once it sees more than one shape, a plain spread copes with up to four:
     const copy = { ...target }
     copy[key] = value

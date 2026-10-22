@@ -19,10 +19,10 @@ describe("Array.map", () => {
         expect(target).toEqual([1, 2, 3])
     })
 
-    it("should not take -0 for a change", () => {
-        const target = [1, 0]
+    it("should compare with Object.is: NaN is not a change, -0 is", () => {
+        const target = [Number.NaN, 1, 0]
         expect(map(target, (x) => x)).toBe(target)
-        expect(map(target, (x) => x === 0 ? -0 : x)).toBe(target)
+        expect(map(target, (x) => x === 0 ? -0 : x)).not.toBe(target)
     })
 
     it("should pass the index and the array", () => {

@@ -6,12 +6,19 @@ title: Introduction
 
 [How we did it](./00-principles/01-performance.mdx).
 
-Our port of [ts-pattern](https://github.com/gvergnaud/ts-pattern) for pattern matching with type-safe exhaustiveness checks:
+Pattern matching with type-safe exhaustiveness checks, inspired by [ts-pattern](https://github.com/gvergnaud/ts-pattern):
 
 | | stdlib | ts-pattern |
 |---|---|---|
-| Time per call | 2 ns | 187 ns |
-| Bytes per call | 0 B | 1.7 KB |
+| Per call | 2 ns · 0 B | 187 ns · 1.7 KB |
+
+Our functions return the original input when nothing changed:
+
+```ts
+const a = [1, 2, 3]
+const b = Array.map(a, i => i)
+a === b // true
+```
 
 `Array.map`
 
@@ -26,12 +33,3 @@ Our port of [ts-pattern](https://github.com/gvergnaud/ts-pattern) for pattern ma
 |---|---|---|---|---|
 | Nothing changed | 2 ns · 0 B | 548 ns · 1.0 KB | 704 ns · 2.8 KB | 400 ns · 2.7 KB |
 | Something changed | 31 ns · 200 B | 564 ns · 1.0 KB | 1.5 µs · 3.8 KB | 535 ns · 3.5 KB |
-
-
-Nothing/Something changed: Our functions return the original input when nothing changed:
-
-```ts
-const a = [1, 2, 3]
-const b = Array.map(a, i => i)
-a === b // true
-```

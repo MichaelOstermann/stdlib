@@ -169,12 +169,11 @@ function setPath0(t, v) {
 | Nothing changed | 36 ns · 32 B | 2 ns · 0 B |
 | Something changed | 97 ns · 233 B | 31 ns · 200 B |
 
-
 ### pipe
 
 `pipe` is another example that can be optimized. Depending on what you do, engines can inline functions already, so the boost is there, but tiny.
 
-Contrary to the previous example which slightly increases bundle size, this one comes at absolutely no cost, so we left it in.
+Unlike `Object.setPath`, it doesn't cost anything in bundle size.
 
 <Tabs sync={false} hash={false}>
 <Tab title="Before">
@@ -193,12 +192,10 @@ const result = ((value + 1) * 2)
 </Tab>
 </Tabs>
 
-
 | | `pipe` | `pipe`, compiled |
 |---|---|---|
 | Cheap steps | 1.4 ns · 0 B | 0.8 ns · 0 B |
 | Bigger steps | 63 ns · 264 B | 60 ns · 208 B |
-
 
 ## Engine details
 
@@ -206,7 +203,7 @@ Smaller things, which only show once you measure them the way an app uses them.
 
 ### Computed properties
 
-The following snippet performs differently depending on whether engines treat `copy` as monomorphic, polymorphic or megamorphic.
+The following snippet performs differently depending on how many shapes of `target` the function sees: one (monomorphic), a few (polymorphic) or many (megamorphic).
 
 A naive benchmark would test `Object.set(foo, "bar", true)` only, where the engine sees only one shape, however that's not what is going to happen.
 
@@ -221,7 +218,6 @@ copy[key] = value
 |---|---|---|
 | One shape | 10 ns · 40 B | 10 ns · 40 B |
 | Four shapes | 206 ns · 242 B | 37 ns · 240 B |
-
 
 ### `Object.is`
 

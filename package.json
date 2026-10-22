@@ -5,6 +5,7 @@
         "packages/*"
     ],
     "scripts": {
+        "benchmarks": "bun benchmarks/run.ts",
         "globals": "bun scripts/globals.ts",
         "checks": "bun run style && dprint check && oxlint && tsc && tsc -p packages/stdlib && tsc -p packages/stdlib-web && tsc -p packages/stdlib-react && bun test",
         "bundles": "bun run --filter '*' bundle",
@@ -18,8 +19,11 @@
         "@types/bun": "^1.4.2",
         "blume": "^2.2.3",
         "dprint": "^0.61.1",
+        "immer": "11.2.9",
+        "mutative": "2.0.0",
         "oxlint": "^1.87.0",
         "oxlint-tsgolint": "^7.0.2003",
+        "remeda": "2.53.0",
         "tsdown": "^0.23.0",
         "typescript": "^6.0.0"
     }

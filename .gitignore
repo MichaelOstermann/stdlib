@@ -8,3 +8,4 @@ playground/*
 /dist
 target
 .blume-verify/
+benchmarks/.dist

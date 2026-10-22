@@ -6,13 +6,19 @@ export class SemaphoreFullError extends Error {
     override readonly name = "SemaphoreFullError"
 }
 
+/** What `run` takes besides the function. */
+export interface SemaphoreRunOptions {
+    /** Takes the function out of line while it waits, `run` then rejects with `signal.reason`. A function that runs already is not stopped: pass the signal on to it. */
+    signal?: AbortSignal
+}
+
 /** Runs functions, a limited number of them at the same time. The others wait for their turn, in the order they came in. */
 export interface Semaphore {
     /**
      * Calls `fn` once it is its turn, and resolves or rejects with what it does.
      * With a `key`, the limit is the one of that key: functions of different keys do not wait for each other.
      */
-    run: (<T>(fn: () => PromiseLike<T> | T) => Promise<Awaited<T>>) & (<T>(key: PropertyKey, fn: () => PromiseLike<T> | T) => Promise<Awaited<T>>)
+    run: (<T>(fn: () => PromiseLike<T> | T, options?: SemaphoreRunOptions) => Promise<Awaited<T>>) & (<T>(key: PropertyKey, fn: () => PromiseLike<T> | T, options?: SemaphoreRunOptions) => Promise<Awaited<T>>)
     /** How many functions are running or waiting. */
     readonly size: number
     /** Resolves once nothing is running or waiting, right away when that is the case already. */
@@ -25,12 +31,21 @@ export interface BoundedSemaphore extends Omit<Semaphore, "run"> {
      * Calls `fn` once it is its turn, and succeeds with what it returns. Fails right away when too many are waiting already.
      * With a `key`, the limits are the ones of that key: functions of different keys do not wait for each other.
      */
-    run: (<T>(fn: () => PromiseLike<T> | T) => ResultAsync<Awaited<T>, SemaphoreFullError>) & (<T>(key: PropertyKey, fn: () => PromiseLike<T> | T) => ResultAsync<Awaited<T>, SemaphoreFullError>)
+    run: (<T>(fn: () => PromiseLike<T> | T, options?: SemaphoreRunOptions) => ResultAsync<Awaited<T>, SemaphoreFullError>) & (<T>(key: PropertyKey, fn: () => PromiseLike<T> | T, options?: SemaphoreRunOptions) => ResultAsync<Awaited<T>, SemaphoreFullError>)
+}
+
+/** One that waits for its turn, linked to the ones before and after it: taking the first and leaving from the middle do not move the others. */
+interface Waiting {
+    next: undefined | Waiting
+    previous: undefined | Waiting
+    resolve: () => void
 }
 
 interface Slot {
     active: number
-    waiting: (() => void)[]
+    first: undefined | Waiting
+    last: undefined | Waiting
+    waiting: number
 }
 
 type Fn = () => unknown
@@ -43,6 +58,7 @@ type Fn = () => unknown
  * - `run(fn)` is a pool, or a queue with a `concurrency` of `1`
  * - `run(key, fn)` is a lock: the limit applies to each key on its own
  * - with `maxWaiting`, `run` returns a `ResultAsync` that fails with a `SemaphoreFullError` instead of letting more than that wait
+ * - with a `signal`, aborting takes the function out of line while it waits, `run` rejects with `signal.reason` like `fetch` does
  *
  * ```ts
  * const hashing = Semaphore({ concurrency: 2, maxWaiting: 100 });
@@ -54,6 +70,9 @@ type Fn = () => unknown
  *
  * migrations.size; // 0
  * await migrations.idle();
+ *
+ * // Dropped when it waited for longer than 5 seconds.
+ * await migrations.run(path, () => migrate(path), { signal: AbortSignal.timeout(5000) });
  * ```
  */
 export function Semaphore(options: { concurrency: number, maxWaiting: number }): BoundedSemaphore
@@ -68,9 +87,9 @@ export function Semaphore(options: { concurrency: number, maxWaiting?: number })
     let size = 0
 
     /** Whether it is the turn of the caller, a promise of that when it has to wait, or `false` when it is not allowed to. */
-    function acquire(key: unknown): boolean | Promise<void> {
+    function acquire(key: unknown, signal: AbortSignal | undefined): boolean | Promise<void> {
         let slot = slots.get(key)
-        if (!slot) slots.set(key, slot = { active: 0, waiting: [] })
+        if (!slot) slots.set(key, slot = { active: 0, first: undefined, last: undefined, waiting: 0 })
 
         if (slot.active < concurrency) {
             slot.active++
@@ -78,9 +97,32 @@ export function Semaphore(options: { concurrency: number, maxWaiting?: number })
             return true
         }
 
-        if (maxWaiting !== undefined && slot.waiting.length >= maxWaiting) return false
+        if (maxWaiting !== undefined && slot.waiting >= maxWaiting) return false
         size++
-        return new Promise((resolve) => slot.waiting.push(resolve))
+        return wait(slot, signal)
+    }
+
+    function wait(slot: Slot, signal: AbortSignal | undefined): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const waiting: Waiting = { next: undefined, previous: slot.last, resolve }
+            if (slot.last) slot.last.next = waiting
+            else slot.first = waiting
+            slot.last = waiting
+            slot.waiting++
+            if (!signal) return
+
+            // Something runs while this one waits, so neither the slot nor `idle` can be done with.
+            const abort = (): void => {
+                leave(slot, waiting)
+                size--
+                reject(signal.reason)
+            }
+            signal.addEventListener("abort", abort, { once: true })
+            waiting.resolve = () => {
+                signal.removeEventListener("abort", abort)
+                resolve()
+            }
+        })
     }
 
     function release(key: unknown): void {
@@ -88,8 +130,11 @@ export function Semaphore(options: { concurrency: number, maxWaiting?: number })
         size--
 
         // The next one takes over the turn.
-        const next = slot.waiting.shift()
-        if (next) return next()
+        const next = slot.first
+        if (next) {
+            leave(slot, next)
+            return next.resolve()
+        }
 
         if (--slot.active === 0) slots.delete(key)
         if (size === 0) {
@@ -98,34 +143,41 @@ export function Semaphore(options: { concurrency: number, maxWaiting?: number })
     }
 
     /** Resolves with `full` instead of calling `fn` when it is not allowed to wait. A function that does not have to wait is called right away. */
-    async function run(key: unknown, fn: Fn, full: unknown): Promise<unknown> {
-        const turn = acquire(key)
+    async function run(key: unknown, fn: Fn, signal: AbortSignal | undefined, full: unknown): Promise<unknown> {
+        signal?.throwIfAborted()
+        const turn = acquire(key, signal)
         if (turn === false) return full
         if (turn !== true) await turn
-
-        try {
-            return await fn()
-        }
-        finally {
-            release(key)
-        }
+        try { return await fn() }
+        finally { release(key) }
     }
 
     const full = Symbol("full")
 
     return {
         idle: () => size === 0 ? Promise.resolve() : new Promise((resolve) => idle.push(resolve)),
-        run(...args: [fn: Fn] | [key: PropertyKey, fn: Fn]): never {
-            const [key, fn] = args.length === 1 ? [slots, args[0]] : args
-            if (maxWaiting === undefined) return run(key, fn, full) as never
+        run(a: Fn | PropertyKey, b?: Fn | SemaphoreRunOptions, c?: SemaphoreRunOptions): never {
+            const hasKey = typeof a !== "function"
+            const key = hasKey ? a : slots
+            const fn = (hasKey ? b : a) as Fn
+            const signal = (hasKey ? c : b as SemaphoreRunOptions | undefined)?.signal
+            if (maxWaiting === undefined) return run(key, fn, signal, full) as never
 
             return ResultAsync.from(async () => {
-                const result = await run(key, fn, full)
-                return result === full ? Err(new SemaphoreFullError("Too many are waiting already.")) : Ok(result)
+                const result = await run(key, fn, signal, full)
+                return result === full ? Err(new SemaphoreFullError()) : Ok(result)
             }) as never
         },
         get size() {
             return size
         },
     }
+}
+
+function leave(slot: Slot, waiting: Waiting): void {
+    if (waiting.previous) waiting.previous.next = waiting.next
+    else slot.first = waiting.next
+    if (waiting.next) waiting.next.previous = waiting.previous
+    else slot.last = waiting.previous
+    slot.waiting--
 }

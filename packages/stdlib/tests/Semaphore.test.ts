@@ -138,6 +138,126 @@ describe("Semaphore", () => {
         expect(log.at(-1)).toBe("idle")
     })
 
+    it("should take a function out of line when its signal aborts while it waits", async () => {
+        const log: string[] = []
+        const semaphore = Semaphore({ concurrency: 1 })
+        const controller = new AbortController()
+        const a = task(log, "a", 1)
+        const first = semaphore.run(a.run)
+        const second = semaphore.run(() => log.push("b"), { signal: controller.signal })
+        const third = semaphore.run(() => log.push("c"))
+        expect(semaphore.size).toBe(3)
+
+        controller.abort(new Error("aborted"))
+        expect(second).rejects.toThrow("aborted")
+        expect(semaphore.size).toBe(2)
+
+        a.finish()
+        await Promise.all([first, third])
+        expect(log).toEqual(["start a", "end a", "c"])
+        expect(semaphore.size).toBe(0)
+    })
+
+    it("should take out the first, the last and the only one that waits", async () => {
+        const log: string[] = []
+        const semaphore = Semaphore({ concurrency: 1 })
+        const a = task(log, "a", 1)
+        const running = semaphore.run(a.run)
+        const controllers = ["b", "c", "d"].map(() => new AbortController())
+        const waiting = ["b", "c", "d"].map((name, index) => semaphore.run(() => log.push(name), { signal: controllers[index]!.signal }))
+        for (const promise of waiting) promise.catch(() => {})
+
+        controllers[2]!.abort()
+        controllers[0]!.abort()
+        a.finish()
+        await Promise.allSettled([running, ...waiting])
+        expect(log).toEqual(["start a", "end a", "c"])
+
+        const b = task(log, "b2", 2)
+        const again = semaphore.run(b.run)
+        const controller = new AbortController()
+        const only = semaphore.run(() => log.push("only"), { signal: controller.signal })
+        controller.abort()
+        expect(only).rejects.toBeInstanceOf(DOMException)
+        const after = semaphore.run(() => log.push("after"))
+        b.finish()
+        await Promise.all([again, after])
+        expect(log.slice(3)).toEqual(["start b2", "end b2", "after"])
+    })
+
+    it("should not call a function whose signal aborted already, even when it is its turn", async () => {
+        let calls = 0
+        const semaphore = Semaphore({ concurrency: 1 })
+        expect(semaphore.run(() => calls++, { signal: AbortSignal.abort(new Error("before")) })).rejects.toThrow("before")
+        expect(semaphore.run("key", () => calls++, { signal: AbortSignal.abort() })).rejects.toBeInstanceOf(DOMException)
+        await tick()
+        expect(calls).toBe(0)
+        expect(semaphore.size).toBe(0)
+    })
+
+    it("should not stop a function that runs when its signal aborts", async () => {
+        const log: string[] = []
+        const semaphore = Semaphore({ concurrency: 1 })
+        const controller = new AbortController()
+        const a = task(log, "a", 1)
+        const running = semaphore.run(a.run, { signal: controller.signal })
+        controller.abort()
+        a.finish()
+        expect(await running).toBe(1)
+        expect(semaphore.size).toBe(0)
+    })
+
+    it("should forget the signal of one that waited once it is its turn", async () => {
+        const log: string[] = []
+        const semaphore = Semaphore({ concurrency: 1 })
+        const controller = new AbortController()
+        const a = task(log, "a", 1)
+        const b = task(log, "b", 2)
+        const first = semaphore.run(a.run)
+        const second = semaphore.run(b.run, { signal: controller.signal })
+        const third = semaphore.run(() => 3)
+        a.finish()
+        await tick()
+        controller.abort()
+        expect(semaphore.size).toBe(2)
+        b.finish()
+        expect(await Promise.all([first, second, third])).toEqual([1, 2, 3])
+        expect(semaphore.size).toBe(0)
+    })
+
+    it("should reject when the signal aborts, also when there is a limit", async () => {
+        const log: string[] = []
+        const semaphore = Semaphore({ concurrency: 1, maxWaiting: 1 })
+        const controller = new AbortController()
+        const a = task(log, "a", 1)
+        const first = semaphore.run("key", a.run)
+        const second = semaphore.run("key", () => 2, { signal: controller.signal })
+        controller.abort(new Error("aborted"))
+        expect(second.promise).rejects.toThrow("aborted")
+        await tick()
+        // Its place in line is free again.
+        const third = semaphore.run("key", () => 3)
+        a.finish()
+        expect((await first).unwrap()).toBe(1)
+        expect((await third).unwrap()).toBe(3)
+    })
+
+    it("should be idle once the ones that wait were aborted and the others are done", async () => {
+        const log: string[] = []
+        const semaphore = Semaphore({ concurrency: 1 })
+        const controller = new AbortController()
+        const a = task(log, "a", 1)
+        void semaphore.run(a.run)
+        semaphore.run(() => 2, { signal: controller.signal }).catch(() => {})
+        void semaphore.idle().then(() => log.push("idle"))
+        controller.abort()
+        await tick()
+        expect(log).not.toContain("idle")
+        a.finish()
+        await tick()
+        expect(log.at(-1)).toBe("idle")
+    })
+
     it("should ask for a concurrency that lets something run", () => {
         expect(() => Semaphore({ concurrency: 0 })).toThrow(RangeError)
         expect(() => Semaphore({ concurrency: Number.NaN })).toThrow(RangeError)

@@ -167,6 +167,7 @@ declare global {
     const Emitter: typeof import("./Emitter").Emitter
     const Err: typeof import("./Result").Err
     const ErrAsync: typeof import("./ResultAsync").ErrAsync
+    const Interval: typeof import("./Interval/index").Interval
     const match: typeof import("./match").match
     const Memo: typeof import("./Memo").Memo
     const Ok: typeof import("./Result").Ok
@@ -179,7 +180,6 @@ declare global {
     const Semaphore: typeof import("./Semaphore").Semaphore
     const SemaphoreFullError: typeof import("./Semaphore").SemaphoreFullError
     const Signal: typeof import("./Signal").Signal
-    const Timer: typeof import("./Timer/index").Timer
 
     /** A single event that waits for its listeners: call it with a function to listen, and with anything else to tell the listeners about it. */
     type AsyncEmitter<T = void> = import("./Emitter").AsyncEmitter<T>

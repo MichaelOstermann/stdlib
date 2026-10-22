@@ -76,6 +76,7 @@ import { Effect } from "./Effect"
 import { Emitter } from "./Emitter"
 import { Err } from "./Result"
 import { ErrAsync } from "./ResultAsync"
+import { Interval } from "./Interval/index"
 import { match } from "./match"
 import { Memo } from "./Memo"
 import { Ok } from "./Result"
@@ -88,7 +89,6 @@ import { Retry } from "./Retry/index"
 import { Semaphore } from "./Semaphore"
 import { SemaphoreFullError } from "./Semaphore"
 import { Signal } from "./Signal"
-import { Timer } from "./Timer/index"
 
 define(Array, "Array", {
     chunk: Array_chunk,
@@ -191,6 +191,7 @@ define(globalThis, "globalThis", {
     Emitter,
     Err,
     ErrAsync,
+    Interval,
     match,
     Memo,
     Ok,
@@ -203,7 +204,6 @@ define(globalThis, "globalThis", {
     Semaphore,
     SemaphoreFullError,
     Signal,
-    Timer,
 })
 
 Object.defineProperty(globalThis, Symbol.for("@monstermann/stdlib/patch"), { configurable: true, value: true })

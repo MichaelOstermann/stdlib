@@ -15,7 +15,7 @@ const clocks = new Map<number, Clock>()
  * # aligned
  *
  * ```ts
- * function Timer.aligned(every: number, fn: (now: number) => void): () => void
+ * function Interval.aligned(every: number, fn: (now: number) => void): () => void
  * ```
  *
  * Calls `fn` with `Date.now()` on every multiple of `every` since the epoch: `Duration.MINUTE` on the minute, `Duration.HOUR` on the hour. Returns what stops it.
@@ -24,23 +24,24 @@ const clocks = new Map<number, Clock>()
  * - `every` is at most `2_147_483_647`, about 24.8 days, the longest delay of `setTimeout`
  * - the multiples are in UTC: `Duration.DAY` is not at local midnight, `Duration.HOUR` not on the hour where the offset is in half hours
  * - every function with the same `every` shares a timer and is called in the same batch, the timer stops once the last one stopped
+ * - a function that throws does not stop the others or the timer, what it threw is thrown once all were called
  * - the time is read again for every multiple, so the clock stays on them across drift, sleep and the clock being set
  *
  * ## Example
  *
  * ```ts
- * const stop = Timer.aligned(Duration.MINUTE, now => console.log(new Date(now)));
+ * const stop = Interval.aligned(Duration.MINUTE, now => console.log(new Date(now)));
  * stop();
  *
  * // A signal of the time, every minute.
  * const $now = Signal(Date.now());
- * const stopNow = Timer.aligned(Duration.MINUTE, $now);
+ * const stopNow = Interval.aligned(Duration.MINUTE, $now);
  * ```
  *
  */
 export function aligned(every: number, fn: (now: number) => void): () => void {
-    if (!(every > 0)) throw new RangeError("Timer.aligned: an interval below or at 0, or NaN, ticks without end.")
-    if (every > MAX_INTERVAL) throw new RangeError("Timer.aligned: an interval longer than setTimeout takes, about 24.8 days, ticks without end.")
+    if (!(every > 0)) throw new RangeError("Interval.aligned: an interval below or at 0, or NaN, ticks without end.")
+    if (every > MAX_INTERVAL) throw new RangeError("Interval.aligned: an interval longer than setTimeout takes, about 24.8 days, ticks without end.")
 
     let clock = clocks.get(every)
     if (!clock) clocks.set(every, clock = start(every))
@@ -64,26 +65,20 @@ function start(every: number): Clock {
     const onTick = Emitter<number>()
     let next = boundary(Date.now(), every)
     let timer = setTimeout(tick, next - Date.now())
-    let isStopped = false
 
     function tick(): void {
         const now = Date.now()
         // A timer can fire a moment before the multiple, a clock that was set back long before it.
-        if (now >= next || now < next - every) {
-            next = boundary(now, every)
-            onTick(now)
-            // The last listener stopped during the tick.
-            if (isStopped) return
-        }
+        const isDue = now >= next || now < next - every
+        if (isDue) next = boundary(now, every)
+        // Before the listeners: one that throws does not stop the clock, and the last one stopping clears this timer.
         timer = setTimeout(tick, next - now)
+        if (isDue) onTick(now)
     }
 
     return {
         onTick,
-        stop: () => {
-            isStopped = true
-            clearTimeout(timer)
-        },
+        stop: () => clearTimeout(timer),
     }
 }
 

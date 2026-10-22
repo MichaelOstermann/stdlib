@@ -10,8 +10,8 @@ export interface Package {
 export const namespaces: ReadonlySet<string> = new Set([
     "Bytes",
     "Duration",
+    "Interval",
     "Retry",
-    "Timer",
 ])
 
 /** Everything else @monstermann/stdlib exports. */

@@ -6,6 +6,7 @@ export const globals: Readonly<Record<string, readonly string[]>> = {
     Bytes: ["GB", "GiB", "KB", "KiB", "MB", "MiB", "TB", "TiB", "format", "parse"],
     Duration: ["DAY", "HOUR", "MINUTE", "SECOND", "WEEK", "backoff", "format", "jitter", "parse"],
     Function: ["debounce", "middleware", "noop", "once", "throttle"],
+    Interval: ["aligned"],
     JSON: ["safeStringify", "tryParse", "tryStringify"],
     Map: ["delete", "isShallowEqual", "set"],
     Math: ["clamp", "mod"],
@@ -14,7 +15,6 @@ export const globals: Readonly<Record<string, readonly string[]>> = {
     Retry: ["again", "run"],
     Set: ["add", "delete", "isShallowEqual"],
     String: ["camelCase", "capitalize", "constantCase", "dedent", "escapeHTML", "graphemes", "kebabCase", "pascalCase", "score", "slugify", "snakeCase", "titleCase", "uncapitalize", "words"],
-    Timer: ["aligned"],
 }
 
 /** Globals that are values themselves, and the file each one lives in: `pipe` → `pipe.mjs`. */
@@ -28,6 +28,7 @@ export const values: Readonly<Record<string, string>> = {
     Emitter: "Emitter",
     Err: "Result",
     ErrAsync: "ResultAsync",
+    Interval: "Interval/index",
     match: "match",
     Memo: "Memo",
     Ok: "Result",
@@ -40,5 +41,4 @@ export const values: Readonly<Record<string, string>> = {
     Semaphore: "Semaphore",
     SemaphoreFullError: "Semaphore",
     Signal: "Signal",
-    Timer: "Timer/index",
 }

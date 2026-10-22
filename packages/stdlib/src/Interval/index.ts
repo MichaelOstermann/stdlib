@@ -1,5 +1,5 @@
 import { aligned } from "./aligned"
 
-export const Timer = {
+export const Interval = {
     aligned,
 }

@@ -70,7 +70,7 @@ function map(target, fn) {
         const after = fn(before);
         if (before === after) continue;
         // Copy once now that we know we are actually going to write:
-        copy ??= [...target];
+        copy ??= target.slice();
         copy[i] = after;
     }
     return copy ?? target;
@@ -137,7 +137,9 @@ This only works because `match` has `.case()`, `.shape()` and `.cond()` instead 
 
 ### `Object.setPath`
 
-Other functions like `Object.setPath` also sometimes have an opportunity to be optimized into handwritten code:
+Other functions like `Object.setPath` also sometimes have an opportunity to be optimized into handwritten code.
+
+The price is bundle size: About 150 bytes per path, minified, once per module that uses it.
 
 <Tabs sync={false} hash={false}>
 <Tab title="Before">
@@ -167,11 +169,12 @@ function setPath0(t, v) {
 | Nothing changed | 36 ns · 32 B | 2 ns · 0 B |
 | Something changed | 97 ns · 233 B | 31 ns · 200 B |
 
-The price is bundle size: About 150 bytes per path, minified, once per module that uses it.
 
 ### pipe
 
-`pipe` is another example that can be optimized:
+`pipe` is another example that can be optimized. Depending on what you do, engines can inline functions already, so the boost is there, but tiny.
+
+Contrary to the previous example which slightly increases bundle size, this one comes at absolutely no cost, so we left it in.
 
 <Tabs sync={false} hash={false}>
 <Tab title="Before">
@@ -190,20 +193,22 @@ const result = ((value + 1) * 2)
 </Tab>
 </Tabs>
 
-Depending on what you do, engines can inline functions already, so the boost is there, but tiny:
 
 | | `pipe` | `pipe`, compiled |
 |---|---|---|
 | Cheap steps | 1.4 ns · 0 B | 0.8 ns · 0 B |
 | Bigger steps | 63 ns · 264 B | 60 ns · 208 B |
 
-Contrary to the previous example of `Object.setPath` which slightly increases bundle size, this one comes at absolutely no cost, so we left it in.
 
 ## Engine details
 
 Smaller things, which only show once you measure them the way an app uses them.
 
 ### Computed properties
+
+The following snippet performs differently depending on whether engines treat `copy` as monomorphic, polymorphic or megamorphic.
+
+A naive benchmark would test `Object.set(foo, "bar", true)` only, where the engine sees only one shape, however that's not what is going to happen.
 
 ```ts
 const copy = { ...target, [key]: value }
@@ -212,14 +217,11 @@ const copy = { ...target }
 copy[key] = value
 ```
 
-The above performs differently depending on whether engines treat `copy` as monomorphic, polymorphic or megamorphic:
-
 | | Computed property | Spread, then assign |
 |---|---|---|
 | One shape | 10 ns · 40 B | 10 ns · 40 B |
 | Four shapes | 206 ns · 242 B | 37 ns · 240 B |
 
-A naive benchmark would test `Object.set(foo, "bar", true)` only, where the engine sees only one shape, however that's not what is going to happen.
 
 ### `Object.is`
 
@@ -229,20 +231,32 @@ V8 slows down when comparing two objects with `===` instead of `Object.is`, wher
 |---|---|---|
 | 1000 objects | 790 ns · 6 B | 186 ns · 1 B |
 
-### Switching data structures by size
+### Copying arrays
 
-Sometimes performance can be boosted by switching between data structures depending on the size of the input, for example between an `Array` and a `Set`.
+`slice()` copies an array faster than a spread, by a little in V8 and by a lot in JavaScriptCore:
 
-`Array.removeAll(target, values)` removes every occurrence of each of `values`. With up to 4 values, it checks each element against them with `includes`. With more, it builds a `Set` of them first, which costs something up front but answers faster:
+```ts
+const copy = [...array]
 
-| | `includes` | `Set` |
+const copy = array.slice()
+```
+
+| | Spread | `slice()` |
 |---|---|---|
-| 2 values | 415 ns · 2.4 KB | 427 ns · 2.6 KB |
-| 4 values | 491 ns · 2.4 KB | 446 ns · 2.6 KB |
-| 8 values | 641 ns · 2.4 KB | 520 ns · 2.6 KB |
-| 32 values | 1.5 µs · 1.2 KB | 768 ns · 2.5 KB |
+| 1000 items, V8 | 203 ns · 8.2 KB | 187 ns · 8.2 KB |
+| 1000 items, JavaScriptCore | 697 ns | 508 ns |
 
 ## What didn't work
+
+### Linked lists
+
+We shipped doubly linked lists several times for different things. Our gut feeling would say that removing things from either end or in between should be faster this way, but that turned out to not be the case.
+
+Removing things from the middle of a `Set` is better, as long as every item is unique.
+
+Removing things from either end of an `Array` via `pop` and `shift` is better.
+
+If you need both, `indexOf` followed by a `splice` isn't slow enough to justify a doubly linked list.
 
 ### Mutation fast paths
 
@@ -285,6 +299,6 @@ The big win remmi gave us came from a single loop, which applied hundreds of upd
 So there is no mutation mode to opt into. Instead look at hot paths, look at anything that loops, and optimize those by hand. A copy nobody else holds a reference to can just be changed with plain JavaScript:
 
 ```ts
-const next = [...tracks]
+const next = tracks.slice()
 for (const track of updates) next[index.get(track.id)] = track
 ```

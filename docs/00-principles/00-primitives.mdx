@@ -120,3 +120,58 @@ declare module "@monstermann/stdlib-web" {
 ```
 
 The library has a few more helpers, but these three are the core.
+
+### Concurrency
+
+Libraries for async work tend to come as a family: a queue, a pool, a mutex, a lock per key, a wrapper that limits how often a function runs at once. Each has its own package and its own options.
+
+They are all the same thing: a few functions run, the others wait for their turn. So there is one primitive, `Semaphore`, with one method, `run`:
+
+```ts
+// A queue: one after the other, in the order they came in.
+const queue = Semaphore({ concurrency: 1 })
+await queue.run(() => save(document))
+
+// A pool: up to 4 at the same time.
+const pool = Semaphore({ concurrency: 4 })
+await pool.run(() => fetch(url))
+
+// A lock: one at a time per key, different keys do not wait for each other.
+const locks = Semaphore({ concurrency: 1 })
+await locks.run(path, () => migrate(path))
+
+// Bounded: fails instead of letting more than 100 wait.
+const hashing = Semaphore({ concurrency: 2, maxWaiting: 100 })
+const hash = await hashing.run(() => hashPassword(password)) // Result<string, SemaphoreFullError>
+
+// Waiting until nothing is running or waiting:
+await pool.idle()
+```
+
+Everything else is code you write around `run`. Say you want a queue that can drop everything it holds, and where tasks expire:
+
+```ts
+function Queue(options: { ttl?: number } = {}) {
+    const queue = Semaphore({ concurrency: 1 })
+    let controller = new AbortController()
+
+    return {
+        add: <T>(fn: (signal: AbortSignal) => Promise<T>) => {
+            const signal = options.ttl
+                ? AbortSignal.any([
+                    controller.signal,
+                    AbortSignal.timeout(options.ttl),
+                ])
+                : controller.signal
+            return queue.run(() => fn(signal), { signal })
+        },
+        clear: () => {
+            controller.abort()
+            controller = new AbortController()
+        },
+    }
+}
+
+const downloads = Queue({ ttl: 30_000 })
+await downloads.add((signal) => fetch(url, { signal }))
+```

@@ -1,5 +1,5 @@
 import type { AnyMap, MapKey, MapValue, UpdatedMap } from "../internals/types"
-import { isSame } from "../internals/arrays"
+import { isSame } from "../internals/isSame"
 
 /**
  * # set

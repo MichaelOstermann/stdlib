@@ -1,4 +1,4 @@
-import { isSame } from "../internals/arrays"
+import { isSame } from "../internals/isSame"
 import { ownKeys, setOwn } from "../internals/objects"
 
 /**

@@ -12,12 +12,12 @@ const at = (left: number, top: number) => ({ height: 20, left, top, width: 20 })
 
 describe("Placement.room", () => {
     it("should pick the side with more room", () => {
-        expect(room({ anchor: at(100, 100), boundary, floating })).toEqual({ horizontal: "right", vertical: "down" })
-        expect(room({ anchor: at(700, 500), boundary, floating })).toEqual({ horizontal: "left", vertical: "up" })
+        expect(room({ anchor: at(100, 100), boundary })).toEqual({ horizontal: "right", vertical: "down" })
+        expect(room({ anchor: at(700, 500), boundary })).toEqual({ horizontal: "left", vertical: "up" })
     })
 
     it("should go down and right on a tie", () => {
-        expect(room({ anchor: at(390, 290), boundary, floating })).toEqual({ horizontal: "right", vertical: "down" })
+        expect(room({ anchor: at(390, 290), boundary })).toEqual({ horizontal: "right", vertical: "down" })
     })
 })
 

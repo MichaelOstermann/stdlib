@@ -6,7 +6,7 @@ import { centerY } from "../Rect/centerY"
  * # room
  *
  * ```ts
- * function Placement.room(measurements: PlacementMeasurements): {
+ * function Placement.room(measurements: Pick<PlacementMeasurements, "anchor" | "boundary">): {
  *     vertical: "up" | "down";
  *     horizontal: "left" | "right";
  * }
@@ -22,7 +22,7 @@ import { centerY } from "../Rect/centerY"
  * const position = Placement.create(room.vertical === "up" ? "up-center" : "down-center", measurements);
  * ```
  */
-export function room(measurements: PlacementMeasurements): { horizontal: "left" | "right", vertical: "down" | "up" } {
+export function room(measurements: Pick<PlacementMeasurements, "anchor" | "boundary">): { horizontal: "left" | "right", vertical: "down" | "up" } {
     const { anchor, boundary } = measurements
     return {
         horizontal: centerX(anchor) > centerX(boundary) ? "left" : "right",

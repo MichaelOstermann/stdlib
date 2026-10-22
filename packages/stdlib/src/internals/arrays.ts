@@ -12,12 +12,11 @@ export function indexOf(target: unknown[], value: unknown, last: boolean): numbe
 }
 
 /**
- * Tells whether something is one of `values`, like `indexOf` in that `NaN` is never found.
+ * Tells whether something is one of `values`, `NaN` included, as in a `Set`.
  * Returns nothing when there are no values.
  */
 export function matcher(values: Iterable<unknown>): ((value: unknown) => boolean) | undefined {
     const set = new Set(values)
-    set.delete(Number.NaN)
     if (!set.size) return
     return (value) => set.has(value)
 }

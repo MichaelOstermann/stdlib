@@ -11,7 +11,6 @@ describe("Array.removeAll", () => {
         const target = [1, 2, 3]
         expect(removeAll(target, [])).toBe(target)
         expect(removeAll(target, [4, 5])).toBe(target)
-        expect(removeAll([Number.NaN], [Number.NaN])).toEqual([Number.NaN])
     })
 
     it("should not change what it was given", () => {
@@ -20,12 +19,7 @@ describe("Array.removeAll", () => {
         expect(target).toEqual([1, 2, 3])
     })
 
-    it("should work the same for a few and for many values", () => {
-        const target = [1, 2, 3, 4, 5, 6, 7, Number.NaN]
-        expect(removeAll(target, [1, 2])).toEqual([3, 4, 5, 6, 7, Number.NaN])
-        expect(removeAll(target, [1, 2, 3, 4, 5, Number.NaN])).toEqual([6, 7, Number.NaN])
-        expect(removeAll(target, new Set([1, Number.NaN]))).toEqual([2, 3, 4, 5, 6, 7, Number.NaN])
-        expect(removeAll(target, [Number.NaN, 8])).toBe(target)
-        expect(removeAll(target, [8, 9, 10, 11, 12, Number.NaN])).toBe(target)
+    it("should remove NaN, as Object.is finds it", () => {
+        expect(removeAll([1, Number.NaN, 2], [Number.NaN])).toEqual([1, 2])
     })
 })

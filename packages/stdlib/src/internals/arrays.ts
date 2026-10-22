@@ -16,13 +16,6 @@ export function indexOf(target: unknown[], value: unknown, last: boolean): numbe
  * Returns nothing when there are no values.
  */
 export function matcher(values: Iterable<unknown>): ((value: unknown) => boolean) | undefined {
-    // A few values are found faster by looking through them than by building a set.
-    if (Array.isArray(values) && values.length <= 4) {
-        if (!values.length) return
-        // eslint-disable-next-line no-self-compare
-        return (value) => value === value && values.includes(value)
-    }
-
     const set = new Set(values)
     set.delete(Number.NaN)
     if (!set.size) return

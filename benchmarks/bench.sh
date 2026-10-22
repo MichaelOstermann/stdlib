@@ -14,7 +14,6 @@ for runtime in node bun; do
     bun benchmarks/run.ts copy-on-write --runtime=$runtime
     bun benchmarks/run.ts computed-properties --runtime=$runtime
     bun benchmarks/run.ts equality --runtime=$runtime
-    bun benchmarks/run.ts lookup --runtime=$runtime
     bun benchmarks/run.ts rest-parameters --runtime=$runtime
     bun benchmarks/run.ts array-copies --runtime=$runtime
 done

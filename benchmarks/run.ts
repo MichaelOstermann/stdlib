@@ -1,53 +1,66 @@
 import Path from "node:path"
 import { stdlibBun } from "../packages/stdlib-transform/src/plugin"
 
-// Runs benchmarks, each case in a process of its own, in V8 (Node) and JavaScriptCore (Bun): bun benchmarks/run.ts [name …]
-// Bundled through stdlib-transform, with NODE_ENV set to production for the libraries compared against.
+// Runs a benchmark of this folder, every case in a process of its own, and prints a table. benchmarks/bench.sh runs all of them.
+//
+//   bun benchmarks/run.ts match                     # in Bun, without stdlib-transform
+//   bun benchmarks/run.ts match --runtime=node      # in Node
+//   bun benchmarks/run.ts match --transform         # through stdlib-transform
+//
+// Without the transform, globals come from @monstermann/stdlib/patch. NODE_ENV is production, for the libraries compared against.
 
 const dir = import.meta.dirname
 const src = Path.resolve(dir, "../packages/stdlib/src")
-const out = Path.join(dir, ".dist")
+const args = process.argv.slice(2)
+const name = args.find((arg) => !arg.startsWith("--"))
+const runtime = args.find((arg) => arg.startsWith("--runtime="))?.slice("--runtime=".length) ?? "bun"
+const transform = args.includes("--transform")
 
-const names = process.argv.slice(2)
-const all = ["copy-on-write", "libraries", "match"]
+if (!name) throw new Error("Which benchmark? bun benchmarks/run.ts <name> [--runtime=bun|node] [--transform]")
+if (runtime !== "bun" && runtime !== "node") throw new Error(`--runtime is bun or node, not ${runtime}`)
 
-for (const name of names.length ? names : all) {
-    const build = await Bun.build({
+const file = await build(name, transform)
+const cases = (await run("bun", file)).trim().split("\n")
+const engine = runtime === "node" ? "V8" : "JavaScriptCore"
+console.log(`\n${name}, ${engine}${transform ? ", through stdlib-transform" : ""}\n`)
+console.log(runtime === "node" ? "| | Time | Bytes |\n|---|---|---|" : "| | Time |\n|---|---|")
+for (const kase of cases) {
+    const { bytes, ns } = JSON.parse(await run(runtime, file, kase)) as { bytes?: number, ns: number }
+    console.log(bytes === undefined ? `| ${kase} | ${time(ns)} |` : `| ${kase} | ${time(ns)} | ${size(bytes)} |`)
+}
+
+async function build(name: string, transform: boolean): Promise<string> {
+    const result = await Bun.build({
         define: { "process.env.NODE_ENV": '"production"' },
         entrypoints: [Path.join(dir, `${name}.ts`)],
-        outdir: out,
+        outdir: Path.join(dir, ".dist", transform ? "transformed" : "patched"),
         target: "node",
         plugins: [
-            // What the transform imports from the published package comes from its sources, to not depend on a build.
             {
                 name: "stdlib-sources",
                 setup(build) {
-                    build.onResolve({ filter: /^@monstermann\/stdlib\// }, ({ path }) => ({
-                        path: Path.join(src, path.slice("@monstermann/stdlib/".length).replace(/\.mjs$/, ".ts")),
-                    }))
+                    // From the sources, to not depend on a build. Without the transform, importing the types of globals makes them available for real.
+                    build.onResolve({ filter: /^@monstermann\/stdlib\// }, ({ path }) => {
+                        const file = path.slice("@monstermann/stdlib/".length).replace(/\.mjs$/, "")
+                        return { path: Path.join(src, `${!transform && file === "globals" ? "patch" : file}.ts`) }
+                    })
                 },
             },
             // Only the benchmarks themselves: the sources of stdlib are what is being measured, as they are.
-            stdlibBun({ exclude: /[\\/]packages[\\/]/ }),
+            ...transform ? [stdlibBun({ exclude: /[\\/]packages[\\/]/ })] : [],
         ],
     })
-    if (!build.success) throw new AggregateError(build.logs, `Failed to build ${name}`)
-    const file = build.outputs[0]!.path
-
-    const cases: string[] = JSON.parse(await run("bun", file))
-    console.log(`\n${name}\n\n| | V8 | JSC | Bytes (V8) |\n|---|---|---|---|`)
-    for (const kase of cases) {
-        const v8 = JSON.parse(await run("node", file, kase))
-        const jsc = JSON.parse(await run("bun", file, kase))
-        console.log(`| ${kase} | ${time(v8.ns)} | ${time(jsc.ns)} | ${size(v8.bytes)} |`)
-    }
+    if (!result.success) throw new AggregateError(result.logs, `Failed to build ${name}`)
+    return result.outputs[0]!.path
 }
 
-async function run(...cmd: string[]): Promise<string> {
-    const process = Bun.spawn(cmd, { stderr: "inherit" })
-    const output = await new Response(process.stdout).text()
-    if (await process.exited !== 0) throw new Error(`Failed: ${cmd.join(" ")}`)
-    return output
+async function run(runtime: "bun" | "node", file: string, kase?: string): Promise<string> {
+    const cmd = [runtime, file, ...kase === undefined ? [] : [kase]]
+    const child = Bun.spawn(cmd, { stderr: "inherit" })
+    const output = await new Response(child.stdout).text()
+    if (await child.exited !== 0) throw new Error(`Failed: ${cmd.join(" ")}`)
+    // Only the last line: a benchmark may print before.
+    return kase === undefined ? output : output.trim().split("\n").at(-1)!
 }
 
 function time(ns: number): string {

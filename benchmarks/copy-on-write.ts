@@ -1,5 +1,4 @@
-import type { Case } from "./measure"
-import { measure } from "./measure"
+import { bench } from "./bench"
 
 // The two ways to map an array of the performance page: copy first, and copy on write.
 
@@ -25,28 +24,21 @@ function copyOnWrite<T>(target: T[], fn: (value: T) => T): T[] {
     return copy ?? target
 }
 
-const cases: Record<string, Case> = {}
-for (const size of [10, 1000]) {
-    // Two equal arrays, taken in turns: with one, an engine may see that every call returns the same, and make it once.
-    const inputs = [Array.from({ length: size }, (_, i) => i), Array.from({ length: size }, (_, i) => i)]
-    const changes: Record<string, (value: number) => number> = {
-        "everything changed": (value) => value + 1,
-        "first item changed": (value) => value === 0 ? -1 : value,
-        "last item changed": (value) => value === size - 1 ? -1 : value,
-        "nothing changed": (value) => value,
-    }
-    for (const [change, fn] of Object.entries(changes)) {
-        cases[`${size} items, ${change}, copy first`] = (calls) => {
-            let result
-            for (let i = 0; i < calls; i++) result = copyFirst(inputs[i & 1]!, fn)
-            return result
-        }
-        cases[`${size} items, ${change}, copy on write`] = (calls) => {
-            let result
-            for (let i = 0; i < calls; i++) result = copyOnWrite(inputs[i & 1]!, fn)
-            return result
-        }
-    }
-}
+const unchanged = (value: number): number => value
+const changeFirst = (value: number): number => value === 0 ? -1 : value
+const changeAll = (value: number): number => value + 1
 
-measure(cases)
+const ten = Array.from({ length: 10 }, (_, i) => i)
+const thousand = Array.from({ length: 1000 }, (_, i) => i)
+
+bench("10 items, nothing changed, copy first", ten, (items) => copyFirst(items, unchanged))
+bench("10 items, nothing changed, copy on write", ten, (items) => copyOnWrite(items, unchanged))
+bench("10 items, everything changed, copy first", ten, (items) => copyFirst(items, changeAll))
+bench("10 items, everything changed, copy on write", ten, (items) => copyOnWrite(items, changeAll))
+
+bench("1000 items, nothing changed, copy first", thousand, (items) => copyFirst(items, unchanged))
+bench("1000 items, nothing changed, copy on write", thousand, (items) => copyOnWrite(items, unchanged))
+bench("1000 items, first item changed, copy first", thousand, (items) => copyFirst(items, changeFirst))
+bench("1000 items, first item changed, copy on write", thousand, (items) => copyOnWrite(items, changeFirst))
+bench("1000 items, everything changed, copy first", thousand, (items) => copyFirst(items, changeAll))
+bench("1000 items, everything changed, copy on write", thousand, (items) => copyOnWrite(items, changeAll))

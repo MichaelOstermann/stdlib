@@ -5,7 +5,7 @@
         "packages/*"
     ],
     "scripts": {
-        "benchmarks": "bun benchmarks/run.ts",
+        "benchmarks": "sh benchmarks/bench.sh",
         "globals": "bun scripts/globals.ts",
         "checks": "bun run style && dprint check && oxlint && tsc && tsc -p packages/stdlib && tsc -p packages/stdlib-web && tsc -p packages/stdlib-react && bun test",
         "bundles": "bun run --filter '*' bundle",
@@ -24,6 +24,7 @@
         "oxlint": "^1.87.0",
         "oxlint-tsgolint": "^7.0.2003",
         "remeda": "2.53.0",
+        "ts-pattern": "5.9.0",
         "tsdown": "^0.23.0",
         "typescript": "^6.0.0"
     }

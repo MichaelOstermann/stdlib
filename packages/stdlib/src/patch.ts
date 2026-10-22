@@ -49,6 +49,7 @@ import { merge as Object_merge } from "./Object/merge"
 import { omit as Object_omit } from "./Object/omit"
 import { pick as Object_pick } from "./Object/pick"
 import { set as Object_set } from "./Object/set"
+import { setPath as Object_setPath } from "./Object/setPath"
 import { sleep as Promise_sleep } from "./Promise/sleep"
 import { add as Set_add } from "./Set/add"
 import { delete as Set_delete } from "./Set/delete"
@@ -152,6 +153,7 @@ define(Object, "Object", {
     omit: Object_omit,
     pick: Object_pick,
     set: Object_set,
+    setPath: Object_setPath,
 })
 
 define(Promise, "Promise", {

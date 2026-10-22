@@ -46,6 +46,7 @@ import type { merge as Object_merge } from "./Object/merge"
 import type { omit as Object_omit } from "./Object/omit"
 import type { pick as Object_pick } from "./Object/pick"
 import type { set as Object_set } from "./Object/set"
+import type { setPath as Object_setPath } from "./Object/setPath"
 import type { sleep as Promise_sleep } from "./Promise/sleep"
 import type { add as Set_add } from "./Set/add"
 import type { delete as Set_delete } from "./Set/delete"
@@ -129,6 +130,7 @@ declare global {
         omit: typeof Object_omit
         pick: typeof Object_pick
         set: typeof Object_set
+        setPath: typeof Object_setPath
     }
 
     interface PromiseConstructor {

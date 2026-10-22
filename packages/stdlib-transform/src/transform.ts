@@ -9,6 +9,7 @@ import { guards, packages } from "./manifest"
 import { transformMatches } from "./match"
 import { transformPipes } from "./pipe"
 import { transformReact } from "./react"
+import { transformSetPaths } from "./setPath"
 
 const from = "@monstermann/stdlib"
 
@@ -35,6 +36,7 @@ export interface StdlibResult {
  * - `Array.removeAll()` and `Duration.parse()` become direct imports of `removeAll` and `parse`, and so do `Rect.bottom()` and the others of `@monstermann/stdlib-web`
  * - `match()` chains are compiled into conditional expressions
  * - `pipe()` calls are replaced with the calls they make
+ * - `Object.setPath()` calls with a path that is written out are compiled into a function of their own
  * - everything else (`pipe`, `Result`, …) is imported from the file it lives in
  * - in React components and hooks, reads of signals are wrapped with `useReactive` and their signals and effects created with `useSignal` and `useSignalEffect`, all from `@monstermann/stdlib-react`
  *
@@ -78,6 +80,15 @@ export function transform(code: string, filePath: string, options: StdlibOptions
             replaced = true
             code = pipes.ms.toString()
             maps.push(pipes.ms.generateMap(generateMap))
+        }
+    }
+
+    // After pipes: calls they had in their steps are written out by now. Before globals: a compiled call needs no import.
+    if (code.includes("setPath")) {
+        const paths = transformSetPaths(code, filePath)
+        if (paths.hasChanged()) {
+            code = paths.toString()
+            maps.push(paths.generateMap(generateMap))
         }
     }
 

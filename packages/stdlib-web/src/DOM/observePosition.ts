@@ -72,15 +72,15 @@ function observe(element: Element, onMove: (rect: DOMRectReadOnly) => void): () 
         io = new IntersectionObserver((entries) => {
             const ratio = entries[0]!.intersectionRatio
 
+            // An entry is a snapshot: when the element moved since the observer was set up, its ratio says nothing about where it is now.
+            if (!isEqual(rect, element.getBoundingClientRect())) return refresh()
+
             if (ratio !== threshold) {
                 if (!isFirstEntry) return refresh()
                 // Not visible at all: checked again in a second, with a threshold that any visible pixel passes.
                 if (ratio === 0) timeout = setTimeout(() => refresh(1e-7), 1000)
                 else refresh(ratio)
             }
-
-            // Fully visible, yet the element moved since the observer was set up: set it up again.
-            if (ratio === 1 && !isEqual(rect, element.getBoundingClientRect())) refresh()
 
             isFirstEntry = false
         }, {
@@ -93,10 +93,14 @@ function observe(element: Element, onMove: (rect: DOMRectReadOnly) => void): () 
 
     const ro = new ResizeObserver(() => refresh())
     ro.observe(element)
+    // The area that is watched is cut from the viewport, a viewport of another size needs it cut again.
+    const onResize = (): void => refresh()
+    window.addEventListener("resize", onResize)
     refresh()
 
     return () => {
         stop()
         ro.disconnect()
+        window.removeEventListener("resize", onResize)
     }
 }

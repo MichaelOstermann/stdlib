@@ -9,6 +9,7 @@ export interface FakeElement {
 /** What the fake observers have seen, reset before every test. */
 export const dom = {
     intersecting: new Set<Element>(),
+    intersections: new Map<Element, { callback: IntersectionObserverCallback, options: IntersectionObserverInit }>(),
     resizing: new Map<Element, ResizeObserverCallback[]>(),
 }
 
@@ -64,16 +65,28 @@ class FakeResizeObserver {
 
 class FakeIntersectionObserver {
     observed = new Set<Element>()
+    constructor(readonly callback: IntersectionObserverCallback, readonly options: IntersectionObserverInit) {}
 
     disconnect(): void {
-        for (const element of this.observed) dom.intersecting.delete(element)
+        for (const element of this.observed) {
+            dom.intersecting.delete(element)
+            dom.intersections.delete(element)
+        }
         this.observed.clear()
     }
 
     observe(element: Element): void {
         this.observed.add(element)
         dom.intersecting.add(element)
+        dom.intersections.set(element, this)
     }
+}
+
+/** Reports `ratio` of an element to the intersection observer that observes it. */
+export function intersect(fake: FakeElement, ratio: number): void {
+    const observer = dom.intersections.get(fake.element)!
+    const entry = { intersectionRatio: ratio, target: fake.element }
+    observer.callback([entry as unknown as IntersectionObserverEntry], observer as unknown as IntersectionObserver)
 }
 
 /** happy-dom in the tests of this file, with observers that the tests drive: happy-dom has no layout to observe. */
@@ -83,6 +96,7 @@ export function fakeDOM(): void {
 
     beforeEach(() => {
         dom.intersecting.clear()
+        dom.intersections.clear()
         dom.resizing.clear()
         setViewport({ devicePixelRatio: 1, height: 600, width: 800 })
         Object.assign(globalThis, { IntersectionObserver: FakeIntersectionObserver, ResizeObserver: FakeResizeObserver })

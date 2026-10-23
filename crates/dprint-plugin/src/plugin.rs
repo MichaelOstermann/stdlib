@@ -31,7 +31,8 @@ impl SyncPluginHandler<Configuration> for Handler {
     }
 
     fn license_text(&mut self) -> String {
-        "MIT".to_string()
+        // The license of stdlib-style, which also carries the licenses of what is ported from other projects.
+        include_str!("../../../packages/stdlib-style/LICENSE").to_string()
     }
 
     fn resolve_config(&mut self, config: ConfigKeyMap, _global_config: &GlobalConfiguration) -> PluginResolveConfigurationResult<Configuration> {

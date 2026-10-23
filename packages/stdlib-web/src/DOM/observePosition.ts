@@ -1,3 +1,5 @@
+// Taken from observeMove of @floating-ui/dom, src/autoUpdate.ts, MIT License, Copyright (c) 2021 Floating UI contributors.
+
 import type { Rect } from "../Rect"
 import { roundedAndDeduped } from "../internals/roundedAndDeduped"
 import { fromDOMRect } from "../Rect/fromDOMRect"
@@ -42,8 +44,6 @@ export function observePosition(element: Element, onChange: (rect: Rect) => void
  *
  * An `IntersectionObserver` whose root margin cuts the viewport down to exactly the element reports
  * as soon as the element leaves that area, which is when the observer is set up again around the new position.
- *
- * Reference: https://github.com/floating-ui/floating-ui/blob/master/packages/dom/src/autoUpdate.ts
  */
 function observe(element: Element, onMove: (rect: DOMRectReadOnly) => void): () => void {
     let io: IntersectionObserver | undefined

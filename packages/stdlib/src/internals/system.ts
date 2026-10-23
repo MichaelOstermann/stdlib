@@ -1,3 +1,5 @@
+// Taken from @preact/signals-core, by way of @monstermann/signals, MIT License, Copyright (c) 2022-present Preact Team.
+
 import { batchDepth, connect, endBatch, evalContext, exitBatch, popContext, pushContext, startBatch, swapContext } from "./reactivity"
 
 type ReactiveNode = {

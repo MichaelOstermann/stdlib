@@ -1,0 +1,52 @@
+---
+title: String
+---
+
+```ts
+String.camelCase("hello world"); // "helloWorld"
+String.capitalize("hello world"); // "Hello world"
+String.constantCase("hello world"); // "HELLO_WORLD"
+String.kebabCase("hello world"); // "hello-world"
+String.pascalCase("hello world"); // "HelloWorld"
+String.snakeCase("hello world"); // "hello_world"
+String.titleCase("hello world"); // "Hello World"
+String.uncapitalize("Hello World"); // "hello World"
+
+String.dedent("    a\\n      b"); // "a\\n  b"
+String.score("Settings", "set"); // 0.94
+String.slugify("Hello World!"); // "hello-world"
+String.escapeHTML("<b>Tom & Jerry</b>"); // "&lt;b&gt;Tom &amp; Jerry&lt;/b&gt;"
+
+[...String.graphemes("hello")]; // ["h", "e", "l", "l", "o"]
+[...String.words("Hello, world!")]; // ["Hello", "world"]
+[...String.links("See example.com")]; // [{ start: 4, end: 15, text: "example.com", url: "https://example.com" }]
+```
+
+## String.score
+
+This function is designed for general purpose fuzzy searching, such as menus, command palettes or pickers, a user filtering a list of names or email addresses for example. For something more specific, like filtering file paths, reach for a different algorithm.
+
+```ts
+const results = items
+    .map(item => ({ item, score: String.score(item.title, query) }))
+    .filter(result => result.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .map(result => result.item)
+```
+
+## Credits
+
+- [farzher/fuzzysort](https://github.com/farzher/fuzzysort)
+- [gustavoguichard/string-ts](https://github.com/gustavoguichard/string-ts)
+- [markdown-it/linkify-it](https://github.com/markdown-it/linkify-it)
+- [sindresorhus/slugify](https://github.com/sindresorhus/slugify)
+- [sindresorhus/strip-indent](https://github.com/sindresorhus/strip-indent)
+- [sindresorhus/transliterate](https://github.com/sindresorhus/transliterate)
+
+## Differences
+
+`String.links` is 1.5 KB instead of the 4.5 KB of linkify-it. It finds links without a scheme, which linkify-it only does with `fuzzyLink: true`, and compared to that it is 2.4 to 30 times faster. Where a link ends is not always clear-cut, and in rare cases the two decide differently.
+
+`String.slugify` transliterates like `@sindresorhus/slugify`, at 6.1 KB instead of 8.8 KB gzipped, and 100 to 1000 times faster. Unlike it, it doesn't split words where the case changes: `GitHub` is `github` instead of `git-hub`, and `Ψυχή` is `psyxi` instead of `p-syxi`. It also keeps `Œ` as `oe`, which it drops, and drops symbols like `♥` instead of spelling them out.
+
+`String.score` finds the best way to place the query's characters instead of the first one, at 0.9 KB instead of 3.7 KB gzipped. fuzzysort is faster, but filtering 1000 items with `String.score` still takes 0.1ms at most per keystroke, and fuzzysort keeps every string it scored in a cache that only `fuzzysort.cleanup()` clears.

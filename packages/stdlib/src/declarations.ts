@@ -59,6 +59,7 @@ import type { dedent as String_dedent } from "./String/dedent"
 import type { escapeHTML as String_escapeHTML } from "./String/escapeHTML"
 import type { graphemes as String_graphemes } from "./String/graphemes"
 import type { kebabCase as String_kebabCase } from "./String/kebabCase"
+import type { links as String_links } from "./String/links"
 import type { pascalCase as String_pascalCase } from "./String/pascalCase"
 import type { score as String_score } from "./String/score"
 import type { slugify as String_slugify } from "./String/slugify"
@@ -153,6 +154,7 @@ declare global {
         escapeHTML: typeof String_escapeHTML
         graphemes: typeof String_graphemes
         kebabCase: typeof String_kebabCase
+        links: typeof String_links
         pascalCase: typeof String_pascalCase
         score: typeof String_score
         slugify: typeof String_slugify

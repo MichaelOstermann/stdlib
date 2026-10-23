@@ -62,6 +62,7 @@ import { dedent as String_dedent } from "./String/dedent"
 import { escapeHTML as String_escapeHTML } from "./String/escapeHTML"
 import { graphemes as String_graphemes } from "./String/graphemes"
 import { kebabCase as String_kebabCase } from "./String/kebabCase"
+import { links as String_links } from "./String/links"
 import { pascalCase as String_pascalCase } from "./String/pascalCase"
 import { score as String_score } from "./String/score"
 import { slugify as String_slugify } from "./String/slugify"
@@ -177,6 +178,7 @@ define(String, "String", {
     escapeHTML: String_escapeHTML,
     graphemes: String_graphemes,
     kebabCase: String_kebabCase,
+    links: String_links,
     pascalCase: String_pascalCase,
     score: String_score,
     slugify: String_slugify,

@@ -1,0 +1,56 @@
+---
+title: Dependencies
+---
+
+This monorepo inlines 3rd party code once it has survived human and AI auditing, and keeps its dependencies as few as possible. While at it, we may also remove features and options we don't need, or rewrite it to [improve performance](./performance).
+
+The original authors will be credited where credit is due, and their licenses are appended to the `LICENSE` of the package that ships their code.
+
+## Why
+
+Before we go into our reasoning, we would like to point out that this is not criticism towards any credited library author in particular, these are rather general observations.
+
+### Supply chain attacks
+
+Unfortunately in the npm ecosystem, security vulnerabilities and supply chain attacks are becoming more commonplace. We also keep finding security vulnerabilities in code out there, all of which we were able to manually verify and confirm. We report them through private channels, but it makes it harder to trust code we haven't read ourselves.
+
+In 2025 alone, Sonatype counted more than [454,600 new malicious packages](https://www.sonatype.com/state-of-the-software-supply-chain/2026/open-source-malware), over 1.2 million since they started counting.
+
+<details>
+<summary>A few of the ones that made the news</summary>
+
+- **August 2026**, `keyv`, `flat-cache` and 400+ other packages of unrelated publishers: the [ChainDrop worm](https://www.microsoft.com/en-us/security/blog/2026/08/04/chaindrop-supply-chain-compromise-anatomy-self-propagating-worm/) steals credentials and publishes itself into the next packages
+- **June 2026**, 140+ `@mastra` packages: a [typosquat of dayjs added as a dependency](https://www.microsoft.com/en-us/security/blog/2026/06/17/postinstall-payload-inside-mastra-npm-supply-chain-compromise/), attributed to a North Korean state actor
+- **March 2026**, `axios`: the [lead maintainer's account was compromised](https://www.cisa.gov/news-events/alerts/2026/04/20/supply-chain-compromise-impacts-axios-node-package-manager), two releases delivered a remote access trojan
+- **September 2025**, `@ctrl/tinycolor` and hundreds more: the [Shai-Hulud worm](https://bleepingcomputer.com/news/security/self-propagating-supply-chain-attack-hits-187-npm-packages), whose [second wave](https://www.wiz.io/authors/gal-benmocha) reached more than 25,000 repositories
+- **September 2025**, `chalk`, `debug`, `ansi-styles`, `supports-color` and 14 more: a [phished maintainer](https://aws.amazon.com/blogs/security/defending-against-supply-chain-attacks-like-chalk-debug-and-the-shai-hulud-worm), the payload rewrote crypto wallet transactions in the browser
+- **August 2025**, `nx`: a [stolen publish token](https://www.wiz.io/blog/s1ngularity-supply-chain-attack), the payload used the AI CLIs it found installed to search for secrets, then made private repositories of 400+ users and organizations public
+- **July 2025**, `eslint-config-prettier`, `eslint-plugin-prettier`, `synckit` and more: a [maintainer phished through a look-alike of npmjs.com](https://snyk.io/blog/maintainers-of-eslint-prettier-plugin-attacked-via-npm-supply-chain-malware/)
+- **March 2025**, `tj-actions/changed-files`: a GitHub Action whose [tags were moved to a commit leaking CI secrets](https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-github-action-cve-2025-30066)
+- **December 2024**, `@solana/web3.js`: [releases that stole private keys](https://www.theregister.com/2024/12/05/solana_javascript_sdk_compromised/), after a phishing attack
+- **October 2024**, `@lottiefiles/lottie-player`: a [stolen token](https://snyk.io/blog/lottie-player-npm-package-compromised-crypto-wallet-theft/), the payload asked visitors to connect their crypto wallets
+- **June 2024**, `polyfill.io`: the domain was sold, and the CDN [served malicious redirects to more than 100,000 sites](https://www.bleepingcomputer.com/news/security/polyfillio-javascript-supply-chain-attack-impacts-over-100K-sites/)
+- **March 2024**, `xz-utils`: a maintainer who [earned trust over years](https://en.wikipedia.org/wiki/XZ_Utils_backdoor) hid a backdoor for OpenSSH in test files
+- **March 2022**, `node-ipc`: its own maintainer [added code that wiped files](https://www.theregister.com/2022/03/18/protestware_javascript_node_ipc) on machines in Russia and Belarus, and it reached Vue's tooling
+- **January 2022**, `colors` and `faker`: their own maintainer [broke them on purpose](https://snyk.io/blog/open-source-npm-packages-colors-faker)
+- **November 2021**, `coa` and `rc`: [hijacked accounts published malware](https://therecord.media/malware-found-in-coa-and-rc-two-npm-packages-with-23m-weekly-downloads/), 23 million weekly downloads between them
+- **October 2021**, `ua-parser-js`: a [hijacked account published a cryptominer and a password stealer](https://therecord.media/malware-found-in-npm-package-with-millions-of-weekly-downloads/)
+- **November 2018**, `event-stream`: a new maintainer [added a malicious dependency](https://snyk.io/blog/malicious-code-found-in-npm-package-event-stream/), downloaded 8 million times before anyone noticed
+
+</details>
+
+npm is [tightening who can publish what](https://github.blog/security/supply-chain-security/our-plan-for-a-more-secure-npm-supply-chain/), which helps everyone, but every release is still code we would have to read.
+
+The original "vibe coding", which is installing 3rd party dependencies and not reading the code is no longer something we feel comfortable doing, and maybe something we should have never done in the first place.
+
+### Update frequency
+
+While we could make an effort to audit 3rd party code once, it is not enough - every time a new version gets shipped, we have to audit the changes.
+
+We are seeing a surge in terms of update frequency and code churn, in some cases dozens to hundreds of commits per day, which we can not possibly verify in our spare time.
+
+GitHub counted about 1 billion commits in all of 2025, by April 2026 it was at [275 million a week](https://feeds.simonwillison.net/2026/Apr/4/kyle-daigle/). Across 623 million changes from 2023 to 2026, [GitClear found](https://www.gitclear.com/the_ai_code_quality_maintainability_gap) 15% more code rewritten within two weeks of being written. An [ongoing study from Harvard](https://forkast.news/ai-coding-agents-write-30-more-code-and-resolve-zero-additional-issues-harvard-study-finds/) of 700+ companies sees coding agents bring 30% more code, 20% more commits and 23% more pull requests.
+
+This monorepo would not exist without the projects we credit. For the time being, we feel safer making the code we depend on our own: it goes through adversarial reviews, we fix whatever we find, and nobody else can publish a new version of it. This may well change again.
+
+This is not advice for anyone else, just what we decided to do for ourselves.

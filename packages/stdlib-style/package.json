@@ -42,7 +42,7 @@
         "bundle": "tsdown && cargo build --release --target wasm32-unknown-unknown -p dprint-plugin-stdlib-style && cp ../../target/wasm32-unknown-unknown/release/dprint_plugin_stdlib_style.wasm dist/dprint-plugin.wasm"
     },
     "peerDependencies": {
-        "dprint": "^0.61.1",
+        "dprint": "^0.61.1 || ^0.64.0",
         "oxlint": "^1.87.0",
         "oxlint-tsgolint": "^7.0.2003"
     },

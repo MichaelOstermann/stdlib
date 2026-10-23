@@ -24,6 +24,9 @@ let previousRuns = new Int32Array(0)
 let scores = new Float64Array(0)
 let runs = new Int32Array(0)
 let bonuses = new Int32Array(0)
+// Reused between calls as well: the first and the last place each character of the needle can be found at, with all the others still fitting.
+let firsts = new Int32Array(0)
+let lasts = new Int32Array(0)
 
 /**
  * # score
@@ -65,12 +68,35 @@ export function score(haystack: string, needle: string): number {
     const query = needle.toLowerCase()
     const n = text.length
     const m = query.length
+    // Lowercasing can change how long a string is, where there is no telling which character became which.
+    const cased = haystack.length === n ? haystack : text
+
+    if (m > firsts.length) {
+        firsts = new Int32Array(m)
+        lasts = new Int32Array(m)
+    }
 
     // Most haystacks do not have the characters at all.
     for (let i = 0, from = 0; i < m; i++) {
-        from = text.indexOf(query[i]!, from) + 1
-        if (!from) return 0
+        const found = text.indexOf(query[i]!, from)
+        if (found < 0) return 0
+        firsts[i] = found
+        from = found + 1
     }
+
+    // A single character is as good as the best place it is found at.
+    if (m === 1) {
+        let best = NONE
+        for (let j = firsts[0]!; j >= 0; j = text.indexOf(query, j + 1)) {
+            const before = j === 0 ? OTHER : kindOf(cased, j - 1)
+            const match = 0 + MATCH + bonusOf(j, before, kindOf(cased, j)) * 2
+            if (match > best) best = match
+        }
+        return quality(best, m, n)
+    }
+
+    lasts[m - 1] = text.lastIndexOf(query[m - 1]!)
+    for (let i = m - 2; i >= 0; i--) lasts[i] = text.lastIndexOf(query[i]!, lasts[i + 1]! - 1)
 
     if (n > size) {
         size = n
@@ -81,86 +107,105 @@ export function score(haystack: string, needle: string): number {
         bonuses = new Int32Array(n)
     }
 
-    // Lowercasing can change how long a string is, where there is no telling which character became which.
-    const cased = haystack.length === n ? haystack : text
-    let before = OTHER
-    for (let j = 0; j < n; j++) {
-        const kind = kindOf(cased.charCodeAt(j), cased[j]!)
-        bonuses[j] = j === 0
-            ? START
-            : kind === OTHER || before === OTHER
-                ? BOUNDARY
-                : (before === LOWER && kind === UPPER) || (before !== DIGIT && kind === DIGIT) ? CAMEL : 0
+    // Only what lies between the first place of the first character and the last place of the last one.
+    const first = firsts[0]!
+    const last = lasts[m - 1]!
+    let before = first === 0 ? OTHER : kindOf(cased, first - 1)
+    for (let j = first; j <= last; j++) {
+        const kind = kindOf(cased, j)
+        bonuses[j] = bonusOf(j, before, kind)
         before = kind
     }
 
+    // Locals, which engines keep in registers, where the buffers of the module are looked up again on every access.
+    let above = previousScores
+    let aboveRuns = previousRuns
+    let row = scores
+    let rowRuns = runs
+    const bonus = bonuses
     let best = NONE
 
     for (let i = 0; i < m; i++) {
         const character = query.charCodeAt(i)
+        // A character is found from its first place to its last one, after that only the row of the next character
+        // looks at what is left of this one, up to the last place of the next character.
+        const matchesTo = lasts[i]!
+        const to = i === m - 1 ? matchesTo : lasts[i + 1]! - 1
         let left = NONE
         let isGap = false
         best = NONE
 
-        for (let j = 0; j < n; j++) {
+        for (let j = firsts[i]!; j <= to; j++) {
             // Moving on without matching here.
             const gap = left === NONE ? NONE : left + (isGap ? GAP_EXTENSION : GAP_START)
 
             let match = NONE
             let run = 0
-            if (text.charCodeAt(j) === character) {
-                const diagonal = i === 0 ? 0 : j === 0 ? NONE : previousScores[j - 1]!
+            if (j <= matchesTo && text.charCodeAt(j) === character) {
+                const diagonal = i === 0 ? 0 : j === 0 ? NONE : above[j - 1]!
                 if (diagonal !== NONE) {
-                    run = (i === 0 || j === 0 ? 0 : previousRuns[j - 1]!) + 1
-                    let bonus = bonuses[j]!
+                    run = (i === 0 || j === 0 ? 0 : aboveRuns[j - 1]!) + 1
+                    let worth = bonus[j]!
                     if (run > 1) {
-                        const first = bonuses[j - run + 1]!
+                        const first = bonus[j - run + 1]!
                         // A new word starts in the middle of a run, which counts from here on.
-                        if (bonus >= BOUNDARY && bonus > first) run = 1
-                        else bonus = Math.max(bonus, CONSECUTIVE, first)
+                        if (worth >= BOUNDARY && worth > first) run = 1
+                        else worth = Math.max(worth, CONSECUTIVE, first)
                     }
                     // Where the first character is found matters twice as much.
-                    match = diagonal + MATCH + (i === 0 ? bonus * 2 : bonus)
+                    match = diagonal + MATCH + (i === 0 ? worth * 2 : worth)
                 }
             }
 
             if (match !== NONE && match >= gap) {
-                scores[j] = match
-                runs[j] = run
+                row[j] = match
+                rowRuns[j] = run
                 isGap = false
             }
             else {
-                scores[j] = gap
-                runs[j] = 0
+                row[j] = gap
+                rowRuns[j] = 0
                 isGap = true
             }
 
-            left = scores[j]!
+            left = row[j]!
             if (left > best) best = left
         }
 
-        const swapScores = previousScores
-        previousScores = scores
-        scores = swapScores
-        const swapRuns = previousRuns
-        previousRuns = runs
-        runs = swapRuns
+        const swapScores = above
+        above = row
+        row = swapScores
+        const swapRuns = aboveRuns
+        aboveRuns = rowRuns
+        rowRuns = swapRuns
     }
 
-    if (best === NONE) return 0
+    return quality(best, m, n)
+}
 
+function quality(best: number, m: number, n: number): number {
+    if (best === NONE) return 0
     // Everything in a row, from the very start.
     const perfect = m * (MATCH + START) + START
     // Found, however far apart, is more than not found.
-    const quality = Math.max(best, 1) / perfect
-    return quality * (0.9 + 0.1 * m / n)
+    return Math.max(best, 1) / perfect * (0.9 + 0.1 * m / n)
 }
 
-function kindOf(code: number, character: string): number {
+function bonusOf(j: number, before: number, kind: number): number {
+    if (j === 0) return START
+    if (kind === OTHER || before === OTHER) return BOUNDARY
+    if (before === LOWER && kind === UPPER) return CAMEL
+    if (before !== DIGIT && kind === DIGIT) return CAMEL
+    return 0
+}
+
+function kindOf(text: string, index: number): number {
+    const code = text.charCodeAt(index)
     if (code >= 97 && code <= 122) return LOWER
     if (code >= 65 && code <= 90) return UPPER
     if (code >= 48 && code <= 57) return DIGIT
     if (code < 128) return OTHER
+    const character = text[index]!
     // Letters without case are part of a word as well.
     if (character !== character.toLowerCase()) return UPPER
     return /[\p{L}\p{N}]/u.test(character) ? LOWER : OTHER

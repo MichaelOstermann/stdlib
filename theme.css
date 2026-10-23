@@ -27,3 +27,7 @@
     padding-bottom: 1rem;
     max-height: none;
 }
+
+summary {
+    cursor: pointer;
+}

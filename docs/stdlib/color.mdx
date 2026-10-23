@@ -67,7 +67,7 @@ OKLCH
 
 In our product, we typically don't chain a ton of transforms together, most of the time we get by doing one to two of them per color.
 
-Building a theme consisting of 139 colors costs us about 0.14ms and an optimized version would have taken it down to 0.03ms. Building a theme for us takes less than 1% of a single frame, and we only do it once at startup, or when the user picks a different theme.
+Building a theme consisting of 139 colors costs us about 0.14ms and an optimized version would have taken it down to 0.03ms. Building a theme for us takes less than 1% of a single frame, and we only do it once at startup, or when the user picks a different theme. Inside a component under the React Compiler, or inside a computed signal, the calls only run again when their input changes.
 
 Regardless, if you for some reason need high throughput, it is not that hard to manipulate the OKLCH channels yourself:
 

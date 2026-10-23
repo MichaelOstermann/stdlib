@@ -1,0 +1,83 @@
+---
+title: Color
+---
+
+A minimal color manipulation utility, based around OKLCH which is by far the best color space available for building palettes and themes.
+
+```ts
+// Takes hex, oklch, rgb(a), hsl(a), and always returns oklch()
+const bg = "#1f2029"
+const blue = "oklch(78% 0.2 262)"
+
+Color.alpha(bg, 0.5) // "oklch(0.2465 0.0171 280.08 / 0.5)"
+Color.lighten(bg, 0.2)
+Color.darken(bg, 0.2)
+Color.saturate(blue, 0.05)
+Color.desaturate(blue, 0.05)
+Color.hue(bg, 262)
+Color.rotate(blue, 180)
+Color.mix(bg, blue, 0.2)
+
+const transparent = Color.alpha(blue, 0.2)
+// What the browser paints
+const opaque = Color.over(transparent, bg)
+```
+
+## Tips
+
+If you are using OKLCH to generate themes, we found a lot of success mixing foregrounds with backgrounds:
+
+```ts
+// User provides only a few base colors:
+const fg = "..."
+const bg = "..."
+// Slightly muted foreground:
+const fgSecondary = Color.mix(bg, fg, 0.8)
+
+// Sometimes the hue can shift too much:
+const base = Color.mix(bg, fg, 0.2)
+// Restore the original hue:
+const tinted = Color.hue(base, Color.parse(fg)!.h)
+```
+
+Note that if you prefer, modern CSS can do some of this as well:
+
+```css
+.example {
+    color: color-mix(in oklch, var(--bg), var(--fg) 20%);
+}
+```
+
+## Performance
+
+As the [Performance](../principles/performance) section puts it, we only ship what is faster when it costs neither readability nor simplicity, and here it would: We went for convenience instead of raw throughput.
+
+```ts
+// Both of these parse, transform, then stringify:
+const a = Color.lighten("#1f2029", 0.5)
+const b = Color.saturate(a, 0.05)
+
+// Hypothetically: This one parses and stringifies only once:
+OKLCH
+    .from("#1f2029")
+    .lighten(0.5)
+    .saturate(0.05)
+    .css()
+```
+
+In our product, we typically don't chain a ton of transforms together, most of the time we get by doing one to two of them per color.
+
+Building a theme consisting of 139 colors costs us about 0.14ms and an optimized version would have taken it down to 0.03ms. Building a theme for us takes less than 1% of a single frame, and we only do it once at startup, or when the user picks a different theme.
+
+Regardless, if you for some reason need high throughput, it is not that hard to manipulate the OKLCH channels yourself:
+
+```ts
+const { l, c, h, alpha } = Color.parse("#1f2029")!
+Color.oklch({ l, c: c * 2, h, alpha }) // "oklch(0.2465 0.0342 280.08)"
+```
+
+## Credits
+
+- [Björn Ottosson, A perceptual color space for image processing](https://bottosson.github.io/posts/oklab/)
+- [evercoder/culori](https://github.com/evercoder/culori)
+- [omgovich/colord](https://github.com/omgovich/colord)

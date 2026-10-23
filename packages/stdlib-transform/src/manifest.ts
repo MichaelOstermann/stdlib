@@ -9,6 +9,7 @@ export interface Package {
 /** The namespaces of @monstermann/stdlib. */
 export const namespaces: ReadonlySet<string> = new Set([
     "Bytes",
+    "Color",
     "Duration",
     "Interval",
     "Retry",

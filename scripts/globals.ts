@@ -26,6 +26,7 @@ const values: Record<string, string> = {
     AsyncEmitter: "Emitter",
     batch: "batch",
     Bytes: "Bytes/index",
+    Color: "Color/index",
     Duration: "Duration/index",
     Effect: "Effect",
     Emitter: "Emitter",
@@ -49,6 +50,7 @@ const values: Record<string, string> = {
 /** The types that go with them: the file, and the parameters when there are any. */
 const types: Record<string, [file: string, parameters?: string]> = {
     AsyncEmitter: ["Emitter", "T = void"],
+    Color: ["Color/index"],
     Emitter: ["Emitter", "T = void"],
     Err: ["Result", "E, T = never"],
     Memo: ["Memo", "T = any"],
@@ -63,7 +65,7 @@ const types: Record<string, [file: string, parameters?: string]> = {
 }
 
 /** Globals of their own that are objects of functions, each a file of the same name. */
-const namespaces = ["Bytes", "Duration", "Interval", "Retry"]
+const namespaces = ["Bytes", "Color", "Duration", "Interval", "Retry"]
 
 const root = Path.resolve(import.meta.dirname, "..")
 const src = Path.join(root, "packages/stdlib/src")

@@ -39,6 +39,7 @@ import type { isShallowEqual as Map_isShallowEqual } from "./Map/isShallowEqual"
 import type { set as Map_set } from "./Map/set"
 import type { clamp as Math_clamp } from "./Math/clamp"
 import type { mod as Math_mod } from "./Math/mod"
+import type { roundTo as Math_roundTo } from "./Math/roundTo"
 import type { defaults as Object_defaults } from "./Object/defaults"
 import type { indexBy as Object_indexBy } from "./Object/indexBy"
 import type { isShallowEqual as Object_isShallowEqual } from "./Object/isShallowEqual"
@@ -120,6 +121,7 @@ declare global {
     interface Math {
         clamp: typeof Math_clamp
         mod: typeof Math_mod
+        roundTo: typeof Math_roundTo
     }
 
     interface ObjectConstructor {
@@ -164,6 +166,7 @@ declare global {
     const AsyncEmitter: typeof import("./Emitter").AsyncEmitter
     const batch: typeof import("./batch").batch
     const Bytes: typeof import("./Bytes/index").Bytes
+    const Color: typeof import("./Color/index").Color
     const Duration: typeof import("./Duration/index").Duration
     const Effect: typeof import("./Effect").Effect
     const Emitter: typeof import("./Emitter").Emitter
@@ -185,6 +188,8 @@ declare global {
 
     /** A single event that waits for its listeners: call it with a function to listen, and with anything else to tell the listeners about it. */
     type AsyncEmitter<T = void> = import("./Emitter").AsyncEmitter<T>
+    /** A color in OKLCH: `l` lightness from 0 to 1, `c` chroma from 0 to about 0.4, `h` hue in degrees and `alpha` from 0 to 1. Gray has no chroma, and its hue is ignored. */
+    type Color = import("./Color/index").Color
     /** A single event: call it with a function to listen, and with anything else to tell the listeners about it. */
     type Emitter<T = void> = import("./Emitter").Emitter<T>
     /** A result that failed, `value` is the error. */

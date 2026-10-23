@@ -42,6 +42,7 @@ import { isShallowEqual as Map_isShallowEqual } from "./Map/isShallowEqual"
 import { set as Map_set } from "./Map/set"
 import { clamp as Math_clamp } from "./Math/clamp"
 import { mod as Math_mod } from "./Math/mod"
+import { roundTo as Math_roundTo } from "./Math/roundTo"
 import { defaults as Object_defaults } from "./Object/defaults"
 import { indexBy as Object_indexBy } from "./Object/indexBy"
 import { isShallowEqual as Object_isShallowEqual } from "./Object/isShallowEqual"
@@ -72,6 +73,7 @@ import { Action } from "./Action"
 import { AsyncEmitter } from "./Emitter"
 import { batch } from "./batch"
 import { Bytes } from "./Bytes/index"
+import { Color } from "./Color/index"
 import { Duration } from "./Duration/index"
 import { Effect } from "./Effect"
 import { Emitter } from "./Emitter"
@@ -143,6 +145,7 @@ define(Map, "Map", {
 define(Math, "Math", {
     clamp: Math_clamp,
     mod: Math_mod,
+    roundTo: Math_roundTo,
 })
 
 define(Object, "Object", {
@@ -188,6 +191,7 @@ define(globalThis, "globalThis", {
     AsyncEmitter,
     batch,
     Bytes,
+    Color,
     Duration,
     Effect,
     Emitter,

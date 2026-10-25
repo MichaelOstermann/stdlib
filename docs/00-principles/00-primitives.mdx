@@ -4,50 +4,139 @@ title: Primitives
 
 Wherever possible, this library focuses on exposing well designed primitives: Building blocks that allow you to cover your own scenarios by building on top, instead of hiding the complexity behind options.
 
-## Examples
+## Low-level primitives, high-level abstractions
 
-### Popover
+It is tempting to try to come up with a declarative interface that can one-shot all the possibilities under the sun, only to find later on that a new scenario we didn't think of is not only hard, it can often be impossible to implement.
 
-Instead of a middleware system with options for every case, the first thing we expose is a primitive for describing a position:
-
-`Rect` `{ top, left, width, height }`, including straightforward helpers like `Rect.translateY(rect, 100)`
-
-Positioning a popover now becomes a single function, where everything going in and coming out is a `Rect`:
+Consider your average command line tool out there:
 
 ```ts
-{
-    position: ({ anchor, boundary, floating }) => {
-        // Below the anchor, horizontally centered:
-        const below = Rect.moveTopTo(floating, Rect.bottom(anchor) + 4)
-        return Rect.setCenterX(below, Rect.centerX(anchor))
-    }
+command({
+    name: "foo",
+    flags: {
+        bar: {...},
+        baz: {...},
+    },
+})
+```
+
+While this is an easy to use interface, this design makes it impossible to declare that either `bar` or `baz` should be used, but not both simultaneously (eg. you can either read a file via a `--path` option or pass something to STDIN, but not both).
+
+So inevitably, bit by bit such an interface will become more complex:
+
+```ts
+command({
+    name: "foo",
+    flags: {
+        bar: { conflict: "baz" },
+        baz: { conflict: "bar" },
+    },
+})
+```
+
+And then on another day you'll come to find that there can be multiple conflicts:
+
+```ts
+command({
+    name: "foo",
+    flags: {
+        bar: { conflicts: ["baz"] },
+        baz: { conflicts: ["bar"] },
+    },
+})
+```
+
+On a side note: Typing `conflicts` so that it only accepts the names of the other flags is already a struggle, the easy way out is `string[]`. If something becomes difficult to implement type-wise in TypeScript, it is a pretty good sign that something somewhere went wrong.
+
+It is not really about the likelihood of these things happening, it is more about *once* they happen then things can get pretty painful, and something somewhere *will* happen one day. A few of those somethings:
+
+- Required and optional flags, sometimes depending on which other flags were used
+- Flags shared between commands (`--json`)
+- Interactive input (prompts, selects, confirmations), eg. for missing values, and failing without a terminal
+- Different behavior for agents, in CI, or when piped, for input and output alike: prompts, colors, JSON, help, even which commands exist
+- Input from stdin
+- Help that leaves out the flags already given
+- Help for commands that only group others (`members --help`)
+- Help and errors in other languages
+- Mistyped commands and flags: suggest the right one, or run it anyway (`mmbers` for `members`)
+- Shell completion for commands, flags and values (eg. fetched from a server)
+- Commands that only exist at runtime
+- Calling commands from code (RPC), and tests with their own argv
+
+We think that one of the best things we can do is to provide two layers of abstractions:
+
+### Low-level primitives
+
+```ts
+command({
+    name: "foo",
+    flags() {
+        return {}
+    },
+})
+```
+
+Simply by turning this into a plain function you now gained the ability to parse arguments however you'd like. Not only that but this is probably the easiest thing to implement as a library author.
+
+Let's take a look at the process of parsing arguments next. Some of what you might run into:
+
+- `--foo bar`, `--foo=bar`, and esbuild's `--foo:bar`
+- `--foo bar`: a flag with a value, or a flag and a positional?
+- Bundled short flags (`-abc`), and values attached to them (`-n5`)
+- `-5`: a value or a flag?
+- `--foo` and `--no-foo`
+- Repeated flags (`--tag a --tag b`) and lists (`--tag a,b`)
+- Nested flags (`--foo.bar` into `{ foo: { bar } }`)
+- Everything after `--` is positional
+- Several words as one positional, or as several (`bun run xyz foo bar`)
+
+The best thing we could come up with is expressing them as a doubly linked list:
+
+```ts
+const tokens = Tokens(process.argv.slice(2))
+
+while (tokens.head) {
+    console.log(tokens.head.index) // The position of the argument
+    console.log(tokens.head.value) // The value of the argument
+    console.log(tokens.head.next)  // Peek ahead
+    console.log(tokens.head.prev)  // Peek behind
+    tokens.head.remove()           // Consume arguments
 }
 ```
 
-Everything else is code you write around it.
+A doubly linked list allows you to search through its values, peek what's ahead/behind and mark arguments as consumed by removing them.
 
-Positioning libraries often export dozens of types: Different shapes for a rectangle (coordinates, dimensions, sides, coordinates with dimensions, coordinates with dimensions and sides, a pair of rects), more than a handful of different sets of options, middleware state, etc. Here it is one: `Rect`.
+### High-level abstractions
 
-We ship additional utility functions, mostly to cover our own scenarios:
+The above is flexible and simple enough to cover (probably) everything you could possibly want, but we lost the "easy to use" aspect from before.
+
+What we can do however is to provide an opinionated abstraction that can (hopefully) make the 99% use case easy to use again:
 
 ```ts
-{
-    position: (measurements) => {
-        // Given an anchor, which sides have more room?
-        // Often this is more than enough to figure out
-        // whether a popover should be placed e.g. below
-        // or above the anchor:
-        const room = Placement.room(measurements)
-        room.horizontal // "left" | "right"
-        room.vertical // "up" | "down"
-    }
-}
+// A high-level abstraction over Tokens(),
+// it can't do everything, but it can cover most things:
+const parseFoo = CLI.flag({
+    name: "foo",
+    alias: "f",
+    ...
+})
+
+// Back to what we had before, returns a function
+// that can be passed to command():
+const flags = CLI.flags({
+    bar: {...},
+    baz: {...},
+})
+
+command({
+    name: "foo",
+    flags,
+})
 ```
 
-There is no reasonable way to ship a "standard" positioning algorithm that one-shots everything, a few examples:
+You get the best of both worlds: You get an easy to use API, and when it should fail you, the story isn't over just yet.
 
-- Sometimes popovers can dynamically change height and what should happen here (Should it flip to the opposite side when it no longer fits? Should we fake extra height and compute the ideal position ahead of time?) is ambiguous
-- The rules for the ideal position of a toolbar in rich text editors are complicated, for example generally speaking as close to the caret as possible, but without overlapping too much text behind it
+## More examples
 
 ### Hotkeys
 
@@ -120,6 +209,49 @@ declare module "@monstermann/stdlib-web" {
 ```
 
 The library has a few more helpers, but these three are the core.
+
+### Popover
+
+Instead of a middleware system with options for every case, the first thing we expose is a primitive for describing a position:
+
+`Rect` `{ top, left, width, height }`, including simple helpers like `Rect.translateY(rect, 100)`
+
+Positioning a popover now becomes a single function, where everything going in and coming out is a `Rect`:
+
+```ts
+{
+    position: ({ anchor, boundary, floating }) => {
+        // Below the anchor, horizontally centered:
+        const below = Rect.moveTopTo(floating, Rect.bottom(anchor) + 4)
+        return Rect.setCenterX(below, Rect.centerX(anchor))
+    }
+}
+```
+
+Everything else is code you write around it.
+
+Positioning libraries often export dozens of types: Different shapes for a rectangle (coordinates, dimensions, sides, coordinates with dimensions, coordinates with dimensions and sides, a pair of rects), more than a handful of different sets of options, middleware state, etc. Here it is one: `Rect`.
+
+We ship additional utility functions, mostly to cover our own scenarios:
+
+```ts
+{
+    position: (measurements) => {
+        // Given an anchor, which sides have more room?
+        // Often this is more than enough to figure out
+        // whether a popover should be placed e.g. below
+        // or above the anchor:
+        const room = Placement.room(measurements)
+        room.horizontal // "left" | "right"
+        room.vertical // "up" | "down"
+    }
+}
+```
+
+There is no reasonable way to ship a "standard" positioning algorithm that one-shots everything, a few examples:
+
+- Sometimes popovers can dynamically change height and what should happen here (Should it flip to the opposite side when it no longer fits? Should we fake extra height and compute the ideal position ahead of time?) is ambiguous
+- The rules for the ideal position of a toolbar in rich text editors are complicated, for example generally speaking as close to the caret as possible, but without overlapping too much text behind it
 
 ### Concurrency
 

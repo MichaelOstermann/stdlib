@@ -1,3 +1,4 @@
+import type { IsLiteral } from "./types/IsLiteral"
 import { throwUnmatched } from "./throwUnmatched"
 
 /**
@@ -15,6 +16,15 @@ type Handlers<T, K extends keyof T> = { [V in `${T[K] & Tag}`]: (value: Tagged<T
 type Exact<T, K extends keyof T, H> = H & NoInfer<{ [V in keyof H as `${V & (number | string)}` extends `${T[K] & Tag}` | "_" ? never : V]: never }>
 
 type Returned<H> = H[keyof H] extends infer F ? F extends (...args: never[]) => infer R ? R : never : never
+
+/**
+ * A key that is a literal in every member, `never` otherwise: a `string` in one, like the `name` of
+ * a plain `Error`, leaves members that no handler can name, see `match(value).shape` for those.
+ */
+type Discriminant<T, K extends keyof T> = false extends EachIsLiteral<T[K]> ? never : K
+
+/** `IsLiteral` of each member of `V`, a `boolean` being `true | false`. */
+type EachIsLiteral<V> = V extends unknown ? IsLiteral<V> : never
 
 export interface MatchTag {
     /**
@@ -48,8 +58,8 @@ export interface MatchTag {
      *     });
      * ```
      */
-    <T, K extends keyof T, H extends Handlers<T, K>>(value: T, key: K, handlers: Exact<T, K, H>): Returned<H>
-    <T, K extends keyof T, H extends Partial<Handlers<T, K>> & { _: (value: T) => unknown }>(value: T, key: K, handlers: Exact<T, K, H>): Returned<H>
+    <T, K extends keyof T, H extends Handlers<T, K>>(value: T, key: Discriminant<T, K>, handlers: Exact<T, K, H>): Returned<H>
+    <T, K extends keyof T, H extends Partial<Handlers<T, K>> & { _: (value: T) => unknown }>(value: T, key: Discriminant<T, K>, handlers: Exact<T, K, H>): Returned<H>
 }
 
 type AnyHandlers = Record<string, ((value: unknown) => unknown) | undefined>

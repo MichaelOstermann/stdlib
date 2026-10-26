@@ -82,6 +82,29 @@ describe("match.tag", () => {
         expect([title({ title: "a", version: 1 }), title({ name: "b", version: 2 }), title({})]).toEqual(["a", "b", "none"])
     })
 
+    it("should ask for a key that is a literal in every member", () => {
+        class NotFoundError extends Error { override readonly name = "NotFoundError" }
+        const error = new NotFoundError() as Error | NotFoundError
+        // @ts-expect-error `name` is a string in `Error`
+        match.tag(error, "name", { NotFoundError: () => 1 })
+        // @ts-expect-error `name` is a string in `Error`, also with a fallback
+        expect(match.tag(error, "name", { _: () => 2, NotFoundError: () => 1 })).toBe(1)
+
+        type Counted = { count: number } | { count: 0, empty: true }
+        // @ts-expect-error `count` is a number in a member
+        expect(match.tag({ count: 0 } as Counted, "count", { 0: () => 1, _: () => 2 })).toBe(1)
+    })
+
+    it("should handle numeric enum members as tags", () => {
+        enum Kind { Circle, Square }
+        type Enumerated = { kind: Kind.Circle, radius: number } | { kind: Kind.Square, size: number }
+        const size = (shape: Enumerated): number => match.tag(shape, "kind", {
+            0: (circle) => circle.radius,
+            1: (square) => square.size,
+        })
+        expect(size({ kind: Kind.Square, size: 2 })).toBe(2)
+    })
+
     it("should handle a member with several tags by each of them", () => {
         type Event = { type: "blur" } | { type: "keydown" | "keyup", key: string }
         const describe = (event: Event): string => match.tag(event, "type", {

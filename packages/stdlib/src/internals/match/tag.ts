@@ -21,10 +21,9 @@ type Returned<H> = H[keyof H] extends infer F ? F extends (...args: never[]) => 
  * A key that is a literal in every member, `never` otherwise: a `string` in one, like the `name` of
  * a plain `Error`, leaves members that no handler can name, see `match(value).shape` for those.
  */
-type Discriminant<T, K extends keyof T> = false extends EachIsLiteral<T[K]> ? never : K
-
-/** `IsLiteral` of each member of `V`, a `boolean` being `true | false`. */
-type EachIsLiteral<V> = V extends unknown ? IsLiteral<V> : never
+type Discriminant<T, K extends keyof T> = false extends (T[K] extends infer V ? V extends unknown ? IsLiteral<V> : never : never)
+    ? never
+    : K
 
 export interface MatchTag {
     /**

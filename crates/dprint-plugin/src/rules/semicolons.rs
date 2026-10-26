@@ -151,14 +151,7 @@ impl<'a> Visit<'a> for Context<'_> {
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
-
-    use crate::Configuration;
-    use crate::format_text;
-
-    fn format(text: &str) -> String {
-        format_text(Path::new("test.ts"), text, &Configuration::default()).unwrap().unwrap_or_else(|| text.to_string())
-    }
+    use crate::testing::format;
 
     #[test]
     fn statements() {

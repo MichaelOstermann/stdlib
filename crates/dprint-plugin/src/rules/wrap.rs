@@ -125,18 +125,8 @@ fn protect_code_spans(lines: &[&str]) -> String {
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
-
-    use crate::Configuration;
-    use crate::format_text;
-
-    fn format(text: &str) -> String {
-        format_text(Path::new("test.ts"), text, &Configuration::default()).unwrap().unwrap_or_else(|| text.to_string())
-    }
-
-    fn unchanged(text: &str) {
-        assert_eq!(format(text), text);
-    }
+    use crate::testing::format;
+    use crate::testing::unchanged;
 
     const LONG: &str = "Reads `argv` into what should happen, without printing or running anything: the command to run with its values, or every error.";
 

@@ -123,18 +123,8 @@ pub fn dedupe(source: &Source, edits: &mut Edits) {
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
-
-    use crate::Configuration;
-    use crate::format_text;
-
-    fn format(text: &str) -> String {
-        format_text(Path::new("test.ts"), text, &Configuration::default()).unwrap().unwrap_or_else(|| text.to_string())
-    }
-
-    fn unchanged(text: &str) {
-        assert_eq!(format(text), text);
-    }
+    use crate::testing::format;
+    use crate::testing::unchanged;
 
     #[test]
     fn top_level_functions() {

@@ -247,14 +247,7 @@ impl<'a> Visit<'a> for Containers<'_> {
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
-
-    use crate::Configuration;
-    use crate::format_text;
-
-    fn format(text: &str) -> String {
-        format_text(Path::new("test.tsx"), text, &Configuration::default()).unwrap().unwrap_or_else(|| text.to_string())
-    }
+    use crate::testing::format_tsx as format;
 
     /// Formats `text` with all of its indentation removed, and expects it back.
     fn restores(text: &str) {

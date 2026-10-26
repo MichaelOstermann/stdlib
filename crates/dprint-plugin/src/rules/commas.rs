@@ -203,14 +203,8 @@ impl<'a> Visit<'a> for Commas<'_> {
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
-
-    use crate::Configuration;
-    use crate::format_text;
-
-    fn format(text: &str) -> String {
-        format_text(Path::new("test.ts"), text, &Configuration::default()).unwrap().unwrap_or_else(|| text.to_string())
-    }
+    use crate::testing::format;
+    use crate::testing::format_tsx;
 
     #[test]
     fn added_when_multiline() {
@@ -242,9 +236,8 @@ mod tests {
     fn type_parameters() {
         assert_eq!(format("type A<B, C,> = [B, C]\nfunction d<E, F,>() {}\nconst g = <H,>(h: H) => h\n"), "type A<B, C> = [B, C]\nfunction d<E, F>() {}\nconst g = <H>(h: H) => h\n");
         assert_eq!(format("type A<\n    B,\n    C,\n> = [B, C]\n"), "type A<\n    B,\n    C,\n> = [B, C]\n");
-        let tsx = |text: &str| format_text(Path::new("test.tsx"), text, &Configuration::default()).unwrap().unwrap_or_else(|| text.to_string());
-        assert_eq!(tsx("const a = <B,>(b: B) => b\n"), "const a = <B,>(b: B) => b\n");
-        assert_eq!(tsx("const a = <B extends C,>(b: B) => b\nconst d = <E, F,>(e: E, f: F) => e\n"), "const a = <B extends C>(b: B) => b\nconst d = <E, F>(e: E, f: F) => e\n");
+        assert_eq!(format_tsx("const a = <B,>(b: B) => b\n"), "const a = <B,>(b: B) => b\n");
+        assert_eq!(format_tsx("const a = <B extends C,>(b: B) => b\nconst d = <E, F,>(e: E, f: F) => e\n"), "const a = <B extends C>(b: B) => b\nconst d = <E, F>(e: E, f: F) => e\n");
     }
 
     #[test]

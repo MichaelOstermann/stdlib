@@ -101,14 +101,7 @@ fn lines(text: &str, tokens: &[Token]) -> Vec<Line> {
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
-
-    use crate::Configuration;
-    use crate::format_text;
-
-    fn format(text: &str) -> String {
-        format_text(Path::new("test.tsx"), text, &Configuration::default()).unwrap().unwrap_or_else(|| text.to_string())
-    }
+    use crate::testing::format_tsx as format;
 
     #[test]
     fn eol_last() {

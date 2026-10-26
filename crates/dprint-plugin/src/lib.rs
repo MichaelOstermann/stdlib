@@ -8,6 +8,8 @@ mod json;
 mod plugin;
 mod rules;
 mod source;
+#[cfg(test)]
+mod testing;
 mod verify;
 
 pub use configuration::Configuration;

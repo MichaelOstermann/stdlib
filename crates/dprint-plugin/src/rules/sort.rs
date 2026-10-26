@@ -615,19 +615,10 @@ impl<'a> Visit<'a> for Sort<'_> {
 #[cfg(test)]
 mod tests {
     use std::cmp::Ordering;
-    use std::path::Path;
 
     use super::natural;
-    use crate::Configuration;
-    use crate::format_text;
-
-    fn format(text: &str) -> String {
-        format_text(Path::new("test.tsx"), text, &Configuration::default()).unwrap().unwrap_or_else(|| text.to_string())
-    }
-
-    fn unchanged(text: &str) {
-        assert_eq!(format(text), text);
-    }
+    use crate::testing::format_tsx as format;
+    use crate::testing::unchanged_tsx as unchanged;
 
     #[test]
     fn natural_order() {

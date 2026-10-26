@@ -137,14 +137,7 @@ fn requote(raw: &str, template_allowed: bool) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
-
-    use crate::Configuration;
-    use crate::format_text;
-
-    fn format(text: &str) -> String {
-        format_text(Path::new("test.tsx"), text, &Configuration::default()).unwrap().unwrap_or_else(|| text.to_string())
-    }
+    use crate::testing::format_tsx as format;
 
     #[test]
     fn double_by_default() {

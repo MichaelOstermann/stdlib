@@ -16,7 +16,7 @@ describe("shape", () => {
 
     describe("types", () => {
         test("exhaustive patterns #1", () => {
-            match({ foo: "foo" as "foo" | "bar" })
+            match({ foo: "foo" as "bar" | "foo" })
                 .shape({ foo: "foo" }, true)
                 .shape({ foo: "bar" }, true)
                 .unwrap()
@@ -82,12 +82,12 @@ describe("shape", () => {
         })
 
         test("non-exhaustive patterns #1", () => {
-            match({ foo: "foo" as "foo" | "bar" })
+            match({ foo: "foo" as "bar" | "foo" })
                 .shape({ foo: "foo" }, true)
                 // @ts-expect-error test case.
                 .unwrap()
 
-            match({ foo: "foo" as "foo" | "bar" })
+            match({ foo: "foo" as "bar" | "foo" })
                 .shape({ foo: "foo" }, true)
                 .unwrapOrElse((value) => {
                     expectTypeOf(value).toEqualTypeOf<{ readonly foo: "bar" }>()
@@ -251,7 +251,7 @@ describe("shape", () => {
         })
 
         test("duplicated patterns #1", () => {
-            match({ foo: "foo" as "foo" | "bar" })
+            match({ foo: "foo" as "bar" | "foo" })
                 .shape({ foo: "foo" }, true)
                 // @ts-expect-error test case.
                 .shape({ foo: "foo" }, true)

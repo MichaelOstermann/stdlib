@@ -34,7 +34,7 @@ describe("case", () => {
         })
 
         test("exhaustive patterns #1", () => {
-            match("foo" as "foo" | "bar")
+            match("foo" as "bar" | "foo")
                 .case("foo", "foo")
                 .case("bar", "bar")
                 .unwrap()
@@ -78,12 +78,12 @@ describe("case", () => {
         })
 
         test("non-exhaustive patterns #1", () => {
-            match("foo" as "foo" | "bar")
+            match("foo" as "bar" | "foo")
                 .case("foo", "foo")
                 // @ts-expect-error test case.
                 .unwrap()
 
-            match("foo" as "foo" | "bar")
+            match("foo" as "bar" | "foo")
                 .case("foo", "foo")
                 .unwrapOrElse((value) => {
                     expectTypeOf(value).toEqualTypeOf<"bar">()
@@ -234,7 +234,7 @@ describe("case", () => {
         })
 
         test("duplicated patterns #1", () => {
-            match("foo" as "foo" | "bar")
+            match("foo" as "bar" | "foo")
                 .case("foo", "foo")
                 // @ts-expect-error test case.
                 .case("foo", "foo")
@@ -308,12 +308,12 @@ describe("case", () => {
         })
 
         test("autocompletion #1", () => {
-            const result = match("foo" as "foo" | "bar").case
-            expectTypeOf<Parameters<typeof result>[0]>().toEqualTypeOf<"foo" | "bar">()
+            const result = match("foo" as "bar" | "foo").case
+            expectTypeOf<Parameters<typeof result>[0]>().toEqualTypeOf<"bar" | "foo">()
         })
 
         test("autocompletion #2", () => {
-            const result = match("foo" as "foo" | "bar").case("foo", true).case
+            const result = match("foo" as "bar" | "foo").case("foo", true).case
             expectTypeOf<Parameters<typeof result>[0]>().toEqualTypeOf<"bar">()
         })
 

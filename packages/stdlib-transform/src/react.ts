@@ -14,7 +14,7 @@ interface Scope {
     errors: { message: string, node: Node }[]
     expressions: Set<JSXExpression | Expression>
     fn: FunctionNode
-    kind: "component" | "hook" | "callback" | undefined
+    kind: "callback" | "component" | "hook" | undefined
     name: string
     returned: boolean
     returnsNonNode: boolean

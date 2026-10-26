@@ -45,7 +45,7 @@ describe("onCase", () => {
         })
 
         test("exhaustive patterns #1", () => {
-            match("foo" as "foo" | "bar")
+            match("foo" as "bar" | "foo")
                 .onCase("foo", (value) => {
                     expectTypeOf(value).toEqualTypeOf<"foo">()
                     return "foo"
@@ -110,7 +110,7 @@ describe("onCase", () => {
         })
 
         test("non-exhaustive patterns #1", () => {
-            match("foo" as "foo" | "bar")
+            match("foo" as "bar" | "foo")
                 .onCase("foo", (value) => {
                     expectTypeOf(value).toEqualTypeOf<"foo">()
                     return "foo"
@@ -118,7 +118,7 @@ describe("onCase", () => {
                 // @ts-expect-error test case.
                 .unwrap()
 
-            match("foo" as "foo" | "bar")
+            match("foo" as "bar" | "foo")
                 .onCase("foo", (value) => {
                     expectTypeOf(value).toEqualTypeOf<"foo">()
                     return "foo"
@@ -338,7 +338,7 @@ describe("onCase", () => {
         })
 
         test("duplicated patterns #1", () => {
-            match("foo" as "foo" | "bar")
+            match("foo" as "bar" | "foo")
                 .onCase("foo", () => "foo")
                 // @ts-expect-error test case.
                 .onCase("foo", () => "foo")
@@ -412,12 +412,12 @@ describe("onCase", () => {
         })
 
         test("autocompletion #1", () => {
-            const result = match("foo" as "foo" | "bar").onCase
-            expectTypeOf<Parameters<typeof result>[0]>().toEqualTypeOf<"foo" | "bar">()
+            const result = match("foo" as "bar" | "foo").onCase
+            expectTypeOf<Parameters<typeof result>[0]>().toEqualTypeOf<"bar" | "foo">()
         })
 
         test("autocompletion #2", () => {
-            const result = match("foo" as "foo" | "bar").onCase("foo", () => true).onCase
+            const result = match("foo" as "bar" | "foo").onCase("foo", () => true).onCase
             expectTypeOf<Parameters<typeof result>[0]>().toEqualTypeOf<"bar">()
         })
 

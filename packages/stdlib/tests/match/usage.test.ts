@@ -12,14 +12,14 @@ const IconCompleted: Icon = () => "completed"
 const IconAny: Icon = () => "any"
 
 type Block =
-    | { type: "Paragraph" }
     | { type: "Code" }
-    | { data: { level: 1 | 2 }, type: "Header" }
+    | { type: "Header", data: { level: 1 | 2 } }
+    | { type: "Paragraph" }
 
 type DropTarget =
-    | { direction: "ABOVE" | "BELOW", id: string, type: "TASK" }
-    | { id: string, type: "SECTION" }
-    | { id: string, type: "PROJECT" }
+    | { type: "PROJECT", id: string }
+    | { type: "SECTION", id: string }
+    | { type: "TASK", direction: "ABOVE" | "BELOW", id: string }
 
 describe("usage", () => {
     test("components as results of an enum", () => {

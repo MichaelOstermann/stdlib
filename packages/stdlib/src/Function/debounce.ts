@@ -67,7 +67,7 @@ type DebounceOptions = {
  *
  */
 export function debounce<T extends unknown[]>(
-    fn: (...args: T) => void | Promise<void>,
+    fn: (...args: T) => Promise<void> | void,
     options: DebounceOptions,
 ): Debounced<T> {
     let isRunning = false

@@ -3,9 +3,9 @@ import { _ } from "../../src/_"
 import { match } from "../../src/match"
 
 type Message =
-    | { id: number, type: "text", value: string }
-    | { id: number, type: "image", url: string }
-    | { id: number, type: "ping" }
+    | { type: "image", id: number, url: string }
+    | { type: "ping", id: number }
+    | { type: "text", id: number, value: string }
 
 describe("match", () => {
     describe("implementation", () => {
@@ -27,7 +27,7 @@ describe("match", () => {
         })
 
         test("tuples", () => {
-            const run = (state: "idle" | "busy", event: "start" | "stop") => match([state, event])
+            const run = (state: "busy" | "idle", event: "start" | "stop") => match([state, event])
                 .shape(["idle", "start"], "busy")
                 .shape(["busy", "stop"], "idle")
                 .onShape([match._, match._], ([state]) => state)
@@ -161,7 +161,7 @@ describe("match", () => {
         })
 
         test("exhaustive primitives", () => {
-            match("foo" as "foo" | "bar" | null | undefined)
+            match("foo" as "bar" | "foo" | null | undefined)
                 .case("foo", true)
                 .case("bar", null, true)
                 .case(undefined, true)
@@ -170,12 +170,12 @@ describe("match", () => {
 
         test("patterns that are not a single literal", () => {
             // Does not tell what is left.
-            match("foo" as "foo" | "bar")
-                .case("foo" as "foo" | "bar", true)
+            match("foo" as "bar" | "foo")
+                .case("foo" as "bar" | "foo", true)
                 // @ts-expect-error test case.
                 .unwrap()
 
-            match("foo" as "foo" | "bar" | "baz")
+            match("foo" as "bar" | "baz" | "foo")
                 .case("foo", "foo")
                 .unwrapOrElse((value) => {
                     expectTypeOf(value).toEqualTypeOf<"bar" | "baz">()
@@ -183,7 +183,7 @@ describe("match", () => {
         })
 
         test("patterns that can not match", () => {
-            match("foo" as "foo" | "bar")
+            match("foo" as "bar" | "foo")
                 .case("foo", true)
                 .case("bar", true)
                 // @ts-expect-error test case.
@@ -201,7 +201,7 @@ describe("match", () => {
         test("callbacks of several patterns", () => {
             match("foo" as "foo" | "bar" | number)
                 .onCase("foo", "bar", (value) => {
-                    expectTypeOf(value).toEqualTypeOf<"foo" | "bar">()
+                    expectTypeOf(value).toEqualTypeOf<"bar" | "foo">()
                 })
                 .onCase(1, (value) => {
                     expectTypeOf(value).toEqualTypeOf<1>()
@@ -261,7 +261,7 @@ describe("match", () => {
         })
 
         test("exhaustive tuples", () => {
-            match(["idle", "start"] as ["idle" | "busy", "start" | "stop"])
+            match(["idle", "start"] as ["busy" | "idle", "start" | "stop"])
                 .onShape(["idle", "start"], (value) => {
                     expectTypeOf(value).toEqualTypeOf<readonly ["idle", "start"]>()
                 })
@@ -275,19 +275,19 @@ describe("match", () => {
         })
 
         test("non-exhaustive tuples", () => {
-            match(["idle", "start"] as ["idle" | "busy", "start" | "stop"])
+            match(["idle", "start"] as ["busy" | "idle", "start" | "stop"])
                 .shape(["idle", "start"], true)
                 .shape(["busy", match._], true)
                 // @ts-expect-error test case.
                 .unwrap()
 
-            match(["idle", "start"] as ["idle" | "busy", "start" | "stop"])
+            match(["idle", "start"] as ["busy" | "idle", "start" | "stop"])
                 // @ts-expect-error test case.
                 .shape(["idle"], true)
         })
 
         test("tuples of what is being passed", () => {
-            const run = (state: "idle" | "busy", event: { type: "start" } | null): number => match([state, event])
+            const run = (state: "busy" | "idle", event: { type: "start" } | null): number => match([state, event])
                 .shape(["idle", null], 1)
                 .shape(["busy", null], 2)
                 .onShape([match._, match._], ([, event]) => {
@@ -427,10 +427,10 @@ describe("match", () => {
         })
 
         test("results that have been given a type", () => {
-            const state = "on" as "on" | "off"
+            const state = "on" as "off" | "on"
             const maybe = "a" as "a" | undefined
             const flag = true as boolean
-            expectTypeOf(match(1 as number).case(1, state).unwrapOr(null)).toEqualTypeOf<"on" | "off" | null>()
+            expectTypeOf(match(1 as number).case(1, state).unwrapOr(null)).toEqualTypeOf<"off" | "on" | null>()
             expectTypeOf(match(1 as number).case(1, maybe).unwrapOr(null)).toEqualTypeOf<"a" | null | undefined>()
             expectTypeOf(match(1 as number).case(1, flag).unwrapOr(null)).toEqualTypeOf<boolean | null>()
             expectTypeOf(match(1 as number).case(1, "on").unwrapOr(null)).toEqualTypeOf<string | null>()

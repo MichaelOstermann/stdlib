@@ -112,7 +112,6 @@ export const frames = {
     callbacks: new Map<number, FrameRequestCallback>(),
     id: 0,
     now: 0,
-
     /** Moves the time ahead by `ms` and runs the frames that were requested until then. */
     run(ms = 16): void {
         this.now += ms

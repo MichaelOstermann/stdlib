@@ -65,7 +65,7 @@ describe("match.tag", () => {
     })
 
     it("should handle tags that are no strings by what they are written as", () => {
-        type Loaded = { error: string, ok: false } | { ok: true, value: number }
+        type Loaded = { ok: false, error: string } | { ok: true, value: number }
         const describe = (result: Loaded): number | string => match.tag(result, "ok", {
             false: (failed) => failed.error,
             true: (loaded) => loaded.value,
@@ -83,7 +83,7 @@ describe("match.tag", () => {
     })
 
     it("should handle a member with several tags by each of them", () => {
-        type Event = { type: "blur" } | { key: string, type: "keydown" | "keyup" }
+        type Event = { type: "blur" } | { type: "keydown" | "keyup", key: string }
         const describe = (event: Event): string => match.tag(event, "type", {
             blur: () => "blur",
             keydown: (event) => `down ${event.key}`,

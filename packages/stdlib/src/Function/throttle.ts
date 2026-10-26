@@ -64,7 +64,7 @@ type ThrottleOptions = {
  *
  */
 export function throttle<T extends unknown[]>(
-    fn: (...args: T) => void | Promise<void>,
+    fn: (...args: T) => Promise<void> | void,
     options: ThrottleOptions,
 ): Throttled<T> {
     let isRunning = false

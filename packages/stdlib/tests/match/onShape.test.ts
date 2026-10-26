@@ -16,7 +16,7 @@ describe("onShape", () => {
 
     describe("types", () => {
         test("exhaustive patterns #1", () => {
-            match({ foo: "foo" as "foo" | "bar" })
+            match({ foo: "foo" as "bar" | "foo" })
                 .onShape({ foo: "foo" }, (value) => {
                     expectTypeOf(value).toEqualTypeOf<{ readonly foo: "foo" }>()
                     return true
@@ -112,7 +112,7 @@ describe("onShape", () => {
         })
 
         test("non-exhaustive patterns #1", () => {
-            match({ foo: "foo" as "foo" | "bar" })
+            match({ foo: "foo" as "bar" | "foo" })
                 .onShape({ foo: "foo" }, (value) => {
                     expectTypeOf(value).toEqualTypeOf<{ readonly foo: "foo" }>()
                     return true
@@ -120,7 +120,7 @@ describe("onShape", () => {
                 // @ts-expect-error test case.
                 .unwrap()
 
-            match({ foo: "foo" as "foo" | "bar" })
+            match({ foo: "foo" as "bar" | "foo" })
                 .onShape({ foo: "foo" }, (value) => {
                     expectTypeOf(value).toEqualTypeOf<{ readonly foo: "foo" }>()
                     return true
@@ -340,7 +340,7 @@ describe("onShape", () => {
         })
 
         test("duplicated patterns #1", () => {
-            match({ foo: "foo" as "foo" | "bar" })
+            match({ foo: "foo" as "bar" | "foo" })
                 .onShape({ foo: "foo" }, () => true)
                 // @ts-expect-error test case.
                 .onShape({ foo: "foo" }, () => true)

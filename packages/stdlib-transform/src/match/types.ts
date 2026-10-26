@@ -30,8 +30,8 @@ export interface Context {
 
 /** The matched subject: one value, or the values of `match([a, b])`, which are matched one by one without building the array. */
 export type Subject =
-    | { kind: "value", name: string }
     | { kind: "tuple", names: string[] }
+    | { kind: "value", name: string }
 
 export interface Step {
     args: Node[]

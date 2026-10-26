@@ -209,7 +209,6 @@ export interface RawSignal<T = any> {
     targets: ReactiveNode | undefined
     value: T
     version: number
-
     get: () => T
     refresh: () => boolean
     set: (value: T) => void
@@ -303,7 +302,6 @@ export interface RawMemo<T = any> extends RawSignal<T> {
     globalVersion: number
     sources?: ReactiveNode
     fn: () => T
-
     get: () => T
     notify: () => void
 }
@@ -443,7 +441,6 @@ export interface RawEffect {
     fn?: EffectFn
     nextBatchedEffect?: RawEffect
     sources?: ReactiveNode
-
     dispose: () => void
     end: () => void
     notify: () => void

@@ -103,11 +103,15 @@ fn object_moves(text: &str, object: &Object, order: &Order) -> Option<Moves> {
             }
         }
     }
+    moves(text, &object.properties.iter().map(range).collect::<Vec<_>>(), &sorted)
+}
+
+/// What puts the values at `ranges` into the `sorted` order, which lists the index of the value for each
+/// slot. `None` when they are in that order already.
+fn moves(text: &str, ranges: &[(usize, usize)], sorted: &[usize]) -> Option<Moves> {
     if sorted.iter().enumerate().all(|(slot, &index)| slot == index) {
         return None;
     }
-
-    let ranges: Vec<(usize, usize)> = object.properties.iter().map(range).collect();
     Some(sorted.iter().enumerate().filter(|(slot, index)| slot != *index).map(|(slot, &index)| (ranges[slot], text[ranges[index].0..ranges[index].1].to_string())).collect())
 }
 
@@ -132,11 +136,7 @@ fn find_moves(file: &str, text: &str, value: &Value, path: &str) -> Option<Moves
             }
             let mut sorted: Vec<usize> = (0..strings.len()).collect();
             sorted.sort_by(|&a, &b| strings[a].cmp(strings[b]));
-            if sorted.iter().enumerate().all(|(slot, &index)| slot == index) {
-                return None;
-            }
-            let ranges: Vec<(usize, usize)> = array.elements.iter().map(range).collect();
-            Some(sorted.iter().enumerate().filter(|(slot, index)| slot != *index).map(|(slot, &index)| (ranges[slot], text[ranges[index].0..ranges[index].1].to_string())).collect())
+            moves(text, &array.elements.iter().map(range).collect::<Vec<_>>(), &sorted)
         }
         _ => None,
     }

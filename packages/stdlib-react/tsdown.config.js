@@ -15,7 +15,10 @@ export default defineConfig({
     ],
 })
 
-/** Ships the hooks and components compiled: React Compiler does not touch what is in node_modules. A component or hook it would skip fails the build. */
+/**
+ * Ships the hooks and components compiled: React Compiler does not touch what is in node_modules. A
+ * component or hook it would skip fails the build.
+ */
 function reactCompiler() {
     return {
         name: "react-compiler",

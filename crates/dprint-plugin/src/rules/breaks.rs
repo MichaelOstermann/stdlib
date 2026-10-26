@@ -270,17 +270,6 @@ impl Breaks<'_> {
     fn link(&mut self, expression: &Expression, called: bool) -> bool {
         self.links.insert(expression.span());
         match expression {
-            Expression::StaticMemberExpression(member) => {
-                self.dots.push((member.property.span.start, !called));
-                self.link(&member.object, false);
-            }
-            Expression::PrivateFieldExpression(member) => {
-                self.dots.push((member.field.span.start, !called));
-                self.link(&member.object, false);
-            }
-            Expression::ComputedMemberExpression(member) => {
-                self.link(&member.object, false);
-            }
             Expression::CallExpression(call) => {
                 self.link(&call.callee, true);
             }
@@ -288,27 +277,30 @@ impl Breaks<'_> {
                 self.link(&non_null.expression, called);
             }
             Expression::ChainExpression(chain) => match &chain.expression {
-                ChainElement::StaticMemberExpression(member) => {
-                    self.dots.push((member.property.span.start, !called));
-                    self.link(&member.object, false);
-                }
-                ChainElement::PrivateFieldExpression(member) => {
-                    self.dots.push((member.field.span.start, !called));
-                    self.link(&member.object, false);
-                }
-                ChainElement::ComputedMemberExpression(member) => {
-                    self.link(&member.object, false);
-                }
                 ChainElement::CallExpression(call) => {
                     self.link(&call.callee, true);
                 }
                 ChainElement::TSNonNullExpression(non_null) => {
                     self.link(&non_null.expression, called);
                 }
+                element => self.member(element.as_member_expression().expect("the other elements are member expressions"), called),
             },
-            _ => return false,
+            _ => match expression.as_member_expression() {
+                Some(member) => self.member(member, called),
+                None => return false,
+            },
         }
         true
+    }
+
+    /// A property access in a chain: its `.`, and then the object it is read from.
+    fn member(&mut self, member: &MemberExpression, called: bool) {
+        match member {
+            MemberExpression::StaticMemberExpression(member) => self.dots.push((member.property.span.start, !called)),
+            MemberExpression::PrivateFieldExpression(member) => self.dots.push((member.field.span.start, !called)),
+            MemberExpression::ComputedMemberExpression(_) => {}
+        }
+        self.link(member.object(), false);
     }
 }
 

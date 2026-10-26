@@ -83,7 +83,8 @@ impl Breaks<'_> {
     }
 
     /// A list of items separated by commas, between a pair of brackets.
-    fn list(&mut self, items: &[Span]) {
+    fn list(&mut self, items: impl IntoIterator<Item = Span>) {
+        let items: Vec<Span> = items.into_iter().collect();
         let (Some(first), Some(last)) = (items.first(), items.last()) else { return };
         let Some(opener) = self.tokens.before(first.start) else { return };
         if !matches!(opener.kind, Kind::LParen | Kind::LBrack | Kind::LCurly | Kind::LAngle) {
@@ -318,80 +319,80 @@ impl<'a> Visit<'a> for Breaks<'_> {
     }
 
     fn visit_array_expression(&mut self, it: &ArrayExpression<'a>) {
-        self.list(&it.elements.iter().map(GetSpan::span).collect::<Vec<_>>());
+        self.list(it.elements.iter().map(GetSpan::span));
         walk::walk_array_expression(self, it);
     }
 
     fn visit_object_expression(&mut self, it: &ObjectExpression<'a>) {
-        self.list(&it.properties.iter().map(GetSpan::span).collect::<Vec<_>>());
+        self.list(it.properties.iter().map(GetSpan::span));
         walk::walk_object_expression(self, it);
     }
 
     fn visit_array_pattern(&mut self, it: &ArrayPattern<'a>) {
         if it.elements.iter().all(Option::is_some) {
             let elements = it.elements.iter().flatten().map(GetSpan::span);
-            self.list(&elements.chain(it.rest.as_ref().map(|rest| rest.span)).collect::<Vec<_>>());
+            self.list(elements.chain(it.rest.as_ref().map(|rest| rest.span)));
         }
         walk::walk_array_pattern(self, it);
     }
 
     fn visit_object_pattern(&mut self, it: &ObjectPattern<'a>) {
         let properties = it.properties.iter().map(|property| property.span);
-        self.list(&properties.chain(it.rest.as_ref().map(|rest| rest.span)).collect::<Vec<_>>());
+        self.list(properties.chain(it.rest.as_ref().map(|rest| rest.span)));
         walk::walk_object_pattern(self, it);
     }
 
     fn visit_formal_parameters(&mut self, it: &FormalParameters<'a>) {
         let items = it.items.iter().map(|parameter| parameter.span);
-        self.list(&items.chain(it.rest.as_ref().map(|rest| rest.span)).collect::<Vec<_>>());
+        self.list(items.chain(it.rest.as_ref().map(|rest| rest.span)));
         walk::walk_formal_parameters(self, it);
     }
 
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
-        self.list(&it.arguments.iter().map(GetSpan::span).collect::<Vec<_>>());
+        self.list(it.arguments.iter().map(GetSpan::span));
         walk::walk_call_expression(self, it);
     }
 
     fn visit_new_expression(&mut self, it: &NewExpression<'a>) {
-        self.list(&it.arguments.iter().map(GetSpan::span).collect::<Vec<_>>());
+        self.list(it.arguments.iter().map(GetSpan::span));
         walk::walk_new_expression(self, it);
     }
 
     fn visit_import_declaration(&mut self, it: &ImportDeclaration<'a>) {
         if let Some(specifiers) = &it.specifiers {
             let named = specifiers.iter().filter(|specifier| matches!(specifier, ImportDeclarationSpecifier::ImportSpecifier(_)));
-            self.list(&named.map(GetSpan::span).collect::<Vec<_>>());
+            self.list(named.map(GetSpan::span));
         }
         walk::walk_import_declaration(self, it);
     }
 
     fn visit_export_named_declaration(&mut self, it: &ExportNamedDeclaration<'a>) {
-        self.list(&it.specifiers.iter().map(|specifier| specifier.span).collect::<Vec<_>>());
+        self.list(it.specifiers.iter().map(|specifier| specifier.span));
         walk::walk_export_named_declaration(self, it);
     }
 
     fn visit_export_from_declaration(&mut self, it: &ExportFromDeclaration<'a>) {
-        self.list(&it.specifiers.iter().map(|specifier| specifier.span).collect::<Vec<_>>());
+        self.list(it.specifiers.iter().map(|specifier| specifier.span));
         walk::walk_export_from_declaration(self, it);
     }
 
     fn visit_ts_enum_body(&mut self, it: &TSEnumBody<'a>) {
-        self.list(&it.members.iter().map(|member| member.span).collect::<Vec<_>>());
+        self.list(it.members.iter().map(|member| member.span));
         walk::walk_ts_enum_body(self, it);
     }
 
     fn visit_ts_tuple_type(&mut self, it: &TSTupleType<'a>) {
-        self.list(&it.element_types.iter().map(GetSpan::span).collect::<Vec<_>>());
+        self.list(it.element_types.iter().map(GetSpan::span));
         walk::walk_ts_tuple_type(self, it);
     }
 
     fn visit_ts_type_parameter_instantiation(&mut self, it: &TSTypeParameterInstantiation<'a>) {
-        self.list(&it.params.iter().map(GetSpan::span).collect::<Vec<_>>());
+        self.list(it.params.iter().map(GetSpan::span));
         walk::walk_ts_type_parameter_instantiation(self, it);
     }
 
     fn visit_ts_type_parameter_declaration(&mut self, it: &TSTypeParameterDeclaration<'a>) {
-        self.list(&it.params.iter().map(|parameter| parameter.span).collect::<Vec<_>>());
+        self.list(it.params.iter().map(|parameter| parameter.span));
         walk::walk_ts_type_parameter_declaration(self, it);
     }
 

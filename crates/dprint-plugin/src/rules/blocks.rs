@@ -82,6 +82,14 @@ impl Blocks<'_> {
         self.edits.replace(start + gap.trim_end().len(), end, "\n");
     }
 
+    /// Whether the one statement of a block needs the block's lines: a comment sits next to it, or it spans
+    /// lines of its own.
+    fn needs_lines(&self, block: Span, inner: Span) -> bool {
+        let (start, end) = (block.start as usize, block.end as usize);
+        let commented = !self.blank(start + 1, inner.start as usize) || !self.blank(inner.end as usize, end - 1);
+        commented || self.broken(inner.start as usize, inner.end as usize)
+    }
+
     fn classify(&self, body: &Statement) -> Body {
         let span = body.span();
         let (start, end) = (span.start as usize, span.end as usize);
@@ -96,8 +104,7 @@ impl Blocks<'_> {
         // Only statements that can't change meaning, or swallow a following `else`, once the braces are gone.
         let simple = matches!(statement, Statement::ExpressionStatement(_) | Statement::ReturnStatement(_) | Statement::ThrowStatement(_) | Statement::BreakStatement(_) | Statement::ContinueStatement(_));
         let inner = statement.span();
-        let commented = !self.blank(start + 1, inner.start as usize) || !self.blank(inner.end as usize, end - 1);
-        if !simple || commented || self.broken(inner.start as usize, inner.end as usize) {
+        if !simple || self.needs_lines(span, inner) {
             return Body { form: Form::Braces, inner: None, needs_braces: true };
         }
         // Braces around a body on the header's line are noise. Around a body on its own line they are a choice.
@@ -231,8 +238,7 @@ impl Blocks<'_> {
                 [] => needs_lines |= self.broken(start, end) && !self.blank(start + 1, end - 1),
                 [statement] => {
                     let inner = statement.span();
-                    let commented = !self.blank(start + 1, inner.start as usize) || !self.blank(inner.end as usize, end - 1);
-                    needs_lines |= commented || self.broken(inner.start as usize, inner.end as usize);
+                    needs_lines |= self.needs_lines(block.span, inner);
                     first.get_or_insert(if self.broken(start, inner.start as usize) { Form::Braces } else { Form::Inline });
                 }
                 _ => needs_lines = true,
@@ -266,10 +272,14 @@ impl Blocks<'_> {
     }
 }
 
+/// The spans of a body's directives, `"use strict"`, and statements.
+fn spans(directives: &[Directive], statements: &[Statement]) -> Vec<Span> {
+    directives.iter().map(|directive| directive.span).chain(statements.iter().map(GetSpan::span)).collect()
+}
+
 impl<'a> Visit<'a> for Blocks<'_> {
     fn visit_program(&mut self, it: &Program<'a>) {
-        let spans: Vec<Span> = it.directives.iter().map(|directive| directive.span).chain(it.body.iter().map(GetSpan::span)).collect();
-        self.statements(None, &spans, None, false);
+        self.statements(None, &spans(&it.directives, &it.body), None, false);
         walk::walk_program(self, it);
     }
 
@@ -333,7 +343,7 @@ impl<'a> Visit<'a> for Blocks<'_> {
         if matches!(it.body.as_slice(), [Statement::ThrowStatement(_)]) {
             self.relaxed.insert(it.span);
         }
-        self.block(it.span, &it.body.iter().map(GetSpan::span).collect::<Vec<_>>());
+        self.block(it.span, &spans(&[], &it.body));
         walk::walk_block_statement(self, it);
     }
 
@@ -341,21 +351,17 @@ impl<'a> Visit<'a> for Blocks<'_> {
         if matches!(it.statements.as_slice(), [Statement::ThrowStatement(_)]) {
             self.relaxed.insert(it.span);
         }
-        if !self.bare.contains(&it.span) {
-            let spans: Vec<Span> = it.directives.iter().map(|directive| directive.span).chain(it.statements.iter().map(GetSpan::span)).collect();
-            self.block(it.span, &spans);
-        }
+        self.block(it.span, &spans(&it.directives, &it.statements));
         walk::walk_function_body(self, it);
     }
 
     fn visit_static_block(&mut self, it: &StaticBlock<'a>) {
-        self.block(it.span, &it.body.iter().map(GetSpan::span).collect::<Vec<_>>());
+        self.block(it.span, &spans(&[], &it.body));
         walk::walk_static_block(self, it);
     }
 
     fn visit_ts_module_block(&mut self, it: &TSModuleBlock<'a>) {
-        let spans: Vec<Span> = it.directives.iter().map(|directive| directive.span).chain(it.body.iter().map(GetSpan::span)).collect();
-        self.block(it.span, &spans);
+        self.block(it.span, &spans(&it.directives, &it.body));
         walk::walk_ts_module_block(self, it);
     }
 
@@ -363,7 +369,7 @@ impl<'a> Visit<'a> for Blocks<'_> {
         if let Some(first) = it.consequent.first() {
             let colon = self.tokens.before(first.span().start as usize).filter(|token| token.kind == Kind::Colon);
             if let Some(colon) = colon {
-                self.statements(Some(colon.end), &it.consequent.iter().map(GetSpan::span).collect::<Vec<_>>(), None, false);
+                self.statements(Some(colon.end), &spans(&[], &it.consequent), None, false);
             }
         }
         walk::walk_switch_case(self, it);

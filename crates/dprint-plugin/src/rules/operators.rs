@@ -241,7 +241,7 @@ mod tests {
         assert_eq!(format("const a = b +\n    c -\n    d\n"), "const a = b\n    + c\n    - d\n");
         assert_eq!(format("const a = b ?? // note\n    c\n"), "const a = b // note\n    ?? c\n");
         assert_eq!(format("const a = b instanceof\n    C\n"), "const a = b\n    instanceof C\n");
-        assert_eq!(format("type A = B |\n    C |\n    D\n"), "type A = B\n    | C\n    | D\n");
+        assert_eq!(format("type A =\n    B |\n    C |\n    D\n"), "type A =\n    | B\n    | C\n    | D\n");
         assert_eq!(format("type A = B &\n    C\n"), "type A = B\n    & C\n");
         unchanged("const a = b\n    && c\n    && d\n");
         unchanged("type A =\n    | B\n    | C\n");

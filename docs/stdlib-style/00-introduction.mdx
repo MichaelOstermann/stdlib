@@ -238,6 +238,41 @@ interface Point { x: number, y: number }
 
 The same goes for object types, tuples, enums, type parameters and type arguments.
 
+#### Unions
+
+Here the first line break is the one before the first member. Expanded, every member has a line of its own and a `|` in front.
+
+<Tabs sync={false} hash={false}>
+<Tab title="Expand">
+
+```ts
+// Before:
+type Shape =
+    Circle | Square | Triangle
+
+// After:
+type Shape =
+    | Circle
+    | Square
+    | Triangle
+```
+
+</Tab>
+<Tab title="Collapse">
+
+```ts
+// Before:
+type Shape = Circle
+    | Square
+    | Triangle
+
+// After:
+type Shape = Circle | Square | Triangle
+```
+
+</Tab>
+</Tabs>
+
 #### JSX props
 
 <Tabs sync={false} hash={false}>

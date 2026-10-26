@@ -7,6 +7,11 @@
 //! The props of a JSX tag are a list as well, closed by `>` or `/>`. Here a prop that spans several lines
 //! spreads out the whole tag, the way a branch with several statements puts every branch of an `if` in braces.
 //!
+//! A union is on one line, or has every member on a line of its own behind a `|`, going by whether its first
+//! member starts a line. In a list that break belongs to the list, so unless the first member has a `|` in
+//! front, the break after it decides instead: `Foo<a\n| b>` is split, `Foo<| a\n| b>` is joined. This is a
+//! pass of its own, `unions`, since it adds and removes that first `|`.
+//!
 //! Only the breaks between items are touched. An item that spans several lines itself, such as a
 //! callback, keeps its shape, and a list is left alone when joining it would swallow a comment.
 
@@ -25,6 +30,10 @@ use crate::source::Token;
 
 pub fn run(source: &Source, edits: &mut Edits) {
     Breaks { text: source.text, tokens: &source.tokens, edits, links: HashSet::new(), dots: Vec::new() }.visit_program(source.program);
+}
+
+pub fn unions(source: &Source, edits: &mut Edits) {
+    Unions(Breaks { text: source.text, tokens: &source.tokens, edits, links: HashSet::new(), dots: Vec::new() }).visit_program(source.program);
 }
 
 /// The whitespace, and possibly comments, between two tokens.
@@ -124,6 +133,50 @@ impl Breaks<'_> {
             }
             if self.broken(closing) {
                 self.edits.delete(closing.start, closing.end);
+            }
+        }
+    }
+
+    fn union(&mut self, it: &TSUnionType) {
+        let Some(first) = it.types.first().map(GetSpan::span) else { return };
+        let leading = self.token_before(first.start as usize).filter(|token| token.kind == Kind::Pipe);
+        let start = leading.map_or(first.start as usize, |pipe| pipe.start);
+        let Some(before) = self.token_before(start) else { return };
+        let opening = Gap { start: before.end, end: start };
+
+        let mut gaps = Vec::new();
+        for pair in it.types.windows(2) {
+            let Some(pipe) = self.token_before(pair[1].span().start as usize).filter(|token| token.kind == Kind::Pipe) else { return };
+            gaps.push(Gap { start: pair[0].span().end as usize, end: pipe.start });
+        }
+
+        let in_list = matches!(before.kind, Kind::LAngle | Kind::LParen | Kind::LBrack | Kind::Comma);
+        let first_break = if in_list && leading.is_none() { gaps.first().copied() } else { Some(opening) };
+        if first_break.is_some_and(|gap| self.broken(gap)) {
+            match leading {
+                Some(_) if !self.broken(opening) => self.break_before(opening),
+                Some(_) => {}
+                None if self.broken(opening) => self.edits.replace(start, start, "| "),
+                None => {
+                    let text = &self.text[opening.start..opening.end];
+                    self.edits.replace(opening.start + text.trim_end().len(), start, "\n| ");
+                }
+            }
+            for gap in gaps {
+                if !self.broken(gap) {
+                    self.break_before(gap);
+                }
+            }
+        }
+        else if self.joinable(&gaps) {
+            if let Some(pipe) = leading {
+                let rest = &self.text[pipe.end..first.start as usize];
+                self.edits.delete(pipe.start, first.start as usize - rest.trim_start().len());
+            }
+            for gap in gaps {
+                if self.broken(gap) {
+                    self.edits.replace(gap.start, gap.end, " ");
+                }
             }
         }
     }
@@ -368,6 +421,15 @@ impl<'a> Visit<'a> for Breaks<'_> {
     }
 }
 
+struct Unions<'s>(Breaks<'s>);
+
+impl<'a> Visit<'a> for Unions<'_> {
+    fn visit_ts_union_type(&mut self, it: &TSUnionType<'a>) {
+        self.0.union(it);
+        walk::walk_ts_union_type(self, it);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::path::Path;
@@ -392,6 +454,25 @@ mod tests {
         assert_eq!(format("import {\n    a, b } from \"a\"\n"), "import {\n    a,\n    b,\n} from \"a\"\n");
         assert_eq!(format("const {\n    a, ...b } = c\n"), "const {\n    a,\n    ...b\n} = c\n");
         assert_eq!(format("type A = Map<\n    string, number>\n"), "type A = Map<\n    string,\n    number\n>\n");
+    }
+
+    #[test]
+    fn unions() {
+        unchanged("type A = B | C | D\ntype E = F<B | C | D>\ntype G = Map<string, B | C>\n");
+        unchanged("type A =\n    | B\n    | C\ntype D = E<\n    | B\n    | C\n>\n");
+        assert_eq!(format("type A =\n    B | C\n    | D\n"), "type A =\n    | B\n    | C\n    | D\n");
+        assert_eq!(format("type A =\n    | B | C\n"), "type A =\n    | B\n    | C\n");
+        assert_eq!(format("interface A {\n    b:\n        C | D\n}\n"), "interface A {\n    b:\n        | C\n        | D\n}\n");
+        assert_eq!(format("type A =\n    B\n    // About c.\n    | C\n"), "type A =\n    | B\n    // About c.\n    | C\n");
+        assert_eq!(format("type A = B\n    | C\n    | D\n"), "type A = B | C | D\n");
+        assert_eq!(format("type A = B |\n    C\n"), "type A = B | C\n");
+        assert_eq!(format("type A = | B | C\n"), "type A = B | C\n");
+        unchanged("type A = B\n    // About c.\n    | C\n");
+        // In a list, the break after the first member decides, unless it has a `|` in front.
+        assert_eq!(format("type A = F<B\n    | C>\n"), "type A = F<\n    | B\n    | C\n>\n");
+        assert_eq!(format("type A = F<| B\n    | C\n>\n"), "type A = F<B | C>\n");
+        assert_eq!(format("type A = F<\n    | B | C\n>\n"), "type A = F<\n    | B\n    | C\n>\n");
+        unchanged("type A = F<\n    B | C\n>\n");
     }
 
     #[test]

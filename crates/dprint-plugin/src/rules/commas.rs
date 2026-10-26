@@ -52,6 +52,14 @@ impl Commas<'_> {
         }
     }
 
+    /// A list that may end in a rest element, which can't be followed by a comma.
+    fn trailing_or_rest(&mut self, last: Option<Span>, rest: Option<Span>) {
+        match rest {
+            Some(rest) => self.trailing(Some(rest), false),
+            None => self.trailing(last, true),
+        }
+    }
+
     /// Separators between the members of an interface or type literal.
     fn members(&mut self, body: Span, members: &[TSSignature]) {
         let multiline = self.text[body.start as usize..body.end as usize].contains('\n');
@@ -91,42 +99,27 @@ impl<'a> Visit<'a> for Commas<'_> {
     }
 
     fn visit_array_pattern(&mut self, it: &ArrayPattern<'a>) {
-        match &it.rest {
-            Some(rest) => self.trailing(Some(rest.span), false),
-            None => self.trailing(it.elements.last().and_then(|element| element.as_ref()).map(GetSpan::span), true),
-        }
+        self.trailing_or_rest(it.elements.last().and_then(|element| element.as_ref()).map(GetSpan::span), it.rest.as_ref().map(|rest| rest.span));
         walk::walk_array_pattern(self, it);
     }
 
     fn visit_object_pattern(&mut self, it: &ObjectPattern<'a>) {
-        match &it.rest {
-            Some(rest) => self.trailing(Some(rest.span), false),
-            None => self.trailing(it.properties.last().map(|property| property.span), true),
-        }
+        self.trailing_or_rest(it.properties.last().map(|property| property.span), it.rest.as_ref().map(|rest| rest.span));
         walk::walk_object_pattern(self, it);
     }
 
     fn visit_array_assignment_target(&mut self, it: &ArrayAssignmentTarget<'a>) {
-        match &it.rest {
-            Some(rest) => self.trailing(Some(rest.span), false),
-            None => self.trailing(it.elements.last().and_then(|element| element.as_ref()).map(GetSpan::span), true),
-        }
+        self.trailing_or_rest(it.elements.last().and_then(|element| element.as_ref()).map(GetSpan::span), it.rest.as_ref().map(|rest| rest.span));
         walk::walk_array_assignment_target(self, it);
     }
 
     fn visit_object_assignment_target(&mut self, it: &ObjectAssignmentTarget<'a>) {
-        match &it.rest {
-            Some(rest) => self.trailing(Some(rest.span), false),
-            None => self.trailing(it.properties.last().map(GetSpan::span), true),
-        }
+        self.trailing_or_rest(it.properties.last().map(GetSpan::span), it.rest.as_ref().map(|rest| rest.span));
         walk::walk_object_assignment_target(self, it);
     }
 
     fn visit_formal_parameters(&mut self, it: &FormalParameters<'a>) {
-        match &it.rest {
-            Some(rest) => self.trailing(Some(rest.span), false),
-            None => self.trailing(it.items.last().map(|parameter| parameter.span), true),
-        }
+        self.trailing_or_rest(it.items.last().map(|parameter| parameter.span), it.rest.as_ref().map(|rest| rest.span));
         walk::walk_formal_parameters(self, it);
     }
 

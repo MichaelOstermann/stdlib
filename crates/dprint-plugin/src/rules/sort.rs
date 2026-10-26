@@ -353,8 +353,6 @@ impl Sort<'_> {
         }
     }
 
-    /// The members of an interface or type literal: index signatures, properties, multi-line properties,
-    /// methods, multi-line methods.
     /// The properties of an object type whose type is a literal or a union of literals, with that type.
     fn literal_properties(&self, object: &TSTypeLiteral) -> Vec<(String, String)> {
         let properties = object.members.iter().filter_map(|member| match member {
@@ -367,7 +365,8 @@ impl Sort<'_> {
         properties.collect()
     }
 
-    /// `tags` are the properties that go first.
+    /// The members of an interface or type literal: tags, index signatures, properties, multi-line properties,
+    /// methods, multi-line methods. `tags` are the properties that go first.
     fn signatures(&mut self, members: &[TSSignature], tags: &[String]) {
         // The order of call signatures decides which overload TypeScript picks.
         if members.iter().any(|member| matches!(member, TSSignature::TSCallSignatureDeclaration(_) | TSSignature::TSConstructSignatureDeclaration(_))) {

@@ -64,12 +64,6 @@ pub fn run(source: &Source, edits: &mut Edits) {
             (indents[comment_line] + current).saturating_sub(before)
         }
         else {
-            while next_container < containers.len() && containers[next_container].start <= first {
-                open.push(next_container);
-                next_container += 1;
-            }
-            open.retain(|&index| containers[index].end > first);
-
             while next_item < items.len() && items[next_item].start < first {
                 next_item += 1;
             }
@@ -80,12 +74,13 @@ pub fn run(source: &Source, edits: &mut Edits) {
             if let Some(guarded) = items.get(next_item + 1).filter(|next| token.is_some_and(|token| token.kind == Some(Kind::Semicolon)) && next.start < line_end) {
                 first = guarded.start;
                 token = Some(guarded);
-                while next_container < containers.len() && containers[next_container].start <= first {
-                    open.push(next_container);
-                    next_container += 1;
-                }
-                open.retain(|&index| containers[index].end > first);
             }
+
+            while next_container < containers.len() && containers[next_container].start <= first {
+                open.push(next_container);
+                next_container += 1;
+            }
+            open.retain(|&index| containers[index].end > first);
 
             // A comment on its own line starts where the code after it starts: next to the `else` or the
             // `| B` it describes, not one level deeper.
@@ -253,6 +248,11 @@ mod tests {
     fn restores(text: &str) {
         let flattened: String = text.lines().map(|line| format!("{}\n", line.trim_start())).collect();
         assert_eq!(format(&flattened), text);
+    }
+
+    #[test]
+    fn guarded_lines() {
+        restores("function f() {\n    a()\n    ;[b, c].forEach((d) => {\n        e(d)\n    })\n    ;(f as G).run()\n}\n");
     }
 
     #[test]

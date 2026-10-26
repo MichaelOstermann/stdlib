@@ -171,6 +171,29 @@ impl<'s> Context<'s> {
         }
     }
 
+    /// The `|` or `&` between the members of a union or intersection type, spaced like any operator.
+    fn between(&mut self, types: &[TSType], operator: Kind) {
+        for member in types {
+            if self.tokens.before(member.span().start).is_some_and(|token| token.kind == operator) {
+                self.operator_before(member.span().start);
+            }
+        }
+    }
+
+    /// The `(` of `import("./a")`, as an expression or in a type, which hugs the `import`.
+    fn import_paren(&mut self, import: u32, source: u32) {
+        let paren = self.tokens[self.tokens.index_at(import)..].iter().find(|token| token.kind == Kind::LParen);
+        if let Some(paren) = paren.filter(|paren| paren.start < source as usize) {
+            self.tight_before.insert(paren.start);
+        }
+    }
+
+    /// The braces of `{value}` and `{...spread}` in JSX.
+    fn jsx_braces(&mut self, span: Span) {
+        self.jsx.insert(span.start as usize);
+        self.jsx.insert(span.end as usize - 1);
+    }
+
     /// The `{` of a block: `if (a) {`, `class A {`.
     fn block(&mut self, offset: u32) {
         if self.text.as_bytes().get(offset as usize) == Some(&b'{') {
@@ -270,20 +293,12 @@ impl<'a> Visit<'a> for Context<'_> {
     }
 
     fn visit_ts_union_type(&mut self, it: &TSUnionType<'a>) {
-        for member in &it.types {
-            if self.tokens.before(member.span().start).is_some_and(|token| token.kind == Kind::Pipe) {
-                self.operator_before(member.span().start);
-            }
-        }
+        self.between(&it.types, Kind::Pipe);
         walk::walk_ts_union_type(self, it);
     }
 
     fn visit_ts_intersection_type(&mut self, it: &TSIntersectionType<'a>) {
-        for member in &it.types {
-            if self.tokens.before(member.span().start).is_some_and(|token| token.kind == Kind::Amp) {
-                self.operator_before(member.span().start);
-            }
-        }
+        self.between(&it.types, Kind::Amp);
         walk::walk_ts_intersection_type(self, it);
     }
 
@@ -424,19 +439,13 @@ impl<'a> Visit<'a> for Context<'_> {
     }
 
     fn visit_import_expression(&mut self, it: &ImportExpression<'a>) {
-        let paren = self.tokens[self.tokens.index_at(it.span.start)..].iter().find(|token| token.kind == Kind::LParen);
-        if let Some(paren) = paren.filter(|paren| paren.start < it.source.span().start as usize) {
-            self.tight_before.insert(paren.start);
-        }
+        self.import_paren(it.span.start, it.source.span().start);
         walk::walk_import_expression(self, it);
     }
 
     // `typeof import("./a")` and `import("./a").B` in a type, which is not an import expression.
     fn visit_ts_import_type(&mut self, it: &TSImportType<'a>) {
-        let paren = self.tokens[self.tokens.index_at(it.span.start)..].iter().find(|token| token.kind == Kind::LParen);
-        if let Some(paren) = paren.filter(|paren| paren.start < it.source.span.start as usize) {
-            self.tight_before.insert(paren.start);
-        }
+        self.import_paren(it.span.start, it.source.span.start);
         walk::walk_ts_import_type(self, it);
     }
 
@@ -531,20 +540,17 @@ impl<'a> Visit<'a> for Context<'_> {
     // JSX
 
     fn visit_jsx_expression_container(&mut self, it: &JSXExpressionContainer<'a>) {
-        self.jsx.insert(it.span.start as usize);
-        self.jsx.insert(it.span.end as usize - 1);
+        self.jsx_braces(it.span);
         walk::walk_jsx_expression_container(self, it);
     }
 
     fn visit_jsx_spread_attribute(&mut self, it: &JSXSpreadAttribute<'a>) {
-        self.jsx.insert(it.span.start as usize);
-        self.jsx.insert(it.span.end as usize - 1);
+        self.jsx_braces(it.span);
         walk::walk_jsx_spread_attribute(self, it);
     }
 
     fn visit_jsx_spread_child(&mut self, it: &JSXSpreadChild<'a>) {
-        self.jsx.insert(it.span.start as usize);
-        self.jsx.insert(it.span.end as usize - 1);
+        self.jsx_braces(it.span);
         walk::walk_jsx_spread_child(self, it);
     }
 

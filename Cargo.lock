@@ -102,22 +102,6 @@ dependencies = [
 
 [[package]]
 name = "dprint-core"
-version = "0.70.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f6c66c17f6a0648b838e9a54fcf6ce2e237d060edbd3a65a724687d563fb8f28"
-dependencies = [
- "bumpalo",
- "hashbrown 0.15.5",
- "indexmap",
- "rustc-hash",
- "serde",
- "serde_json",
- "thiserror",
- "unicode-width",
-]
-
-[[package]]
-name = "dprint-core"
 version = "0.71.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "670d3c17cf65d37f5324b4fc198993148beb8c44e56fa4fe3676dd3c033d4e8c"
@@ -127,6 +111,8 @@ dependencies = [
  "indexmap",
  "rustc-hash",
  "serde",
+ "serde_json",
+ "thiserror",
  "unicode-width",
 ]
 
@@ -172,7 +158,7 @@ name = "dprint-plugin-stdlib-style"
 version = "0.0.0"
 dependencies = [
  "anyhow",
- "dprint-core 0.70.0",
+ "dprint-core 0.71.1",
  "dprint-plugin-json",
  "dprint-plugin-markdown",
  "jsonc-parser",

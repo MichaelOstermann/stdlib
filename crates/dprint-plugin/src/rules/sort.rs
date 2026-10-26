@@ -578,7 +578,7 @@ mod tests {
     #[test]
     fn comments_move_along() {
         assert_eq!(format("const a = {\n    // about b\n    b: 1, // b\n    /** about a */\n    a: 2,\n}\n"), "const a = {\n    /** about a */\n    a: 2,\n    // about b\n    b: 1, // b\n}\n");
-        assert_eq!(format("const a = {\n    b: 1,\n\n    // loose\n\n    a: 2, // a\n}\n"), "const a = {\n    a: 2, // a\n\n    // loose\n\n    b: 1,\n}\n");
+        assert_eq!(format("const a = {\n    b: 1,\n\n    // loose\n\n    a: 2, // a\n}\n"), "const a = {\n    a: 2, // a\n    // loose\n    b: 1,\n}\n");
         unchanged("const a = {\n    // eslint-disable-next-line some-rule\n    b: 1,\n    a: 2,\n}\n");
     }
 

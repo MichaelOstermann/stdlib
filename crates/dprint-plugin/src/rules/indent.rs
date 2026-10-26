@@ -52,12 +52,12 @@ pub fn run(source: &Source, edits: &mut Edits) {
         let current = content.len() - content.trim_start_matches([' ', '\t']).len();
         let first = line_start + current;
 
-        if content.trim().is_empty() || literals.iter().any(|&(start, end)| start < line_start && line_start < end) {
+        if content.trim().is_empty() || inside(&literals, line_start, |span| span).is_some() {
             indents.push(current);
             continue;
         }
 
-        let wanted = if let Some(comment) = comments.iter().find(|comment| comment.start < line_start && line_start < comment.end) {
+        let wanted = if let Some(comment) = inside(&comments, line_start, |comment| (comment.start, comment.end)) {
             // Inside a block comment: keep the line's position relative to the comment's first line.
             let comment_line = line_of(comment.start);
             let before = text[lines[comment_line]..comment.start].len();
@@ -103,13 +103,14 @@ pub fn run(source: &Source, edits: &mut Edits) {
     }
 }
 
-/// The spans of strings and of whole template literals, from the opening backtick to the closing one.
+/// The spans of strings and of whole template literals, from the opening backtick to the closing one. A
+/// template covers what is nested in it, so the spans are in order and don't overlap.
 pub fn literals(items: &[Item]) -> Vec<(usize, usize)> {
     let mut literals = Vec::new();
     let mut open: Vec<usize> = Vec::new();
     for item in items {
         match item.kind {
-            Some(Kind::Str | Kind::NoSubstitutionTemplate) => literals.push((item.start, item.end)),
+            Some(Kind::Str | Kind::NoSubstitutionTemplate) if open.is_empty() => literals.push((item.start, item.end)),
             Some(Kind::TemplateHead) => open.push(item.start),
             Some(Kind::TemplateTail) => {
                 // Only the outermost template matters: it covers the ones nested in it.
@@ -121,6 +122,12 @@ pub fn literals(items: &[Item]) -> Vec<(usize, usize)> {
         }
     }
     literals
+}
+
+/// The span that `offset` lies inside of, among spans that are in order and don't overlap.
+pub fn inside<T: Copy>(spans: &[T], offset: usize, span: impl Fn(T) -> (usize, usize)) -> Option<T> {
+    let index = spans.partition_point(|&item| span(item).0 < offset);
+    index.checked_sub(1).map(|index| spans[index]).filter(|&item| offset < span(item).1)
 }
 
 #[derive(Clone, Copy, PartialEq)]

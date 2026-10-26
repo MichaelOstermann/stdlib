@@ -5,6 +5,8 @@ use std::path::Path;
 use anyhow::Result;
 use oxc_parser::Kind;
 
+use crate::rules::indent::inside;
+use crate::rules::indent::literals;
 use crate::source::tokenize;
 use crate::source::with_source;
 use crate::verify::verify_tokens;
@@ -15,15 +17,15 @@ use crate::verify::verify_tokens;
 pub fn flatten_indentation(path: &Path, text: &str) -> Result<String> {
     with_source(path, text, |source| {
         let items = source.items();
-        let literals = crate::rules::indent::literals(&items);
+        let literals = literals(&items);
         let comments: Vec<_> = items.iter().filter(|item| item.kind.is_none()).collect();
         let mut output = String::with_capacity(text.len());
         let mut line_start = 0;
 
         for line in text.split_inclusive('\n') {
             let indent = line.len() - line.trim_start_matches([' ', '\t']).len();
-            let in_literal = literals.iter().any(|&(start, end)| start < line_start && line_start < end);
-            let comment = comments.iter().find(|comment| comment.start < line_start && line_start < comment.end);
+            let in_literal = inside(&literals, line_start, |span| span).is_some();
+            let comment = inside(&comments, line_start, |comment| (comment.start, comment.end));
 
             let removed = match comment {
                 _ if in_literal => 0,

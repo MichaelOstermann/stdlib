@@ -23,6 +23,50 @@ impl Token {
     }
 }
 
+/// A byte offset: `u32` in the spans of the syntax tree, `usize` in tokens and text.
+pub trait Offset {
+    fn offset(self) -> usize;
+}
+
+impl Offset for u32 {
+    fn offset(self) -> usize {
+        self as usize
+    }
+}
+
+impl Offset for usize {
+    fn offset(self) -> usize {
+        self
+    }
+}
+
+/// Lookups by byte offset in the tokens of a file, which are in source order.
+pub trait Tokens {
+    /// The index of the first token that starts at or after `offset`.
+    fn index_at(&self, offset: impl Offset) -> usize;
+    /// The first token that starts at or after `offset`.
+    fn at(&self, offset: impl Offset) -> Option<Token>;
+    /// The last token that ends at or before `offset`.
+    fn before(&self, offset: impl Offset) -> Option<Token>;
+}
+
+impl Tokens for [Token] {
+    fn index_at(&self, offset: impl Offset) -> usize {
+        let offset = offset.offset();
+        self.partition_point(|token| token.start < offset)
+    }
+
+    fn at(&self, offset: impl Offset) -> Option<Token> {
+        self.get(self.index_at(offset)).copied()
+    }
+
+    fn before(&self, offset: impl Offset) -> Option<Token> {
+        let offset = offset.offset();
+        let index = self.partition_point(|token| token.end <= offset);
+        index.checked_sub(1).map(|index| self[index])
+    }
+}
+
 /// A token or a comment: everything in a file that isn't whitespace.
 #[derive(Clone, Copy, Debug)]
 pub struct Item {

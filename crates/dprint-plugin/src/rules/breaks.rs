@@ -27,6 +27,7 @@ use oxc_span::Span;
 use crate::edits::Edits;
 use crate::source::Source;
 use crate::source::Token;
+use crate::source::Tokens;
 
 pub fn run(source: &Source, edits: &mut Edits) {
     Breaks { text: source.text, tokens: &source.tokens, edits, links: HashSet::new(), dots: Vec::new() }.visit_program(source.program);
@@ -54,15 +55,7 @@ struct Breaks<'s> {
 }
 
 impl Breaks<'_> {
-    fn token_at(&self, offset: u32) -> Option<Token> {
-        let index = self.tokens.partition_point(|token| token.start < offset as usize);
-        self.tokens.get(index).copied()
-    }
 
-    fn token_before(&self, offset: usize) -> Option<Token> {
-        let index = self.tokens.partition_point(|token| token.end <= offset);
-        index.checked_sub(1).map(|index| self.tokens[index])
-    }
 
     fn broken(&self, gap: Gap) -> bool {
         self.text[gap.start..gap.end].contains('\n')
@@ -92,24 +85,24 @@ impl Breaks<'_> {
     /// A list of items separated by commas, between a pair of brackets.
     fn list(&mut self, items: &[Span]) {
         let (Some(first), Some(last)) = (items.first(), items.last()) else { return };
-        let Some(opener) = self.token_before(first.start as usize) else { return };
+        let Some(opener) = self.tokens.before(first.start) else { return };
         if !matches!(opener.kind, Kind::LParen | Kind::LBrack | Kind::LCurly | Kind::LAngle) {
             return;
         }
 
         let mut gaps = vec![Gap { start: opener.end, end: first.start as usize }];
         for pair in items.windows(2) {
-            let Some(comma) = self.token_at(pair[0].end).filter(|token| token.kind == Kind::Comma) else { return };
+            let Some(comma) = self.tokens.at(pair[0].end).filter(|token| token.kind == Kind::Comma) else { return };
             let next = pair[1].start as usize;
             // Anything else between two items, such as a hole in an array, is not this rule's business.
-            if self.token_at(comma.end as u32).is_none_or(|token| token.start != next) || self.text[pair[0].end as usize..comma.start].contains('\n') {
+            if self.tokens.at(comma.end).is_none_or(|token| token.start != next) || self.text[pair[0].end as usize..comma.start].contains('\n') {
                 return;
             }
             gaps.push(Gap { start: comma.end, end: next });
         }
 
-        let Some(after) = self.token_at(last.end) else { return };
-        let Some(closer) = (if after.kind == Kind::Comma { self.token_at(after.end as u32) } else { Some(after) }) else { return };
+        let Some(after) = self.tokens.at(last.end) else { return };
+        let Some(closer) = (if after.kind == Kind::Comma { self.tokens.at(after.end) } else { Some(after) }) else { return };
         if !matches!(closer.kind, Kind::RParen | Kind::RBrack | Kind::RCurly | Kind::RAngle) {
             return;
         }
@@ -139,14 +132,14 @@ impl Breaks<'_> {
 
     fn union(&mut self, it: &TSUnionType) {
         let Some(first) = it.types.first().map(GetSpan::span) else { return };
-        let leading = self.token_before(first.start as usize).filter(|token| token.kind == Kind::Pipe);
+        let leading = self.tokens.before(first.start).filter(|token| token.kind == Kind::Pipe);
         let start = leading.map_or(first.start as usize, |pipe| pipe.start);
-        let Some(before) = self.token_before(start) else { return };
+        let Some(before) = self.tokens.before(start) else { return };
         let opening = Gap { start: before.end, end: start };
 
         let mut gaps = Vec::new();
         for pair in it.types.windows(2) {
-            let Some(pipe) = self.token_before(pair[1].span().start as usize).filter(|token| token.kind == Kind::Pipe) else { return };
+            let Some(pipe) = self.tokens.before(pair[1].span().start as usize).filter(|token| token.kind == Kind::Pipe) else { return };
             gaps.push(Gap { start: pair[0].span().end as usize, end: pipe.start });
         }
 
@@ -184,9 +177,9 @@ impl Breaks<'_> {
     /// The props of a JSX tag: one line, or one prop per line with the closing bracket on its own.
     fn props(&mut self, it: &JSXOpeningElement) {
         let (Some(first), Some(last)) = (it.attributes.first(), it.attributes.last()) else { return };
-        let Some(name) = self.token_before(first.span().start as usize) else { return };
-        let Some(end) = self.token_before(it.span.end as usize).filter(|token| token.kind == Kind::RAngle) else { return };
-        let closer = self.token_before(end.start).filter(|token| token.kind == Kind::Slash).unwrap_or(end);
+        let Some(name) = self.tokens.before(first.span().start as usize) else { return };
+        let Some(end) = self.tokens.before(it.span.end).filter(|token| token.kind == Kind::RAngle) else { return };
+        let closer = self.tokens.before(end.start).filter(|token| token.kind == Kind::Slash).unwrap_or(end);
 
         let mut gaps = vec![Gap { start: name.end, end: first.span().start as usize }];
         gaps.extend(it.attributes.windows(2).map(|pair| Gap { start: pair[0].span().end as usize, end: pair[1].span().start as usize }));
@@ -217,7 +210,7 @@ impl Breaks<'_> {
         let closer = body.end as usize - 1;
 
         let starts = members[1..].iter().map(|member| member.span().start as usize).chain([closer]);
-        let gaps: Vec<(Gap, Token)> = starts.filter_map(|start| self.token_before(start).map(|before| (Gap { start: before.end, end: start }, before))).collect();
+        let gaps: Vec<(Gap, Token)> = starts.filter_map(|start| self.tokens.before(start).map(|before| (Gap { start: before.end, end: start }, before))).collect();
 
         if self.broken(opening) {
             for &(gap, _) in &gaps {
@@ -246,8 +239,8 @@ impl Breaks<'_> {
             .into_iter()
             .rev()
             .filter_map(|(property, root)| {
-                let dot = self.token_before(property as usize).filter(|token| matches!(token.kind, Kind::Dot | Kind::QuestionDot))?;
-                Some((Gap { start: self.token_before(dot.start)?.end, end: dot.start }, root))
+                let dot = self.tokens.before(property).filter(|token| matches!(token.kind, Kind::Dot | Kind::QuestionDot))?;
+                Some((Gap { start: self.tokens.before(dot.start)?.end, end: dot.start }, root))
             })
             .collect::<Vec<_>>()
             .into_iter()

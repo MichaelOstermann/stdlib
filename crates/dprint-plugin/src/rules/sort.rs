@@ -25,6 +25,7 @@ use oxc_span::Span;
 use crate::edits::Edits;
 use crate::source::Source;
 use crate::source::Token;
+use crate::source::Tokens;
 
 /// Whether a comment above a member starts a new group that is sorted on its own, as ESLint had it,
 /// rather than moving along with the member.
@@ -71,15 +72,7 @@ impl Sort<'_> {
         &self.text[span.start as usize..span.end as usize]
     }
 
-    fn token_at(&self, offset: usize) -> Option<Token> {
-        let index = self.tokens.partition_point(|token| token.start < offset);
-        self.tokens.get(index).copied()
-    }
 
-    fn token_before(&self, offset: usize) -> Option<Token> {
-        let index = self.tokens.partition_point(|token| token.end <= offset);
-        index.checked_sub(1).map(|index| self.tokens[index])
-    }
 
     fn multiline(&self, span: Span) -> bool {
         self.slice(span).contains('\n')
@@ -95,14 +88,14 @@ impl Sort<'_> {
         let start = span.start as usize;
         // The member's own span may or may not include the comma or semicolon after it.
         let mut end = span.end as usize;
-        while let Some(last) = self.token_before(end).filter(|token| matches!(token.kind, Kind::Comma | Kind::Semicolon) && token.start > start) {
+        while let Some(last) = self.tokens.before(end).filter(|token| matches!(token.kind, Kind::Comma | Kind::Semicolon) && token.start > start) {
             end = last.start;
         }
-        let end = self.token_before(end).map_or(end, |token| token.end);
+        let end = self.tokens.before(end).map_or(end, |token| token.end);
 
         // Comments on their own lines right above the member belong to it.
         // What stands above the first statement of a file is its header, not a comment on that statement.
-        let Some(before) = self.token_before(start).map(|token| token.end).or((start == 0).then_some(0)) else {
+        let Some(before) = self.tokens.before(start).map(|token| token.end).or((start == 0).then_some(0)) else {
             return self.detached(start, end, group, name, *partition);
         };
         let own_line: Vec<(usize, usize)> = self.comments_between(before, start).iter().copied().filter(|comment| self.text[before..comment.0].contains('\n')).collect();
@@ -131,12 +124,12 @@ impl Sort<'_> {
 
     /// A unit from `start` on, with the comma and the comment that follow it on its line.
     fn detached(&self, start: usize, end: usize, group: usize, name: String, partition: usize) -> Option<Unit> {
-        let comma = self.token_at(end).filter(|token| token.kind == Kind::Comma);
+        let comma = self.tokens.at(end).filter(|token| token.kind == Kind::Comma);
         if comma.is_some_and(|comma| !self.text[end..comma.start].is_empty()) {
             return None;
         }
         let after = comma.map_or(end, |comma| comma.end);
-        let following = self.token_at(after).map_or(self.text.len(), |token| token.start);
+        let following = self.tokens.at(after).map_or(self.text.len(), |token| token.start);
         let trailing = self.comments_between(after, following).first().copied().filter(|comment| !self.text[after..comment.0].contains('\n'));
 
         Some(Unit { start, end, after, trailing, group, name, partition })
@@ -274,7 +267,7 @@ impl Sort<'_> {
         for element in &class.body.body {
             let span = element.span();
             // A `;` in front of a member guards it against the line before, which would no longer be the same.
-            if self.token_before(span.start as usize).is_some_and(|token| token.kind == Kind::Semicolon) {
+            if self.tokens.before(span.start).is_some_and(|token| token.kind == Kind::Semicolon) {
                 return None;
             }
 
@@ -311,7 +304,7 @@ impl Sort<'_> {
                     // Initializers run from top to bottom, so one that reads another member has to stay below it.
                     if let Some(value) = property.value.as_ref().filter(|_| !function) {
                         let (start, end) = (value.span().start as usize, value.span().end as usize);
-                        let from = self.tokens.partition_point(|token| token.start < start);
+                        let from = self.tokens.index_at(start);
                         let reads_member = self.tokens[from..].iter().take_while(|token| token.start < end).any(|token| token.kind == Kind::This || Some(&self.text[token.start..token.end]) == name);
                         if reads_member {
                             return None;
@@ -563,10 +556,10 @@ impl<'a> Visit<'a> for Sort<'_> {
         // `list` sorts names in natural order, which reads `-1` as text: each member is named after its rank instead.
         let rank = |key: &Vec<&str>| keys.iter().filter(|other| other.iter().zip(key).map(|(a, b)| literal_order(a, b)).find(|order| order.is_ne()).unwrap_or(Ordering::Equal).is_lt()).count();
         // With a `|` in front of every member, each member moves with its `|`, and with the comments above it.
-        let pipe = |r#type: &TSType| self.token_before(r#type.span().start as usize).filter(|token| token.kind == Kind::Pipe);
+        let pipe = |r#type: &TSType| self.tokens.before(r#type.span().start as usize).filter(|token| token.kind == Kind::Pipe);
         let leading = it.types.iter().all(|r#type| pipe(r#type).is_some());
         // Without one in front of the first member, a comment above a `|` would stay behind.
-        let stranded = it.types.iter().filter_map(pipe).any(|pipe| self.token_before(pipe.start).is_some_and(|before| !self.comments_between(before.end, pipe.start).is_empty()));
+        let stranded = it.types.iter().filter_map(pipe).any(|pipe| self.tokens.before(pipe.start).is_some_and(|before| !self.comments_between(before.end, pipe.start).is_empty()));
         if !leading && stranded {
             walk::walk_ts_union_type(self, it);
             return;

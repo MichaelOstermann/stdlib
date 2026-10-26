@@ -20,6 +20,7 @@ use oxc_span::Span;
 use crate::edits::Edits;
 use crate::source::Source;
 use crate::source::Token;
+use crate::source::Tokens;
 
 pub fn run(source: &Source, edits: &mut Edits) {
     let mut operators = Operators { text: source.text, tokens: &source.tokens, edits, cases: HashSet::new() };
@@ -36,15 +37,7 @@ struct Operators<'s> {
 }
 
 impl Operators<'_> {
-    fn token_at(&self, offset: u32) -> Option<Token> {
-        let index = self.tokens.partition_point(|token| token.start < offset as usize);
-        self.tokens.get(index).copied()
-    }
 
-    fn token_before(&self, offset: usize) -> Option<Token> {
-        let index = self.tokens.partition_point(|token| token.end <= offset);
-        index.checked_sub(1).map(|index| self.tokens[index])
-    }
 
     fn broken(&self, start: usize, end: usize) -> bool {
         self.text[start..end].contains('\n')
@@ -56,7 +49,7 @@ impl Operators<'_> {
 
     /// The tokens on either side of an operator.
     fn around(&self, operator: Token) -> Option<(Token, Token)> {
-        Some((self.token_before(operator.start)?, self.token_at(operator.end as u32)?))
+        Some((self.tokens.before(operator.start)?, self.tokens.at(operator.end)?))
     }
 
     /// Moves an operator that ends a line to the start of the next one.
@@ -83,14 +76,14 @@ impl Operators<'_> {
 
     /// The `=` in front of a value.
     fn equals(&self, value: Span) -> Option<Token> {
-        self.token_before(value.start as usize).filter(|token| token.kind == Kind::Eq)
+        self.tokens.before(value.start).filter(|token| token.kind == Kind::Eq)
     }
 
     /// `span` is the whole ternary, `chained` whether its alternate is a ternary as well.
     fn ternary(&mut self, span: Span, test: Span, consequent: Span, alternate_span: Span, chained: bool) {
-        let Some(question) = self.token_at(test.end).filter(|token| token.kind == Kind::Question) else { return };
-        let Some(colon) = self.token_at(consequent.end).filter(|token| token.kind == Kind::Colon) else { return };
-        let Some(alternate) = self.token_at(colon.end as u32) else { return };
+        let Some(question) = self.tokens.at(test.end).filter(|token| token.kind == Kind::Question) else { return };
+        let Some(colon) = self.tokens.at(consequent.end).filter(|token| token.kind == Kind::Colon) else { return };
+        let Some(alternate) = self.tokens.at(colon.end) else { return };
 
         let gaps = [(test.end as usize, question.start), (question.end, consequent.start as usize), (consequent.end as usize, colon.start), (colon.end, alternate.start)];
         if gaps.iter().any(|&(start, end)| !self.blank(start, end)) {
@@ -126,8 +119,8 @@ impl Operators<'_> {
 
     /// `dot-location`: the `.` belongs to the property after it.
     fn dot(&mut self, property: Span) {
-        let Some(dot) = self.token_before(property.start as usize).filter(|token| matches!(token.kind, Kind::Dot | Kind::QuestionDot)) else { return };
-        let Some(before) = self.token_before(dot.start) else { return };
+        let Some(dot) = self.tokens.before(property.start).filter(|token| matches!(token.kind, Kind::Dot | Kind::QuestionDot)) else { return };
+        let Some(before) = self.tokens.before(dot.start) else { return };
         if self.broken(dot.end, property.start as usize) && !self.broken(before.end, dot.start) && self.blank(before.end, dot.start) {
             let text = &self.text[dot.start..dot.end];
             self.edits.delete(before.end, dot.end);
@@ -137,19 +130,19 @@ impl Operators<'_> {
 
     fn between(&mut self, types: &[TSType]) {
         for r#type in &types[..types.len().saturating_sub(1)] {
-            self.leading(self.token_at(r#type.span().end));
+            self.leading(self.tokens.at(r#type.span().end));
         }
     }
 }
 
 impl<'a> Visit<'a> for Operators<'_> {
     fn visit_binary_expression(&mut self, it: &BinaryExpression<'a>) {
-        self.leading(self.token_at(it.left.span().end));
+        self.leading(self.tokens.at(it.left.span().end));
         walk::walk_binary_expression(self, it);
     }
 
     fn visit_logical_expression(&mut self, it: &LogicalExpression<'a>) {
-        self.leading(self.token_at(it.left.span().end));
+        self.leading(self.tokens.at(it.left.span().end));
         walk::walk_logical_expression(self, it);
     }
 
@@ -184,7 +177,7 @@ impl<'a> Visit<'a> for Operators<'_> {
     }
 
     fn visit_assignment_expression(&mut self, it: &AssignmentExpression<'a>) {
-        self.trailing(self.token_at(it.left.span().end));
+        self.trailing(self.tokens.at(it.left.span().end));
         walk::walk_assignment_expression(self, it);
     }
 

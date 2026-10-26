@@ -15,6 +15,7 @@ use oxc_span::Span;
 
 use crate::edits::Edits;
 use crate::source::Source;
+use crate::source::Tokens;
 
 pub fn functions(source: &Source, edits: &mut Edits) {
     for statement in &source.program.body {
@@ -50,8 +51,8 @@ fn declared_function(source: &Source, declaration: &VariableDeclaration) -> Opti
                     // The body is an expression, in parentheses or not. What follows the `=>` is the whole of it.
                     let after_head = arrow.return_type.as_ref().map_or(arrow.params.span.end, |return_type| return_type.span.end) as usize;
                     let tokens = &source.tokens;
-                    let arrow_token = tokens.get(tokens.partition_point(|token| token.start < after_head)).filter(|token| token.kind == Kind::Arrow)?;
-                    let first = tokens.get(tokens.partition_point(|token| token.start < arrow_token.end))?;
+                    let arrow_token = tokens.at(after_head).filter(|token| token.kind == Kind::Arrow)?;
+                    let first = tokens.at(arrow_token.end)?;
                     let span = Span::new(first.start as u32, arrow.span.end);
                     // On one line, `const f = (a) => a + 1` reads better as it is.
                     if !source.text[name.span.start as usize..span.end as usize].contains('\n') {
@@ -77,7 +78,7 @@ fn declared_function(source: &Source, declaration: &VariableDeclaration) -> Opti
     }
 
     // An arrow function takes `this` and `arguments` from around it, and a declaration brings its own.
-    let from = source.tokens.partition_point(|token| token.start < parameters.start as usize);
+    let from = source.tokens.index_at(parameters.start);
     let own_scope = source.tokens[from..].iter().take_while(|token| token.start < body_span.end as usize).any(|token| token.kind == Kind::This || &source.text[token.start..token.end] == "arguments");
     if own_scope {
         return None;
@@ -109,8 +110,8 @@ pub fn dedupe(source: &Source, edits: &mut Edits) {
             // The duplicate goes together with the comma after it, or the one before it.
             let (start, end) = (specifier.span().start as usize, specifier.span().end as usize);
             let tokens = &source.tokens;
-            let after = tokens.get(tokens.partition_point(|token| token.start < end)).filter(|token| token.kind == Kind::Comma);
-            let before = tokens.partition_point(|token| token.end <= start).checked_sub(1).map(|index| tokens[index]).filter(|token| token.kind == Kind::Comma);
+            let after = tokens.at(end).filter(|token| token.kind == Kind::Comma);
+            let before = tokens.before(start).filter(|token| token.kind == Kind::Comma);
             match (after, before) {
                 (Some(comma), _) => edits.delete(start, comma.end),
                 (None, Some(comma)) => edits.delete(comma.start, end),

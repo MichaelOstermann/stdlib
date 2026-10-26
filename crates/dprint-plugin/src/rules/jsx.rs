@@ -19,6 +19,7 @@ use oxc_span::Span;
 use crate::edits::Edits;
 use crate::source::Source;
 use crate::source::Token;
+use crate::source::Tokens;
 
 const WHITESPACE: [char; 4] = [' ', '\t', '\n', '\r'];
 const SPACE: &str = "{\" \"}";
@@ -202,15 +203,7 @@ struct Parentheses<'s> {
 }
 
 impl Parentheses<'_> {
-    fn token_at(&self, offset: usize) -> Option<Token> {
-        let index = self.tokens.partition_point(|token| token.start < offset);
-        self.tokens.get(index).copied()
-    }
 
-    fn token_before(&self, offset: usize) -> Option<Token> {
-        let index = self.tokens.partition_point(|token| token.end <= offset);
-        index.checked_sub(1).map(|index| self.tokens[index])
-    }
 
     fn spans_lines(&self, span: Span) -> bool {
         self.text[span.start as usize..span.end as usize].contains('\n')
@@ -219,11 +212,11 @@ impl Parentheses<'_> {
     /// Breaks the line on both sides of JSX that already sits between brackets.
     fn own_lines(&mut self, jsx: Span) {
         let (start, end) = (jsx.start as usize, jsx.end as usize);
-        let (Some(before), Some(mut after)) = (self.token_before(start), self.token_at(end)) else { return };
+        let (Some(before), Some(mut after)) = (self.tokens.before(start), self.tokens.at(end)) else { return };
         // A comma stays with the JSX, and the break goes after it.
         let mut end = end;
         if after.kind == Kind::Comma {
-            let Some(next) = self.token_at(after.end) else { return };
+            let Some(next) = self.tokens.at(after.end) else { return };
             (end, after) = (after.end, next);
         }
         for (start, end) in [(before.end, start), (end, after.start)] {

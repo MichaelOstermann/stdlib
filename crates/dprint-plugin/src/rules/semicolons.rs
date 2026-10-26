@@ -14,6 +14,7 @@ use oxc_span::Span;
 
 use crate::edits::Edits;
 use crate::source::Source;
+use crate::source::Tokens;
 use crate::source::Token;
 
 pub fn run(source: &Source, edits: &mut Edits) {
@@ -73,7 +74,7 @@ struct Context<'s> {
 
 impl Context<'_> {
     fn keep(&mut self, start: u32, end: u32) {
-        let from = self.tokens.partition_point(|token| token.start < start as usize);
+        let from = self.tokens.index_at(start);
         let semicolons = self.tokens[from..].iter().take_while(|token| token.start < end as usize).filter(|token| token.kind == Kind::Semicolon);
         self.kept.extend(semicolons.map(|token| token.start));
     }

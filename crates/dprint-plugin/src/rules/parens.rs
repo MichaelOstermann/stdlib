@@ -12,6 +12,7 @@ use oxc_span::GetSpan;
 
 use crate::edits::Edits;
 use crate::source::Source;
+use crate::source::Tokens;
 
 /// Parentheses that leave the syntax tree as it is: around arrow parameters and after `new`.
 pub fn run(source: &Source, edits: &mut Edits) {
@@ -127,8 +128,7 @@ impl<'a> Visit<'a> for Parens<'_> {
             }
         }
         let after_callee = it.type_arguments.as_ref().map_or(it.callee.span().end, |arguments| arguments.span.end) as usize;
-        let tokens = &self.source.tokens;
-        let next = tokens.get(tokens.partition_point(|token| token.start < after_callee));
+        let next = self.source.tokens.at(after_callee);
         let has_arguments = next.is_some_and(|token| token.kind == Kind::LParen && token.start < it.span.end as usize);
         if !has_arguments && !self.functions {
             self.edits.replace(it.span.end as usize, it.span.end as usize, "()");

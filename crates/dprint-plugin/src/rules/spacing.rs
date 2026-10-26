@@ -21,6 +21,7 @@ use crate::edits::Edits;
 use crate::source::Item;
 use crate::source::Source;
 use crate::source::Token;
+use crate::source::Tokens;
 
 pub fn run(source: &Source, edits: &mut Edits) {
     let mut context = Context::new(source);
@@ -86,50 +87,39 @@ impl<'s> Context<'s> {
         }
     }
 
-    /// Index of the first token starting at or after `offset`.
-    fn index_at(&self, offset: u32) -> usize {
-        self.tokens.partition_point(|token| token.start < offset as usize)
-    }
 
-    fn token_at(&self, offset: u32) -> Option<Token> {
-        self.tokens.get(self.index_at(offset)).copied()
-    }
 
-    /// The last token starting before `offset`.
-    fn token_before(&self, offset: u32) -> Option<Token> {
-        self.index_at(offset).checked_sub(1).map(|index| self.tokens[index])
-    }
 
     /// An operator sitting right before its right-hand side: spaced on both sides.
     fn operator_before(&mut self, right: u32) {
-        if let Some(operator) = self.token_before(right) {
+        if let Some(operator) = self.tokens.before(right) {
             self.spaced_before.insert(operator.start);
             self.spaced_after.insert(operator.start);
         }
     }
 
     fn ternary_before(&mut self, right: u32) {
-        if let Some(operator) = self.token_before(right) {
+        if let Some(operator) = self.tokens.before(right) {
             self.ternary.insert(operator.start);
         }
     }
 
     fn keyword_before(&mut self, right: u32) {
-        if let Some(keyword) = self.token_before(right) {
+        if let Some(keyword) = self.tokens.before(right) {
             self.keywords.insert(keyword.start);
         }
     }
 
     /// The `type` in `import type {` and `export type {`.
     fn type_keyword(&mut self, declaration: u32) {
-        if let Some(keyword) = self.tokens.get(self.index_at(declaration) + 1).filter(|token| token.kind == Kind::Type) {
+        if let Some(keyword) = self.tokens.get(self.tokens.index_at(declaration) + 1).filter(|token| token.kind == Kind::Type) {
             self.keywords.insert(keyword.start);
         }
     }
 
     /// The `[` or `(` that follows `after`, skipping `?.`.
     fn tight_bracket(&mut self, after: u32, kind: Kind) {
-        let bracket = self.tokens[self.index_at(after)..].iter().find(|token| token.kind != Kind::QuestionDot);
+        let bracket = self.tokens[self.tokens.index_at(after)..].iter().find(|token| token.kind != Kind::QuestionDot);
         if let Some(bracket) = bracket.filter(|token| token.kind == kind) {
             self.tight_before.insert(bracket.start);
         }
@@ -147,7 +137,7 @@ impl<'s> Context<'s> {
     /// The parenthesis opening the parameters of a function or method: `function () {}`, but `name() {}`.
     fn function_paren(&mut self, type_parameters: Option<&TSTypeParameterDeclaration>, params: &FormalParameters) {
         let name_end = type_parameters.map_or(params.span.start, |parameters| parameters.span.start);
-        let index = self.index_at(name_end);
+        let index = self.tokens.index_at(name_end);
         let anonymous = match index.checked_sub(1).map(|index| self.tokens[index].kind) {
             Some(Kind::Function) => true,
             Some(Kind::Star) => index >= 2 && self.tokens[index - 2].kind == Kind::Function,
@@ -169,7 +159,7 @@ impl<'s> Context<'s> {
     /// `function* name`, `async* name` and `yield* value`: the star hugs what is before it.
     /// With nothing before it, it hugs the name instead: `*name() {}`.
     fn star(&mut self, from: u32, to: u32) {
-        let range = self.index_at(from)..self.index_at(to);
+        let range = self.tokens.index_at(from)..self.tokens.index_at(to);
         if let Some(star) = self.tokens[range].iter().find(|token| token.kind == Kind::Star) {
             if star.start > from as usize {
                 self.tight_before.insert(star.start);
@@ -253,7 +243,7 @@ impl<'a> Visit<'a> for Context<'_> {
 
     fn visit_ts_type_alias_declaration(&mut self, it: &TSTypeAliasDeclaration<'a>) {
         // The `=`, which a leading `|` or `&` may separate from the type.
-        let index = self.index_at(it.type_annotation.span().start);
+        let index = self.tokens.index_at(it.type_annotation.span().start);
         let equals = self.tokens[..index].iter().rev().take(2).find(|token| token.kind == Kind::Eq).copied();
         if let Some(equals) = equals {
             self.spaced_before.insert(equals.start);
@@ -281,7 +271,7 @@ impl<'a> Visit<'a> for Context<'_> {
 
     fn visit_ts_union_type(&mut self, it: &TSUnionType<'a>) {
         for member in &it.types {
-            if self.token_before(member.span().start).is_some_and(|token| token.kind == Kind::Pipe) {
+            if self.tokens.before(member.span().start).is_some_and(|token| token.kind == Kind::Pipe) {
                 self.operator_before(member.span().start);
             }
         }
@@ -290,7 +280,7 @@ impl<'a> Visit<'a> for Context<'_> {
 
     fn visit_ts_intersection_type(&mut self, it: &TSIntersectionType<'a>) {
         for member in &it.types {
-            if self.token_before(member.span().start).is_some_and(|token| token.kind == Kind::Amp) {
+            if self.tokens.before(member.span().start).is_some_and(|token| token.kind == Kind::Amp) {
                 self.operator_before(member.span().start);
             }
         }
@@ -368,7 +358,7 @@ impl<'a> Visit<'a> for Context<'_> {
     fn visit_export_all_declaration(&mut self, it: &ExportAllDeclaration<'a>) {
         self.keyword_before(it.source.span.start);
         // `export * from`
-        let range = self.index_at(it.span.start)..self.index_at(it.source.span.start);
+        let range = self.tokens.index_at(it.span.start)..self.tokens.index_at(it.source.span.start);
         if let Some(star) = self.tokens[range].iter().find(|token| token.kind == Kind::Star) {
             self.spaced_before.insert(star.start);
             self.spaced_after.insert(star.start);
@@ -402,7 +392,7 @@ impl<'a> Visit<'a> for Context<'_> {
 
     fn visit_arrow_function_expression(&mut self, it: &ArrowFunctionExpression<'a>) {
         // `async () => {}`
-        if it.r#async && self.token_before(it.params.span.start).is_some_and(|token| token.kind == Kind::Async) {
+        if it.r#async && self.tokens.before(it.params.span.start).is_some_and(|token| token.kind == Kind::Async) {
             self.spaced_before.insert(it.params.span.start as usize);
         }
         if let Some(parameters) = &it.type_parameters {
@@ -434,7 +424,7 @@ impl<'a> Visit<'a> for Context<'_> {
     }
 
     fn visit_import_expression(&mut self, it: &ImportExpression<'a>) {
-        let paren = self.tokens[self.index_at(it.span.start)..].iter().find(|token| token.kind == Kind::LParen);
+        let paren = self.tokens[self.tokens.index_at(it.span.start)..].iter().find(|token| token.kind == Kind::LParen);
         if let Some(paren) = paren.filter(|paren| paren.start < it.source.span().start as usize) {
             self.tight_before.insert(paren.start);
         }
@@ -443,7 +433,7 @@ impl<'a> Visit<'a> for Context<'_> {
 
     // `typeof import("./a")` and `import("./a").B` in a type, which is not an import expression.
     fn visit_ts_import_type(&mut self, it: &TSImportType<'a>) {
-        let paren = self.tokens[self.index_at(it.span.start)..].iter().find(|token| token.kind == Kind::LParen);
+        let paren = self.tokens[self.tokens.index_at(it.span.start)..].iter().find(|token| token.kind == Kind::LParen);
         if let Some(paren) = paren.filter(|paren| paren.start < it.source.span.start as usize) {
             self.tight_before.insert(paren.start);
         }
@@ -509,14 +499,14 @@ impl<'a> Visit<'a> for Context<'_> {
     }
 
     fn visit_static_block(&mut self, it: &StaticBlock<'a>) {
-        if let Some(brace) = self.tokens.get(self.index_at(it.span.start) + 1) {
+        if let Some(brace) = self.tokens.get(self.tokens.index_at(it.span.start) + 1) {
             self.block(brace.start as u32);
         }
         walk::walk_static_block(self, it);
     }
 
     fn visit_switch_statement(&mut self, it: &SwitchStatement<'a>) {
-        let brace = self.tokens[self.index_at(it.discriminant.span().end)..].iter().find(|token| token.kind == Kind::LCurly);
+        let brace = self.tokens[self.tokens.index_at(it.discriminant.span().end)..].iter().find(|token| token.kind == Kind::LCurly);
         if let Some(brace) = brace {
             self.block(brace.start as u32);
         }
@@ -562,7 +552,7 @@ impl<'a> Visit<'a> for Context<'_> {
     fn visit_jsx_opening_element(&mut self, it: &JSXOpeningElement<'a>) {
         self.tight_after.insert(it.span.start as usize);
         let end = it.span.end as usize - 1;
-        match self.token_before(end as u32).filter(|token| token.kind == Kind::Slash) {
+        match self.tokens.before(end).filter(|token| token.kind == Kind::Slash) {
             Some(slash) => {
                 self.spaced_before.insert(slash.start);
                 self.tight_after.insert(slash.start);
@@ -576,7 +566,7 @@ impl<'a> Visit<'a> for Context<'_> {
 
     fn visit_jsx_closing_element(&mut self, it: &JSXClosingElement<'a>) {
         self.tight_after.insert(it.span.start as usize);
-        if let Some(slash) = self.token_at(it.span.start + 1) {
+        if let Some(slash) = self.tokens.at(it.span.start + 1) {
             self.tight_after.insert(slash.start);
         }
         self.tight_before.insert(it.span.end as usize - 1);
@@ -595,7 +585,7 @@ impl<'a> Visit<'a> for Context<'_> {
     }
 
     fn visit_jsx_attribute(&mut self, it: &JSXAttribute<'a>) {
-        if let Some(equals) = self.token_at(it.name.span().end).filter(|token| it.value.is_some() && token.kind == Kind::Eq) {
+        if let Some(equals) = self.tokens.at(it.name.span().end).filter(|token| it.value.is_some() && token.kind == Kind::Eq) {
             self.tight_before.insert(equals.start);
             self.tight_after.insert(equals.start);
         }
@@ -603,7 +593,7 @@ impl<'a> Visit<'a> for Context<'_> {
     }
 
     fn visit_jsx_namespaced_name(&mut self, it: &JSXNamespacedName<'a>) {
-        if let Some(colon) = self.token_at(it.namespace.span.end).filter(|token| token.kind == Kind::Colon) {
+        if let Some(colon) = self.tokens.at(it.namespace.span.end).filter(|token| token.kind == Kind::Colon) {
             self.jsx.insert(colon.start);
         }
         walk::walk_jsx_namespaced_name(self, it);

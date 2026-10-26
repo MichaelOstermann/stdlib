@@ -28,6 +28,7 @@ use oxc_span::Span;
 use crate::edits::Edits;
 use crate::source::Source;
 use crate::source::Token;
+use crate::source::Tokens;
 
 pub fn run(source: &Source, edits: &mut Edits) {
     let mut blocks = Blocks { text: source.text, tokens: &source.tokens, edits, chained: HashSet::new(), relaxed: HashSet::new(), joined: HashSet::new(), bare: HashSet::new() };
@@ -65,15 +66,7 @@ struct Body {
 }
 
 impl Blocks<'_> {
-    fn token_at(&self, offset: usize) -> Option<Token> {
-        let index = self.tokens.partition_point(|token| token.start < offset);
-        self.tokens.get(index).copied()
-    }
 
-    fn token_before(&self, offset: usize) -> Option<Token> {
-        let index = self.tokens.partition_point(|token| token.end <= offset);
-        index.checked_sub(1).map(|index| self.tokens[index])
-    }
 
     fn broken(&self, start: usize, end: usize) -> bool {
         self.text[start..end].contains('\n')
@@ -94,7 +87,7 @@ impl Blocks<'_> {
         let (start, end) = (span.start as usize, span.end as usize);
 
         let Statement::BlockStatement(block) = body else {
-            let header = self.token_before(start).map_or(start, |token| token.end);
+            let header = self.tokens.before(start).map_or(start, |token| token.end);
             // Without braces a body belongs on the header's line, and has to fit on it.
             return Body { form: Form::Inline, inner: None, needs_braces: self.broken(header, end) };
         };
@@ -120,8 +113,8 @@ impl Blocks<'_> {
         for (&(statement, followed), body) in branches.iter().zip(&bodies) {
             let span = statement.span();
             let (start, end) = (span.start as usize, span.end as usize);
-            let next = self.token_at(end).filter(|token| followed && token.kind == Kind::Else && self.blank(end, token.start) && !self.broken(end, token.start));
-            let Some(header) = self.token_before(start) else { continue };
+            let next = self.tokens.at(end).filter(|token| followed && token.kind == Kind::Else && self.blank(end, token.start) && !self.broken(end, token.start));
+            let Some(header) = self.tokens.before(start) else { continue };
             let is_block = matches!(statement, Statement::BlockStatement(_));
 
             match (wanted, body.inner) {
@@ -176,8 +169,8 @@ impl Blocks<'_> {
             for pair in statements.windows(2) {
                 let (end, start) = (pair[0].end as usize, pair[1].start as usize);
                 // A semicolon that guards the next line, `;(a as B).run()`, belongs to that line.
-                let semicolon = self.token_before(end).filter(|token| token.kind == Kind::Semicolon);
-                let guarded = semicolon.is_some_and(|semicolon| self.token_before(semicolon.start).is_some_and(|token| self.broken(token.end, semicolon.start)));
+                let semicolon = self.tokens.before(end).filter(|token| token.kind == Kind::Semicolon);
+                let guarded = semicolon.is_some_and(|semicolon| self.tokens.before(semicolon.start).is_some_and(|token| self.broken(token.end, semicolon.start)));
                 if !self.broken(end, start) && !guarded {
                     self.break_before(end, start);
                 }
@@ -194,8 +187,8 @@ impl Blocks<'_> {
     /// An arrow function's body: an expression, or a block.
     fn arrow(&mut self, it: &ArrowFunctionExpression) {
         let after_head = it.return_type.as_ref().map_or(it.params.span.end, |return_type| return_type.span.end) as usize;
-        let Some(arrow) = self.token_at(after_head).filter(|token| token.kind == Kind::Arrow) else { return };
-        let Some(first) = self.token_at(arrow.end) else { return };
+        let Some(arrow) = self.tokens.at(after_head).filter(|token| token.kind == Kind::Arrow) else { return };
+        let Some(first) = self.tokens.at(arrow.end) else { return };
         let (start, end) = (first.start, it.span.end as usize);
 
         if first.kind != Kind::LCurly {
@@ -210,8 +203,8 @@ impl Blocks<'_> {
         let [Statement::ReturnStatement(statement)] = body.statements.as_slice() else { return };
         let Some(argument) = statement.argument.as_ref().map(GetSpan::span) else { return };
         // The parentheses around a returned value, if any, come along. An object would need new ones.
-        let Some(value) = self.token_at(statement.span.start as usize + "return".len()) else { return };
-        let value_end = self.token_before(end - 1).map_or(argument.end as usize, |token| if token.kind == Kind::Semicolon { token.start } else { token.end });
+        let Some(value) = self.tokens.at(statement.span.start as usize + "return".len()) else { return };
+        let value_end = self.tokens.before(end - 1).map_or(argument.end as usize, |token| if token.kind == Kind::Semicolon { token.start } else { token.end });
         let plain = body.directives.is_empty() && value.kind != Kind::LCurly && self.blank(start + 1, statement.span.start as usize) && self.blank(statement.span.end as usize, end - 1);
         // The first break decides: a value that starts on the line of the `{` asks for the short form.
         if plain && !self.broken(start, value.start) && self.blank(statement.span.start as usize + "return".len(), value.start) {
@@ -266,7 +259,7 @@ impl Blocks<'_> {
     /// `catch` and `finally` start a line.
     fn clause(&mut self, block: Span, keyword: Kind) {
         let end = block.end as usize;
-        let Some(next) = self.token_at(end).filter(|token| token.kind == keyword) else { return };
+        let Some(next) = self.tokens.at(end).filter(|token| token.kind == keyword) else { return };
         if !self.broken(end, next.start) && self.blank(end, next.start) {
             self.edits.replace(end, next.start, "\n");
         }
@@ -368,7 +361,7 @@ impl<'a> Visit<'a> for Blocks<'_> {
 
     fn visit_switch_case(&mut self, it: &SwitchCase<'a>) {
         if let Some(first) = it.consequent.first() {
-            let colon = self.token_before(first.span().start as usize).filter(|token| token.kind == Kind::Colon);
+            let colon = self.tokens.before(first.span().start as usize).filter(|token| token.kind == Kind::Colon);
             if let Some(colon) = colon {
                 self.statements(Some(colon.end), &it.consequent.iter().map(GetSpan::span).collect::<Vec<_>>(), None, false);
             }

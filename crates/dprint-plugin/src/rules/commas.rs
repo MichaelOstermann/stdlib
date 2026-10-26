@@ -15,6 +15,7 @@ use oxc_span::Span;
 use crate::edits::Edits;
 use crate::source::Source;
 use crate::source::Token;
+use crate::source::Tokens;
 
 pub fn run(source: &Source, edits: &mut Edits) {
     Commas { text: source.text, tokens: &source.tokens, edits, jsx: source.program.source_type.is_jsx(), generic_arrow: None }.visit_program(source.program);
@@ -30,19 +31,15 @@ struct Commas<'s> {
 }
 
 impl Commas<'_> {
-    fn token_at(&self, offset: u32) -> Option<Token> {
-        let index = self.tokens.partition_point(|token| token.start < offset as usize);
-        self.tokens.get(index).copied()
-    }
 
     /// Adds or removes the comma after the last item of a list. `allowed` is false where a comma is an
     /// error: after a rest element, and after type arguments.
     fn trailing(&mut self, last: Option<Span>, allowed: bool) {
         let Some(last) = last else { return };
-        let Some(after) = self.token_at(last.end) else { return };
+        let Some(after) = self.tokens.at(last.end) else { return };
 
         let comma = (after.kind == Kind::Comma).then_some(after);
-        let Some(closing) = comma.map_or(Some(after), |comma| self.token_at(comma.end as u32)) else { return };
+        let Some(closing) = comma.map_or(Some(after), |comma| self.tokens.at(comma.end)) else { return };
         if !matches!(closing.kind, Kind::RParen | Kind::RBrack | Kind::RCurly | Kind::RAngle) {
             return;
         }
@@ -62,8 +59,7 @@ impl Commas<'_> {
         for index in 0..members.len() {
             let next = members.get(index + 1).map_or(body.end - 1, |next| next.span().start);
             // The separator is the last token before the next member, whether or not the member's span includes it.
-            let before_next = self.tokens.partition_point(|token| token.start < next as usize);
-            let Some(last) = before_next.checked_sub(1).map(|index| self.tokens[index]) else { continue };
+            let Some(last) = self.tokens.before(next) else { continue };
             let separator = matches!(last.kind, Kind::Semicolon | Kind::Comma).then_some(last);
             let end = separator.map_or(last.end, |separator| separator.start);
 

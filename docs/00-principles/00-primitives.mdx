@@ -48,7 +48,7 @@ command({
 
 On a side note: Typing `conflicts` so that it only accepts the names of the other flags is already a struggle, the easy way out is `string[]`. If something becomes difficult to implement type-wise in TypeScript, it is a pretty good sign that something somewhere went wrong.
 
-It is not really about the likelihood of these things happening, it is more about *once* they happen then things can get pretty painful, and something somewhere *will* happen one day. A few of those somethings:
+It is not really about the likelihood of these things happening, it is more about _once_ they happen then things can get pretty painful, and something somewhere _will_ happen one day. A few of those somethings:
 
 - Required and optional flags, sometimes depending on which other flags were used
 - Flags shared between commands (`--json`)
@@ -99,9 +99,9 @@ const tokens = Tokens(process.argv.slice(2))
 while (tokens.head) {
     console.log(tokens.head.index) // The position of the argument
     console.log(tokens.head.value) // The value of the argument
-    console.log(tokens.head.next)  // Peek ahead
-    console.log(tokens.head.prev)  // Peek behind
-    tokens.head.remove()           // Consume arguments
+    console.log(tokens.head.next) // Peek ahead
+    console.log(tokens.head.prev) // Peek behind
+    tokens.head.remove() // Consume arguments
 }
 ```
 

@@ -14,7 +14,7 @@ Numbers are per call, in V8 (Node 26). The details, JavaScriptCore (Bun) include
 
 ## Why
 
-There are two extremes: Not thinking about performance at all, or thinking about it *too much*.
+There are two extremes: Not thinking about performance at all, or thinking about it _too much_.
 
 Ideally we would find a balance between the two on a case-by-case basis, which is hard, especially because it has to hold up over time: What was fast enough yesterday might suddenly become too slow tomorrow.
 
@@ -36,7 +36,7 @@ In JavaScript, more often than not functions create a shallow copy even when not
 
 ```ts
 const a = [1, 2, 3]
-const b = a.map(i => i)
+const b = a.map((i) => i)
 a === b // false
 ```
 
@@ -46,13 +46,13 @@ So now you'll come to find that libraries often ship something like this:
 
 ```ts
 function map(target, fn) {
-    let didChange = false;
+    let didChange = false
     const result = target.map((before) => {
-        const after = fn(before);
-        didChange ||= before !== after;
-        return after;
-    });
-    return didChange ? result : target;
+        const after = fn(before)
+        didChange ||= before !== after
+        return after
+    })
+    return didChange ? result : target
 }
 ```
 
@@ -64,26 +64,26 @@ We generally speaking try to avoid this by doing something similar to:
 
 ```ts
 function map(target, fn) {
-    let copy;
+    let copy
     for (let i = 0; i < target.length; i++) {
-        const before = target[i];
-        const after = fn(before);
-        if (before === after) continue;
+        const before = target[i]
+        const after = fn(before)
+        if (before === after) continue
         // Copy once now that we know we are actually going to write:
-        copy ??= target.slice();
-        copy[i] = after;
+        copy ??= target.slice()
+        copy[i] = after
     }
-    return copy ?? target;
+    return copy ?? target
 }
 ```
 
 For the keen eye: There is a difference in behavior when using sparse arrays. If you have a serious use case for sparse arrays, you probably shouldn't hand them to any 3rd-party library anyway.
 
-| | Copy first | Copy on write |
-|---|---|---|
-| 10 items, nothing changed | 30 ns · 232 B | 3 ns · 0 B |
-| 10 items, something changed | 29 ns · 232 B | 27 ns · 128 B |
-| 1000 items, nothing changed | 2.0 µs · 8.3 KB | 187 ns · 15 B |
+|                               | Copy first      | Copy on write   |
+| ----------------------------- | --------------- | --------------- |
+| 10 items, nothing changed     | 30 ns · 232 B   | 3 ns · 0 B      |
+| 10 items, something changed   | 29 ns · 232 B   | 27 ns · 128 B   |
+| 1000 items, nothing changed   | 2.0 µs · 8.3 KB | 187 ns · 15 B   |
 | 1000 items, something changed | 2.0 µs · 8.2 KB | 875 ns · 8.2 KB |
 
 ## Build-time optimizations
@@ -103,35 +103,38 @@ Our pattern matching tool featuring type-level exhaustiveness checks, greatly in
 
 ```ts
 type Shape =
-    | { kind: "circle"; radius: number }
-    | { kind: "square"; size: number };
-    
-const label = (value: Shape | null) => match(value)
-    .case(null, "Nothing")
-    .shape({ kind: "circle" }, "A circle")
-    .shape({ kind: "square" }, "A square")
-    .unwrap()
+    | { kind: "circle", radius: number }
+    | { kind: "square", size: number }
+
+function label(value: Shape | null) {
+    return match(value)
+        .case(null, "Nothing")
+        .shape({ kind: "circle" }, "A circle")
+        .shape({ kind: "square" }, "A square")
+        .unwrap()
+}
 ```
 
 </Tab>
 <Tab title="After">
 
 ```ts
-import { throwUnmatched } from "@monstermann/stdlib/internals/match/throwUnmatched.mjs";
+import { throwUnmatched } from "@monstermann/stdlib/internals/match/throwUnmatched.mjs"
 
-const label = (value: Shape | null) =>
-    value === null ? "Nothing"
-    : typeof value === "object" && value !== null && value.kind === "circle" ? "A circle"
-    : typeof value === "object" && value !== null && value.kind === "square" ? "A square"
-    : throwUnmatched(value);
+function label(value: Shape | null) {
+    return value === null ? "Nothing"
+        : typeof value === "object" && value !== null && value.kind === "circle" ? "A circle"
+        : typeof value === "object" && value !== null && value.kind === "square" ? "A square"
+        : throwUnmatched(value)
+}
 ```
 
 </Tab>
 </Tabs>
 
-| | `match` | `match`, compiled | ts-pattern |
-|---|---|---|---|
-| Per call | 35 ns · 152 B | 2 ns · 0 B | 187 ns · 1.7 KB |
+|          | `match`       | `match`, compiled | ts-pattern      |
+| -------- | ------------- | ----------------- | --------------- |
+| Per call | 35 ns · 152 B | 2 ns · 0 B        | 187 ns · 1.7 KB |
 
 This only works because `match` has `.case()`, `.shape()` and `.cond()` instead of a single `.with()`: Whether `.with(x)` compares a value, a shape or runs a predicate depends on the type of `x`, so it can't be compiled, while each of ours can only mean one thing. [pattycake](https://github.com/aidenybai/pattycake), a compiler for ts-pattern, has been stuck as "highly experimental" since early 2024, falling back to ts-pattern for whatever it can't compile.
 
@@ -164,10 +167,10 @@ function setPath0(t, v) {
 </Tab>
 </Tabs>
 
-| | `Object.setPath` | `Object.setPath`, compiled |
-|---|---|---|
-| Nothing changed | 36 ns · 32 B | 2 ns · 0 B |
-| Something changed | 97 ns · 233 B | 31 ns · 200 B |
+|                   | `Object.setPath` | `Object.setPath`, compiled |
+| ----------------- | ---------------- | -------------------------- |
+| Nothing changed   | 36 ns · 32 B     | 2 ns · 0 B                 |
+| Something changed | 97 ns · 233 B    | 31 ns · 200 B              |
 
 ### pipe
 
@@ -192,10 +195,10 @@ const result = ((value + 1) * 2)
 </Tab>
 </Tabs>
 
-| | `pipe` | `pipe`, compiled |
-|---|---|---|
-| Cheap steps | 1.4 ns · 0 B | 0.8 ns · 0 B |
-| Bigger steps | 63 ns · 264 B | 60 ns · 208 B |
+|              | `pipe`        | `pipe`, compiled |
+| ------------ | ------------- | ---------------- |
+| Cheap steps  | 1.4 ns · 0 B  | 0.8 ns · 0 B     |
+| Bigger steps | 63 ns · 264 B | 60 ns · 208 B    |
 
 ## Engine details
 
@@ -214,17 +217,17 @@ const copy = { ...target }
 copy[key] = value
 ```
 
-| | Computed property | Spread, then assign |
-|---|---|---|
-| One shape | 10 ns · 40 B | 10 ns · 40 B |
-| Four shapes | 206 ns · 242 B | 37 ns · 240 B |
+|             | Computed property | Spread, then assign |
+| ----------- | ----------------- | ------------------- |
+| One shape   | 10 ns · 40 B      | 10 ns · 40 B        |
+| Four shapes | 206 ns · 242 B    | 37 ns · 240 B       |
 
 ### `Object.is`
 
 V8 slows down when comparing two objects with `===` instead of `Object.is`, whereas other types stay consistently fast. Mapping over 1000 objects where nothing changes:
 
-| | `===` | `Object.is` |
-|---|---|---|
+|              | `===`        | `Object.is`  |
+| ------------ | ------------ | ------------ |
 | 1000 objects | 790 ns · 6 B | 186 ns · 1 B |
 
 ### Copying arrays
@@ -237,10 +240,10 @@ const copy = [...array]
 const copy = array.slice()
 ```
 
-| | Spread | `slice()` |
-|---|---|---|
-| 1000 items, V8 | 203 ns · 8.2 KB | 187 ns · 8.2 KB |
-| 1000 items, JavaScriptCore | 697 ns | 508 ns |
+|                            | Spread          | `slice()`       |
+| -------------------------- | --------------- | --------------- |
+| 1000 items, V8             | 203 ns · 8.2 KB | 187 ns · 8.2 KB |
+| 1000 items, JavaScriptCore | 697 ns          | 508 ns          |
 
 ## What didn't work
 
@@ -282,13 +285,13 @@ Array.filter(tasks, isVisible, { mut: true })
 
 Neither beat plain mutation. From remmi's own benchmarks, pushing values into an empty array (Apple M1 Max, Node 24):
 
-| | Time per op |
-|---|---|
-| Mutation | 34 ns |
-| remmi (`withMutations`) | 148 ns |
-| Copy + mutation | 253 ns |
-| mutative | 7 µs |
-| immer | 12 µs |
+|                         | Time per op |
+| ----------------------- | ----------- |
+| Mutation                | 34 ns       |
+| remmi (`withMutations`) | 148 ns      |
+| Copy + mutation         | 253 ns      |
+| mutative                | 7 µs        |
+| immer                   | 12 µs       |
 
 The big win remmi gave us came from a single loop, which applied hundreds of updates one at a time and copied the entire array for each one. Copying once by hand did the same.
 

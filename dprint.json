@@ -1,3 +1,6 @@
 {
-    "extends": "./node_modules/@monstermann/stdlib-style/dprint.json"
+    "extends": "./node_modules/@monstermann/stdlib-style/dprint.json",
+    "excludes": [
+        "docs/stdlib-style/00-introduction.mdx"
+    ]
 }

@@ -18,8 +18,8 @@ npm i -D @monstermann/stdlib-style dprint oxlint oxlint-tsgolint
 import oxlint from "@monstermann/stdlib-style/oxlint"
 
 export default oxlint({
-    tailwind: `${import.meta.dirname}/src/index.css`,
     ignores: ["src-tauri/target"],
+    tailwind: `${import.meta.dirname}/src/index.css`,
     overrides: [{
         files: ["cli/**"],
         rules: { "no-console": "off" },
@@ -27,11 +27,11 @@ export default oxlint({
 })
 ```
 
-| Option      | Description                                                                            |
-| ----------- | -------------------------------------------------------------------------------------- |
+| Option      | Description                                                                           |
+| ----------- | ------------------------------------------------------------------------------------- |
 | `tailwind`  | The CSS file that imports Tailwind. Lints classes, including those its `@theme` adds. |
-| `ignores`   | Globs that are not linted, next to `node_modules`, `dist`, lockfiles, …                |
-| `overrides` | Oxlint overrides, after the ones of the config.                                        |
+| `ignores`   | Globs that are not linted, next to `node_modules`, `dist`, lockfiles, …               |
+| `overrides` | Oxlint overrides, after the ones of the config.                                       |
 
 `tsconfig.json`, one per runtime:
 

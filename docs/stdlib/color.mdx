@@ -72,8 +72,8 @@ Building a theme consisting of 139 colors costs us about 0.14ms and an optimized
 Regardless, if you for some reason need high throughput, it is not that hard to manipulate the OKLCH channels yourself:
 
 ```ts
-const { l, c, h, alpha } = Color.parse("#1f2029")!
-Color.oklch({ l, c: c * 2, h, alpha }) // "oklch(0.2465 0.0342 280.08)"
+const { alpha, c, h, l } = Color.parse("#1f2029")!
+Color.oklch({ alpha, c: c * 2, h, l }) // "oklch(0.2465 0.0342 280.08)"
 ```
 
 ## Credits

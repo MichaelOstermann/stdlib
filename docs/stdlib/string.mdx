@@ -3,23 +3,23 @@ title: String
 ---
 
 ```ts
-String.camelCase("hello world"); // "helloWorld"
-String.capitalize("hello world"); // "Hello world"
-String.constantCase("hello world"); // "HELLO_WORLD"
-String.kebabCase("hello world"); // "hello-world"
-String.pascalCase("hello world"); // "HelloWorld"
-String.snakeCase("hello world"); // "hello_world"
-String.titleCase("hello world"); // "Hello World"
-String.uncapitalize("Hello World"); // "hello World"
+String.camelCase("hello world") // "helloWorld"
+String.capitalize("hello world") // "Hello world"
+String.constantCase("hello world") // "HELLO_WORLD"
+String.kebabCase("hello world") // "hello-world"
+String.pascalCase("hello world") // "HelloWorld"
+String.snakeCase("hello world") // "hello_world"
+String.titleCase("hello world") // "Hello World"
+String.uncapitalize("Hello World") // "hello World"
 
-String.dedent("    a\\n      b"); // "a\\n  b"
-String.score("Settings", "set"); // 0.94
-String.slugify("Hello World!"); // "hello-world"
-String.escapeHTML("<b>Tom & Jerry</b>"); // "&lt;b&gt;Tom &amp; Jerry&lt;/b&gt;"
+String.dedent("    a\\n      b") // "a\\n  b"
+String.score("Settings", "set") // 0.94
+String.slugify("Hello World!") // "hello-world"
+String.escapeHTML("<b>Tom & Jerry</b>") // "&lt;b&gt;Tom &amp; Jerry&lt;/b&gt;"
 
-[...String.graphemes("hello")]; // ["h", "e", "l", "l", "o"]
-[...String.words("Hello, world!")]; // ["Hello", "world"]
-[...String.links("See example.com")]; // [{ start: 4, end: 15, text: "example.com", url: "https://example.com" }]
+;[...String.graphemes("hello")] // ["h", "e", "l", "l", "o"]
+;[...String.words("Hello, world!")] // ["Hello", "world"]
+;[...String.links("See example.com")] // [{ start: 4, end: 15, text: "example.com", url: "https://example.com" }]
 ```
 
 ## String.score
@@ -28,10 +28,10 @@ This function is designed for general purpose fuzzy searching, such as menus, co
 
 ```ts
 const results = items
-    .map(item => ({ item, score: String.score(item.title, query) }))
-    .filter(result => result.score > 0)
+    .map((item) => ({ item, score: String.score(item.title, query) }))
+    .filter((result) => result.score > 0)
     .sort((a, b) => b.score - a.score)
-    .map(result => result.item)
+    .map((result) => result.item)
 ```
 
 ## Credits

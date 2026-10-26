@@ -228,31 +228,21 @@ impl Parentheses<'_> {
     }
 
     /// JSX in a position where it reads as a value: assigned, returned, or one side of a condition.
-    fn wrap(&mut self, jsx: Option<Span>, parenthesized: bool) {
-        let Some(jsx) = jsx.filter(|&jsx| self.spans_lines(jsx)) else { return };
+    fn value(&mut self, expression: &Expression) {
+        let (jsx, parenthesized) = match expression {
+            Expression::ParenthesizedExpression(parenthesized) => (&parenthesized.expression, true),
+            _ => (expression, false),
+        };
+        let span = jsx.span();
+        if !matches!(jsx, Expression::JSXElement(_) | Expression::JSXFragment(_)) || !self.spans_lines(span) {
+            return;
+        }
         if parenthesized {
-            self.own_lines(jsx);
+            self.own_lines(span);
         }
         else {
-            self.edits.replace(jsx.start as usize, jsx.start as usize, "(\n");
-            self.edits.replace(jsx.end as usize, jsx.end as usize, "\n)");
-        }
-    }
-
-    fn value(&mut self, expression: &Expression) {
-        match expression {
-            Expression::JSXElement(element) => self.wrap(Some(element.span), false),
-            Expression::JSXFragment(fragment) => self.wrap(Some(fragment.span), false),
-            Expression::ParenthesizedExpression(parenthesized) => self.parenthesized(parenthesized),
-            _ => {}
-        }
-    }
-
-    fn parenthesized(&mut self, parenthesized: &ParenthesizedExpression) {
-        match &parenthesized.expression {
-            Expression::JSXElement(element) => self.wrap(Some(element.span), true),
-            Expression::JSXFragment(fragment) => self.wrap(Some(fragment.span), true),
-            _ => {}
+            self.edits.replace(span.start as usize, span.start as usize, "(\n");
+            self.edits.replace(span.end as usize, span.end as usize, "\n)");
         }
     }
 }
@@ -278,11 +268,8 @@ impl<'a> Visit<'a> for Parentheses<'_> {
     }
 
     fn visit_arrow_function_expression(&mut self, it: &ArrowFunctionExpression<'a>) {
-        match &it.body {
-            ArrowFunctionBody::JSXElement(element) => self.wrap(Some(element.span), false),
-            ArrowFunctionBody::JSXFragment(fragment) => self.wrap(Some(fragment.span), false),
-            ArrowFunctionBody::ParenthesizedExpression(parenthesized) => self.parenthesized(parenthesized),
-            _ => {}
+        if let Some(body) = it.body.as_expression() {
+            self.value(body);
         }
         walk::walk_arrow_function_expression(self, it);
     }

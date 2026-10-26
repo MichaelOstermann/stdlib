@@ -1,6 +1,8 @@
 {
     "indentWidth": 4,
-    "markdown": {},
+    "markdown": {
+        "associations": ["**/*.{md,mdx}"]
+    },
     "malva": {},
     "markup": {},
     "excludes": [

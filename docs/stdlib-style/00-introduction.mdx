@@ -4,13 +4,13 @@ title: Introduction
 
 `stdlib-style` is a collection of opinionated setups for:
 
-- [dprint](https://dprint.dev/): Formatting TypeScript, JSON, JSONC, Markdown, CSS, SCSS, Less, HTML, Vue, Svelte, Astro
+- [dprint](https://dprint.dev/): Formatting TypeScript, JSON, JSONC, Markdown, MDX, CSS, SCSS, Less, HTML, Vue, Svelte, Astro
 - [oxlint](https://oxc.rs/docs/guide/usage/linter): Linting TypeScript, with React & Tailwind
 - **tsconfig**: Base configs for web & bun runtimes
 
 ## Dprint
 
-TypeScript, JavaScript and JSON are formatted by a custom dprint plugin written in Rust, shipped as WebAssembly inside this package. In JSON it also puts the keys of package.json and tsconfig.json into their usual order. Markdown, CSS and HTML use dprint's own plugins.
+TypeScript, JavaScript and JSON are formatted by a custom dprint plugin written in Rust, shipped as WebAssembly inside this package. In JSON it also puts the keys of package.json and tsconfig.json into their usual order, and in TypeScript it wraps JSDoc comments at 100 columns, so they read well in the editor and in hovers. Markdown, MDX, CSS and HTML use dprint's own plugins, and code blocks in Markdown and MDX are formatted like any other TypeScript.
 
 The TypeScript plugin is greatly inspired by many different ESLint plugins such as [Perfectionist](https://perfectionist.dev/), [Stylistic](https://eslint.style/) and other popular plugins we found in the wild, often times directly ported to Rust.
 

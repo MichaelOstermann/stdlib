@@ -7,8 +7,8 @@ import type { Updated } from "../internals/types"
  * Array.unique(target)
  * ```
  *
- * Removes what occurs more than once, the first occurrence stays.
- * Returns `target` itself when there are no duplicates.
+ * Removes what occurs more than once, the first occurrence stays. Returns `target` itself when
+ * there are no duplicates.
  *
  * ## Example
  *

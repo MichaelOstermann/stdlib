@@ -432,7 +432,10 @@ RawMemo.prototype.get = function<T> (this: RawMemo<T>): T {
     return this.value
 }
 
-/** Runs with the effect as `this`, and returns what cleans up after it: called before the next run, and when the effect is disposed. */
+/**
+ * Runs with the effect as `this`, and returns what cleans up after it: called before the next run,
+ * and when the effect is disposed.
+ */
 type EffectFn = (this: RawEffect) => (() => void) | void
 
 export interface RawEffect {
@@ -539,7 +542,10 @@ function disposeEffect(effect: RawEffect): void {
     effect.sources = undefined
 }
 
-/** What the outermost batch ends with: runs the effects that have been notified, and the ones they notify. */
+/**
+ * What the outermost batch ends with: runs the effects that have been notified, and the ones they
+ * notify.
+ */
 function flush(): void {
     let error: unknown
     let hasError = false

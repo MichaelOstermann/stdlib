@@ -9,9 +9,12 @@ import { sortByKeys } from "../internals/arrays"
  * Array.sortBy(target, by, options?)
  * ```
  *
- * Sorts by what `by` returns for each element, compared with `<` and `>`: numbers and dates work, strings are in the order of their characters, see `Array.sortByLocale` for text. Descending with `{ order: "desc" }`.
+ * Sorts by what `by` returns for each element, compared with `<` and `>`: numbers and dates work,
+ * strings are in the order of their characters, see `Array.sortByLocale` for text. Descending with
+ * `{ order: "desc" }`.
  *
- * Elements of the same value stay in the order they are in. Returns `target` itself when it is sorted already.
+ * Elements of the same value stay in the order they are in. Returns `target` itself when it is
+ * sorted already.
  *
  * ## Example
  *

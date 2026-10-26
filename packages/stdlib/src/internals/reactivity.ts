@@ -4,8 +4,9 @@ import { version } from "../../package.json"
 /**
  * The state behind batching and tracking, without the signals themselves.
  *
- * An `Emitter` batches and untracks through this module. Until a signal is created, that costs a counter and one stack slot:
- * the graph lives in `./system`, which is only loaded by the modules that create signals, memos and effects.
+ * An `Emitter` batches and untracks through this module. Until a signal is created, that costs a
+ * counter and one stack slot: the graph lives in `./system`, which is only loaded by the modules
+ * that create signals, memos and effects.
  */
 
 interface Registry {
@@ -22,8 +23,9 @@ if (!registry.versions.includes(version)) registry.versions.push(version)
 if (registry.system !== undefined) assertSingleVersion()
 
 /**
- * Signals of one version do not know the effects of another: nothing would update, without anything failing.
- * Two copies of the same version are accepted, because a module that is replaced during development shows up as a second copy.
+ * Signals of one version do not know the effects of another: nothing would update, without anything
+ * failing. Two copies of the same version are accepted, because a module that is replaced during
+ * development shows up as a second copy.
  */
 function assertSingleVersion(): void {
     if (registry.versions.length === 1) return
@@ -40,7 +42,10 @@ let evalDepth = 0
 const evalStack: (RawEffect | RawMemo | undefined)[] = []
 let flush: (() => void) | undefined
 
-/** Makes `run` what the outermost batch ends with. It has to call `exitBatch` once it is done, before it throws. */
+/**
+ * Makes `run` what the outermost batch ends with. It has to call `exitBatch` once it is done,
+ * before it throws.
+ */
 export function connect(run: () => void): void {
     registry.system = version
     assertSingleVersion()
@@ -52,7 +57,10 @@ export function pushContext(context: RawEffect | RawMemo | undefined): void {
     evalContext = context
 }
 
-/** Makes `context` the one that collects dependencies and returns the previous one, for a caller to restore it from its own stack frame instead of `evalStack`. */
+/**
+ * Makes `context` the one that collects dependencies and returns the previous one, for a caller to
+ * restore it from its own stack frame instead of `evalStack`.
+ */
 export function swapContext(context: RawEffect | RawMemo | undefined): RawEffect | RawMemo | undefined {
     const prev = evalContext
     evalContext = context

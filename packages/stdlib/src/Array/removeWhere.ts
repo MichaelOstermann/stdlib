@@ -8,8 +8,8 @@ import { removeWhere as update } from "../internals/arrays"
  * Array.removeWhere(target, predicate)
  * ```
  *
- * Removes every element that satisfies `predicate`.
- * Returns `target` itself when there is no such element.
+ * Removes every element that satisfies `predicate`. Returns `target` itself when there is no such
+ * element.
  *
  * ## Example
  *

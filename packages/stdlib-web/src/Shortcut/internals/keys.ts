@@ -75,13 +75,19 @@ export function mod(): "ctrl" | "meta" {
     return /Mac|iPhone|iPad/.test(navigator.platform) ? "meta" : "ctrl"
 }
 
-/** The modifier a name stands for, as written in a shortcut (`cmd`, `Control`) or reported by an event (`Meta`). */
+/**
+ * The modifier a name stands for, as written in a shortcut (`cmd`, `Control`) or reported by an
+ * event (`Meta`).
+ */
 export function modifierOf(name: string): Modifier | undefined {
     const lower = name.toLowerCase()
     return Object.hasOwn(modifiers, lower) ? modifiers[lower] : undefined
 }
 
-/** The name of a key as events report it, for one written in any case or as an alias: `esc` → `Escape`. */
+/**
+ * The name of a key as events report it, for one written in any case or as an alias: `esc` →
+ * `Escape`.
+ */
 export function nameOf(key: string): string | undefined {
     const lower = key.toLowerCase()
     return Object.hasOwn(names, lower) ? names[lower] : undefined

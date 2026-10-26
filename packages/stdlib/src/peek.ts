@@ -12,8 +12,9 @@ export interface Peek {
 /**
  * `peek(fn)`
  *
- * Calls `fn` without tracking its reads: a memo or an effect does not run again when a signal changes that was only read inside of `fn`.
- * A signal can be passed directly, since calling it reads it.
+ * Calls `fn` without tracking its reads: a memo or an effect does not run again when a signal
+ * changes that was only read inside of `fn`. A signal can be passed directly, since calling it
+ * reads it.
  *
  * ```ts
  * peek($count); // The value of $count.

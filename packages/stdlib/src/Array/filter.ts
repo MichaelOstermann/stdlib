@@ -8,8 +8,7 @@ import { removeWhere } from "../internals/arrays"
  * Array.filter(target, predicate)
  * ```
  *
- * Keeps the elements that satisfy `predicate`.
- * Returns `target` itself when every element does.
+ * Keeps the elements that satisfy `predicate`. Returns `target` itself when every element does.
  *
  * ## Example
  *

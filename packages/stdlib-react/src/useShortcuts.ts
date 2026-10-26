@@ -3,8 +3,9 @@ import { Shortcut } from "@monstermann/stdlib-web"
 import { useLayoutEffect, useRef, useState } from "react"
 
 /**
- * The place of a component in `Shortcut.bindings`: the order it first rendered in, which is a parent before its children and a sibling before the next one.
- * Effects run the other way around, from the inside out.
+ * The place of a component in `Shortcut.bindings`: the order it first rendered in, which is a
+ * parent before its children and a sibling before the next one. Effects run the other way around,
+ * from the inside out.
  */
 let rendered = 0
 const nextRank = (): number => rendered++
@@ -13,12 +14,18 @@ const ranks = new WeakMap<ShortcutBinding, number>()
 /**
  * `useShortcuts(shortcuts, enabled?)`
  *
- * Adds a binding to `Shortcut.bindings` for each of `shortcuts` while the component is mounted and `enabled`, `true` by default. Each one runs a function, or is a binding without its shortcut, for what an app adds to `ShortcutBinding`.
+ * Adds a binding to `Shortcut.bindings` for each of `shortcuts` while the component is mounted and
+ * `enabled`, `true` by default. Each one runs a function, or is a binding without its shortcut, for
+ * what an app adds to `ShortcutBinding`.
  *
- * - bindings are in the order their components rendered first: a child after its parent, a later sibling after an earlier one, what mounted later after everything before. Taking the newest that matches takes the innermost
- * - `enabled` turning `true` after mounting puts them after everything else, as a menu that opened over the page
+ * - bindings are in the order their components rendered first: a child after its parent, a later
+ *   sibling after an earlier one, what mounted later after everything before. Taking the newest
+ *   that matches takes the innermost
+ * - `enabled` turning `true` after mounting puts them after everything else, as a menu that opened
+ *   over the page
  * - each render updates them in place to what was passed: a new function does not move them
- * - a shortcut that is passed for the first time is added at the place of its component, one that is no longer passed is removed
+ * - a shortcut that is passed for the first time is added at the place of its component, one that
+ *   is no longer passed is removed
  *
  * ```tsx
  * function Menu({ menu, open }: { menu: Menu, open: boolean }) {

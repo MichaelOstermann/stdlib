@@ -12,8 +12,8 @@ export function indexOf(target: unknown[], value: unknown, last: boolean): numbe
 }
 
 /**
- * Tells whether something is one of `values`, `NaN` included, as in a `Set`.
- * Returns nothing when there are no values.
+ * Tells whether something is one of `values`, `NaN` included, as in a `Set`. Returns nothing when
+ * there are no values.
  */
 export function matcher(values: Iterable<unknown>): ((value: unknown) => boolean) | undefined {
     const set = new Set(values)
@@ -66,8 +66,8 @@ export function removeWhere(target: unknown[], predicate: Predicate): unknown[] 
 export type Comparable = bigint | boolean | Date | number | string
 
 /**
- * Sorts by a key of each element, which is only asked for once. Elements of the same key stay in the order they are in, in both directions.
- * Returns `target` itself when it is in order already.
+ * Sorts by a key of each element, which is only asked for once. Elements of the same key stay in
+ * the order they are in, in both directions. Returns `target` itself when it is in order already.
  */
 export function sortByKeys<K>(target: unknown[], keys: K[], compare: (a: K, b: K) => number, options: { order?: "asc" | "desc" } | undefined): unknown[] {
     const direction = options?.order === "desc" ? -1 : 1

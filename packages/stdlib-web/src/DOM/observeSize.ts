@@ -14,12 +14,14 @@ let observed = 0
  * function DOM.observeSize(target: Element | Window, onChange: (size: Rect) => void): () => void
  * ```
  *
- * Calls `onChange` with the size of an element right away, and again whenever it changes: a rect at `0, 0` with the width and height of its border box. Returns what stops observing.
- * The size is the one of its layout, which transforms such as `scale` do not change, like `ResizeObserver` reports it.
- * For a window, the rect has the size of its viewport: `innerWidth` and `innerHeight`.
- * Cheaper than `DOM.observePosition`, for when the position does not matter.
+ * Calls `onChange` with the size of an element right away, and again whenever it changes: a rect at
+ * `0, 0` with the width and height of its border box. Returns what stops observing. The size is the
+ * one of its layout, which transforms such as `scale` do not change, like `ResizeObserver` reports
+ * it. For a window, the rect has the size of its viewport: `innerWidth` and `innerHeight`. Cheaper
+ * than `DOM.observePosition`, for when the position does not matter.
  *
- * - the size is rounded to whole pixels, and `onChange` is only called when the rounded size changed
+ * - the size is rounded to whole pixels, and `onChange` is only called when the rounded size
+ *   changed
  * - all elements share one `ResizeObserver`
  *
  * ## Example
@@ -71,7 +73,10 @@ function size(width: number, height: number): Rect {
     return { height, left: 0, top: 0, width }
 }
 
-/** Calls `onResize` when the border box of `element` changes size, through one `ResizeObserver` shared by all elements. */
+/**
+ * Calls `onResize` when the border box of `element` changes size, through one `ResizeObserver`
+ * shared by all elements.
+ */
 function observe(element: Element, onResize: (entry: ResizeObserverEntry) => void): () => void {
     observer ??= new ResizeObserver((entries) => {
         for (const entry of entries) {

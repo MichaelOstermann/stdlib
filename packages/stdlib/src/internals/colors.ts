@@ -3,7 +3,10 @@ import { clamp } from "../Math/clamp"
 
 // The conversion between sRGB and OKLab is taken from https://bottosson.github.io/posts/oklab/
 
-/** Chroma below this is gray: what parses from a gray hex has float noise in it, with a hue of no meaning. */
+/**
+ * Chroma below this is gray: what parses from a gray hex has float noise in it, with a hue of no
+ * meaning.
+ */
 const GRAY = 1e-4
 
 export function normalizeHue(h: number): number {

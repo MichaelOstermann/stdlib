@@ -4,8 +4,8 @@ import { importEnd } from "./globals"
 import { packages } from "./manifest"
 
 /**
- * Rewrites the remaining imports from `@monstermann/stdlib` and `@monstermann/stdlib-web` to the files that export them,
- * so the entry of a package, which imports everything, is never loaded:
+ * Rewrites the remaining imports from `@monstermann/stdlib` and `@monstermann/stdlib-web` to the
+ * files that export them, so the entry of a package, which imports everything, is never loaded:
  *
  * ```ts
  * import { pipe, Arr, type Result } from "@monstermann/stdlib";

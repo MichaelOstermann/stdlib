@@ -7,7 +7,8 @@ import type { Rect } from "."
  * function Rect.fromDOMRect(rect: DOMRectReadOnly): Rect
  * ```
  *
- * Copies the position and size of a `DOMRect`, the result of `getBoundingClientRect` for example, into a plain object.
+ * Copies the position and size of a `DOMRect`, the result of `getBoundingClientRect` for example,
+ * into a plain object.
  *
  * ## Example
  *

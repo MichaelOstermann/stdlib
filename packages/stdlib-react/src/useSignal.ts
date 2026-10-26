@@ -7,8 +7,10 @@ import { useState } from "react"
  *
  * Creates a signal once per component, `useState` as a signal.
  *
- * - `value` is the initial value: when it changes later, the signal keeps its own, and so do `options`
- * - `@monstermann/stdlib-transform` writes it for you, wherever a component or a hook calls `Signal`
+ * - `value` is the initial value: when it changes later, the signal keeps its own, and so do
+ *   `options`
+ * - `@monstermann/stdlib-transform` writes it for you, wherever a component or a hook calls
+ *   `Signal`
  *
  * ```tsx
  * function Counter() {

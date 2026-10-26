@@ -3,28 +3,43 @@ import { pauseTracking, resumeTracking } from "./internals/reactivity"
 import { RawEffect } from "./internals/system"
 import { Memo } from "./Memo"
 
-/** `this` inside of the computation of an effect, which is a `function` for that, not an arrow function. */
+/**
+ * `this` inside of the computation of an effect, which is a `function` for that, not an arrow
+ * function.
+ */
 export interface EffectContext {
-    /** Stops the effect from the inside, also during its first run, when what `Effect` returns is not assigned yet. */
+    /**
+     * Stops the effect from the inside, also during its first run, when what `Effect` returns is
+     * not assigned yet.
+     */
     dispose: () => void
 }
 
 export interface WatchOptions<T> {
-    /** Whether two values are the same, for `computation` to not be called. Only asked when they are not `===`, and only for a function: a signal or a memo has its own. */
+    /**
+     * Whether two values are the same, for `computation` to not be called. Only asked when they are
+     * not `===`, and only for a function: a signal or a memo has its own.
+     */
     equals?: (before: T, after: T) => boolean
 }
 
 /**
  * `Effect(computation)`
  *
- * Calls `computation` right away, and again whenever a signal or memo changes that it read. Use it to apply changes outside of signals: the DOM, a request, a log.
- * Returns what stops it, which also calls the cleanup of its last run, and does nothing the second time.
+ * Calls `computation` right away, and again whenever a signal or memo changes that it read. Use it
+ * to apply changes outside of signals: the DOM, a request, a log. Returns what stops it, which also
+ * calls the cleanup of its last run, and does nothing the second time.
  *
  * - it runs right away, and again once the batch is done in which something changed
- * - the function that `computation` returns is called before the next run and when the effect is stopped
- * - `this.dispose()` stops it from the inside, also during the first run: `computation` is a `function` for that, not an arrow function
+ * - the function that `computation` returns is called before the next run and when the effect is
+ *   stopped
+ * - `this.dispose()` stops it from the inside, also during the first run: `computation` is a
+ *   `function` for that, not an arrow function
  * - what `computation` throws is thrown by what created the effect, or by what changed the signal
- * - a module that is replaced during development creates it again, `if (import.meta.hot) import.meta.hot.dispose(stop)` stops the one before. Not `import.meta.hot?.dispose(Effect(…))`: where that call is removed, in a build, the effect is never created
+ * - a module that is replaced during development creates it again,
+ *   `if (import.meta.hot) import.meta.hot.dispose(stop)` stops the one before. Not
+ *   `import.meta.hot?.dispose(Effect(…))`: where that call is removed, in a build, the effect is
+ *   never created
  *
  * ```ts
  * const $count = Signal(0);
@@ -54,12 +69,16 @@ export interface WatchOptions<T> {
  */
 export const Effect: {
     (computation: (this: EffectContext) => (() => void) | void): () => void
-    /** Runs an effect until it calls `resolve` or `reject`, and returns a promise of that. It is stopped afterwards, and stopping it before rejects. */
+    /**
+     * Runs an effect until it calls `resolve` or `reject`, and returns a promise of that. It is
+     * stopped afterwards, and stopping it before rejects.
+     */
     defer: <T = void>(computation: (this: EffectContext, resolve: (value: T) => void, reject: (reason?: unknown) => void) => (() => void) | void) => Promise<T>
     /**
      * Calls `computation` with the value of `dependencies` and the one before, whenever it changed.
      * Unlike an effect it does not run right away, and does not depend on what `computation` reads.
-     * The function that `computation` returns is called like the one of an effect. What stops the watcher is returned, and `this.dispose()` stops it from the inside, like an effect.
+     * The function that `computation` returns is called like the one of an effect. What stops the
+     * watcher is returned, and `this.dispose()` stops it from the inside, like an effect.
      */
     watch: <T>(dependencies: ReadonlySignal<T> | Memo<T> | (() => T), computation: (this: EffectContext, next: NoInfer<T>, prev: NoInfer<T>) => (() => void) | void, options?: WatchOptions<NoInfer<T>>) => () => void
 } = Object.assign(create, {
@@ -73,7 +92,10 @@ function create(computation: (this: EffectContext) => (() => void) | void): () =
     return () => effect.dispose()
 }
 
-/** Gives `effect` a `dispose` of its own, which calls `then` afterwards. Only for what is rare: `Effect.defer`. */
+/**
+ * Gives `effect` a `dispose` of its own, which calls `then` afterwards. Only for what is rare:
+ * `Effect.defer`.
+ */
 function afterDispose(effect: RawEffect, then: () => void): void {
     effect.dispose = function () {
         RawEffect.prototype.dispose.call(this)

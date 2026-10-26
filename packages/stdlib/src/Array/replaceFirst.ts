@@ -8,8 +8,8 @@ import { indexOf, setAt } from "../internals/arrays"
  * Array.replaceFirst(target, value, replacement)
  * ```
  *
- * Replaces the first occurrence of `value` with `replacement`.
- * Returns `target` itself when it does not occur, or when both are the same.
+ * Replaces the first occurrence of `value` with `replacement`. Returns `target` itself when it does
+ * not occur, or when both are the same.
  *
  * ## Example
  *

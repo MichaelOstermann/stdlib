@@ -16,9 +16,12 @@ export interface TooltipProps extends Omit<ComponentProps<"div">, "ref"> {
  *
  * Renders a tooltip from `useTooltip` into `document.body`, next to its trigger.
  *
- * - render it behind `mounted &&`: without that, the children are created and diffed on every render of the owner, and the element is there while closed
- * - the element has the classes `modal tooltip`, and `data-status` with `closed`, `opening`, `opened` or `closing`
- * - it is hidden until it has been measured and placed; it renders again when it moves and on each status, the owner does not
+ * - render it behind `mounted &&`: without that, the children are created and diffed on every
+ *   render of the owner, and the element is there while closed
+ * - the element has the classes `modal tooltip`, and `data-status` with `closed`, `opening`,
+ *   `opened` or `closing`
+ * - it is hidden until it has been measured and placed; it renders again when it moves and on each
+ *   status, the owner does not
  *
  * ```tsx
  * const [mounted, triggerRef, tooltip] = useTooltip();

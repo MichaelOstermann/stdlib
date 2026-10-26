@@ -8,7 +8,8 @@ import { dropBottomPx } from "./dropBottomPx"
  * function Rect.dropBottomPct(rect: Rect, amount: number): Rect
  * ```
  *
- * Removes `amount` of the height from the bottom, as a fraction from `0` to `1`. The top edge stays.
+ * Removes `amount` of the height from the bottom, as a fraction from `0` to `1`. The top edge
+ * stays.
  *
  * ## Example
  *

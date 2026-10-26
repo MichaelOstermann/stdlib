@@ -7,8 +7,8 @@ import type { DistributedOmit, KeysOfUnion } from "type-fest"
  * Object.omit(target, keys)
  * ```
  *
- * Returns a copy of `target` without the properties `keys`.
- * Returns `target` itself when it has none of them.
+ * Returns a copy of `target` without the properties `keys`. Returns `target` itself when it has
+ * none of them.
  *
  * ## Example
  *

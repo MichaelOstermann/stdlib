@@ -13,7 +13,10 @@ export const dom = {
     resizing: new Map<Element, ResizeObserverCallback[]>(),
 }
 
-/** An element with the layout that happy-dom does not have: `getBoundingClientRect`, `offsetWidth` and `offsetHeight` follow `rect`. */
+/**
+ * An element with the layout that happy-dom does not have: `getBoundingClientRect`, `offsetWidth`
+ * and `offsetHeight` follow `rect`.
+ */
 export function fakeElement(rect: FakeElement["rect"]): FakeElement {
     const fake = { element: document.createElement("div"), rect }
     Object.defineProperties(fake.element, {
@@ -89,7 +92,10 @@ export function intersect(fake: FakeElement, ratio: number): void {
     observer.callback([entry as unknown as IntersectionObserverEntry], observer as unknown as IntersectionObserver)
 }
 
-/** happy-dom in the tests of this file, with observers that the tests drive: happy-dom has no layout to observe. */
+/**
+ * happy-dom in the tests of this file, with observers that the tests drive: happy-dom has no layout
+ * to observe.
+ */
 export function fakeDOM(): void {
     beforeAll(() => GlobalRegistrator.register())
     afterAll(() => GlobalRegistrator.unregister())

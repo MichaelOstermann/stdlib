@@ -8,7 +8,8 @@ import { setWidth } from "./setWidth"
  * function Rect.setRight(rect: Rect, right: number): Rect
  * ```
  *
- * Moves the right edge to `right`, the left edge stays. A `right` before the left edge gives a width of `0`.
+ * Moves the right edge to `right`, the left edge stays. A `right` before the left edge gives a
+ * width of `0`.
  *
  * ## Example
  *

@@ -3,9 +3,11 @@ import type { Ref } from "react"
 /**
  * `mergeRefs(...refs)`
  *
- * One ref for several: each of `refs` gets the value once attached, and is cleaned up once detached.
+ * One ref for several: each of `refs` gets the value once attached, and is cleaned up once
+ * detached.
  *
- * - a callback ref that returns a cleanup has that cleanup called, the others are called with `null`, an object ref is set to `null`
+ * - a callback ref that returns a cleanup has that cleanup called, the others are called with
+ *   `null`, an object ref is set to `null`
  * - `undefined` and `null` are skipped, a single ref is returned as is
  * - a plain function, not a hook: React Compiler keeps the merged ref the same while `refs` are
  * - a `useState` setter and a signal are callback refs: `mergeRefs(setElement, $element)`

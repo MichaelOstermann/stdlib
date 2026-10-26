@@ -1,7 +1,10 @@
 import { describe, expect, it } from "bun:test"
 import { score } from "../../src/String/score"
 
-/** The haystacks in the order they are found in, the best one first, without the ones that are not found. */
+/**
+ * The haystacks in the order they are found in, the best one first, without the ones that are not
+ * found.
+ */
 function rank(needle: string, haystacks: string[]): string[] {
     return haystacks
         .map((haystack) => ({ haystack, score: score(haystack, needle) }))

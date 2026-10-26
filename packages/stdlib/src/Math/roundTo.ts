@@ -5,7 +5,8 @@
  * Math.roundTo(value, digits)
  * ```
  *
- * Rounds `value` to `digits` decimal places the way `Math.round` rounds to an integer, half up. Negative `digits` round to tens, hundreds, ….
+ * Rounds `value` to `digits` decimal places the way `Math.round` rounds to an integer, half up.
+ * Negative `digits` round to tens, hundreds, ….
  *
  * ## Example
  *

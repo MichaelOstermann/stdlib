@@ -9,7 +9,8 @@ import { merge } from "./merge"
  * function Rect.scaleX(rect: Rect, factor: number): Rect
  * ```
  *
- * Multiplies the width by `factor`, around the horizontal center. A negative `factor` counts as `0`.
+ * Multiplies the width by `factor`, around the horizontal center. A negative `factor` counts as
+ * `0`.
  *
  * ## Example
  *

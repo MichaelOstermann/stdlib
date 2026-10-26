@@ -2,7 +2,10 @@ import Path from "node:path"
 import { describe, expect, it } from "bun:test"
 import { links } from "../../src/String/links"
 
-/** The lines of a fixture of linkify-it: `%` starts a comment, a line below a link is what is found of it, when that differs. */
+/**
+ * The lines of a fixture of linkify-it: `%` starts a comment, a line below a link is what is found
+ * of it, when that differs.
+ */
 async function fixture(name: string): Promise<[line: string, expected: string][]> {
     const lines = (await Bun.file(Path.join(import.meta.dirname, "links", name)).text()).split(/\r?\n/).map((line) => line.replace(/^%.*/, ""))
     const cases: [string, string][] = []

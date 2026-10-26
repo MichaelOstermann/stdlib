@@ -12,6 +12,5 @@
  * ```ts
  * 4 * Bytes.KB; // 4_000
  * ```
- *
  */
 export const KB = 1_000

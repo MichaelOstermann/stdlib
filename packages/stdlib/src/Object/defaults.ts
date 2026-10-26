@@ -8,10 +8,11 @@ import { ownKeys, setOwn } from "../internals/objects"
  * Object.defaults(target, defaults)
  * ```
  *
- * Copies the properties of `defaults` onto a copy of `target`, the ones that are missing or `undefined` there. `null` is a value, and stays.
- * Returns `target` itself when nothing is missing.
+ * Copies the properties of `defaults` onto a copy of `target`, the ones that are missing or
+ * `undefined` there. `null` is a value, and stays. Returns `target` itself when nothing is missing.
  *
- * Unlike `{ ...defaults, ...target }`, a property that is set to `undefined` does not replace its default.
+ * Unlike `{ ...defaults, ...target }`, a property that is set to `undefined` does not replace its
+ * default.
  *
  * ## Example
  *
@@ -36,7 +37,10 @@ export function defaults(target: Record<PropertyKey, unknown>, source: Record<Pr
     return target
 }
 
-/** Only own properties count: `toString` and `__proto__` exist on every object through its prototype, and are still treated as missing. */
+/**
+ * Only own properties count: `toString` and `__proto__` exist on every object through its
+ * prototype, and are still treated as missing.
+ */
 function isSet(target: Record<PropertyKey, unknown>, key: PropertyKey): boolean {
     return Object.hasOwn(target, key) && target[key] !== undefined
 }

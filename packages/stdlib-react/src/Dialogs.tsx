@@ -39,7 +39,8 @@ let nextId = 0
 /**
  * `<Dialogs />`
  *
- * Renders the dialogs opened with `Dialogs.open`. Mounted once, inside the providers of the app, for the dialogs to have their context.
+ * Renders the dialogs opened with `Dialogs.open`. Mounted once, inside the providers of the app,
+ * for the dialogs to have their context.
  *
  * - dialogs opened while it is not mounted show once it is
  * - unmounting it closes the open dialogs, which resolve with `undefined`
@@ -69,7 +70,8 @@ export function Dialogs(): ReactNode {
  * ): Promise<R | undefined>
  * ```
  *
- * Opens a dialog that renders `Component` with `dialog`, and resolves with what it passes to `dialog.done`. `meta` is `dialog.meta`.
+ * Opens a dialog that renders `Component` with `dialog`, and resolves with what it passes to
+ * `dialog.done`. `meta` is `dialog.meta`.
  *
  * - `meta` can be left out for a `Dialog<void, R>`
  * - a click outside of the dialog and Esc close it, and it resolves with `undefined`

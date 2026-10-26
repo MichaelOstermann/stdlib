@@ -13,7 +13,8 @@ const units: Record<string, number> = { d: DAY, h: HOUR, m: MINUTE, ms: 1, s: SE
  * function Duration.parse(target: string): number | undefined
  * ```
  *
- * Returns the milliseconds of a duration that is written as a number and a unit: `ms`, `s`, `m`, `h`, `d` or `w`, in any case. Returns `undefined` for everything else.
+ * Returns the milliseconds of a duration that is written as a number and a unit: `ms`, `s`, `m`,
+ * `h`, `d` or `w`, in any case. Returns `undefined` for everything else.
  *
  * ## Example
  *
@@ -24,7 +25,6 @@ const units: Record<string, number> = { d: DAY, h: HOUR, m: MINUTE, ms: 1, s: SE
  * Duration.parse("90D"); // 7_776_000_000
  * Duration.parse("10"); // undefined
  * ```
- *
  */
 export function parse(target: string): number | undefined {
     const match = /^(\d+(?:\.\d+)?)\s*(ms|[smhdw])$/i.exec(target.trim())

@@ -6,28 +6,36 @@ export interface Signal<T = any> {
     (transform: (value: T) => T): void
     /** Sets the value. Nothing is updated when it is the value already. */
     (value: T): void
-    /** Returns the value. Inside of a memo or an effect, that one runs again when the value changes. */
+    /**
+     * Returns the value. Inside of a memo or an effect, that one runs again when the value changes.
+     */
     (): T
     readonly kind: "Signal"
 }
 
 /** A signal that can only be read. */
 export interface ReadonlySignal<T = any> {
-    /** Returns the value. Inside of a memo or an effect, that one runs again when the value changes. */
+    /**
+     * Returns the value. Inside of a memo or an effect, that one runs again when the value changes.
+     */
     (): T
     readonly kind: "Signal"
 }
 
 export interface SignalOptions<T> {
-    /** Whether two values are the same, for a write to be skipped. Only asked when they are not `===`. */
+    /**
+     * Whether two values are the same, for a write to be skipped. Only asked when they are not
+     * `===`.
+     */
     equals?: (before: T, after: T) => boolean
 }
 
 /**
  * `Signal(value, options?)`
  *
- * Creates a value that changes over time. The argument decides what a call does: no argument reads the value, a function computes the next value from the current one, anything else replaces the value.
- * A function can therefore not be a value, unless a function returns it: `$fn(() => fn)`.
+ * Creates a value that changes over time. The argument decides what a call does: no argument reads
+ * the value, a function computes the next value from the current one, anything else replaces the
+ * value. A function can therefore not be a value, unless a function returns it: `$fn(() => fn)`.
  *
  * - memos and effects that read a signal run again when it changes
  * - writing the current value updates nothing, `equals` extends what counts as the same

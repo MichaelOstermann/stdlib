@@ -13,11 +13,20 @@ export interface Modal {
     /** Where to put `$floating` next to its trigger. Dialogs have none. */
     readonly $position?: Memo<PlacementPosition | undefined>
     readonly $status: ReadonlySignal<TransitionStatus>
-    /** The element that opens and closes the modal, a button for example. Clicks on it do not close the modal, the element handles them itself. */
+    /**
+     * The element that opens and closes the modal, a button for example. Clicks on it do not close
+     * the modal, the element handles them itself.
+     */
     readonly $trigger: Signal<Element | null>
-    /** Tooltips are left alone by clicks and Esc and close when anything opens. Opening a popover or a dialog closes the open popovers. */
+    /**
+     * Tooltips are left alone by clicks and Esc and close when anything opens. Opening a popover or
+     * a dialog closes the open popovers.
+     */
     readonly kind: "dialog" | "popover" | "tooltip"
-    /** For telling modals apart in `Modals.onOpen` and `Modals.onClose`, or in telemetry. Need not be unique. */
+    /**
+     * For telling modals apart in `Modals.onOpen` and `Modals.onClose`, or in telemetry. Need not
+     * be unique.
+     */
     readonly name?: string
 }
 
@@ -42,15 +51,18 @@ const onClose: ReadonlyEmitter<Modal> = closed
  * function Modals.open(modal: Modal): void
  * ```
  *
- * Puts a modal that opened on the stack. It only tracks the modal, opening it is `$open(true)`. Done by `useTooltip` and the other hooks, not by the code that uses them.
+ * Puts a modal that opened on the stack. It only tracks the modal, opening it is `$open(true)`.
+ * Done by `useTooltip` and the other hooks, not by the code that uses them.
  *
  * - a click outside of the last opened modal closes it, unless it is on its trigger
  * - Esc closes the last opened modal, unless a text field has focus
- * - opening anything closes the open tooltips, opening a popover or a dialog closes the open popovers: a menu item that opens a dialog closes its menu
+ * - opening anything closes the open tooltips, opening a popover or a dialog closes the open
+ *   popovers: a menu item that opens a dialog closes its menu
  * - tooltips are on the stack, but clicks and Esc go past them
  * - the stack closes a modal with `$open(false)`, after taking it off
  * - the listeners on `document` are only there while a modal is open
- * - opening a modal that is on the stack already does nothing, and neither does closing one that is not
+ * - opening a modal that is on the stack already does nothing, and neither does closing one that is
+ *   not
  *
  * ## Example
  *
@@ -82,7 +94,8 @@ function open(modal: Modal): void {
  * function Modals.close(modal: Modal): void
  * ```
  *
- * Takes a modal off the stack, when it closes or is gone. It only tracks the modal, closing it is `$open(false)`.
+ * Takes a modal off the stack, when it closes or is gone. It only tracks the modal, closing it is
+ * `$open(false)`.
  */
 function close(modal: Modal): void {
     const index = modals.lastIndexOf(modal)

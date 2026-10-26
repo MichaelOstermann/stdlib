@@ -8,8 +8,8 @@ import { mapWhere as update } from "../internals/arrays"
  * Array.mapWhere(target, predicate, map)
  * ```
  *
- * Applies `map` to every element that satisfies `predicate`.
- * Returns `target` itself when there is no such element, or when `map` returned every element unchanged.
+ * Applies `map` to every element that satisfies `predicate`. Returns `target` itself when there is
+ * no such element, or when `map` returned every element unchanged.
  *
  * ## Example
  *

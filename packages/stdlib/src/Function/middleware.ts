@@ -4,7 +4,10 @@ export interface Middleware<T extends unknown[], U> {
 
 export interface WithMiddleware<T extends unknown[], U> {
     (...args: T): U
-    /** Adds a middleware around the ones that are there already, and returns a function that removes it again. */
+    /**
+     * Adds a middleware around the ones that are there already, and returns a function that removes
+     * it again.
+     */
     use: (middleware: Middleware<T, U>) => () => void
 }
 
@@ -17,7 +20,8 @@ export interface WithMiddleware<T extends unknown[], U> {
  * ): WithMiddleware<T, U>
  * ```
  *
- * Returns a function that calls `fn`, and that others can get in between of: a middleware is called with `next` and the arguments, and decides what to pass on and what to return.
+ * Returns a function that calls `fn`, and that others can get in between of: a middleware is called
+ * with `next` and the arguments, and decides what to pass on and what to return.
  *
  * The first middleware that was added is the first one to be called, `fn` is the last.
  *
@@ -36,7 +40,6 @@ export interface WithMiddleware<T extends unknown[], U> {
  * remove();
  * log("hello"); // "hello!"
  * ```
- *
  */
 export function middleware<T extends unknown[], U>(fn: (...args: T) => U): WithMiddleware<T, U> {
     // Wrapped, for the same function to be something that can be added twice.

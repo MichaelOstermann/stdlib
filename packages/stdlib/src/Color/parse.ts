@@ -8,7 +8,8 @@ import { fromRgb, normalizeHue } from "../internals/colors"
  * Color.parse(value)
  * ```
  *
- * Reads a CSS color written as hex, `rgb()`, `rgba()`, `hsl()`, `hsla()` or `oklch()`, in the modern and the comma syntax. Returns `undefined` for everything else, named colors too.
+ * Reads a CSS color written as hex, `rgb()`, `rgba()`, `hsl()`, `hsla()` or `oklch()`, in the
+ * modern and the comma syntax. Returns `undefined` for everything else, named colors too.
  *
  * ## Example
  *

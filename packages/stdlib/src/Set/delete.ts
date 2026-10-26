@@ -7,8 +7,8 @@ import type { AnySet, SetValue, UpdatedSet } from "../internals/types"
  * Set.delete(target, value)
  * ```
  *
- * Removes `value` from a copy of `target`.
- * Returns `target` itself when it does not have that value.
+ * Removes `value` from a copy of `target`. Returns `target` itself when it does not have that
+ * value.
  *
  * ## Example
  *

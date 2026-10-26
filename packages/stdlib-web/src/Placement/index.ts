@@ -4,7 +4,10 @@ import { popover } from "./popover"
 import { room } from "./room"
 import { tooltip } from "./tooltip"
 
-/** Where a floating element goes, next to its anchor and inside its boundary. `Placement.popover` and `Placement.tooltip` are two, the caret of an editor can be another. */
+/**
+ * Where a floating element goes, next to its anchor and inside its boundary. `Placement.popover`
+ * and `Placement.tooltip` are two, the caret of an editor can be another.
+ */
 export type Placement = (measurements: PlacementMeasurements, options?: PlacementOptions) => PlacementPosition
 
 /**
@@ -16,9 +19,14 @@ export type PlacementName =
     | `${"left" | "right"}-${"center" | "down" | "up"}`
 
 export interface PlacementMeasurements {
-    /** What the floating rect is placed next to: an element, the point of a mouse event, a caret. */
+    /**
+     * What the floating rect is placed next to: an element, the point of a mouse event, a caret.
+     */
     readonly anchor: Rect
-    /** The area the floating rect has to stay in, usually the size of the window, from `DOM.observeSize(window, onChange)`. */
+    /**
+     * The area the floating rect has to stay in, usually the size of the window, from
+     * `DOM.observeSize(window, onChange)`.
+     */
     readonly boundary: Rect
     /** The size of the floating element. Its position is ignored. */
     readonly floating: Rect

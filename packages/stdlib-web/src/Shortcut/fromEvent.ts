@@ -12,11 +12,14 @@ const asciiLetterOrDigit = /^[a-z\d]$/i
  * function Shortcut.fromEvent(event: KeyboardEvent): Keystroke
  * ```
  *
- * The keystroke of an event, the one that `Shortcut.matches` takes the same event for, eg. to record a shortcut that the user picks.
+ * The keystroke of an event, the one that `Shortcut.matches` takes the same event for, eg. to
+ * record a shortcut that the user picks.
  *
  * - Latin letters and digits as reported, without caps lock: `ctrl+z` on a German layout too
- * - With ctrl, alt or meta, other keys by their position: `ctrl+c` on a cyrillic layout, `alt+a` on macOS where it types "å"
- * - Otherwise what is typed, with `shift` only for letters that have a case: `?`, `@` with AltGr, `shift+ö`
+ * - With ctrl, alt or meta, other keys by their position: `ctrl+c` on a cyrillic layout, `alt+a` on
+ *   macOS where it types "å"
+ * - Otherwise what is typed, with `shift` only for letters that have a case: `?`, `@` with AltGr,
+ *   `shift+ö`
  * - A modifier on its own is the modifiers that are held, with `key` as `""`
  *
  * ## Example

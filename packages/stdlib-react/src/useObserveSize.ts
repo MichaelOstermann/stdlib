@@ -6,10 +6,12 @@ import { useLatest } from "./internals/useLatest"
 /**
  * `useObserveSize(target, onChange)`
  *
- * `DOM.observeSize` for as long as the component is mounted: calls `onChange` with the size of `target` right away, and again whenever it changes.
+ * `DOM.observeSize` for as long as the component is mounted: calls `onChange` with the size of
+ * `target` right away, and again whenever it changes.
  *
  * - the first call is before the browser paints, for a position that depends on the size
- * - observes again when `target` changes, and nothing while it is `null`; a new `onChange` does not observe again
+ * - observes again when `target` changes, and nothing while it is `null`; a new `onChange` does not
+ *   observe again
  * - `onChange` can be a signal: `useObserveSize(element, $size)`
  *
  * ```tsx

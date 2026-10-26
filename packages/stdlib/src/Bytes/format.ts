@@ -4,7 +4,10 @@ const binary = ["B", "KiB", "MiB", "GiB", "TiB", "PiB"]
 let formatter: Intl.NumberFormat | undefined
 
 type FormatOptions = {
-    /** Counts in 1024s and writes `KiB`, `MiB`, … instead of counting in thousands and writing `kB`, `MB`, … */
+    /**
+     * Counts in 1024s and writes `KiB`, `MiB`, … instead of counting in thousands and writing `kB`,
+     * `MB`, …
+     */
     binary?: boolean
     /** The language the number is written in, the one of the runtime by default. */
     locales?: Intl.LocalesArgument
@@ -26,7 +29,8 @@ type FormatOptions = {
  * ): string
  * ```
  *
- * Writes `bytes` out in the largest unit that it is at least one of: `kB`, `MB`, … counting in thousands, or `KiB`, `MiB`, … counting in 1024s with `binary`.
+ * Writes `bytes` out in the largest unit that it is at least one of: `kB`, `MB`, … counting in
+ * thousands, or `KiB`, `MiB`, … counting in 1024s with `binary`.
  *
  * ## Example
  *
@@ -37,7 +41,6 @@ type FormatOptions = {
  * Bytes.format(128 * Bytes.MB); // "128 MB"
  * Bytes.format(1_234_567, { locales: "de", maximumFractionDigits: 2 }); // "1,23 MB"
  * ```
- *
  */
 export function format(bytes: number, options?: FormatOptions): string {
     const base = options?.binary ? 1024 : 1000

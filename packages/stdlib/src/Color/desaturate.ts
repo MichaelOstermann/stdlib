@@ -8,7 +8,8 @@ import { parse } from "./parse"
  * Color.desaturate(color, amount)
  * ```
  *
- * Returns `color` with `amount` taken from its chroma, down to gray, as an `oklch()` color. A `color` that does not parse is returned as it is.
+ * Returns `color` with `amount` taken from its chroma, down to gray, as an `oklch()` color. A
+ * `color` that does not parse is returned as it is.
  *
  * ## Example
  *

@@ -64,7 +64,8 @@ export interface StdlibBunPlugin {
 }
 
 /**
- * A plugin for Bun, for `Bun.build` and for a preload that makes `bun test` and `bun run` go through the transform:
+ * A plugin for Bun, for `Bun.build` and for a preload that makes `bun test` and `bun run` go
+ * through the transform:
  *
  * ```ts
  * import { plugin } from "bun";
@@ -73,7 +74,8 @@ export interface StdlibBunPlugin {
  * plugin(stdlibBun());
  * ```
  *
- * Bun only uses the first `onLoad` that returns something, call `transform` from your own when there are others.
+ * Bun only uses the first `onLoad` that returns something, call `transform` from your own when
+ * there are others.
  */
 export function stdlibBun({ debug, exclude = [], include = modules }: Omit<StdlibPluginOptions, "enforce"> = {}): StdlibBunPlugin {
     const excluded = [dependencies, exclude].flat()

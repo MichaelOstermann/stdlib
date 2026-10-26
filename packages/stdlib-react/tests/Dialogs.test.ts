@@ -30,13 +30,18 @@ function panel(): HTMLElement | null {
     return document.querySelector("[role=dialog]")
 }
 
-/** Renders `<Dialogs />` inside a provider and `<StrictMode>`, and waits for what opens to render. */
+/**
+ * Renders `<Dialogs />` inside a provider and `<StrictMode>`, and waits for what opens to render.
+ */
 async function host(): Promise<void> {
     render(() => createElement(StrictMode, null, createElement(Theme, { value: "dark" }, createElement(Dialogs))))
     await sleep(0)
 }
 
-/** Opens a dialog and waits until it is opened. The promise is in an object, for `await` to not wait for it as well. */
+/**
+ * Opens a dialog and waits until it is opened. The promise is in an object, for `await` to not wait
+ * for it as well.
+ */
 async function opened<T>(open: () => Promise<T>): Promise<{ result: Promise<T> }> {
     let result!: Promise<T>
     await act(async () => {

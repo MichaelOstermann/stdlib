@@ -9,7 +9,10 @@ import { Modals } from "../src/Modals"
 const globals = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
 const roots: Root[] = []
 
-/** Renders with happy-dom in the tests of this file: everything rendered is unmounted, and the stack emptied, after each test. */
+/**
+ * Renders with happy-dom in the tests of this file: everything rendered is unmounted, and the stack
+ * emptied, after each test.
+ */
 export function fakeDOM(): void {
     beforeAll(() => {
         GlobalRegistrator.register()
@@ -44,7 +47,10 @@ export function unmountAll(): void {
     document.body.replaceChildren()
 }
 
-/** Sends an event to an element: `focus` and `blur` by focusing and blurring it, `Escape` as a keydown. */
+/**
+ * Sends an event to an element: `focus` and `blur` by focusing and blurring it, `Escape` as a
+ * keydown.
+ */
 export function send(element: HTMLElement, type: string): void {
     act(() => {
         if (type === "focus") element.focus()

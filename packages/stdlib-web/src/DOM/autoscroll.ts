@@ -14,12 +14,16 @@ import { right } from "../Rect/right"
  * }): () => void
  * ```
  *
- * Scrolls the containers that the pointer is near an edge of, every frame until stopped, as dragging something to the edge of a list does. Returns what stops it.
+ * Scrolls the containers that the pointer is near an edge of, every frame until stopped, as
+ * dragging something to the edge of a list does. Returns what stops it.
  *
- * - a container scrolls once the pointer is within `edge` pixels of its edge, `100` by default, faster the closer it gets
+ * - a container scrolls once the pointer is within `edge` pixels of its edge, `100` by default,
+ *   faster the closer it gets
  * - `speed` is how many pixels it scrolls per frame right at the edge, `20` by default
- * - `onScroll` is called after a frame that scrolled: what is under the pointer moved, although the pointer did not
- * - `containers` is asked again every frame, so containers that mount while dragging are scrolled too
+ * - `onScroll` is called after a frame that scrolled: what is under the pointer moved, although the
+ *   pointer did not
+ * - `containers` is asked again every frame, so containers that mount while dragging are scrolled
+ *   too
  * - the pointer is followed through `pointermove`, so nothing scrolls before it first moved
  *
  * ## Example

@@ -7,8 +7,8 @@ import { ownKeys, setOwn } from "../internals/objects"
  * Object.merge(target, source)
  * ```
  *
- * Copies the properties of `source` onto a copy of `target`.
- * Returns `target` itself when every property has that value already.
+ * Copies the properties of `source` onto a copy of `target`. Returns `target` itself when every
+ * property has that value already.
  *
  * ## Example
  *

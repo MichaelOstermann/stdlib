@@ -22,13 +22,19 @@ export type UseTransitionStatus = [mounted: boolean, transition: Transition]
 /**
  * `useTransitionStatus(options)`
  *
- * The status of something that opens and closes over time: `closed`, `opening`, `opened`, `closing`.
+ * The status of something that opens and closes over time: `closed`, `opening`, `opened`,
+ * `closing`.
  *
- * - `$open(true)` sets `mounted` right away and `opening` two frames later, so the element is painted closed first and the browser has a style to animate from
- * - `$open(false)` sets `closing` right away, `closed` and `mounted: false` once `closeDuration` has passed
- * - closing during `opening` switches to `closing`, and opening during `closing` switches back to `opening`
- * - `mounted` is the only React state: the component calling the hook renders when it changes, `$status` is read by what animates
- * - the transition follows `$open` while the component is mounted, and a new duration restarts the timer of the current step
+ * - `$open(true)` sets `mounted` right away and `opening` two frames later, so the element is
+ *   painted closed first and the browser has a style to animate from
+ * - `$open(false)` sets `closing` right away, `closed` and `mounted: false` once `closeDuration`
+ *   has passed
+ * - closing during `opening` switches to `closing`, and opening during `closing` switches back to
+ *   `opening`
+ * - `mounted` is the only React state: the component calling the hook renders when it changes,
+ *   `$status` is read by what animates
+ * - the transition follows `$open` while the component is mounted, and a new duration restarts the
+ *   timer of the current step
  *
  * ```tsx
  * function Fade({ children }: { children: ReactNode }) {
@@ -89,7 +95,10 @@ export function useTransitionStatus({ closeDuration, openDuration }: UseTransiti
     return [useReactive($mounted), transition]
 }
 
-/** Calls `callback` in the second frame from now. The first frame paints what was rendered before the call. */
+/**
+ * Calls `callback` in the second frame from now. The first frame paints what was rendered before
+ * the call.
+ */
 function afterPaint(callback: () => void): () => void {
     let frame = requestAnimationFrame(() => {
         frame = requestAnimationFrame(callback)

@@ -4,7 +4,8 @@ import { parseSync } from "oxc-parser"
 import { ScopeTracker, walk } from "oxc-walker"
 
 /**
- * Compiles `Object.setPath` calls whose path is written out into a function of their own, one per path and module:
+ * Compiles `Object.setPath` calls whose path is written out into a function of their own, one per
+ * path and module:
  *
  * ```ts
  * Object.setPath(state, "user.settings.theme", "dark")

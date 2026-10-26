@@ -3,8 +3,9 @@ import { endBatch, pauseTracking, resumeTracking, startBatch } from "./internals
 /**
  * `Action(handler)`
  *
- * Returns `handler` as a function that is batched and untracked: effects run once it is done, and an effect or memo that calls it does not depend on the signals it reads.
- * Use it for a named operation that changes several signals at once and can be called from anywhere.
+ * Returns `handler` as a function that is batched and untracked: effects run once it is done, and
+ * an effect or memo that calls it does not depend on the signals it reads. Use it for a named
+ * operation that changes several signals at once and can be called from anywhere.
  *
  * - arguments and the return value are passed through unchanged
  * - only what happens until the first `await` is batched, like with `batch`

@@ -19,7 +19,9 @@ afterEach(() => Shortcut.bindings.clear())
 
 type Shortcuts = Parameters<typeof useShortcuts>[0]
 
-/** Renders `shortcuts` of a parent and of a child, again with each call of the returned function. */
+/**
+ * Renders `shortcuts` of a parent and of a child, again with each call of the returned function.
+ */
 function mount(props: { child?: Shortcuts, enabled?: boolean, parent: Shortcuts }, strict = false): { rerender: (props: { child?: Shortcuts, enabled?: boolean, parent: Shortcuts }) => void, unmount: () => void } {
     const root: Root = createRoot(document.createElement("div"))
     function Child({ enabled, shortcuts }: { enabled?: boolean, shortcuts: Shortcuts }) {

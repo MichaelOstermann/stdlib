@@ -5,7 +5,8 @@
  * function Function.once<T>(fn: () => T): () => T
  * ```
  *
- * Returns a function that calls `fn` the first time it is called, and returns the result of that first call from then on.
+ * Returns a function that calls `fn` the first time it is called, and returns the result of that
+ * first call from then on.
  *
  * A call that throws does not count, the next one tries again.
  *
@@ -19,7 +20,6 @@
  * config(); // Reads the file.
  * config(); // The same object, without reading.
  * ```
- *
  */
 export function once<T>(fn: () => T): () => T {
     let call: (() => T) | undefined = fn

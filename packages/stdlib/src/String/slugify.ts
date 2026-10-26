@@ -7,11 +7,14 @@ import { transliterations } from "../internals/transliterations"
  * function String.slugify(target: string): string
  * ```
  *
- * Turns `target` into something that can be part of a URL or the name of a file: lowercase letters and digits, in groups separated by a single `-`.
+ * Turns `target` into something that can be part of a URL or the name of a file: lowercase letters
+ * and digits, in groups separated by a single `-`.
  *
- * Characters that are not Latin are written in Latin where that is known (`ü` as `ue`, `я` as `ya`), accents are removed, everything else separates.
+ * Characters that are not Latin are written in Latin where that is known (`ü` as `ue`, `я` as
+ * `ya`), accents are removed, everything else separates.
  *
- * The result is empty when nothing of `target` can be written that way, and different strings can result in the same slug.
+ * The result is empty when nothing of `target` can be written that way, and different strings can
+ * result in the same slug.
  *
  * ## Example
  *
@@ -25,7 +28,6 @@ import { transliterations } from "../internals/transliterations"
  * String.slugify("../etc/passwd"); // "etc-passwd"
  * String.slugify("日本語"); // ""
  * ```
- *
  */
 export function slugify(target: string): string {
     let result = target.replaceAll("&", " and ")

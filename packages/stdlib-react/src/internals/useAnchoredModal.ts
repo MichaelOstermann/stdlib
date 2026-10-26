@@ -25,7 +25,10 @@ export interface AnchoredModalOptions extends PlacementOptions {
     placement: Placement
 }
 
-/** What `useTooltip` and `usePopover` share: the transition, the elements, the position, and the place on the stack while open and rendered. */
+/**
+ * What `useTooltip` and `usePopover` share: the transition, the elements, the position, and the
+ * place on the stack while open and rendered.
+ */
 export function useAnchoredModal<K extends "popover" | "tooltip">(kind: K, options: AnchoredModalOptions): [mounted: boolean, modal: AnchoredModal<K>] {
     const { anchorGap, boundaryGap, closeDuration, name, openDuration, placement } = options
     const [mounted, { $open, $status }] = useTransitionStatus({ closeDuration, openDuration })

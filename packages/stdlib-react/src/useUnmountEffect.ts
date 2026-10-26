@@ -4,10 +4,12 @@ import { useLatest } from "./internals/useLatest"
 /**
  * `useUnmountEffect(effect)`
  *
- * Calls `effect` once the component unmounted, for what lives as long as the component: disposing a document, closing a popover.
+ * Calls `effect` once the component unmounted, for what lives as long as the component: disposing a
+ * document, closing a popover.
  *
  * - calls `effect` of the last render, not the one of the first
- * - `<StrictMode>` unmounts and remounts every component in development without calling `effect`: the call waits a microtask, and is skipped when the component mounted again
+ * - `<StrictMode>` unmounts and remounts every component in development without calling `effect`:
+ *   the call waits a microtask, and is skipped when the component mounted again
  *
  * ```tsx
  * function Editor({ task }: { task: Task }) {

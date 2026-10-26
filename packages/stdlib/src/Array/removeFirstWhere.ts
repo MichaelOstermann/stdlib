@@ -8,8 +8,8 @@ import { indexWhere, removeAt } from "../internals/arrays"
  * Array.removeFirstWhere(target, predicate)
  * ```
  *
- * Removes the first element that satisfies `predicate`.
- * Returns `target` itself when there is no such element.
+ * Removes the first element that satisfies `predicate`. Returns `target` itself when there is no
+ * such element.
  *
  * ## Example
  *

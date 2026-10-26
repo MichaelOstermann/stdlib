@@ -27,9 +27,11 @@ type RetryErr<E> = E extends RetryAgain<infer U> ? U : E
  * ): ResultAsync<T, E>
  * ```
  *
- * Calls `fn` until it returns something other than `Retry.again`, waiting in between: a second at first, twice as long after every attempt, 5 minutes at most.
+ * Calls `fn` until it returns something other than `Retry.again`, waiting in between: a second at
+ * first, twice as long after every attempt, 5 minutes at most.
  *
- * Giving up needs no error of its own. After `maxAttempts`, or once `signal` is aborted, the result fails with the error that was last passed to `Retry.again`.
+ * Giving up needs no error of its own. After `maxAttempts`, or once `signal` is aborted, the result
+ * fails with the error that was last passed to `Retry.again`.
  *
  * ## Example
  *
@@ -43,7 +45,6 @@ type RetryErr<E> = E extends RetryAgain<infer U> ? U : E
  *
  * // Result<string, "failed" | "unavailable">
  * ```
- *
  */
 export function run<F extends RetryFn>(fn: F, options: RetryOptions = {}): ResultAsync<InferAsyncOk<ReturnType<F>>, RetryErr<InferAsyncErr<ReturnType<F>>>> {
     const { maxAttempts = Infinity, maxDelay = 300_000, minDelay = 1_000, signal } = options
@@ -61,7 +62,10 @@ export function run<F extends RetryFn>(fn: F, options: RetryOptions = {}): Resul
     }) as ResultAsync<InferAsyncOk<ReturnType<F>>, RetryErr<InferAsyncErr<ReturnType<F>>>>
 }
 
-/** Waits for `sleep`, or for `delay` without it. Resolves early, with `true`, when `signal` is aborted in the meantime. */
+/**
+ * Waits for `sleep`, or for `delay` without it. Resolves early, with `true`, when `signal` is
+ * aborted in the meantime.
+ */
 function wait(sleep: Promise<void> | undefined, delay: number, signal: AbortSignal | undefined): Promise<boolean> {
     return new Promise((resolve, reject) => {
         const timer = sleep ? undefined : setTimeout(done, delay, false)

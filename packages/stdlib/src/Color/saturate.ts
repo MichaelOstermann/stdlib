@@ -8,7 +8,8 @@ import { parse } from "./parse"
  * Color.saturate(color, amount)
  * ```
  *
- * Returns `color` with `amount` added to its chroma, as an `oklch()` color. A `color` that does not parse is returned as it is.
+ * Returns `color` with `amount` added to its chroma, as an `oklch()` color. A `color` that does not
+ * parse is returned as it is.
  *
  * ## Example
  *

@@ -2,7 +2,8 @@ import { mkdir, readdir } from "node:fs/promises"
 import Path from "node:path"
 
 /**
- * Collects what `@monstermann/stdlib` makes available on globals, a file of `src/Array` is a function on `Array`, and writes:
+ * Collects what `@monstermann/stdlib` makes available on globals, a file of `src/Array` is a
+ * function on `Array`, and writes:
  *
  * - `stdlib/src/declarations.ts`, the types
  * - `stdlib/src/patch.ts`, which defines them for real
@@ -134,7 +135,10 @@ ${Object.entries(values).map(([name, file]) => `    ${name}: "${file}",`).join("
 }
 `)
 
-/** The documentation of a type, an alias of it does not show it by itself. A barrel has its types next to it. */
+/**
+ * The documentation of a type, an alias of it does not show it by itself. A barrel has its types
+ * next to it.
+ */
 async function docOf(file: string, name: string): Promise<string> {
     for (const path of [`${file}.ts`, Path.join(Path.dirname(file), "types.ts")]) {
         const code = await Bun.file(Path.join(src, path)).text().catch(() => "")
@@ -144,7 +148,10 @@ async function docOf(file: string, name: string): Promise<string> {
     return ""
 }
 
-/** A file that is something to call, named like it: not `index.ts`, `types.ts`, `a.d.ts` or `a.test.ts`. */
+/**
+ * A file that is something to call, named like it: not `index.ts`, `types.ts`, `a.d.ts` or
+ * `a.test.ts`.
+ */
 function isFunction(file: string): boolean {
     return /^[\w$]+\.ts$/.test(file) && file !== "index.ts" && file !== "types.ts"
 }

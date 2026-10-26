@@ -7,8 +7,8 @@ import type { AnyMap, MapKey, MapValue, UpdatedMap } from "../internals/types"
  * Map.set(target, key, value)
  * ```
  *
- * Sets the entry of `key` to `value`, in a copy of `target`.
- * Returns `target` itself when it has that entry already.
+ * Sets the entry of `key` to `value`, in a copy of `target`. Returns `target` itself when it has
+ * that entry already.
  *
  * ## Example
  *

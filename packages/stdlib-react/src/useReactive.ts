@@ -5,10 +5,11 @@ import { useSyncExternalStore } from "react"
 /**
  * `useReactive(value)`
  *
- * Returns the value of a signal or a memo, and renders the component again when it changes.
- * A function is turned into a memo: the component only renders again when it returns something else.
+ * Returns the value of a signal or a memo, and renders the component again when it changes. A
+ * function is turned into a memo: the component only renders again when it returns something else.
  *
- * - `@monstermann/stdlib-transform` writes it for you, wherever a component or a hook reads something that starts with a `$`
+ * - `@monstermann/stdlib-transform` writes it for you, wherever a component or a hook reads
+ *   something that starts with a `$`
  *
  * ```tsx
  * const $count = Signal(0);

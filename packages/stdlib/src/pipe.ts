@@ -3,7 +3,8 @@
 /**
  * `pipe(input, ...fns)`
  *
- * Pipes a value through a sequence of functions, passing the output of each function as input to the next.
+ * Pipes a value through a sequence of functions, passing the output of each function as input to
+ * the next.
  *
  * ```ts
  * import { pipe } from "@monstermann/stdlib";

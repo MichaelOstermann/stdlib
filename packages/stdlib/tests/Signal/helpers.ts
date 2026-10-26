@@ -23,7 +23,9 @@ export function effect(computation: () => unknown): () => void {
     })
 }
 
-/** Disposes the effect that is running, which the tests of the system do without having it at hand. */
+/**
+ * Disposes the effect that is running, which the tests of the system do without having it at hand.
+ */
 export function disposeEffect(): void {
     running.at(-1)?.dispose()
 }

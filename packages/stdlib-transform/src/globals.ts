@@ -4,11 +4,17 @@ import { parseSync } from "oxc-parser"
 import { ScopeTracker, walk } from "oxc-walker"
 
 export interface GlobalsOptions {
-    /** The members declared on each global: `{ Array: ["removeAll"] }` makes `Array.removeAll` something to replace. */
+    /**
+     * The members declared on each global: `{ Array: ["removeAll"] }` makes `Array.removeAll`
+     * something to replace.
+     */
     globals: Readonly<Record<string, readonly string[]>>
     /** Files that only exist for running the code untransformed. Imports of them are removed. */
     guards: readonly string[]
-    /** Globals that are values themselves, and where each one is imported from: `{ pipe: "@monstermann/stdlib/pipe.mjs" }` */
+    /**
+     * Globals that are values themselves, and where each one is imported from:
+     * `{ pipe: "@monstermann/stdlib/pipe.mjs" }`
+     */
     values?: Readonly<Record<string, string>>
     /** Where a member is imported from, it is exported there under its own name. */
     resolve: (global: string, name: string) => string
@@ -30,7 +36,9 @@ const expressions = new Set([
     "TSTypeAssertion",
 ])
 
-/** Syntax that wraps an expression without changing its value: `(Array)`, `Array!`, `Array as any` */
+/**
+ * Syntax that wraps an expression without changing its value: `(Array)`, `Array!`, `Array as any`
+ */
 const wrappers = new Set([
     "ParenthesizedExpression",
     "TSAsExpression",
@@ -42,7 +50,8 @@ const wrappers = new Set([
 const mentions = new WeakMap<GlobalsOptions["globals"], (code: string) => boolean>()
 
 /**
- * Replaces the members declared on globals with direct imports, the globals themselves are never touched:
+ * Replaces the members declared on globals with direct imports, the globals themselves are never
+ * touched:
  *
  * ```ts
  * import "@monstermann/stdlib/globals";
@@ -56,8 +65,8 @@ const mentions = new WeakMap<GlobalsOptions["globals"], (code: string) => boolea
  *
  * A global that is a value itself (`pipe`, `Duration`) is imported under its own name.
  *
- * A global that has been declared in the file is something else, and left alone.
- * Imports are added to an existing line, so every line stays where it is.
+ * A global that has been declared in the file is something else, and left alone. Imports are added
+ * to an existing line, so every line stays where it is.
  *
  * Returns `undefined` when there is nothing to replace.
  */
@@ -85,14 +94,20 @@ export function transformGlobals(code: string, filePath: string, options: Global
     })
     scopeTracker.freeze()
 
-    /** Something that exists when the code runs, once it has been imported: `Duration`, unlike `Array.removeAll`. */
+    /**
+     * Something that exists when the code runs, once it has been imported: `Duration`, unlike
+     * `Array.removeAll`.
+     */
     const isValue = (global: string): boolean => Object.hasOwn(values, global)
 
     const has = (global: string, name: string): boolean => {
         return options.globals[global]!.includes(name)
     }
 
-    /** The global that something is, when it has not been declared in the file: `Array`, `(Array)`, `Array!` */
+    /**
+     * The global that something is, when it has not been declared in the file: `Array`, `(Array)`,
+     * `Array!`
+     */
     const globalOf = (node: Node | null | undefined): string | undefined => {
         while (node && wrappers.has(node.type)) node = (node as { expression: Node }).expression
         if (node?.type !== "Identifier" || !Object.hasOwn(options.globals, node.name)) return
@@ -187,8 +202,8 @@ export function transformGlobals(code: string, filePath: string, options: Global
 }
 
 /**
- * Tells whether a file is worth parsing: something that is a global of its own is mentioned,
- * or a global together with something that is available on it, wherever and however that is written.
+ * Tells whether a file is worth parsing: something that is a global of its own is mentioned, or a
+ * global together with something that is available on it, wherever and however that is written.
  */
 function mentioned(options: GlobalsOptions): (code: string) => boolean {
     let result = mentions.get(options.globals)
@@ -201,7 +216,10 @@ function mentioned(options: GlobalsOptions): (code: string) => boolean {
     return result
 }
 
-/** The name a key stands for, when that is known without running the code: `a.name`, `a["name"]`, ``a[`name`]`` */
+/**
+ * The name a key stands for, when that is known without running the code: `a.name`, `a["name"]`,
+ * ``a[`name`]``
+ */
 function keyOf(key: Node, computed: boolean): string | undefined {
     if (!computed) return key.type === "Identifier" ? key.name : undefined
     if (key.type === "Literal") return typeof key.value === "string" ? key.value : undefined
@@ -210,8 +228,8 @@ function keyOf(key: Node, computed: boolean): string | undefined {
 }
 
 /**
- * Where an import ends. Without a semicolon it is taken to reach up to one that starts a later line,
- * removing that would move the lines in between.
+ * Where an import ends. Without a semicolon it is taken to reach up to one that starts a later
+ * line, removing that would move the lines in between.
  */
 export function importEnd(node: Extract<Node, { type: "ImportDeclaration" }>, code: string): number {
     if (node.attributes.length) return node.end
@@ -219,7 +237,10 @@ export function importEnd(node: Extract<Node, { type: "ImportDeclaration" }>, co
     return code[end] === ";" ? end + 1 : end
 }
 
-/** Whether an identifier is the name of something, instead of referring to something: `a.name`, `{ name: a }`, `name: for (…)` */
+/**
+ * Whether an identifier is the name of something, instead of referring to something: `a.name`,
+ * `{ name: a }`, `name: for (…)`
+ */
 function isName(node: Node, parent: Node | null): boolean {
     if (!parent) return false
     if (parent.type === "MemberExpression") return parent.property === node && !parent.computed

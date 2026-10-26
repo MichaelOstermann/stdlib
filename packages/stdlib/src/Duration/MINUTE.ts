@@ -12,6 +12,5 @@
  * ```ts
  * 5 * Duration.MINUTE; // 300_000
  * ```
- *
  */
 export const MINUTE = 60_000

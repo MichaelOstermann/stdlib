@@ -18,7 +18,6 @@ import { identifierWords, pascalCaseWords } from "../internals/strings"
  * String.pascalCase("hello world"); // "HelloWorld"
  * String.pascalCase("hello-world"); // "HelloWorld"
  * ```
- *
  */
 export function pascalCase<T extends string>(target: T): PascalCase<T> {
     return pascalCaseWords(identifierWords(target)) as PascalCase<T>

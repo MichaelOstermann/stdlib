@@ -1,7 +1,10 @@
 import type { Node } from "oxc-parser"
 import type { Chain, Step } from "./types"
 
-/** Collects the calls of a `match(value).case(…).unwrapOr(…)` chain, `local` being the name `match` is imported as. */
+/**
+ * Collects the calls of a `match(value).case(…).unwrapOr(…)` chain, `local` being the name `match`
+ * is imported as.
+ */
 export function collectChain(node: Node, local: string): Chain | undefined {
     const last = method(node)
     if (!last || !isEnd(last.name)) return

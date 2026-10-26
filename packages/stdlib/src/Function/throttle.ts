@@ -24,11 +24,13 @@ type ThrottleOptions = {
  * function Function.throttle(...args: T): void
  * ```
  *
- * Creates a throttled function that limits how often `fn` can be invoked based on `options.wait` milliseconds.
+ * Creates a throttled function that limits how often `fn` can be invoked based on `options.wait`
+ * milliseconds.
  *
  * Implementation details:
  *
- * - Only one `fn` can run at any given time, asynchronous functions can not conflict with each other
+ * - Only one `fn` can run at any given time, asynchronous functions can not conflict with each
+ *   other
  * - Pending calls are not accumulated in an internal array and asynchronously resolved
  *
  * ## Example
@@ -61,7 +63,6 @@ type ThrottleOptions = {
  * // until it has been idle for `gracePeriod` milliseconds
  * await throttledSave.idle(gracePeriod?: number);
  * ```
- *
  */
 export function throttle<T extends unknown[]>(
     fn: (...args: T) => Promise<void> | void,

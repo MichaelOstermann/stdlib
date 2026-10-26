@@ -6,9 +6,11 @@
  * function String.dedent(strings: TemplateStringsArray, ...values: unknown[]): string
  * ```
  *
- * Removes the indentation that all lines of `target` string have in common, together with a first and a last line that are blank. Blank lines in between do not count.
+ * Removes the indentation that all lines of `target` string have in common, together with a first
+ * and a last line that are blank. Blank lines in between do not count.
  *
- * As a tag of a template, values are not looked at for indentation, and the lines of a value are indented like the line it is placed on.
+ * As a tag of a template, values are not looked at for indentation, and the lines of a value are
+ * indented like the line it is placed on.
  *
  * ## Example
  *
@@ -29,7 +31,6 @@
  *     }
  * `; // "function run() {\n    one();\n    two();\n}"
  * ```
- *
  */
 export function dedent(target: string): string
 export function dedent(strings: TemplateStringsArray, ...values: unknown[]): string

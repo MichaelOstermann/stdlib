@@ -188,11 +188,20 @@ declare global {
     const SemaphoreFullError: typeof import("./Semaphore").SemaphoreFullError
     const Signal: typeof import("./Signal").Signal
 
-    /** A single event that waits for its listeners: call it with a function to listen, and with anything else to tell the listeners about it. */
+    /**
+     * A single event that waits for its listeners: call it with a function to listen, and with
+     * anything else to tell the listeners about it.
+     */
     type AsyncEmitter<T = void> = import("./Emitter").AsyncEmitter<T>
-    /** A color in OKLCH: `l` lightness from 0 to 1, `c` chroma from 0 to about 0.4, `h` hue in degrees and `alpha` from 0 to 1. Gray has no chroma, and its hue is ignored. */
+    /**
+     * A color in OKLCH: `l` lightness from 0 to 1, `c` chroma from 0 to about 0.4, `h` hue in
+     * degrees and `alpha` from 0 to 1. Gray has no chroma, and its hue is ignored.
+     */
     type Color = import("./Color/index").Color
-    /** A single event: call it with a function to listen, and with anything else to tell the listeners about it. */
+    /**
+     * A single event: call it with a function to listen, and with anything else to tell the
+     * listeners about it.
+     */
     type Emitter<T = void> = import("./Emitter").Emitter<T>
     /** A result that failed, `value` is the error. */
     type Err<E, T = never> = import("./Result").Err<E, T>
@@ -202,12 +211,21 @@ declare global {
     type Ok<T, E = never> = import("./Result").Ok<T, E>
     /** A signal that can only be read. */
     type ReadonlySignal<T = any> = import("./Signal").ReadonlySignal<T>
-    /** Success or failure as a value: either an `Ok` with a value, or an `Err` with an error. `result.ok` tells which. */
+    /**
+     * Success or failure as a value: either an `Ok` with a value, or an `Err` with an error.
+     * `result.ok` tells which.
+     */
     type Result<T, E> = import("./Result").Result<T, E>
-    /** A `Result` that is not there yet. It can be awaited, and continued with the same methods without awaiting in between. */
+    /**
+     * A `Result` that is not there yet. It can be awaited, and continued with the same methods
+     * without awaiting in between.
+     */
     type ResultAsync<T, E> = import("./ResultAsync").ResultAsync<T, E>
     type RetryAgain<E> = import("./Retry/index").RetryAgain<E>
-    /** Runs functions, a limited number of them at the same time. The others wait for their turn, in the order they came in. */
+    /**
+     * Runs functions, a limited number of them at the same time. The others wait for their turn, in
+     * the order they came in.
+     */
     type Semaphore = import("./Semaphore").Semaphore
     /** What a semaphore with `maxWaiting` fails with when that many are waiting already. */
     type SemaphoreFullError = import("./Semaphore").SemaphoreFullError

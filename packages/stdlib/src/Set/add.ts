@@ -7,8 +7,7 @@ import type { AnySet, SetValue, UpdatedSet } from "../internals/types"
  * Set.add(target, value)
  * ```
  *
- * Adds `value` to a copy of `target`.
- * Returns `target` itself when it has that value already.
+ * Adds `value` to a copy of `target`. Returns `target` itself when it has that value already.
  *
  * ## Example
  *

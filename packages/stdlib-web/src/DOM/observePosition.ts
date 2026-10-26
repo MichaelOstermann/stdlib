@@ -12,10 +12,13 @@ import { isEqual } from "../Rect/isEqual"
  * function DOM.observePosition(element: Element, onChange: (rect: Rect) => void): () => void
  * ```
  *
- * Calls `onChange` with where an element is right away, and again whenever it moves or resizes: its rect in viewport coordinates, like `getBoundingClientRect` reports it. Returns what stops observing.
- * The size of that rect is the one after transforms such as `scale`, unlike the one of `DOM.observeSize`.
+ * Calls `onChange` with where an element is right away, and again whenever it moves or resizes: its
+ * rect in viewport coordinates, like `getBoundingClientRect` reports it. Returns what stops
+ * observing. The size of that rect is the one after transforms such as `scale`, unlike the one of
+ * `DOM.observeSize`.
  *
- * - the rect is rounded to whole pixels, and `onChange` is only called when the rounded rect changed
+ * - the rect is rounded to whole pixels, and `onChange` is only called when the rounded rect
+ *   changed
  * - moving is detected without polling, through an `IntersectionObserver`
  *
  * ## Example
@@ -43,7 +46,8 @@ export function observePosition(element: Element, onChange: (rect: Rect) => void
  * Calls `onMove` right away, and again when `element` moves or resizes, without polling.
  *
  * An `IntersectionObserver` whose root margin cuts the viewport down to exactly the element reports
- * as soon as the element leaves that area, which is when the observer is set up again around the new position.
+ * as soon as the element leaves that area, which is when the observer is set up again around the
+ * new position.
  */
 function observe(element: Element, onMove: (rect: DOMRectReadOnly) => void): () => void {
     let io: IntersectionObserver | undefined

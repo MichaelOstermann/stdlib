@@ -5,12 +5,16 @@ import { useLatest } from "./internals/useLatest"
 /**
  * `useAlignedInterval(every, select?)`
  *
- * Returns `Date.now()`, or what `select` returns for it, and renders the component again every `every` milliseconds, for what is shown relative to now: "5 minutes ago", "today".
- * Every render reads the time again, the timer only adds renders.
+ * Returns `Date.now()`, or what `select` returns for it, and renders the component again every
+ * `every` milliseconds, for what is shown relative to now: "5 minutes ago", "today". Every render
+ * reads the time again, the timer only adds renders.
  *
- * - it renders again on multiples of `every` since the epoch, like `Interval.aligned`: `Duration.MINUTE` on the minute, `Duration.HOUR` on the hour, in UTC
- * - with `select` it only renders again when `select` returns something else, compared with `Object.is`: a string or a number, not a new object
- * - the components with the same `every` share a timer and render together, the timer stops once the last one unmounted
+ * - it renders again on multiples of `every` since the epoch, like `Interval.aligned`:
+ *   `Duration.MINUTE` on the minute, `Duration.HOUR` on the hour, in UTC
+ * - with `select` it only renders again when `select` returns something else, compared with
+ *   `Object.is`: a string or a number, not a new object
+ * - the components with the same `every` share a timer and render together, the timer stops once
+ *   the last one unmounted
  *
  * ```tsx
  * function TimeAgo({ at }: { at: number }) {

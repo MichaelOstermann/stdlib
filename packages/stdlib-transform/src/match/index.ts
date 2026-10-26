@@ -12,7 +12,9 @@ export type { Helpers } from "./types"
 
 export interface MatchResult {
     ms: MagicString
-    /** Imports that are no longer referenced, because every use has been compiled away: `match`, `_` */
+    /**
+     * Imports that are no longer referenced, because every use has been compiled away: `match`, `_`
+     */
     unused: string[]
 }
 
@@ -43,8 +45,8 @@ interface Imported {
  * : (0))
  * ```
  *
- * Chains inside of the callbacks of another chain are compiled in a later run.
- * `helpers` carries the helper imports that already exist from one run to the next.
+ * Chains inside of the callbacks of another chain are compiled in a later run. `helpers` carries
+ * the helper imports that already exist from one run to the next.
  *
  * Returns `undefined` when `match` has not been imported from `from`.
  */
@@ -178,7 +180,10 @@ export function transformMatches(code: string, filePath: string, from: string, h
     return { ms: ctx.ms, unused }
 }
 
-/** `import { match as foo } from "from"` → `"foo"`, chains of the first one are compiled when there are several. */
+/**
+ * `import { match as foo } from "from"` → `"foo"`, chains of the first one are compiled when there
+ * are several.
+ */
 function findImport(statements: Node[], from: string, name: string): Imported | undefined {
     let result: Imported | undefined
     for (const node of statements) {
@@ -194,8 +199,8 @@ function findImport(statements: Node[], from: string, name: string): Imported | 
 }
 
 /**
- * Whether what a chain is replaced with is the start of a statement that follows another one,
- * which it would be read as a call of when that one does not end with a semicolon.
+ * Whether what a chain is replaced with is the start of a statement that follows another one, which
+ * it would be read as a call of when that one does not end with a semicolon.
  */
 export function startsStatement(node: Node, parents: Map<Node, Node | null>): boolean {
     for (let parent = parents.get(node); parent; parent = parents.get(parent)) {

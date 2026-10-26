@@ -6,10 +6,13 @@ import v8 from "node:v8"
 const only = process.argv[2]
 
 /**
- * Measures `fn(input)`, printing `{ name, ns, bytes }` per call. Bytes are what V8 allocated, `undefined` in Bun, whose count is not reliable.
+ * Measures `fn(input)`, printing `{ name, ns, bytes }` per call. Bytes are what V8 allocated,
+ * `undefined` in Bun, whose count is not reliable.
  *
- * - `fn` gets `input` from an array at an index that changes: passed directly, an engine may see that every call returns the same, and make the call once
- * - doubles the calls until a round takes 20 ms, warms up for half a second, then takes the fastest of 7 rounds
+ * - `fn` gets `input` from an array at an index that changes: passed directly, an engine may see
+ *   that every call returns the same, and make the call once
+ * - doubles the calls until a round takes 20 ms, warms up for half a second, then takes the fastest
+ *   of 7 rounds
  */
 export function bench<T>(name: string, input: T, fn: (input: T) => unknown): void {
     if (only === undefined) return console.log(name)

@@ -19,7 +19,10 @@ interface Value {
     code: string
     /** Can be placed anywhere without parentheses: `a`, `a.b`, `a(b)`, `1` */
     isAtom: boolean
-    /** Can be written any number of times, anywhere: a literal, or a name that always refers to the same value. */
+    /**
+     * Can be written any number of times, anywhere: a literal, or a name that always refers to the
+     * same value.
+     */
     isSimple: boolean
 }
 
@@ -34,11 +37,12 @@ interface Value {
  * format(Array.removeAll(tasks, done).length)
  * ```
  *
- * A callback is replaced with its body when its parameter is used once, as the first thing the body evaluates,
- * or when the value is a literal or a name that is never assigned to. Every other callback is called directly: `(v => v + v)(value)`.
+ * A callback is replaced with its body when its parameter is used once, as the first thing the body
+ * evaluates, or when the value is a literal or a name that is never assigned to. Every other
+ * callback is called directly: `(v => v + v)(value)`.
  *
- * A call is kept when one of its steps is neither a function nor the name of one (`pipe(a, create())`):
- * it would be created after the value instead of before.
+ * A call is kept when one of its steps is neither a function nor the name of one
+ * (`pipe(a, create())`): it would be created after the value instead of before.
  *
  * Calls inside of the steps of another call are left for another run.
  */
@@ -107,7 +111,10 @@ export function transformPipes(code: string, filePath: string, from: string): Pi
     return { imports: pipe?.count ?? 0, ms, references }
 }
 
-/** What can be called after the value has been evaluated instead of before, without that being noticed. */
+/**
+ * What can be called after the value has been evaluated instead of before, without that being
+ * noticed.
+ */
 function isStep(node: Node): boolean {
     node = unwrap(node)
     return isFunction(node) || isPath(node)
@@ -136,7 +143,9 @@ function isAtom(node: Node): boolean {
         || node.type === "ParenthesizedExpression"
 }
 
-/** Passes a value to a step, by replacing the parameter of the step with it where that is possible. */
+/**
+ * Passes a value to a step, by replacing the parameter of the step with it where that is possible.
+ */
 function apply(value: Value, step: Node, code: string): Value {
     const source = code.slice(step.start, step.end)
     const argument = value.isAtom ? value.code : `(${value.code})`
@@ -200,7 +209,10 @@ function findLead(body: Node, param: string): Lead | undefined {
     let lead: Lead | undefined
     let isConstructed = false
 
-    /** Whether `node` has been dealt with: the parameter was found in there, or there is nothing in there that could be noticed. */
+    /**
+     * Whether `node` has been dealt with: the parameter was found in there, or there is nothing in
+     * there that could be noticed.
+     */
     const visit = (node: Node | null, parent?: Node): "found" | "pure" | undefined => {
         if (!node) return "pure"
         switch (node.type) {
@@ -303,7 +315,10 @@ function isOptional(node: Node): boolean {
     return false
 }
 
-/** `import { pipe as foo } from "from"` → `"foo"`, calls of the first one are replaced when there are several. */
+/**
+ * `import { pipe as foo } from "from"` → `"foo"`, calls of the first one are replaced when there
+ * are several.
+ */
 function findImport(statements: Node[], from: string): { count: number, local: string, node: ImportDeclaration } | undefined {
     let result: { count: number, local: string, node: ImportDeclaration } | undefined
     for (const node of statements) {

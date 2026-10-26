@@ -5,7 +5,9 @@
  * function DOM.scrollParent(element: Element, axis: "x" | "y"): HTMLElement | null
  * ```
  *
- * The closest element that `element` is inside of and that the user can scroll on `axis`: its `overflow` on that axis is `auto`, `scroll` or `overlay`. `null` when there is none and only the page scrolls, which is `document.scrollingElement`, and whose `scroll` events go to `window`.
+ * The closest element that `element` is inside of and that the user can scroll on `axis`: its
+ * `overflow` on that axis is `auto`, `scroll` or `overlay`. `null` when there is none and only the
+ * page scrolls, which is `document.scrollingElement`, and whose `scroll` events go to `window`.
  *
  * ## Example
  *

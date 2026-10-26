@@ -18,7 +18,6 @@ import { identifierWords } from "../internals/strings"
  * String.kebabCase("hello world"); // "hello-world"
  * String.kebabCase("helloWorld"); // "hello-world"
  * ```
- *
  */
 export function kebabCase<T extends string>(target: T): KebabCase<T> {
     return identifierWords(target).join("-").toLowerCase() as KebabCase<T>

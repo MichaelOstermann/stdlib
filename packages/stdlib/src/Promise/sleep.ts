@@ -5,7 +5,8 @@
  * function Promise.sleep(duration: number, signal?: AbortSignal): Promise<void>
  * ```
  *
- * Returns a promise that resolves after the milliseconds of `duration`. It rejects with the reason of `signal` once that is aborted, right away when it is already.
+ * Returns a promise that resolves after the milliseconds of `duration`. It rejects with the reason
+ * of `signal` once that is aborted, right away when it is already.
  *
  * ## Example
  *
@@ -15,7 +16,6 @@
  * const controller = new AbortController();
  * await Promise.sleep(Duration.MINUTE, controller.signal);
  * ```
- *
  */
 export function sleep(duration: number, signal?: AbortSignal): Promise<void> {
     return new Promise((resolve, reject) => {

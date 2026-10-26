@@ -13,7 +13,10 @@ export interface VirtualItem {
 
 export interface UseVirtualizerOptions {
     count: number
-    /** Room for an item dragged over the list: `size` pixels before the item at `index`, which moves the items from there down. */
+    /**
+     * Room for an item dragged over the list: `size` pixels before the item at `index`, which moves
+     * the items from there down.
+     */
     gap?: { index: number, size: number } | null
     /** How many items are rendered above and below the ones in view. `2` by default. */
     overscan?: number
@@ -26,7 +29,10 @@ export interface Virtualizer {
     height: number
     /** The items to render, each positioned at its `start`. */
     items: VirtualItem[]
-    /** Scrolls as little as needed for the item at `index` to be in view. `topOffset` is what covers the top of the element, a sticky header. */
+    /**
+     * Scrolls as little as needed for the item at `index` to be in view. `topOffset` is what covers
+     * the top of the element, a sticky header.
+     */
     scrollToIndex: (index: number, topOffset?: number) => void
 }
 
@@ -45,11 +51,14 @@ interface Range {
 /**
  * `useVirtualizer(scrollElement, options)`
  *
- * Renders only the items of a long list that are in view of `scrollElement`, which scrolls vertically.
+ * Renders only the items of a long list that are in view of `scrollElement`, which scrolls
+ * vertically.
  *
  * - the component renders again when other items come into view, not for each scroll event
- * - the items are in view before the browser paints: on mount, when the element resizes, and when `count`, `size` or `gap` change
- * - with a `size` number, all items have that height; a function is called for each item whenever `count`, `gap` or the function change
+ * - the items are in view before the browser paints: on mount, when the element resizes, and when
+ *   `count`, `size` or `gap` change
+ * - with a `size` number, all items have that height; a function is called for each item whenever
+ *   `count`, `gap` or the function change
  *
  * ```tsx
  * function Tasks({ tasks }: { tasks: Task[] }) {
@@ -152,7 +161,10 @@ function visibleRange({ count, ends, overscan, starts }: Layout, view: { height:
     return { end, start }
 }
 
-/** The first index below `count` for which `test` is true, or `count` for none: a binary search, `test` is false up to some index and true from there. */
+/**
+ * The first index below `count` for which `test` is true, or `count` for none: a binary search,
+ * `test` is false up to some index and true from there.
+ */
 function firstIndex(count: number, test: (index: number) => boolean): number {
     let low = 0
     let high = count

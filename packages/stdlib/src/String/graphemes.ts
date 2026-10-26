@@ -9,7 +9,8 @@ let segmenter: Intl.Segmenter | undefined
  *
  * Returns a generator that yields individual grapheme clusters from `target` string.
  *
- * A grapheme cluster represents a single user-perceived character, which may consist of multiple Unicode code points (e.g., emojis with modifiers, base characters with combining diacriticals).
+ * A grapheme cluster represents a single user-perceived character, which may consist of multiple
+ * Unicode code points (e.g., emojis with modifiers, base characters with combining diacriticals).
  *
  * ## Example
  *
@@ -24,7 +25,6 @@ let segmenter: Intl.Segmenter | undefined
  *     console.log(grapheme); // "h", "e", "l", "l", "o", "👋"
  * }
  * ```
- *
  */
 export function* graphemes(target: string): Generator<string> {
     // Nothing but ASCII is one character each, except for a line break of two.

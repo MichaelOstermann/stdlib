@@ -7,9 +7,11 @@ let segmenter: Intl.Segmenter | undefined
  * function String.words(target: string): Generator<string>
  * ```
  *
- * Returns a generator that yields the words of `target` string, without the whitespace and punctuation in between.
+ * Returns a generator that yields the words of `target` string, without the whitespace and
+ * punctuation in between.
  *
- * What a word is depends on the language, which is left to `Intl.Segmenter`: text without spaces between words is split as well, and an apostrophe or a decimal point does not end a word.
+ * What a word is depends on the language, which is left to `Intl.Segmenter`: text without spaces
+ * between words is split as well, and an apostrophe or a decimal point does not end a word.
  *
  * ## Example
  *
@@ -20,7 +22,6 @@ let segmenter: Intl.Segmenter | undefined
  * [...String.words("日本語のテキスト")]; // ["日本語", "の", "テキスト"]
  * [...String.words("👍 ...")]; // []
  * ```
- *
  */
 export function* words(target: string): Generator<string> {
     segmenter ??= new Intl.Segmenter(undefined, {

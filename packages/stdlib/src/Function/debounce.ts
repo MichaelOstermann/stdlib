@@ -25,11 +25,13 @@ type DebounceOptions = {
  * function Function.debounce(...args: T): void
  * ```
  *
- * Creates a debounced function that delays invoking `fn` until after `options.wait` milliseconds have elapsed since the last time the debounced function was invoked.
+ * Creates a debounced function that delays invoking `fn` until after `options.wait` milliseconds
+ * have elapsed since the last time the debounced function was invoked.
  *
  * Implementation details:
  *
- * - Only one `fn` can run at any given time, asynchronous functions can not conflict with each other
+ * - Only one `fn` can run at any given time, asynchronous functions can not conflict with each
+ *   other
  * - Pending calls are not accumulated in an internal array and asynchronously resolved
  *
  * ## Example
@@ -64,7 +66,6 @@ type DebounceOptions = {
  * // until it has been idle for `gracePeriod` milliseconds
  * await debouncedSave.idle(gracePeriod?: number);
  * ```
- *
  */
 export function debounce<T extends unknown[]>(
     fn: (...args: T) => Promise<void> | void,

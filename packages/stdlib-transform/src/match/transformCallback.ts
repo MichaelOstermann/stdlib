@@ -9,7 +9,8 @@ import { ScopeTracker, walk } from "oxc-walker"
  * - `() => result` becomes `result`
  * - `v => v + 1` becomes `value + 1`
  *
- * A callback that can not be inlined without changing its behaviour is called directly: `(callback)(value)`.
+ * A callback that can not be inlined without changing its behaviour is called directly:
+ * `(callback)(value)`.
  */
 export function transformCallback(value: string, cb: Node, ctx: Context): string {
     // A method is called without the object it belongs to, the same way it is when being passed along.
@@ -44,7 +45,9 @@ export function isFunction(node: Node): boolean {
     return node.type === "ArrowFunctionExpression" || node.type === "FunctionExpression"
 }
 
-/** Replaces the parameter with the value, unless that is not possible without changing the meaning. */
+/**
+ * Replaces the parameter with the value, unless that is not possible without changing the meaning.
+ */
 export function inline(value: string, param: string, body: Expression, ctx: Pick<Context, "code">): string | undefined {
     // Collects all declarations first, including the ones that are hoisted above where they are written.
     const scope = new ScopeTracker({ preserveExitedScopes: true })

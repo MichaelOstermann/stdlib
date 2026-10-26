@@ -4,7 +4,10 @@ import { matches } from "./matches"
 import { parse } from "./parse"
 import { serialize } from "./serialize"
 
-/** One press of a shortcut: a key, and the modifiers held with it. What `Shortcut.parse` returns, eg. to render `<kbd>` from. */
+/**
+ * One press of a shortcut: a key, and the modifiers held with it. What `Shortcut.parse` returns,
+ * eg. to render `<kbd>` from.
+ */
 export interface Keystroke {
     alt: boolean
     ctrl: boolean
@@ -13,7 +16,10 @@ export interface Keystroke {
     shift: boolean
 }
 
-/** A shortcut and what it runs. Apps add what they need by declaring it again, see `Shortcut.bindings`. */
+/**
+ * A shortcut and what it runs. Apps add what they need by declaring it again, see
+ * `Shortcut.bindings`.
+ */
 export interface ShortcutBinding {
     shortcut: string
     run: () => void

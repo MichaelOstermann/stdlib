@@ -16,11 +16,13 @@ type Shift = "center" | "down" | "left" | "right" | "up"
  * ): PlacementPosition
  * ```
  *
- * Places the floating rect on one side of the anchor and keeps it inside the boundary.
- * The name is the side first, then the way the floating rect is moved along it: `down-left` is below the anchor and moved to the left, which lines up the right edges.
+ * Places the floating rect on one side of the anchor and keeps it inside the boundary. The name is
+ * the side first, then the way the floating rect is moved along it: `down-left` is below the anchor
+ * and moved to the left, which lines up the right edges.
  *
  * - the floating rect is pushed back inside the boundary, it does not change sides
- * - `fits` is `false` when the room on that side is smaller than the floating rect, which is the moment to try another side
+ * - `fits` is `false` when the room on that side is smaller than the floating rect, which is the
+ *   moment to try another side
  * - `left` and `top` are rounded to device pixels
  *
  * ## Example

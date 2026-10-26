@@ -16,11 +16,14 @@ let collator: Intl.Collator | undefined
  * Array.sortByLocale(target, by, options?)
  * ```
  *
- * Sorts by the text that `by` returns for each element, in the order of a language: `ä` next to `a`, uppercase next to lowercase. Descending with `{ order: "desc" }`.
+ * Sorts by the text that `by` returns for each element, in the order of a language: `ä` next to
+ * `a`, uppercase next to lowercase. Descending with `{ order: "desc" }`.
  *
- * `locales` and everything else `Intl.Collator` knows are options: `{ numeric: true }` puts `"2"` before `"10"`.
+ * `locales` and everything else `Intl.Collator` knows are options: `{ numeric: true }` puts `"2"`
+ * before `"10"`.
  *
- * Elements of the same text stay in the order they are in. Returns `target` itself when it is sorted already.
+ * Elements of the same text stay in the order they are in. Returns `target` itself when it is
+ * sorted already.
  *
  * ## Example
  *

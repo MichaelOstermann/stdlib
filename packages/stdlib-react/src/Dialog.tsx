@@ -5,7 +5,10 @@ import type { TransitionStatus } from "./useTransitionStatus"
 import { createPortal } from "react-dom"
 import { useReactive } from "./useReactive"
 
-/** A dialog opened with `Dialogs.open`, passed to its component as `dialog`: `meta` is what `Dialogs.open` was given, `done` what it resolves with. */
+/**
+ * A dialog opened with `Dialogs.open`, passed to its component as `dialog`: `meta` is what
+ * `Dialogs.open` was given, `done` what it resolves with.
+ */
 export interface Dialog<T = void, R = void> extends Modal {
     readonly $status: ReadonlySignal<TransitionStatus>
     readonly kind: "dialog"
@@ -32,10 +35,12 @@ const backdropStyle: CSSProperties = {
 /**
  * `<Dialog dialog={dialog}>`
  *
- * Renders a dialog opened with `Dialogs.open` into `document.body`, over a backdrop that covers the page.
+ * Renders a dialog opened with `Dialogs.open` into `document.body`, over a backdrop that covers the
+ * page.
  *
  * - the backdrop has the classes `modal dialog`, a click on it closes the dialog
- * - `className`, `style` and the other props go on the dialog, not on the backdrop: `className="self-start mt-40"` puts it near the top instead of the center
+ * - `className`, `style` and the other props go on the dialog, not on the backdrop:
+ *   `className="self-start mt-40"` puts it near the top instead of the center
  * - both have `data-status` with `closed`, `opening`, `opened` or `closing`
  *
  * ```tsx

@@ -1,6 +1,9 @@
 import { throwUnmatched } from "./throwUnmatched"
 
-/** What a tag can be, each is handled by the key it is written as: `"a"`, `1` as `1`, `true` as `true`. */
+/**
+ * What a tag can be, each is handled by the key it is written as: `"a"`, `1` as `1`, `true` as
+ * `true`.
+ */
 type Tag = boolean | number | string | null | undefined
 
 /** The members of a union whose tag is written as `V`. */
@@ -17,10 +20,12 @@ export interface MatchTag {
     /**
      * `match.tag(value, key, handlers)`
      *
-     * Matches a union by the property that tells its members apart, returning what the handler of that member returns for it.
+     * Matches a union by the property that tells its members apart, returning what the handler of
+     * that member returns for it.
      *
      * - every member needs a handler, named like its tag
-     * - `_` handles the ones that have none, and makes the others optional, the value is not narrowed for it
+     * - `_` handles the ones that have none, and makes the others optional, the value is not
+     *   narrowed for it
      * - throws for a tag that the types did not tell about, unless there is a `_`
      *
      * ```ts

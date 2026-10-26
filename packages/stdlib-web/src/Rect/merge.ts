@@ -10,8 +10,9 @@ const keys = ["top", "left", "width", "height"] as const
  * function Rect.merge(target: Rect, source: Partial<Rect>): Rect
  * ```
  *
- * Replaces the properties of `target` with the ones in `source`, and normalizes the result.
- * Returns `target` itself when `source` changes nothing, or when a value in `source` is not finite: `NaN` or `Infinity`.
+ * Replaces the properties of `target` with the ones in `source`, and normalizes the result. Returns
+ * `target` itself when `source` changes nothing, or when a value in `source` is not finite: `NaN`
+ * or `Infinity`.
  *
  * ## Example
  *

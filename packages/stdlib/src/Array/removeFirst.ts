@@ -8,8 +8,7 @@ import { indexOf, removeAt } from "../internals/arrays"
  * Array.removeFirst(target, value)
  * ```
  *
- * Removes the first occurrence of `value`.
- * Returns `target` itself when it does not occur.
+ * Removes the first occurrence of `value`. Returns `target` itself when it does not occur.
  *
  * ## Example
  *

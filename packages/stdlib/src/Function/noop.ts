@@ -5,7 +5,8 @@
  * function Function.noop(): void
  * ```
  *
- * Does nothing. Always the same function, unlike a `() => {}` that is written where it is needed, which is a new one every time.
+ * Does nothing. Always the same function, unlike a `() => {}` that is written where it is needed,
+ * which is a new one every time.
  *
  * ## Example
  *
@@ -14,6 +15,5 @@
  *
  * function subscribe(onChange: (value: number) => void = Function.noop) {}
  * ```
- *
  */
 export function noop(): void {}

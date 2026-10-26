@@ -7,7 +7,8 @@ import type { Comparable } from "../internals/arrays"
  * Array.minBy(target, by)
  * ```
  *
- * Returns the element that `by` returns the lowest value for, compared with `<`: numbers, strings and dates work. The first one of several, and `undefined` when there are no elements.
+ * Returns the element that `by` returns the lowest value for, compared with `<`: numbers, strings
+ * and dates work. The first one of several, and `undefined` when there are no elements.
  *
  * ## Example
  *

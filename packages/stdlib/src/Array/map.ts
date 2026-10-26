@@ -8,8 +8,7 @@ import { mapWhere } from "../internals/arrays"
  * Array.map(target, map)
  * ```
  *
- * Applies `map` to every element.
- * Returns `target` itself when no element changed.
+ * Applies `map` to every element. Returns `target` itself when no element changed.
  *
  * ## Example
  *

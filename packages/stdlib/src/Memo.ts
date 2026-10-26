@@ -2,31 +2,45 @@ import { RawMemo } from "./internals/system"
 
 /** A value that is computed from signals and other memos: call it to read. */
 export interface Memo<T = any> {
-    /** Returns the value, computed again when something it read changed. Inside of a memo or an effect, that one runs again when the value changes. */
+    /**
+     * Returns the value, computed again when something it read changed. Inside of a memo or an
+     * effect, that one runs again when the value changes.
+     */
     (): T
     readonly kind: "Memo"
 }
 
 export interface MemoOptions<T> {
-    /** Whether two values are the same, for what reads the memo to not run again. Only asked when they are not `===`. */
+    /**
+     * Whether two values are the same, for what reads the memo to not run again. Only asked when
+     * they are not `===`.
+     */
     equals?: (before: T, after: T) => boolean
 }
 
 /** A memo of a map, and of each of its entries. */
 export interface MemoIndex<K, V> extends Memo<ReadonlyMap<K, V>> {
-    /** Returns a memo of the entry of `key`, which only changes when that entry does. They are created when asked for, and held weakly. */
+    /**
+     * Returns a memo of the entry of `key`, which only changes when that entry does. They are
+     * created when asked for, and held weakly.
+     */
     for: (key: K) => Memo<V | undefined>
-    /** Returns the entry of `key`. Inside of a memo or an effect, that one only runs again when that entry changes. */
+    /**
+     * Returns the entry of `key`. Inside of a memo or an effect, that one only runs again when that
+     * entry changes.
+     */
     get: (key: K) => V | undefined
 }
 
 /**
  * `Memo(computation, options?)`
  *
- * Creates a value that is computed from signals and other memos, and kept until one of them changes.
+ * Creates a value that is computed from signals and other memos, and kept until one of them
+ * changes.
  *
  * - it is lazy: nothing is computed until it is read, or until an effect depends on it
- * - what reads it does not run again when it computes the value it had already, `equals` extends what counts as the same
+ * - what reads it does not run again when it computes the value it had already, `equals` extends
+ *   what counts as the same
  * - what `computation` throws is thrown by what reads the memo
  *
  * ```ts
@@ -48,8 +62,9 @@ export interface MemoIndex<K, V> extends Memo<ReadonlyMap<K, V>> {
 export const Memo: {
     <T>(computation: () => T, options?: MemoOptions<NoInfer<T>>): Memo<T>
     /**
-     * Creates a memo of a map from a list, `by` returns the key and the value of an element.
-     * The map stays the same when none of its entries changed, `equals` compares the values of an entry.
+     * Creates a memo of a map from a list, `by` returns the key and the value of an element. The
+     * map stays the same when none of its entries changed, `equals` compares the values of an
+     * entry.
      *
      * `for(key)` and `get(key)` depend on a single entry instead of the whole list.
      */

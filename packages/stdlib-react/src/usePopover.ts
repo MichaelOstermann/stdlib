@@ -19,8 +19,10 @@ export interface UsePopoverOptions extends PlacementOptions {
 }
 
 /**
- * - `mounted`: from opening until closed again, whether to render `<Popover>`. The component calling the hook renders again when this changes.
- * - `triggerRef`: `popover.$trigger`, as its own binding: React Compiler skips a component that passes `popover.$trigger` as `ref`.
+ * - `mounted`: from opening until closed again, whether to render `<Popover>`. The component
+ *   calling the hook renders again when this changes.
+ * - `triggerRef`: `popover.$trigger`, as its own binding: React Compiler skips a component that
+ *   passes `popover.$trigger` as `ref`.
  * - `popover`: a new one only when the trigger, the placement or the name changes.
  */
 export type UsePopover = [mounted: boolean, triggerRef: Signal<Element | null>, popover: Popover]
@@ -28,15 +30,20 @@ export type UsePopover = [mounted: boolean, triggerRef: Signal<Element | null>, 
 /**
  * `usePopover(options?)`
  *
- * Something next to an element that a click on it opens: a menu, a date picker, a form. Rendered by `<Popover>`.
+ * Something next to an element that a click on it opens: a menu, a date picker, a form. Rendered by
+ * `<Popover>`.
  *
  * - a click on the trigger opens and closes the popover
  * - closes on a click outside of it and its trigger, on Esc, and when another popover opens
  * - follows the trigger when it moves
- * - `aria-expanded` on the trigger is whether the popover is open, for styling the trigger with it: `aria-expanded:bg-gray-100`
- * - the trigger is only a ref: the listeners are added to the element, there are no props to merge; an element with a tooltip too passes `$trigger`
- * - `mounted` is the only React state: the component calling the hook renders when the popover mounts and unmounts, `useReactive(popover.$open)` is whether it is open
- * - the listeners and effects are there while the component is mounted, and follow changes of the options
+ * - `aria-expanded` on the trigger is whether the popover is open, for styling the trigger with it:
+ *   `aria-expanded:bg-gray-100`
+ * - the trigger is only a ref: the listeners are added to the element, there are no props to merge;
+ *   an element with a tooltip too passes `$trigger`
+ * - `mounted` is the only React state: the component calling the hook renders when the popover
+ *   mounts and unmounts, `useReactive(popover.$open)` is whether it is open
+ * - the listeners and effects are there while the component is mounted, and follow changes of the
+ *   options
  *
  * ```tsx
  * function DueDate() {

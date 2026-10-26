@@ -15,9 +15,14 @@ type Found = [start: number, end: number, schema: string]
  * function String.links(target: string): Generator<{ start: number, end: number, text: string, url: string }>
  * ```
  *
- * Returns a generator that yields the links in `target`: with a scheme, `http:`, `https:`, `ftp:`, `mailto:` or `//`, without one when they end in a known top-level domain, and email addresses. `start` and `end` are where `text` is in `target`, `url` is `text` with `https://` or `mailto:` in front when it has no scheme.
+ * Returns a generator that yields the links in `target`: with a scheme, `http:`, `https:`, `ftp:`,
+ * `mailto:` or `//`, without one when they end in a known top-level domain, and email addresses.
+ * `start` and `end` are where `text` is in `target`, `url` is `text` with `https://` or `mailto:`
+ * in front when it has no scheme.
  *
- * What is a link is decided like [linkify-it](https://github.com/markdown-it/linkify-it) does with its default options: an address in numbers only is no link without a scheme, and neither is `localhost`.
+ * What is a link is decided like [linkify-it](https://github.com/markdown-it/linkify-it) does with
+ * its default options: an address in numbers only is no link without a scheme, and neither is
+ * `localhost`.
  *
  * ## Example
  *
@@ -30,7 +35,6 @@ type Found = [start: number, end: number, schema: string]
  * [...String.links("http://localhost:3000/path?q=1.")]; // [{ start: 0, end: 30, text: "http://localhost:3000/path?q=1", … }]
  * [...String.links("node.js and io.js")]; // []
  * ```
- *
  */
 export function* links(target: string): Generator<{ end: number, start: number, text: string, url: string }> {
     const patterns = compiled ??= compile()

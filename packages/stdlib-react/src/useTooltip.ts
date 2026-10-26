@@ -21,8 +21,10 @@ export interface UseTooltipOptions extends PlacementOptions {
 }
 
 /**
- * - `mounted`: from opening until closed again, whether to render `<Tooltip>`. The component calling the hook renders again when this changes.
- * - `triggerRef`: `tooltip.$trigger`, as its own binding: React Compiler skips a component that passes `tooltip.$trigger` as `ref`.
+ * - `mounted`: from opening until closed again, whether to render `<Tooltip>`. The component
+ *   calling the hook renders again when this changes.
+ * - `triggerRef`: `tooltip.$trigger`, as its own binding: React Compiler skips a component that
+ *   passes `tooltip.$trigger` as `ref`.
  * - `tooltip`: a new one only when the trigger, the placement or the name changes.
  */
 export type UseTooltip = [mounted: boolean, triggerRef: Signal<Element | null>, tooltip: Tooltip]
@@ -32,12 +34,17 @@ export type UseTooltip = [mounted: boolean, triggerRef: Signal<Element | null>, 
  *
  * A short text next to an element, after the pointer rests on it. Rendered by `<Tooltip>`.
  *
- * - opens once the pointer rests on the trigger for `delay`, or on focus, and closes when the pointer leaves or on blur
+ * - opens once the pointer rests on the trigger for `delay`, or on focus, and closes when the
+ *   pointer leaves or on blur
  * - a click on the trigger closes the tooltip until the pointer leaves
- * - closes when something around the trigger scrolls, or when any other modal opens; clicks and Esc go past it
- * - the trigger is only a ref: the listeners are added to the element, there are no props to merge; an element with a popover too passes `$trigger`
- * - `mounted` is the only React state: the component calling the hook renders when the tooltip mounts and unmounts
- * - the listeners and effects are there while the component is mounted, and follow changes of the options
+ * - closes when something around the trigger scrolls, or when any other modal opens; clicks and Esc
+ *   go past it
+ * - the trigger is only a ref: the listeners are added to the element, there are no props to merge;
+ *   an element with a popover too passes `$trigger`
+ * - `mounted` is the only React state: the component calling the hook renders when the tooltip
+ *   mounts and unmounts
+ * - the listeners and effects are there while the component is mounted, and follow changes of the
+ *   options
  *
  * ```tsx
  * function SearchButton() {

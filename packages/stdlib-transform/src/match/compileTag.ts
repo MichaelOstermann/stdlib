@@ -10,7 +10,10 @@ export interface Tag {
     subject: Node
 }
 
-/** Collects the arguments of `match.tag(value, key, handlers)`, `local` being the name `match` is imported as. */
+/**
+ * Collects the arguments of `match.tag(value, key, handlers)`, `local` being the name `match` is
+ * imported as.
+ */
 export function collectTag(node: Node, local: string): Tag | undefined {
     if (node.type !== "CallExpression" || node.optional) return
     const callee = node.callee

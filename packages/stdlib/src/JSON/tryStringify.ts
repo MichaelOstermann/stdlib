@@ -8,9 +8,11 @@ import { Err, Ok } from "../Result"
  * function JSON.tryStringify(value: unknown): Result<string, Error>
  * ```
  *
- * Turns `value` into JSON like `JSON.stringify`, and returns the error it throws as an `Err`: for a value that refers to itself, or contains a `bigint`.
+ * Turns `value` into JSON like `JSON.stringify`, and returns the error it throws as an `Err`: for a
+ * value that refers to itself, or contains a `bigint`.
  *
- * Also fails for values that have no JSON form, where `JSON.stringify` returns `undefined`: `undefined`, a function or a symbol.
+ * Also fails for values that have no JSON form, where `JSON.stringify` returns `undefined`:
+ * `undefined`, a function or a symbol.
  *
  * ## Example
  *
@@ -19,7 +21,6 @@ import { Err, Ok } from "../Result"
  * JSON.tryStringify({ a: 1n }); // Err(TypeError)
  * JSON.tryStringify(undefined); // Err(TypeError)
  * ```
- *
  */
 export function tryStringify(value: unknown): Result<string, Error> {
     try {

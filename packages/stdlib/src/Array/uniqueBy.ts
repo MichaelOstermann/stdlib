@@ -7,8 +7,8 @@ import type { Updated } from "../internals/types"
  * Array.uniqueBy(target, by)
  * ```
  *
- * Removes the elements that `by` returns the same value for as for an earlier one, the first occurrence stays.
- * Returns `target` itself when there are no duplicates.
+ * Removes the elements that `by` returns the same value for as for an earlier one, the first
+ * occurrence stays. Returns `target` itself when there are no duplicates.
  *
  * ## Example
  *

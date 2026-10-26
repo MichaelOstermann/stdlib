@@ -22,13 +22,22 @@ export interface Context {
     /** The name a helper is imported as. */
     helper: (name: keyof Helpers) => string
     id: (base: string) => string
-    /** Whether a name refers to the import at the place it is used, and is not shadowed by a local of the same name. */
+    /**
+     * Whether a name refers to the import at the place it is used, and is not shadowed by a local
+     * of the same name.
+     */
     isImport: (name: string) => boolean
-    /** Whether a name always refers to the same value: a `const`, or something that nothing in the file assigns to. */
+    /**
+     * Whether a name always refers to the same value: a `const`, or something that nothing in the
+     * file assigns to.
+     */
     isStable: (name: string) => boolean
 }
 
-/** The matched subject: one value, or the values of `match([a, b])`, which are matched one by one without building the array. */
+/**
+ * The matched subject: one value, or the values of `match([a, b])`, which are matched one by one
+ * without building the array.
+ */
 export type Subject =
     | { kind: "tuple", names: string[] }
     | { kind: "value", name: string }

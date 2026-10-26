@@ -33,12 +33,16 @@ export interface StdlibResult {
 /**
  * Makes using `@monstermann/stdlib` free:
  *
- * - `Array.removeAll()` and `Duration.parse()` become direct imports of `removeAll` and `parse`, and so do `Rect.bottom()` and the others of `@monstermann/stdlib-web`
+ * - `Array.removeAll()` and `Duration.parse()` become direct imports of `removeAll` and `parse`,
+ *   and so do `Rect.bottom()` and the others of `@monstermann/stdlib-web`
  * - `match()` chains are compiled into conditional expressions
  * - `pipe()` calls are replaced with the calls they make
- * - `Object.setPath()` calls with a path that is written out are compiled into a function of their own
+ * - `Object.setPath()` calls with a path that is written out are compiled into a function of their
+ *   own
  * - everything else (`pipe`, `Result`, …) is imported from the file it lives in
- * - in React components and hooks, reads of signals are wrapped with `useReactive` and their signals and effects created with `useSignal` and `useSignalEffect`, all from `@monstermann/stdlib-react`
+ * - in React components and hooks, reads of signals are wrapped with `useReactive` and their
+ *   signals and effects created with `useSignal` and `useSignalEffect`, all from
+ *   `@monstermann/stdlib-react`
  *
  * All of it is available as globals, and can be imported from the package as well.
  *

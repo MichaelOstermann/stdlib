@@ -12,11 +12,15 @@ import { keystrokeOf, normalize } from "./internals/normalize"
  * The keystrokes of a shortcut, one per press.
  *
  * - Keys: `a`, `Enter`, `Escape`, `?`, and their aliases, in any case: `esc`, `up`, `space`
- * - Modifiers: `meta` (`cmd`, `command`), `ctrl` (`control`), `alt` (`opt`, `option`), `shift`, and `mod`, which is `meta` on Apple platforms and `ctrl` everywhere else
- * - Keystrokes are joined with `+`, presses with spaces: `ctrl+k ctrl+t`. The `+` key itself is `+` or `ctrl++`
+ * - Modifiers: `meta` (`cmd`, `command`), `ctrl` (`control`), `alt` (`opt`, `option`), `shift`, and
+ *   `mod`, which is `meta` on Apple platforms and `ctrl` everywhere else
+ * - Keystrokes are joined with `+`, presses with spaces: `ctrl+k ctrl+t`. The `+` key itself is `+`
+ *   or `ctrl++`
  * - An uppercase letter is that letter with shift: `K` is `shift+k`
- * - Names that are not listed are compared with what the event reports: `ContextMenu`, `MediaPlayPause`
- * - Never throws: a press with two keys or an empty part (`a+b`, `ctrl+`) is a key of that name, which never comes
+ * - Names that are not listed are compared with what the event reports: `ContextMenu`,
+ *   `MediaPlayPause`
+ * - Never throws: a press with two keys or an empty part (`a+b`, `ctrl+`) is a key of that name,
+ *   which never comes
  *
  * ## Example
  *

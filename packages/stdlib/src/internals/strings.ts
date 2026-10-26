@@ -41,7 +41,10 @@ type IsSpecial<T extends string> = IsStringLiteral<T> extends true ? T extends "
 
 type RemoveApostrophe<T extends string> = ReplaceAll<T, "'">
 
-/** The words of an identifier, `S` being what is left of it, `W` the word so far and `P` the previous character. */
+/**
+ * The words of an identifier, `S` being what is left of it, `W` the word so far and `P` the
+ * previous character.
+ */
 type Words<S extends string, W extends string = "", P extends string = ""> = IsStringLiteral<P | S | W> extends true
     ? S extends `${infer C}${infer Rest}`
         ? IsSeparator<C> extends true ? Reject<[W, ...Words<Rest>], "">
@@ -65,7 +68,10 @@ export type KebabCase<T extends string> = Lowercase<DelimiterCase<T, "-">>
 export type SnakeCase<T extends string> = Lowercase<DelimiterCase<T, "_">>
 export type TitleCase<T extends string> = DelimiterCase<PascalCase<T>, " ">
 
-/** The words of an identifier, without apostrophes: `helloWorld`, `hello-world` and `hello_world` are `hello` and `world` */
+/**
+ * The words of an identifier, without apostrophes: `helloWorld`, `hello-world` and `hello_world`
+ * are `hello` and `world`
+ */
 export function identifierWords(target: string): string[] {
     return target
         .replaceAll("'", "")

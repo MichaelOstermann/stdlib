@@ -8,8 +8,7 @@ import { matcher, removeWhere } from "../internals/arrays"
  * Array.removeAll(target, values)
  * ```
  *
- * Removes every occurrence of each of `values`.
- * Returns `target` itself when none of them occurs.
+ * Removes every occurrence of each of `values`. Returns `target` itself when none of them occurs.
  *
  * ## Example
  *

@@ -5,8 +5,7 @@
  * Set.isShallowEqual(a, b)
  * ```
  *
- * Whether `a` and `b` have the same values.
- * Values are compared by identity, not by their contents.
+ * Whether `a` and `b` have the same values. Values are compared by identity, not by their contents.
  *
  * ## Example
  *

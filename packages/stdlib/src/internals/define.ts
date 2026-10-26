@@ -1,4 +1,7 @@
-/** Makes `functions` available on `target`, which is never allowed to replace something that is there already. */
+/**
+ * Makes `functions` available on `target`, which is never allowed to replace something that is
+ * there already.
+ */
 export function define(target: object, name: string, functions: Record<string, unknown>): void {
     for (const key in functions) {
         const value = functions[key]

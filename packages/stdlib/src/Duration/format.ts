@@ -16,9 +16,11 @@ let formatter: Intl.DurationFormat | undefined
  * ): string
  * ```
  *
- * Writes the milliseconds of `duration` out as days, hours, minutes, seconds and milliseconds, leaving out the ones that are zero.
+ * Writes the milliseconds of `duration` out as days, hours, minutes, seconds and milliseconds,
+ * leaving out the ones that are zero.
  *
- * `locales` and `options` are the ones of `Intl.DurationFormat`, which does the writing. The `style` is `"narrow"` unless another one is asked for.
+ * `locales` and `options` are the ones of `Intl.DurationFormat`, which does the writing. The
+ * `style` is `"narrow"` unless another one is asked for.
  *
  * ## Example
  *
@@ -29,7 +31,6 @@ let formatter: Intl.DurationFormat | undefined
  * Duration.format(Duration.HOUR + 5 * Duration.SECOND, "en", { style: "digital" }); // "1:00:05"
  * Duration.format(0); // "0s"
  * ```
- *
  */
 export function format(duration: number, locales?: Intl.LocalesArgument, options?: Intl.DurationFormatOptions): string {
     const ms = Math.trunc(duration)

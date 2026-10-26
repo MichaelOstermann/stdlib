@@ -8,7 +8,8 @@ import { Err } from "../Result"
  * function Retry.again<E>(error: E, delay?: number): Err<RetryAgain<E>>
  * ```
  *
- * A failure that `Retry.run` tries again for. `error` is the error the result fails with once `Retry.run` stops retrying, `delay` overrides the milliseconds it waits before the next attempt.
+ * A failure that `Retry.run` tries again for. `error` is the error the result fails with once
+ * `Retry.run` stops retrying, `delay` overrides the milliseconds it waits before the next attempt.
  *
  * ## Example
  *
@@ -20,7 +21,6 @@ import { Err } from "../Result"
  *     return Ok(response);
  * });
  * ```
- *
  */
 export function again(): Err<RetryAgain<void>>
 export function again<E extends string>(error: E, delay?: number): Err<RetryAgain<E>>

@@ -8,8 +8,8 @@ import { indexWhere, removeAt } from "../internals/arrays"
  * Array.removeLastWhere(target, predicate)
  * ```
  *
- * Removes the last element that satisfies `predicate`.
- * Returns `target` itself when there is no such element.
+ * Removes the last element that satisfies `predicate`. Returns `target` itself when there is no
+ * such element.
  *
  * ## Example
  *

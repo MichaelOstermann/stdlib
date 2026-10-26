@@ -9,7 +9,8 @@ import { parse } from "./parse"
  * Color.darken(color, amount)
  * ```
  *
- * Returns `color` with `amount` taken from its lightness, down to 0, as an `oklch()` color. A `color` that does not parse is returned as it is.
+ * Returns `color` with `amount` taken from its lightness, down to 0, as an `oklch()` color. A
+ * `color` that does not parse is returned as it is.
  *
  * ## Example
  *

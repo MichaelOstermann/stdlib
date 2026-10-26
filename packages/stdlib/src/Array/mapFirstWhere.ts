@@ -8,8 +8,8 @@ import { indexWhere, setAt } from "../internals/arrays"
  * Array.mapFirstWhere(target, predicate, map)
  * ```
  *
- * Applies `map` to the first element that satisfies `predicate`.
- * Returns `target` itself when there is no such element, or when `map` returned the element unchanged.
+ * Applies `map` to the first element that satisfies `predicate`. Returns `target` itself when there
+ * is no such element, or when `map` returned the element unchanged.
  *
  * ## Example
  *

@@ -5,7 +5,8 @@
  * function JSON.safeStringify(value: unknown): string
  * ```
  *
- * Turns `value` into JSON like `JSON.stringify`, and never throws: what can not be written as JSON is left out, as much as needed and nothing more.
+ * Turns `value` into JSON like `JSON.stringify`, and never throws: what can not be written as JSON
+ * is left out, as much as needed and nothing more.
  *
  * - a `bigint` becomes a string of its digits
  * - an object inside of itself is left out
@@ -26,7 +27,6 @@
  *
  * JSON.safeStringify(undefined); // "null"
  * ```
- *
  */
 export function safeStringify(value: unknown): string {
     try {
@@ -44,7 +44,10 @@ export function safeStringify(value: unknown): string {
     }
 }
 
-/** A copy of `value` without what can not be written as JSON. `ancestors` are the objects it is inside of. */
+/**
+ * A copy of `value` without what can not be written as JSON. `ancestors` are the objects it is
+ * inside of.
+ */
 function sanitize(value: unknown, ancestors: Set<object>): unknown {
     if (typeof value === "bigint") return value.toString()
     if (typeof value !== "object" || value === null) return value

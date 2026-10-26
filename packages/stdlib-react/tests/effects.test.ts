@@ -13,7 +13,9 @@ import { fakeDOM } from "./dom"
 
 fakeDOM()
 
-/** Renders `component` with `props`, again with each call of the returned function, until `unmount`. */
+/**
+ * Renders `component` with `props`, again with each call of the returned function, until `unmount`.
+ */
 function mount<P extends object>(component: (props: P) => null, props: P, strict = false): { rerender: (props: P) => void, unmount: () => Promise<void> } {
     const root: Root = createRoot(document.createElement("div"))
     const element = (props: P) => strict ? createElement(StrictMode, null, createElement(component, props)) : createElement(component, props)

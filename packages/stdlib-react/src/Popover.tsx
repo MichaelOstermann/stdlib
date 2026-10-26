@@ -16,11 +16,18 @@ export interface PopoverProps extends Omit<ComponentProps<"div">, "popover" | "r
  *
  * Renders a popover from `usePopover` into `document.body`, next to its trigger.
  *
- * - render it behind `mounted &&`: without that, the children are created and diffed on every render of the owner, and the element is there while closed
- * - the element has the classes `modal popover`, and `data-status` with `closed`, `opening`, `opened` or `closing`
- * - it is hidden until it has been measured and placed; it renders again when it moves and on each status, the owner does not
- * - `max-height` is the room on the side it opens to. For the content to scroll inside of it, the element is a flex column and what scrolls has `min-height: 0` and `overflow-y: auto`: `className="flex flex-col"` and `<div className="min-h-0 overflow-y-auto">`. A header next to it stays where it is
- * - clicks, context menus and pointer downs inside of it do not reach the React parents of the popover, which React would otherwise pass them to through the portal
+ * - render it behind `mounted &&`: without that, the children are created and diffed on every
+ *   render of the owner, and the element is there while closed
+ * - the element has the classes `modal popover`, and `data-status` with `closed`, `opening`,
+ *   `opened` or `closing`
+ * - it is hidden until it has been measured and placed; it renders again when it moves and on each
+ *   status, the owner does not
+ * - `max-height` is the room on the side it opens to. For the content to scroll inside of it, the
+ *   element is a flex column and what scrolls has `min-height: 0` and `overflow-y: auto`:
+ *   `className="flex flex-col"` and `<div className="min-h-0 overflow-y-auto">`. A header next to
+ *   it stays where it is
+ * - clicks, context menus and pointer downs inside of it do not reach the React parents of the
+ *   popover, which React would otherwise pass them to through the portal
  *
  * ```tsx
  * const [mounted, triggerRef, popover] = usePopover();

@@ -1,6 +1,9 @@
 import { Emitter } from "../Emitter"
 
-/** The longest delay of `setTimeout`, about 24.8 days: a longer one fires right away, and the clock would tick without end. */
+/**
+ * The longest delay of `setTimeout`, about 24.8 days: a longer one fires right away, and the clock
+ * would tick without end.
+ */
 const MAX_INTERVAL = 2_147_483_647
 
 interface Clock {
@@ -18,14 +21,19 @@ const clocks = new Map<number, Clock>()
  * function Interval.aligned(every: number, fn: (now: number) => void): () => void
  * ```
  *
- * Calls `fn` with `Date.now()` on every multiple of `every` since the epoch: `Duration.MINUTE` on the minute, `Duration.HOUR` on the hour. Returns what stops it.
- * For what is shown relative to now: "5 minutes ago", "today".
+ * Calls `fn` with `Date.now()` on every multiple of `every` since the epoch: `Duration.MINUTE` on
+ * the minute, `Duration.HOUR` on the hour. Returns what stops it. For what is shown relative to
+ * now: "5 minutes ago", "today".
  *
  * - `every` is at most `2_147_483_647`, about 24.8 days, the longest delay of `setTimeout`
- * - the multiples are in UTC: `Duration.DAY` is not at local midnight, `Duration.HOUR` not on the hour where the offset is in half hours
- * - every function with the same `every` shares a timer and is called in the same batch, the timer stops once the last one stopped
- * - a function that throws does not stop the others or the timer, what it threw is thrown once all were called
- * - the time is read again for every multiple, so the clock stays on them across drift, sleep and the clock being set
+ * - the multiples are in UTC: `Duration.DAY` is not at local midnight, `Duration.HOUR` not on the
+ *   hour where the offset is in half hours
+ * - every function with the same `every` shares a timer and is called in the same batch, the timer
+ *   stops once the last one stopped
+ * - a function that throws does not stop the others or the timer, what it threw is thrown once all
+ *   were called
+ * - the time is read again for every multiple, so the clock stays on them across drift, sleep and
+ *   the clock being set
  *
  * ## Example
  *
@@ -37,7 +45,6 @@ const clocks = new Map<number, Clock>()
  * const $now = Signal(Date.now());
  * const stopNow = Interval.aligned(Duration.MINUTE, $now);
  * ```
- *
  */
 export function aligned(every: number, fn: (now: number) => void): () => void {
     if (!(every > 0)) throw new RangeError("Interval.aligned: an interval below or at 0, or NaN, ticks without end.")

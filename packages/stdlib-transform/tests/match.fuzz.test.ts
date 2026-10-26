@@ -67,7 +67,9 @@ function generate(next: () => number): string {
     return `match(${pick(subjects)})${steps.join("")}${ending}`
 }
 
-/** Runs a chain for each of the values, telling what it returned or threw, and what it left behind. */
+/**
+ * Runs a chain for each of the values, telling what it returned or threw, and what it left behind.
+ */
 function evaluate(chain: string, compiled: boolean): { code: string, result: string } {
     const body = `${setup}
         const describe = (result) => typeof result === "function" ? "function " + describe(result(7)) : typeof result === "symbol" ? String(result) : result;

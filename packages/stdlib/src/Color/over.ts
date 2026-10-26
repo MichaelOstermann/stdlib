@@ -9,7 +9,10 @@ import { parse } from "./parse"
  * Color.over(color, background)
  * ```
  *
- * Returns what a browser paints for a transparent `color` on top of `background`, alpha compositing in sRGB, as an `oklch()` color. On an opaque background that is an opaque color that looks the same, which stays the same over anything else. When either side does not parse, `color` is returned as it is.
+ * Returns what a browser paints for a transparent `color` on top of `background`, alpha compositing
+ * in sRGB, as an `oklch()` color. On an opaque background that is an opaque color that looks the
+ * same, which stays the same over anything else. When either side does not parse, `color` is
+ * returned as it is.
  *
  * ## Example
  *

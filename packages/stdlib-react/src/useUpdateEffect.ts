@@ -4,7 +4,8 @@ import { useEffect, useRef } from "react"
 /**
  * `useUpdateEffect(effect, deps)`
  *
- * `useEffect` that skips the mount: runs `effect` when `deps` change, for what follows a change and not the value it starts with.
+ * `useEffect` that skips the mount: runs `effect` when `deps` change, for what follows a change and
+ * not the value it starts with.
  *
  * - `<StrictMode>` mounting the component again in development is skipped too
  *

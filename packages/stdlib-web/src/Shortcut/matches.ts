@@ -14,23 +14,28 @@ import { serializeKeystroke } from "./serialize"
  * ): boolean | "partial"
  * ```
  *
- * Whether `input` is `shortcut`: `true` when it is all of it, `"partial"` when it is the beginning of it and more has to come, `false` otherwise.
+ * Whether `input` is `shortcut`: `true` when it is all of it, `"partial"` when it is the beginning
+ * of it and more has to come, `false` otherwise.
  *
- * `input` is what was pressed so far, the events since the last match, or another shortcut, eg. to tell which bindings a recorded shortcut conflicts with.
+ * `input` is what was pressed so far, the events since the last match, or another shortcut, eg. to
+ * tell which bindings a recorded shortcut conflicts with.
  *
  * Against events:
  *
  * - `ctrl`, `alt` and `meta` have to be exactly as the shortcut says.
- * - When the event reports a latin letter or a digit, that is what is compared, and `shift` has to be as the shortcut says.
- *   This follows the layout: `z` is the key that types a "z".
+ * - When the event reports a latin letter or a digit, that is what is compared, and `shift` has to
+ *   be as the shortcut says. This follows the layout: `z` is the key that types a "z".
  * - Otherwise either the reported character or the physical key can match:
- *   - The reported character ignores `shift`, as symbols need it on some layouts and not on others: `?` matches whatever types a "?".
- *   - The physical key is matched by its position, which browsers name after what a US keyboard has there
- *     (`event.code`), whatever the layout. `shift` has to be as the shortcut says:
- *     `ctrl+c` works on a cyrillic layout, `alt+a` on macOS where it types "å", `shift+1` where it types "!".
+ *   - The reported character ignores `shift`, as symbols need it on some layouts and not on others:
+ *     `?` matches whatever types a "?".
+ *   - The physical key is matched by its position, which browsers name after what a US keyboard has
+ *     there (`event.code`), whatever the layout. `shift` has to be as the shortcut says: `ctrl+c`
+ *     works on a cyrillic layout, `alt+a` on macOS where it types "å", `shift+1` where it types
+ *     "!".
  * - Names such as `Enter` or `ArrowDown` are compared by name, with `shift` as the shortcut says.
  * - Events during text composition (IME) never match.
- * - Events that only press a modifier are skipped, unless the shortcut is only modifiers: `ctrl+k ctrl+t` is pressed with ctrl let go in between.
+ * - Events that only press a modifier are skipped, unless the shortcut is only modifiers:
+ *   `ctrl+k ctrl+t` is pressed with ctrl let go in between.
  *
  * ## Example
  *

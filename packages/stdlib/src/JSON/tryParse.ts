@@ -17,7 +17,6 @@ import { Err, Ok } from "../Result"
  * JSON.tryParse("{"); // Err(SyntaxError)
  * JSON.tryParse(text).unwrapOr(null);
  * ```
- *
  */
 export function tryParse(text: string): Result<unknown, SyntaxError> {
     try {

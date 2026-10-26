@@ -8,15 +8,21 @@ export class SemaphoreFullError extends Error {
 
 /** What `run` takes besides the function. */
 export interface SemaphoreRunOptions {
-    /** Takes the function out of line while it waits, `run` then rejects with `signal.reason`. A function that runs already is not stopped: pass the signal on to it. */
+    /**
+     * Takes the function out of line while it waits, `run` then rejects with `signal.reason`. A
+     * function that runs already is not stopped: pass the signal on to it.
+     */
     signal?: AbortSignal
 }
 
-/** Runs functions, a limited number of them at the same time. The others wait for their turn, in the order they came in. */
+/**
+ * Runs functions, a limited number of them at the same time. The others wait for their turn, in the
+ * order they came in.
+ */
 export interface Semaphore {
     /**
-     * Calls `fn` once it is its turn, and resolves or rejects with what it does.
-     * With a `key`, the limit is the one of that key: functions of different keys do not wait for each other.
+     * Calls `fn` once it is its turn, and resolves or rejects with what it does. With a `key`, the
+     * limit is the one of that key: functions of different keys do not wait for each other.
      */
     run: (<T>(fn: () => PromiseLike<T> | T, options?: SemaphoreRunOptions) => Promise<Awaited<T>>) & (<T>(key: PropertyKey, fn: () => PromiseLike<T> | T, options?: SemaphoreRunOptions) => Promise<Awaited<T>>)
     /** How many functions are running or waiting. */
@@ -28,8 +34,9 @@ export interface Semaphore {
 /** A semaphore that only lets a limited number wait, and fails for the ones beyond that. */
 export interface BoundedSemaphore extends Omit<Semaphore, "run"> {
     /**
-     * Calls `fn` once it is its turn, and succeeds with what it returns. Fails right away when too many are waiting already.
-     * With a `key`, the limits are the ones of that key: functions of different keys do not wait for each other.
+     * Calls `fn` once it is its turn, and succeeds with what it returns. Fails right away when too
+     * many are waiting already. With a `key`, the limits are the ones of that key: functions of
+     * different keys do not wait for each other.
      */
     run: (<T>(fn: () => PromiseLike<T> | T, options?: SemaphoreRunOptions) => ResultAsync<Awaited<T>, SemaphoreFullError>) & (<T>(key: PropertyKey, fn: () => PromiseLike<T> | T, options?: SemaphoreRunOptions) => ResultAsync<Awaited<T>, SemaphoreFullError>)
 }
@@ -45,12 +52,15 @@ type Fn = () => unknown
 /**
  * `Semaphore(options)`
  *
- * Creates something that runs functions, `concurrency` of them at the same time, the others wait for their turn.
+ * Creates something that runs functions, `concurrency` of them at the same time, the others wait
+ * for their turn.
  *
  * - `run(fn)` is a pool, or a queue with a `concurrency` of `1`
  * - `run(key, fn)` is a lock: the limit applies to each key on its own
- * - with `maxWaiting`, `run` returns a `ResultAsync` that fails with a `SemaphoreFullError` instead of letting more than that wait
- * - with a `signal`, aborting takes the function out of line while it waits, `run` rejects with `signal.reason` like `fetch` does
+ * - with `maxWaiting`, `run` returns a `ResultAsync` that fails with a `SemaphoreFullError` instead
+ *   of letting more than that wait
+ * - with a `signal`, aborting takes the function out of line while it waits, `run` rejects with
+ *   `signal.reason` like `fetch` does
  *
  * ```ts
  * const hashing = Semaphore({ concurrency: 2, maxWaiting: 100 });
@@ -78,7 +88,10 @@ export function Semaphore(options: { concurrency: number, maxWaiting?: number })
     const idle: (() => void)[] = []
     let size = 0
 
-    /** Whether it is the turn of the caller, a promise of that when it has to wait, or `false` when it is not allowed to. */
+    /**
+     * Whether it is the turn of the caller, a promise of that when it has to wait, or `false` when
+     * it is not allowed to.
+     */
     function acquire(key: unknown, signal: AbortSignal | undefined): boolean | Promise<void> {
         let slot = slots.get(key)
         if (!slot) slots.set(key, slot = { active: 0, waiting: [] })
@@ -129,7 +142,10 @@ export function Semaphore(options: { concurrency: number, maxWaiting?: number })
         }
     }
 
-    /** Resolves with `full` instead of calling `fn` when it is not allowed to wait. A function that does not have to wait is called right away. */
+    /**
+     * Resolves with `full` instead of calling `fn` when it is not allowed to wait. A function that
+     * does not have to wait is called right away.
+     */
     async function run(key: unknown, fn: Fn, signal: AbortSignal | undefined, full: unknown): Promise<unknown> {
         signal?.throwIfAborted()
         const turn = acquire(key, signal)

@@ -26,7 +26,9 @@ const units: Record<string, number> = {
  * function Bytes.parse(target: string): number | undefined
  * ```
  *
- * Returns the bytes of a size that is written as a number and a unit, in any case: `B`, `kB`, `MB`, `GB` and `TB` count in thousands, `KiB`, `MiB`, `GiB` and `TiB` in 1024s. Returns `undefined` for everything else.
+ * Returns the bytes of a size that is written as a number and a unit, in any case: `B`, `kB`, `MB`,
+ * `GB` and `TB` count in thousands, `KiB`, `MiB`, `GiB` and `TiB` in 1024s. Returns `undefined` for
+ * everything else.
  *
  * There are no bits, `Mb` is a megabyte.
  *
@@ -39,7 +41,6 @@ const units: Record<string, number> = {
  * Bytes.parse("1.5 GB"); // 1_500_000_000
  * Bytes.parse("128"); // undefined
  * ```
- *
  */
 export function parse(target: string): number | undefined {
     const match = /^(\d+(?:\.\d+)?)\s*([kmgt]i?b|b)$/i.exec(target.trim())

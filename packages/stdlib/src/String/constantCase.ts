@@ -18,7 +18,6 @@ import { identifierWords } from "../internals/strings"
  * String.constantCase("hello world"); // "HELLO_WORLD"
  * String.constantCase("helloWorld"); // "HELLO_WORLD"
  * ```
- *
  */
 export function constantCase<T extends string>(target: T): ConstantCase<T> {
     return identifierWords(target).join("_").toUpperCase() as ConstantCase<T>

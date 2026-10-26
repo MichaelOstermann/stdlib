@@ -35,15 +35,18 @@ let lasts = new Int32Array(0)
  * function String.score(haystack: string, needle: string): number
  * ```
  *
- * Tells how well `needle` is found in `haystack`, for searching while typing: `0` when its characters are not all there in that order, and up to `1` the better they are.
+ * Tells how well `needle` is found in `haystack`, for searching while typing: `0` when its
+ * characters are not all there in that order, and up to `1` the better they are.
  *
  * - case is ignored
  * - characters in a row are better than ones that are apart
- * - characters at the start of a word are better than ones in the middle of it: after a space or punctuation, and where `camelCase` changes
+ * - characters at the start of a word are better than ones in the middle of it: after a space or
+ *   punctuation, and where `camelCase` changes
  * - the very start is the best place to be found
  * - of two that match as well, the shorter haystack is better
  *
- * The best way to place the characters is found, not the first one. An empty `needle` is found in everything.
+ * The best way to place the characters is found, not the first one. An empty `needle` is found in
+ * everything.
  *
  * ## Example
  *
@@ -58,7 +61,6 @@ let lasts = new Int32Array(0)
  *     .filter(result => result.score > 0)
  *     .sort((a, b) => b.score - a.score);
  * ```
- *
  */
 export function score(haystack: string, needle: string): number {
     if (!needle.length) return 1

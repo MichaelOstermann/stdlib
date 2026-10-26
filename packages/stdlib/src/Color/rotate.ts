@@ -9,7 +9,8 @@ import { parse } from "./parse"
  * Color.rotate(color, degrees)
  * ```
  *
- * Returns `color` with its hue turned by `degrees`, as an `oklch()` color. To set the hue instead, see `Color.hue`. A `color` that does not parse is returned as it is.
+ * Returns `color` with its hue turned by `degrees`, as an `oklch()` color. To set the hue instead,
+ * see `Color.hue`. A `color` that does not parse is returned as it is.
  *
  * ## Example
  *

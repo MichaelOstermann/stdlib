@@ -5,10 +5,11 @@
  * Object.set(target, key, value)
  * ```
  *
- * Sets the property `key` of a copy of `target` to `value`.
- * Returns `target` itself when it has that value already.
+ * Sets the property `key` of a copy of `target` to `value`. Returns `target` itself when it has
+ * that value already.
  *
- * Unlike `Object.merge(target, { [key]: value })`, a `key` that is not known until the code runs is checked.
+ * Unlike `Object.merge(target, { [key]: value })`, a `key` that is not known until the code runs is
+ * checked.
  *
  * ## Example
  *

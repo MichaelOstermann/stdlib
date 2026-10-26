@@ -18,7 +18,6 @@ import { identifierWords, pascalCaseWords } from "../internals/strings"
  * String.camelCase("hello world"); // "helloWorld"
  * String.camelCase("hello-world"); // "helloWorld"
  * ```
- *
  */
 export function camelCase<T extends string>(target: T): CamelCase<T> {
     const result = pascalCaseWords(identifierWords(target))

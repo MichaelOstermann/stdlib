@@ -7,7 +7,6 @@ use crate::Configuration;
 use crate::edits::Edits;
 use crate::rules;
 use crate::source::Source;
-use crate::source::tokenize;
 use crate::source::with_source;
 use crate::verify::Extra;
 use crate::verify::verify_ast;
@@ -73,33 +72,44 @@ pub fn format_text(path: &Path, text: &str, _config: &Configuration) -> Result<O
         return crate::json::format_json(path, text);
     }
 
-    let first_token = tokenize(path, text)?.first().map_or(text.len(), |token| token.start);
-    if is_ignored(&text[..first_token]) {
-        return Ok(None);
-    }
-
     let mut formatted = Cow::Borrowed(text);
-    for (pass, check) in PASSES {
-        // Sorting handles one level of nesting at a time.
-        let rounds = if matches!(check, Check::Sorted) { MAX_NESTING } else { 1 };
-        for _ in 0..rounds {
-            let edited = with_source(path, &formatted, |source| {
+    // The pass to run next, and how often it ran already.
+    let (mut next, mut rounds) = (0, 0);
+    // A parse serves every pass that leaves the text as it is: the text is only parsed again after an edit.
+    while next < PASSES.len() {
+        let edited = with_source(path, &formatted, |source| {
+            let first_token = source.tokens.first().map_or(source.text.len(), |token| token.start);
+            if next == 0 && is_ignored(&source.text[..first_token]) {
+                return None;
+            }
+            while let Some((pass, _)) = PASSES.get(next) {
                 let mut edits = Edits::default();
                 pass(source, &mut edits);
-                (!edits.is_empty()).then(|| (edits.apply(source.text), source.tokens.clone()))
-            })?;
-
-            let Some((edited, tokens)) = edited else { break };
-            match check {
-                Check::Tokens => verify_tokens(path, &formatted, &tokens, &edited, Extra::None)?,
-                Check::Braces => verify_tokens(path, &formatted, &tokens, &edited, Extra::Braces)?,
-                Check::Parens => verify_tokens(path, &formatted, &tokens, &edited, Extra::Parens)?,
-                Check::Sorted => verify_sorted(path, &formatted, &edited)?,
-                Check::Rewritten => verify_rewritten(path, &formatted, &tokens, &edited)?,
-                Check::Jsx => verify_jsx(path, &formatted, &tokens, &edited)?,
-                Check::Ast => verify_ast(path, &formatted, &edited)?,
+                if !edits.is_empty() {
+                    return Some((edits.apply(source.text), source.tokens.clone()));
+                }
+                (next, rounds) = (next + 1, 0);
             }
-            formatted = Cow::Owned(edited);
+            None
+        })?;
+
+        let Some((edited, tokens)) = edited else { break };
+        let (_, check) = &PASSES[next];
+        match check {
+            Check::Tokens => verify_tokens(path, &formatted, &tokens, &edited, Extra::None)?,
+            Check::Braces => verify_tokens(path, &formatted, &tokens, &edited, Extra::Braces)?,
+            Check::Parens => verify_tokens(path, &formatted, &tokens, &edited, Extra::Parens)?,
+            Check::Sorted => verify_sorted(path, &formatted, &edited)?,
+            Check::Rewritten => verify_rewritten(path, &formatted, &tokens, &edited)?,
+            Check::Jsx => verify_jsx(path, &formatted, &tokens, &edited)?,
+            Check::Ast => verify_ast(path, &formatted, &edited)?,
+        }
+        formatted = Cow::Owned(edited);
+
+        // Sorting handles one level of nesting at a time, so it runs again on what it sorted.
+        rounds += 1;
+        if !matches!(check, Check::Sorted) || rounds == MAX_NESTING {
+            (next, rounds) = (next + 1, 0);
         }
     }
 

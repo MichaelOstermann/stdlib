@@ -15,14 +15,13 @@
 //! Only the breaks between items are touched. An item that spans several lines itself, such as a
 //! callback, keeps its shape, and a list is left alone when joining it would swallow a comment.
 
-use std::collections::HashSet;
-
 use oxc_ast::ast::*;
 use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk;
 use oxc_parser::Kind;
 use oxc_span::GetSpan;
 use oxc_span::Span;
+use rustc_hash::FxHashSet;
 
 use crate::edits::Edits;
 use crate::source::Source;
@@ -30,11 +29,11 @@ use crate::source::Token;
 use crate::source::Tokens;
 
 pub fn run(source: &Source, edits: &mut Edits) {
-    Breaks { text: source.text, tokens: &source.tokens, edits, links: HashSet::new(), dots: Vec::new() }.visit_program(source.program);
+    Breaks { text: source.text, tokens: &source.tokens, edits, links: FxHashSet::default(), dots: Vec::new() }.visit_program(source.program);
 }
 
 pub fn unions(source: &Source, edits: &mut Edits) {
-    Unions(Breaks { text: source.text, tokens: &source.tokens, edits, links: HashSet::new(), dots: Vec::new() }).visit_program(source.program);
+    Unions(Breaks { text: source.text, tokens: &source.tokens, edits, links: FxHashSet::default(), dots: Vec::new() }).visit_program(source.program);
 }
 
 /// The whitespace, and possibly comments, between two tokens.
@@ -49,7 +48,7 @@ struct Breaks<'s> {
     tokens: &'s [Token],
     edits: &'s mut Edits,
     /// The links of chains already handled from their outermost link.
-    links: HashSet<Span>,
+    links: FxHashSet<Span>,
     /// The start of each property name in the chain being collected, and whether it is part of the root.
     dots: Vec<(u32, bool)>,
 }

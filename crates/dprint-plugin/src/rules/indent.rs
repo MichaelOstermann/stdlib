@@ -8,14 +8,13 @@
 //! Lines that begin inside a template literal are never touched, whether they hold text or code in a
 //! `${}`, and the inner lines of a block comment move together with its first line.
 
-use std::collections::HashSet;
-
 use oxc_ast::AstKind;
 use oxc_ast::ast::Expression;
 use oxc_ast::ast::TSType;
 use oxc_ast_visit::Visit;
 use oxc_parser::Kind;
 use oxc_span::GetSpan;
+use rustc_hash::FxHashSet;
 
 use crate::edits::Edits;
 use crate::source::Item;
@@ -27,7 +26,7 @@ pub fn run(source: &Source, edits: &mut Edits) {
     let text = source.text;
     let items = source.items();
 
-    let mut containers = Containers { text, list: Vec::new(), cases: HashSet::new() };
+    let mut containers = Containers { text, list: Vec::new(), cases: FxHashSet::default() };
     containers.visit_program(source.program);
     containers.brackets(source);
     let mut containers = containers.list;
@@ -178,7 +177,7 @@ struct Containers<'s> {
     text: &'s str,
     list: Vec<Container>,
     /// Ternaries that continue a list of cases, `: c ? d`, which line up with the ternary before them.
-    cases: HashSet<usize>,
+    cases: FxHashSet<usize>,
 }
 
 impl Containers<'_> {

@@ -7,8 +7,6 @@
 //! `space-before-blocks`, `space-before-function-paren`, `generator-star-spacing`, `yield-star-spacing`,
 //! `template-tag-spacing`, `no-multi-spaces`, and the spacing of calls, which ESLint left alone.
 
-use std::collections::HashSet;
-
 use oxc_ast::ast::*;
 use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk;
@@ -16,6 +14,7 @@ use oxc_parser::Kind;
 use oxc_span::GetSpan;
 use oxc_span::Span;
 use oxc_syntax::scope::ScopeFlags;
+use rustc_hash::FxHashSet;
 
 use crate::edits::Edits;
 use crate::source::Item;
@@ -50,22 +49,22 @@ struct Context<'s> {
     text: &'s str,
     tokens: &'s [Token],
     /// No space before: call and method parentheses, `object[key]`, `Foo<T>`, `i++`, `value!`, tagged templates.
-    tight_before: HashSet<usize>,
+    tight_before: FxHashSet<usize>,
     /// No space after: unary operators and the `<` of generics.
-    tight_after: HashSet<usize>,
+    tight_after: FxHashSet<usize>,
     /// A space before: binary operators, block braces, `function (`, `async (`.
-    spaced_before: HashSet<usize>,
+    spaced_before: FxHashSet<usize>,
     /// A space after: binary operators and generator stars.
-    spaced_after: HashSet<usize>,
+    spaced_after: FxHashSet<usize>,
     /// The `?` and `:` of conditional expressions and types, which are spaced like operators.
-    ternary: HashSet<usize>,
+    ternary: FxHashSet<usize>,
     /// Contextual keywords used as keywords: `as`, `satisfies`, `of`, `from`.
-    keywords: HashSet<usize>,
+    keywords: FxHashSet<usize>,
     /// Names following a `.`, which may look like keywords: `promise.catch`.
-    property_names: HashSet<usize>,
+    property_names: FxHashSet<usize>,
     /// Braces of JSX expressions, `{value}` and `{...spread}`, which are tight, and colons of JSX names,
     /// `xlink:href`, which are left alone.
-    jsx: HashSet<usize>,
+    jsx: FxHashSet<usize>,
 }
 
 impl<'s> Context<'s> {
@@ -76,14 +75,14 @@ impl<'s> Context<'s> {
         Self {
             text: source.text,
             tokens,
-            tight_before: HashSet::new(),
-            tight_after: HashSet::new(),
-            spaced_before: HashSet::new(),
-            spaced_after: HashSet::new(),
-            ternary: HashSet::new(),
-            keywords: HashSet::new(),
+            tight_before: FxHashSet::default(),
+            tight_after: FxHashSet::default(),
+            spaced_before: FxHashSet::default(),
+            spaced_after: FxHashSet::default(),
+            ternary: FxHashSet::default(),
+            keywords: FxHashSet::default(),
             property_names: after_dot.collect(),
-            jsx: HashSet::new(),
+            jsx: FxHashSet::default(),
         }
     }
 

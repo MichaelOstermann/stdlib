@@ -3,14 +3,13 @@
 //! Where the next line starts with something that would otherwise continue the statement, such as `(` or `[`,
 //! the semicolon moves to the start of that line: `;(a as B).run()`.
 
-use std::collections::HashSet;
-
 use oxc_ast::ast::*;
 use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk;
 use oxc_parser::Kind;
 use oxc_span::GetSpan;
 use oxc_span::Span;
+use rustc_hash::FxHashSet;
 
 use crate::edits::Edits;
 use crate::source::Source;
@@ -19,7 +18,7 @@ use crate::source::Token;
 
 pub fn run(source: &Source, edits: &mut Edits) {
     let text = source.text;
-    let mut context = Context { tokens: &source.tokens, kept: HashSet::new() };
+    let mut context = Context { tokens: &source.tokens, kept: FxHashSet::default() };
     context.visit_program(source.program);
 
     for (index, semicolon) in source.tokens.iter().enumerate() {
@@ -69,7 +68,7 @@ fn is_modifier(kind: Kind) -> bool {
 struct Context<'s> {
     tokens: &'s [Token],
     /// Semicolons that aren't statement ends, or that stand for an empty statement which must stay.
-    kept: HashSet<usize>,
+    kept: FxHashSet<usize>,
 }
 
 impl Context<'_> {

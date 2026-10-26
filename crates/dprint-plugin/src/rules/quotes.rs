@@ -4,14 +4,13 @@
 //! syntax allows it. Otherwise whichever of the two quotes needs fewer escapes wins. Template literals
 //! that are already there are left alone.
 
-use std::collections::HashSet;
-
 use oxc_ast::ast::Expression;
 use oxc_ast::ast::JSXAttributeValue;
 use oxc_ast::ast::PropertyKey;
 use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk;
 use oxc_parser::Kind;
+use rustc_hash::FxHashSet;
 
 use crate::edits::Edits;
 use crate::source::Source;
@@ -32,9 +31,9 @@ pub fn run(source: &Source, edits: &mut Edits) {
 #[derive(Default)]
 struct Context {
     /// Strings that are plain expressions, where a template literal means the same.
-    expressions: HashSet<usize>,
+    expressions: FxHashSet<usize>,
     /// Strings that are JSX attribute values, where a backslash doesn't escape anything.
-    jsx: HashSet<usize>,
+    jsx: FxHashSet<usize>,
 }
 
 impl<'a> Visit<'a> for Context {

@@ -16,14 +16,13 @@
 //! with a `return`, and a `{ return a` that starts on the line of the `=>` loses both: `() => a`.
 //! `else`, `catch` and `finally` start a line.
 
-use std::collections::HashSet;
-
 use oxc_ast::ast::*;
 use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk;
 use oxc_parser::Kind;
 use oxc_span::GetSpan;
 use oxc_span::Span;
+use rustc_hash::FxHashSet;
 
 use crate::edits::Edits;
 use crate::source::Source;
@@ -31,7 +30,7 @@ use crate::source::Token;
 use crate::source::Tokens;
 
 pub fn run(source: &Source, edits: &mut Edits) {
-    let mut blocks = Blocks { text: source.text, tokens: &source.tokens, edits, chained: HashSet::new(), relaxed: HashSet::new(), joined: HashSet::new(), bare: HashSet::new() };
+    let mut blocks = Blocks { text: source.text, tokens: &source.tokens, edits, chained: FxHashSet::default(), relaxed: FxHashSet::default(), joined: FxHashSet::default(), bare: FxHashSet::default() };
     blocks.visit_program(source.program);
 }
 
@@ -40,13 +39,13 @@ struct Blocks<'s> {
     tokens: &'s [Token],
     edits: &'s mut Edits,
     /// `if` statements that follow an `else`, and were handled together with the `if` before it.
-    chained: HashSet<Span>,
+    chained: FxHashSet<Span>,
     /// Blocks that may stay on one line: those that just throw.
-    relaxed: HashSet<Span>,
+    relaxed: FxHashSet<Span>,
     /// Blocks of a `try` that are joined onto one line.
-    joined: HashSet<Span>,
+    joined: FxHashSet<Span>,
     /// Blocks that are losing their braces.
-    bare: HashSet<Span>,
+    bare: FxHashSet<Span>,
 }
 
 #[derive(Clone, Copy, PartialEq)]

@@ -8,14 +8,13 @@
 //! a line. With the first break before its `:`, it is a list of cases and keeps that break: `a ? b`, then
 //! `: c ? d` and `: e` on lines of their own. Without a break, the whole ternary is joined.
 
-use std::collections::HashSet;
-
 use oxc_ast::ast::*;
 use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk;
 use oxc_parser::Kind;
 use oxc_span::GetSpan;
 use oxc_span::Span;
+use rustc_hash::FxHashSet;
 
 use crate::edits::Edits;
 use crate::source::Source;
@@ -23,7 +22,7 @@ use crate::source::Token;
 use crate::source::Tokens;
 
 pub fn run(source: &Source, edits: &mut Edits) {
-    let mut operators = Operators { text: source.text, tokens: &source.tokens, edits, cases: HashSet::new() };
+    let mut operators = Operators { text: source.text, tokens: &source.tokens, edits, cases: FxHashSet::default() };
     operators.commas();
     operators.visit_program(source.program);
 }
@@ -33,7 +32,7 @@ struct Operators<'s> {
     tokens: &'s [Token],
     edits: &'s mut Edits,
     /// The alternates of ternaries that are a list of cases, which continue the list.
-    cases: HashSet<Span>,
+    cases: FxHashSet<Span>,
 }
 
 impl Operators<'_> {

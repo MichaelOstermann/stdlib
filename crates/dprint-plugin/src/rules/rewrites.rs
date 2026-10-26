@@ -6,12 +6,11 @@
 //!
 //! A name imported twice in one statement, `import { a, a } from "b"`, is imported once.
 
-use std::collections::HashSet;
-
 use oxc_ast::ast::*;
 use oxc_parser::Kind;
 use oxc_span::GetSpan;
 use oxc_span::Span;
+use rustc_hash::FxHashSet;
 
 use crate::edits::Edits;
 use crate::source::Source;
@@ -102,7 +101,7 @@ pub fn dedupe(source: &Source, edits: &mut Edits) {
         let Statement::ImportDeclaration(import) = statement else { continue };
         let Some(specifiers) = &import.specifiers else { continue };
 
-        let mut names = HashSet::new();
+        let mut names = FxHashSet::default();
         for specifier in specifiers {
             if names.insert(specifier.local().name.as_str()) {
                 continue;

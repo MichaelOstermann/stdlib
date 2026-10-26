@@ -25,6 +25,17 @@
         "type-fest": "^5.0.0",
       },
     },
+    "packages/stdlib-cli": {
+      "name": "@monstermann/stdlib-cli",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@monstermann/stdlib": "workspace:*",
+        "@monstermann/stdlib-transform": "workspace:*",
+      },
+      "peerDependencies": {
+        "@monstermann/stdlib": "workspace:^",
+      },
+    },
     "packages/stdlib-react": {
       "name": "@monstermann/stdlib-react",
       "version": "0.1.0",
@@ -371,6 +382,8 @@
     "@monstermann/barrels-treeshake": ["@monstermann/barrels-treeshake@0.5.0", "", { "dependencies": { "magic-string": "^1.4.2", "oxc-parser": "^0.152.0" } }, "sha512-euCpsBf9gw70XlA9UWx7hD0+0D5U6vSskNn3v3K2pJqw1ds1Agj7rwBPmnNf/KItXkauaPxG9YmmrmDKM000kw=="],
 
     "@monstermann/stdlib": ["@monstermann/stdlib@workspace:packages/stdlib"],
+
+    "@monstermann/stdlib-cli": ["@monstermann/stdlib-cli@workspace:packages/stdlib-cli"],
 
     "@monstermann/stdlib-react": ["@monstermann/stdlib-react@workspace:packages/stdlib-react"],
 

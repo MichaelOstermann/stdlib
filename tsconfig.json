@@ -5,6 +5,7 @@
         "paths": {
             "@monstermann/stdlib": ["./packages/stdlib/src/index.ts"],
             "@monstermann/stdlib/*": ["./packages/stdlib/src/*"],
+            "@monstermann/stdlib-cli": ["./packages/stdlib-cli/src/index.ts"],
             "@monstermann/stdlib-web": ["./packages/stdlib-web/src/index.ts"]
         }
     },

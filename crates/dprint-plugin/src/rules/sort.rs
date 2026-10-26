@@ -1,7 +1,11 @@
 //! `perfectionist/sort-imports`, `sort-exports`, `sort-objects`, `sort-interfaces`, `sort-object-types`,
-//! `sort-classes`, `sort-jsx-props`, `sort-named-imports` and `sort-named-exports`.
+//! `sort-classes`, `sort-jsx-props`, `sort-named-imports`, `sort-named-exports` and `sort-union-types`.
 //!
 //! Members are sorted by group, then by name in natural order, ignoring case: `a2` comes before `a10`.
+//!
+//! A union ends with `null`, `undefined` and `void`. The rest is sorted when it is all literals, or all object
+//! types with literal properties in common, the tags: those are sorted by their tags, and list them first.
+//! Other unions keep their order.
 //! A spread, `...a`, splits a list in two, since what comes after it can override what came before.
 //!
 //! A member takes the comments on the lines right above it, and the one at the end of its line, with it.
@@ -29,7 +33,7 @@ const PARTITION_BY_COMMENT: bool = false;
 pub fn run(source: &Source, edits: &mut Edits) {
     let mut comments: Vec<(usize, usize)> = source.program.comments.iter().map(|comment| (comment.span.start as usize, comment.span.end as usize)).collect();
     comments.sort_unstable();
-    Sort { text: source.text, tokens: &source.tokens, comments, edits, moved: Vec::new() }.visit_program(source.program);
+    Sort { text: source.text, tokens: &source.tokens, comments, edits, moved: Vec::new(), tags: Vec::new() }.visit_program(source.program);
 }
 
 struct Sort<'s> {
@@ -39,6 +43,8 @@ struct Sort<'s> {
     edits: &'s mut Edits,
     /// The lists that were reordered. Lists nested in them wait for the next pass.
     moved: Vec<(usize, usize)>,
+    /// The tags of the object types written in a union, by the span of each object type.
+    tags: Vec<(Span, Vec<String>)>,
 }
 
 /// A member of a list, or something that splits the list in two.
@@ -349,7 +355,20 @@ impl Sort<'_> {
 
     /// The members of an interface or type literal: index signatures, properties, multi-line properties,
     /// methods, multi-line methods.
-    fn signatures(&mut self, members: &[TSSignature]) {
+    /// The properties of an object type whose type is a literal or a union of literals, with that type.
+    fn literal_properties(&self, object: &TSTypeLiteral) -> Vec<(String, String)> {
+        let properties = object.members.iter().filter_map(|member| match member {
+            TSSignature::TSPropertySignature(property) if matches!(property.key, PropertyKey::StaticIdentifier(_) | PropertyKey::StringLiteral(_)) => {
+                let annotation = property.type_annotation.as_ref().filter(|annotation| is_literal_type(&annotation.type_annotation))?;
+                Some((self.key_name(&property.key), self.slice(annotation.type_annotation.span()).to_string()))
+            }
+            _ => None,
+        });
+        properties.collect()
+    }
+
+    /// `tags` are the properties that go first.
+    fn signatures(&mut self, members: &[TSSignature], tags: &[String]) {
         // The order of call signatures decides which overload TypeScript picks.
         if members.iter().any(|member| matches!(member, TSSignature::TSCallSignatureDeclaration(_) | TSSignature::TSConstructSignatureDeclaration(_))) {
             return;
@@ -361,17 +380,18 @@ impl Sort<'_> {
             let multiline = self.multiline(span);
 
             let (group, name) = match member {
-                TSSignature::TSIndexSignature(signature) => (0, before_annotation(Some(&signature.type_annotation)).to_string()),
+                TSSignature::TSIndexSignature(signature) => (1, before_annotation(Some(&signature.type_annotation)).to_string()),
                 TSSignature::TSPropertySignature(property) => {
                     let name = match &property.key {
                         PropertyKey::StaticIdentifier(_) | PropertyKey::StringLiteral(_) | PropertyKey::Identifier(_) => self.key_name(&property.key),
                         _ => before_annotation(property.type_annotation.as_deref()).trim_end_matches('?').to_string(),
                     };
                     let method = property.type_annotation.as_ref().is_some_and(|annotation| is_function_type(&annotation.type_annotation));
-                    (if method { 3 + usize::from(multiline) } else { 1 + usize::from(multiline) }, name)
+                    let group = if tags.contains(&name) { 0 } else if method { 4 + usize::from(multiline) } else { 2 + usize::from(multiline) };
+                    (group, name)
                 }
-                TSSignature::TSMethodSignature(method) => (3 + usize::from(multiline), self.key_name(&method.key)),
-                _ => (1 + usize::from(multiline), text.to_string()),
+                TSSignature::TSMethodSignature(method) => (4 + usize::from(multiline), self.key_name(&method.key)),
+                _ => (2 + usize::from(multiline), text.to_string()),
             };
             Entry::Member { span, group, name }
         });
@@ -386,6 +406,18 @@ enum MemberKind {
     Accessor,
     Constructor,
     Method,
+}
+
+fn is_literal_type(r#type: &TSType) -> bool {
+    match r#type {
+        TSType::TSLiteralType(_) => true,
+        TSType::TSUnionType(union) => union.types.iter().all(|r#type| matches!(r#type, TSType::TSLiteralType(_))),
+        _ => false,
+    }
+}
+
+fn is_nullish(r#type: &TSType) -> bool {
+    matches!(r#type, TSType::TSNullKeyword(_) | TSType::TSUndefinedKeyword(_) | TSType::TSVoidKeyword(_))
 }
 
 fn is_function_type(r#type: &TSType) -> bool {
@@ -415,6 +447,16 @@ fn natural(a: &str, b: &str) -> Ordering {
         };
     }
     a.len().cmp(&b.len())
+}
+
+/// Numbers by their value and before everything else, which is in natural order.
+fn literal_order(a: &str, b: &str) -> Ordering {
+    match (a.parse::<f64>(), b.parse::<f64>()) {
+        (Ok(a), Ok(b)) => a.total_cmp(&b),
+        (Ok(_), Err(_)) => Ordering::Less,
+        (Err(_), Ok(_)) => Ordering::Greater,
+        (Err(_), Err(_)) => natural(a, b),
+    }
 }
 
 fn number(chunk: &str) -> Option<f64> {
@@ -485,13 +527,56 @@ impl<'a> Visit<'a> for Sort<'_> {
     }
 
     fn visit_ts_interface_body(&mut self, it: &TSInterfaceBody<'a>) {
-        self.signatures(&it.body);
+        self.signatures(&it.body, &[]);
         walk::walk_ts_interface_body(self, it);
     }
 
     fn visit_ts_type_literal(&mut self, it: &TSTypeLiteral<'a>) {
-        self.signatures(&it.members);
+        let tags = self.tags.iter().find(|(span, _)| *span == it.span).map(|(_, tags)| tags.clone()).unwrap_or_default();
+        self.signatures(&it.members, &tags);
         walk::walk_ts_type_literal(self, it);
+    }
+
+    fn visit_ts_union_type(&mut self, it: &TSUnionType<'a>) {
+        let objects: Vec<&TSTypeLiteral> = it.types.iter().filter_map(|r#type| if let TSType::TSTypeLiteral(object) = r#type { Some(&**object) } else { None }).collect();
+        let properties: Vec<Vec<(String, String)>> = objects.iter().map(|object| self.literal_properties(object)).collect();
+        let mut tags: Vec<String> = properties.first().map(|first| first.iter().map(|(name, _)| name.clone()).collect()).unwrap_or_default();
+        tags.retain(|tag| properties.iter().all(|properties| properties.iter().any(|(name, _)| name == tag)));
+        tags.sort_by(|a, b| natural(a, b));
+        self.tags.extend(objects.iter().map(|object| (object.span, tags.clone())));
+
+        let rest = || it.types.iter().filter(|r#type| !is_nullish(r#type));
+        let literals = rest().all(|r#type| matches!(r#type, TSType::TSLiteralType(_)));
+        let tagged = !tags.is_empty() && rest().all(|r#type| matches!(r#type, TSType::TSTypeLiteral(_)));
+        let mut objects = properties.iter();
+        // What each member is sorted by: a literal by itself, an object type by its tags, the first one first.
+        let keys: Vec<Vec<&str>> = it.types.iter().map(|r#type| {
+            let properties = matches!(r#type, TSType::TSTypeLiteral(_)).then(|| objects.next()).flatten();
+            match r#type {
+                TSType::TSLiteralType(_) if literals => vec![self.slice(r#type.span())],
+                TSType::TSTypeLiteral(_) if tagged => {
+                    let properties = properties.expect("one per object type");
+                    tags.iter().map(|tag| properties.iter().find(|(name, _)| name == tag).map_or("", |(_, value)| value.as_str())).collect()
+                }
+                _ => Vec::new(),
+            }
+        }).collect();
+        // `list` sorts names in natural order, which reads `-1` as text: each member is named after its rank instead.
+        let rank = |key: &Vec<&str>| keys.iter().filter(|other| other.iter().zip(key).map(|(a, b)| literal_order(a, b)).find(|order| order.is_ne()).unwrap_or(Ordering::Equal).is_lt()).count();
+        // With a `|` in front of every member, each member moves with its `|`, and with the comments above it.
+        let pipe = |r#type: &TSType| self.token_before(r#type.span().start as usize).filter(|token| token.kind == Kind::Pipe);
+        let leading = it.types.iter().all(|r#type| pipe(r#type).is_some());
+        // Without one in front of the first member, a comment above a `|` would stay behind.
+        let stranded = it.types.iter().filter_map(pipe).any(|pipe| self.token_before(pipe.start).is_some_and(|before| !self.comments_between(before.end, pipe.start).is_empty()));
+        if !leading && stranded {
+            walk::walk_ts_union_type(self, it);
+            return;
+        }
+        let span = |r#type: &TSType| pipe(r#type).filter(|_| leading).map_or(r#type.span(), |pipe| Span::new(pipe.start as u32, r#type.span().end));
+        let entries = it.types.iter().zip(&keys).map(|(r#type, key)| Entry::Member { span: span(r#type), group: usize::from(is_nullish(r#type)), name: rank(key).to_string() });
+        let entries = entries.collect();
+        self.list(entries);
+        walk::walk_ts_union_type(self, it);
     }
 
     fn visit_jsx_opening_element(&mut self, it: &JSXOpeningElement<'a>) {
@@ -588,6 +673,36 @@ mod tests {
         assert_eq!(format("type A = { b: string, a?: number }\n"), "type A = { a?: number, b: string }\n");
         assert_eq!(format("interface A {\n    c: 1\n    [b]: 2\n    a: 3\n}\n"), "interface A {\n    a: 3\n    [b]: 2\n    c: 1\n}\n");
         unchanged("interface A {\n    (b: string): void\n    (a: number): void\n    c: 1\n    a: 2\n}\n");
+    }
+
+    #[test]
+    fn unions() {
+        assert_eq!(format("type A = \"lg\" | \"base\" | \"sm\" | \"xs\"\n"), "type A = \"base\" | \"lg\" | \"sm\" | \"xs\"\n");
+        assert_eq!(format("type A = 10 | 2 | -1 | -10\ntype B = true | false\n"), "type A = -10 | -1 | 2 | 10\ntype B = false | true\n");
+        assert_eq!(format("type A = null | \"b\" | undefined | \"a\"\n"), "type A = \"a\" | \"b\" | null | undefined\n");
+        assert_eq!(format("type A = null | (() => void) | B\ntype C = void | Promise<void>\n"), "type A = (() => void) | B | null\ntype C = Promise<void> | void\n");
+        assert_eq!(format("type A =\n    | \"b\" // b\n    | \"a\"\n"), "type A =\n    | \"a\"\n    | \"b\" // b\n");
+        assert_eq!(format("type A =\n    // About b.\n    | \"b\"\n    /** About a. */\n    | \"a\" /* a */\n"), "type A =\n    /** About a. */\n    | \"a\" /* a */\n    // About b.\n    | \"b\"\n");
+        assert_eq!(format("type A =\n    | \"b\"\n    // About null.\n    | null\n    | \"a\"\n"), "type A =\n    | \"a\"\n    | \"b\"\n    // About null.\n    | null\n");
+        unchanged("type A = \"b\"\n    // About a.\n    | \"a\"\n");
+        // Mixed unions keep their order, apart from the nullish members.
+        unchanged("type A = Message | string | \"none\" | null\ntype B = T | ((value: T) => T)\ntype C = `${D}` | \"b\" | \"a\"\n");
+    }
+
+    #[test]
+    fn discriminated_unions() {
+        assert_eq!(
+            format("type A =\n    | { radius: number, type: \"circle\" }\n    | { height: number, type: \"rect\" }\n    | { type: \"point\" }\n"),
+            "type A =\n    | { type: \"circle\", radius: number }\n    | { type: \"point\" }\n    | { type: \"rect\", height: number }\n",
+        );
+        assert_eq!(format("type A = { ok: true, value: B } | { error: string, ok: false }\n"), "type A = { ok: false, error: string } | { ok: true, value: B }\n");
+        assert_eq!(format("type A = null | { b: 1, type: \"z\" } | { a: 2, type: \"y\" }\n"), "type A = { type: \"y\", a: 2 } | { type: \"z\", b: 1 } | null\n");
+        assert_eq!(format("type A = { key: string, type: \"keydown\" | \"keyup\" } | { type: \"blur\" }\n"), "type A = { type: \"blur\" } | { type: \"keydown\" | \"keyup\", key: string }\n");
+        assert_eq!(format("type A = { kind: \"a\" | \"b\", name: \"b\" } | { kind: \"a\" | \"b\", name: \"a\" }\n"), "type A = { kind: \"a\" | \"b\", name: \"a\" } | { kind: \"a\" | \"b\", name: \"b\" }\n");
+        // Named members keep the order around the object types, which still list their tags first.
+        assert_eq!(format("type A = { b: 1, type: \"z\" } | B | { a: 2, type: \"y\" }\n"), "type A = { type: \"z\", b: 1 } | B | { type: \"y\", a: 2 }\n");
+        // Outside a union, and without a tag in common, members are sorted by name.
+        assert_eq!(format("type A = { url: string, method: \"GET\" }\ntype B = { b: \"b\" } | { a: \"a\" }\n"), "type A = { method: \"GET\", url: string }\ntype B = { b: \"b\" } | { a: \"a\" }\n");
     }
 
     #[test]

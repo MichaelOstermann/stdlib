@@ -15,3 +15,4 @@ pub mod rewrites;
 pub mod semicolons;
 pub mod sort;
 pub mod spacing;
+pub mod wrap;

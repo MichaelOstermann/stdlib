@@ -36,7 +36,7 @@ enum Check {
 
 /// Each pass sees the output of the one before it, so rules in different passes never produce conflicting edits.
 /// `lines` runs last to tidy up whatever the earlier passes inserted or removed.
-const PASSES: [(fn(&Source, &mut Edits), Check); 23] = [
+const PASSES: [(fn(&Source, &mut Edits), Check); 24] = [
     (rules::parens::run, Check::Ast),
     (rules::parens::functions, Check::Parens),
     (rules::rewrites::functions, Check::Rewritten),
@@ -61,6 +61,7 @@ const PASSES: [(fn(&Source, &mut Edits), Check); 23] = [
     (rules::spacing::run, Check::Tokens),
     (rules::padding::run, Check::Tokens),
     (rules::indent::run, Check::Tokens),
+    (rules::wrap::run, Check::Tokens),
     (rules::lines::run, Check::Tokens),
 ];
 

@@ -26,6 +26,6 @@
         "remeda": "2.53.0",
         "ts-pattern": "5.9.0",
         "tsdown": "^0.23.0",
-        "typescript": "^6.0.0"
+        "typescript": "^7.0.0"
     }
 }

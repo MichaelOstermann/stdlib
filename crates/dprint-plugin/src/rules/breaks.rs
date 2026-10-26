@@ -391,7 +391,7 @@ mod tests {
         assert_eq!(format("function f(\n    a: string, b: number) {}\n"), "function f(\n    a: string,\n    b: number,\n) {}\n");
         assert_eq!(format("import {\n    a, b } from \"a\"\n"), "import {\n    a,\n    b,\n} from \"a\"\n");
         assert_eq!(format("const {\n    a, ...b } = c\n"), "const {\n    a,\n    ...b\n} = c\n");
-        assert_eq!(format("type A = Map<\n    string, number>\n"), "type A = Map<\n    string,\n    number,\n>\n");
+        assert_eq!(format("type A = Map<\n    string, number>\n"), "type A = Map<\n    string,\n    number\n>\n");
     }
 
     #[test]

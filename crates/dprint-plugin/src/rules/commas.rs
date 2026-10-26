@@ -1,6 +1,7 @@
 //! `comma-dangle` and `member-delimiter-style`.
 //!
 //! A list whose closing bracket sits on its own line ends with a comma, and a list on one line doesn't.
+//! Type arguments never end with one, since TypeScript rejects it there.
 //! Members of interfaces and type literals are separated by commas on one line, and by nothing but the
 //! line break when they are on lines of their own.
 
@@ -34,8 +35,8 @@ impl Commas<'_> {
         self.tokens.get(index).copied()
     }
 
-    /// Adds or removes the comma after the last item of a list. `allowed` is false after a rest element,
-    /// which can't be followed by one.
+    /// Adds or removes the comma after the last item of a list. `allowed` is false where a comma is an
+    /// error: after a rest element, and after type arguments.
     fn trailing(&mut self, last: Option<Span>, allowed: bool) {
         let Some(last) = last else { return };
         let Some(after) = self.token_at(last.end) else { return };
@@ -49,7 +50,7 @@ impl Commas<'_> {
         let multiline = self.text[last.end as usize..closing.start].contains('\n');
         match comma {
             None if multiline && allowed => self.edits.replace(last.end as usize, last.end as usize, ","),
-            Some(comma) if !multiline => self.edits.delete(comma.start, comma.end),
+            Some(comma) if !multiline || !allowed => self.edits.delete(comma.start, comma.end),
             _ => {}
         }
     }
@@ -174,7 +175,7 @@ impl<'a> Visit<'a> for Commas<'_> {
     }
 
     fn visit_ts_type_parameter_instantiation(&mut self, it: &TSTypeParameterInstantiation<'a>) {
-        self.trailing(it.params.last().map(GetSpan::span), true);
+        self.trailing(it.params.last().map(GetSpan::span), false);
         walk::walk_ts_type_parameter_instantiation(self, it);
     }
 
@@ -224,7 +225,6 @@ mod tests {
         assert_eq!(format("import {\n    a,\n    b\n} from \"a\"\nexport {\n    a,\n    b\n}\n"), "import {\n    a,\n    b,\n} from \"a\"\nexport {\n    a,\n    b,\n}\n");
         assert_eq!(format("enum A {\n    B,\n    C\n}\ntype D = [\n    string,\n    number\n]\n"), "enum A {\n    B,\n    C,\n}\ntype D = [\n    string,\n    number,\n]\n");
         assert_eq!(format("const a = [\n    1,\n    2 // note\n]\n"), "const a = [\n    1,\n    2, // note\n]\n");
-        assert_eq!(format("type A = Map<\n    string,\n    number\n>\n"), "type A = Map<\n    string,\n    number,\n>\n");
     }
 
     #[test]
@@ -249,6 +249,14 @@ mod tests {
         let tsx = |text: &str| format_text(Path::new("test.tsx"), text, &Configuration::default()).unwrap().unwrap_or_else(|| text.to_string());
         assert_eq!(tsx("const a = <B,>(b: B) => b\n"), "const a = <B,>(b: B) => b\n");
         assert_eq!(tsx("const a = <B extends C,>(b: B) => b\nconst d = <E, F,>(e: E, f: F) => e\n"), "const a = <B extends C>(b: B) => b\nconst d = <E, F>(e: E, f: F) => e\n");
+    }
+
+    #[test]
+    fn type_arguments() {
+        assert_eq!(format("type A = Map<\n    string,\n    number\n>\n"), "type A = Map<\n    string,\n    number\n>\n");
+        assert_eq!(format("type A = Map<\n    string,\n    number,\n>\n"), "type A = Map<\n    string,\n    number\n>\n");
+        assert_eq!(format("type A = B<\n    | string\n    | number\n>\n"), "type A = B<\n    | string\n    | number\n>\n");
+        assert_eq!(format("const a = f<\n    B,\n>()\nconst c = new D<E,>()\n"), "const a = f<\n    B\n>()\nconst c = new D<E>()\n");
     }
 
     #[test]

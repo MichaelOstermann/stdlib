@@ -276,7 +276,7 @@ mod tests {
         restores("foo(a, {\n    b: 1,\n})\n");
         restores("foo(\n    a,\n    (b) => {\n        c()\n    },\n)\n");
         restores("function f(\n    a: string,\n    b: number,\n): void {\n    c()\n}\n");
-        restores("type A = Map<\n    string,\n    number,\n>\n");
+        restores("type A = Map<\n    string,\n    number\n>\n");
     }
 
     #[test]

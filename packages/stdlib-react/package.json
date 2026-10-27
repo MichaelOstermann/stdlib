@@ -46,7 +46,7 @@
         "@monstermann/stdlib-web": "workspace:*",
         "@types/react": "^19",
         "@types/react-dom": "^19",
-        "oxc-transform-react": "^0.153.0",
+        "oxc-transform-react": "^0.156.0",
         "react-dom": "^19"
     }
 }

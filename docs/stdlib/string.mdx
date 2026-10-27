@@ -13,7 +13,7 @@ String.titleCase("hello world") // "Hello World"
 String.uncapitalize("Hello World") // "hello World"
 
 String.dedent("    a\\n      b") // "a\\n  b"
-String.score("Settings", "set") // 0.94
+String.score("Settings", "set") // 0.89
 String.slug("Hello World!") // "hello-world"
 String.escapeHTML("<b>Tom & Jerry</b>") // "&lt;b&gt;Tom &amp; Jerry&lt;/b&gt;"
 
@@ -29,7 +29,7 @@ This function is designed for general purpose fuzzy searching, such as menus, co
 ```ts
 const results = items
     .map((item) => ({ item, score: String.score(item.title, query) }))
-    .filter((result) => result.score > 0)
+    .filter((result) => result.score > 0.4)
     .sort((a, b) => b.score - a.score)
     .map((result) => result.item)
 ```
@@ -49,4 +49,4 @@ const results = items
 
 `String.slug` transliterates like `@sindresorhus/slugify`, at 6.1 KB instead of 8.8 KB gzipped, and 100 to 1000 times faster. Unlike it, it doesn't split words where the case changes: `GitHub` is `github` instead of `git-hub`, and `Ψυχή` is `psyxi` instead of `p-syxi`. It also keeps `Œ` as `oe`, which it drops, and drops symbols like `♥` instead of spelling them out.
 
-`String.score` finds the best way to place the query's characters instead of the first one, at 0.9 KB instead of 3.7 KB gzipped. fuzzysort is faster, but filtering 1000 items with `String.score` still takes 0.1ms at most per keystroke, and fuzzysort keeps every string it scored in a cache that only `fuzzysort.cleanup()` clears.
+`String.score` scores the way fuzzysort does, at 2.7 KB instead of 7.6 KB gzipped, without the cache of every string it scored that only `fuzzysort.cleanup()` clears. Without that cache it takes about 1.5 times as long, which is still about 0.04ms per keystroke for filtering 1000 items.

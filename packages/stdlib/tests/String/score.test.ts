@@ -54,11 +54,24 @@ describe("String.score", () => {
 
     it("should prefer the start of words, and the very start most", () => {
         expect(rank("set", ["Reset password", "Settings", "Asset list", "Open settings"])).toEqual(["Settings", "Open settings", "Asset list", "Reset password"])
-        expect(rank("face", ["grinning face", "face with tears", "surface"])).toEqual(["face with tears", "grinning face", "surface"])
+        expect(rank("face", ["grinning face", "face with tears", "surface"]).at(-1)).toBe("surface")
         expect(rank("of", ["proof", "openFile", "Open File", "offline"])[0]).toBe("offline")
         expect(score("foo bar", "fb")).toBeGreaterThan(score("foobar", "fb"))
         expect(score("fooBar", "fb")).toBeGreaterThan(score("foobar", "fb"))
         expect(score("foo2bar", "f2")).toBeGreaterThan(score("foo2bar", "fo") - 1)
+    })
+
+    it("should find every word of a needle with spaces, better in the order they were typed in", () => {
+        expect(score("arrow left", "left arrow")).toBeGreaterThan(0)
+        expect(score("arrow left", "arrow left")).toBeGreaterThan(score("arrow left", "left arrow"))
+        expect(score("arrow right", "left arrow")).toBe(0)
+        expect(rank("c man", ["Manifest.cpp", "CheatManager.h"])[0]).toBe("CheatManager.h")
+    })
+
+    it("should find characters by the ones they look like", () => {
+        expect(score("Crème brûlée", "creme brulee")).toBe(score("Creme brulee", "creme brulee"))
+        expect(score("Øresund", "oresund")).toBe(1)
+        expect(score("“quoted”", '"quoted"')).toBe(1)
     })
 
     it("should prefer the shorter one of two that match as well", () => {

@@ -1,43 +1,59 @@
 export interface Timer {
+    /** When the callback is due, a restart only moves it instead of setting a timeout again. */
+    due: number
     tid: ReturnType<typeof setTimeout> | undefined
     timeout: number
     callback: () => void
 }
 
-type Timers = Timer | Iterable<Timer>
+type Timers = Timer | Set<Timer>
 
 export function createTimer(timeout: number, callback: () => void): Timer {
     return {
         callback,
+        due: 0,
         tid: undefined,
         timeout,
     }
 }
 
 export function clearTimer(timer: Timers): void {
-    if (isIterable(timer)) return Array.from(timer).forEach(clearTimer)
+    if (timer instanceof Set) {
+        for (const t of timer) clearTimer(t)
+        return
+    }
     if (timer.timeout < 0) return
     clearTimeout(timer.tid)
     timer.tid = undefined
 }
 
 export function startTimer(timer: Timers): void {
-    if (isIterable(timer)) return Array.from(timer).forEach(startTimer)
+    if (timer instanceof Set) {
+        for (const t of timer) startTimer(t)
+        return
+    }
     if (timer.timeout < 0) return
     if (timer.tid != null) return
-    timer.tid = setTimeout(() => {
-        timer.tid = undefined
-        timer.callback()
-    }, timer.timeout)
+    timer.due = performance.now() + timer.timeout
+    arm(timer, timer.timeout)
 }
 
 export function restartTimer(timer: Timers): void {
-    if (isIterable(timer)) return Array.from(timer).forEach(restartTimer)
+    if (timer instanceof Set) {
+        for (const t of timer) restartTimer(t)
+        return
+    }
     if (timer.timeout < 0) return
-    clearTimer(timer)
-    startTimer(timer)
+    timer.due = performance.now() + timer.timeout
+    if (timer.tid == null) arm(timer, timer.timeout)
 }
 
-function isIterable(value: unknown): value is Iterable<unknown> {
-    return value != null && typeof (value as any)[Symbol.iterator] === "function"
+function arm(timer: Timer, delay: number): void {
+    timer.tid = setTimeout(() => {
+        // Restarted in the meantime: waits for what is left.
+        const left = timer.due - performance.now()
+        if (left > 0) return arm(timer, left)
+        timer.tid = undefined
+        timer.callback()
+    }, delay)
 }

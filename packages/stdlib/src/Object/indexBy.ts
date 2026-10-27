@@ -19,6 +19,11 @@ import { setOwn } from "../internals/objects"
 export function indexBy<T, K extends PropertyKey>(items: Iterable<T>, key: (item: T, index: number) => K): Partial<Record<K, T>> {
     const result: Partial<Record<K, T>> = {}
     let index = 0
-    for (const item of items) setOwn(result, key(item, index++), item)
+    for (const item of items) {
+        const itemKey = key(item, index++)
+        // Assigned, `defineProperty` for every key takes many times as long.
+        if (itemKey === "__proto__") setOwn(result, itemKey, item)
+        else result[itemKey] = item
+    }
     return result
 }

@@ -20,7 +20,10 @@ export function pick<T extends object, K extends KeysOfUnion<T>>(target: T, keys
 export function pick(target: Record<PropertyKey, unknown>, keys: Iterable<PropertyKey>): Record<PropertyKey, unknown> {
     const result: Record<PropertyKey, unknown> = {}
     for (const key of keys) {
-        if (Object.hasOwn(target, key)) setOwn(result, key, target[key])
+        if (!Object.hasOwn(target, key)) continue
+        // Assigned, `defineProperty` for every key takes many times as long.
+        if (key === "__proto__") setOwn(result, key, target[key])
+        else result[key] = target[key]
     }
     return result
 }

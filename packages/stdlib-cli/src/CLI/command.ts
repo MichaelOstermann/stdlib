@@ -34,9 +34,6 @@ type Value<I> =
  * }): Command
  * ```
  *
- * A command, with what was left out filled in: enabled, not hidden, no commands, no options, and
- * options that are required, not hidden and given as strings.
- *
  * ## Example
  *
  * ```ts
@@ -48,7 +45,7 @@ type Value<I> =
  *         port: { desc: "Port to listen on", default: "3000", parse: Number },
  *         nickname: { desc: "Nickname of the member", optional: true },
  *     },
- *     handler({ email, port, nickname }) {}, // string, number, string | undefined
+ *     handler({ email, port, nickname }) {},
  * });
  * ```
  */

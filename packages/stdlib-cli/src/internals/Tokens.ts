@@ -4,7 +4,10 @@ export interface Token {
     prev: Token | undefined
     tokens: Tokens
     value: string
-    /** Whether it starts with `-`. A lone `-` does not count. */
+    /**
+     * Whether it starts with `-`. A lone `-` does not count, nor does the value of `--name=value`,
+     * so `--offset=-5` reads `-5`.
+     */
     isFlag: () => boolean
     remove: () => void
 }
@@ -28,14 +31,24 @@ export function Tokens(args: string[]): Tokens {
         },
     }
 
-    for (const [index, value] of args.entries()) {
+    for (const [index, arg] of args.entries()) {
+        const isFlag = arg !== "-" && arg.startsWith("-")
+        const equals = isFlag ? arg.indexOf("=") : -1
+        if (equals === -1) push(index, arg, isFlag)
+        else {
+            push(index, arg.slice(0, equals), true)
+            push(index, arg.slice(equals + 1), false)
+        }
+    }
+
+    function push(index: number, value: string, isFlag: boolean): void {
         const token: Token = {
             index,
             next: undefined,
             prev: tokens.tail,
             tokens,
             value,
-            isFlag: () => value !== "-" && value.startsWith("-"),
+            isFlag: () => isFlag,
             remove() {
                 if (token.prev) token.prev.next = token.next
                 else if (tokens.head === token) tokens.head = token.next

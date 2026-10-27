@@ -115,7 +115,7 @@ function matchFlag(flags: [string, Option][], value: string, interactive: boolea
 
 /**
  * Takes the flag and every word up to the next flag, joined with spaces: `--name Mary Ann` is
- * `Mary Ann`. Falls back to the default, and parses what it got.
+ * `Mary Ann`, as is `--name=Mary Ann`. Falls back to the default, and parses what it got.
  */
 async function readFlag(name: string, option: Option, token: Token | undefined): Promise<{ error: CLIError } | { value: unknown }> {
     const words: Token[] = []

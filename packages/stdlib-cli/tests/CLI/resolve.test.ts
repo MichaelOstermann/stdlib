@@ -133,6 +133,13 @@ describe("resolve", () => {
             expect(outcome.type === "run" && outcome.values["firstName"]).toBe("-")
         })
 
+        it("takes the value after = as a word", async () => {
+            const outcome = await resolve("members add --first-name=Mary Ann --port=-1", false)
+            expect(errors(outcome)).toEqual([{ message: "Not a whole number: -1", name: "port", type: "InvalidFlag" }])
+            const outcome2 = await resolve("members add --fn=Mary Ann --ln=")
+            expect(outcome2.type === "run" && outcome2.values).toMatchObject({ firstName: "Mary Ann", lastName: "" })
+        })
+
         it("parses the default like a given value", async () => {
             const outcome = await resolve("members add --fn John --port 8080")
             expect(outcome.type === "run" && outcome.values["port"]).toBe(8080)

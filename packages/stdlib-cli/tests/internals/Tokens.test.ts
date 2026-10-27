@@ -29,6 +29,12 @@ describe("Tokens", () => {
         expect(Tokens(["name"]).head!.isFlag()).toBe(false)
     })
 
+    it("splits a flag at its first =, into the flag and a value", () => {
+        const tokens = Tokens(["--name=a=b", "--offset=-5", "--empty=", "name=x"])
+        expect(values(tokens)).toEqual(["--name", "a=b", "--offset", "-5", "--empty", "", "name=x"])
+        expect(tokens.flags().map((token) => token.value)).toEqual(["--name", "--offset", "--empty"])
+    })
+
     it("removes from the middle, the start and the end", () => {
         const tokens = Tokens(["a", "b", "c", "d"])
         tokens.head!.next!.remove()

@@ -7,8 +7,8 @@ export function floatingStyle(position: PlacementPosition | undefined): CSSPrope
         left: 0,
         position: "fixed",
         top: 0,
-        transform: position && `translate(${position.left}px, ${position.top}px)`,
         transformOrigin: position && `${position.originX}px ${position.originY}px`,
+        translate: position && `${position.left}px ${position.top}px`,
         visibility: position ? undefined : "hidden",
     }
 }

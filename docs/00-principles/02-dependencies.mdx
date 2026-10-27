@@ -19,6 +19,11 @@ In 2025 alone, Sonatype counted more than [454,600 new malicious packages](https
 <details>
 <summary>A few of the ones that made the news</summary>
 
+:::warning
+We are not keeping this list up to date, that would be a part time job in itself at this point.
+:::
+
+- **September 2026**, four packages: a Shai-Hulud payload [passed npm's new malware scanning](https://www.itpro.com/security/malware/is-shai-hulud-back-researchers-spot-wormy-boy-slipping-past-npm-malware-scanning-features), byte for byte the one from the `@antv` attack in May
 - **August 2026**, `keyv`, `flat-cache` and 400+ other packages of unrelated publishers: the [ChainDrop worm](https://www.microsoft.com/en-us/security/blog/2026/08/04/chaindrop-supply-chain-compromise-anatomy-self-propagating-worm/) steals credentials and publishes itself into the next packages
 - **June 2026**, 140+ `@mastra` packages: a [typosquat of dayjs added as a dependency](https://www.microsoft.com/en-us/security/blog/2026/06/17/postinstall-payload-inside-mastra-npm-supply-chain-compromise/), attributed to a North Korean state actor
 - **March 2026**, `axios`: the [lead maintainer's account was compromised](https://www.cisa.gov/news-events/alerts/2026/04/20/supply-chain-compromise-impacts-axios-node-package-manager), two releases delivered a remote access trojan
@@ -39,7 +44,7 @@ In 2025 alone, Sonatype counted more than [454,600 new malicious packages](https
 
 </details>
 
-npm is [tightening who can publish what](https://github.blog/security/supply-chain-security/our-plan-for-a-more-secure-npm-supply-chain/), which helps everyone, but every release is still code we would have to read.
+npm has since required 2FA and short-lived tokens for publishing, and [scans every release for malware](https://github.blog/changelog/2026-07-28-npm-publish-time-malware-scanning-and-dual-use-metadata/) before it can be installed. Both help, but neither replaces reading the code: ChainDrop was published through the maintainers' own CI a week after scanning launched, and in September a Shai-Hulud payload [passed the scanner](https://www.scworld.com/brief/shai-hulud-npm-worm-resurfaces-bypassing-security-scans) with the same hash as one documented in May.
 
 The original "vibe coding", which is installing 3rd party dependencies and not reading the code is no longer something we feel comfortable doing, and maybe something we should have never done in the first place.
 

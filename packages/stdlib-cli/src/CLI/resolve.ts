@@ -95,7 +95,7 @@ function match<T extends { hidden: boolean, name: string }>(items: T[], value: s
     if (exact) return { match: exact }
     const candidates = items
         .filter((item) => !item.hidden)
-        .map((item) => [item, String.score(normalize(item.name), name)] as const)
+        .map((item) => [item, String.score(item.name, name)] as const)
         .filter(([, score]) => score > 0)
         .sort((a, b) => b[1] - a[1])
         .map(([item]) => item)

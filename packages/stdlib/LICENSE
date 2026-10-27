@@ -84,7 +84,7 @@ SOFTWARE.
 --------------------------------------------------------------------------------
 
 @sindresorhus/transliterate (https://github.com/sindresorhus/transliterate)
-Used in the transliteration table of String.slugify.
+Used in the transliteration table of String.slug.
 
 MIT License
 

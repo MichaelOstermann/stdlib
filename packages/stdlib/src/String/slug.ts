@@ -1,10 +1,10 @@
 import { transliterations } from "../internals/transliterations"
 
 /**
- * # slugify
+ * # slug
  *
  * ```ts
- * function String.slugify(target: string): string
+ * function String.slug(target: string): string
  * ```
  *
  * Turns `target` into something that can be part of a URL or the name of a file: lowercase letters
@@ -19,17 +19,17 @@ import { transliterations } from "../internals/transliterations"
  * ## Example
  *
  * ```ts
- * String.slugify("Hello World!"); // "hello-world"
- * String.slugify("  Déjà Vu  "); // "deja-vu"
- * String.slugify("Conway's Law"); // "conways-law"
- * String.slugify("Tom & Jerry"); // "tom-and-jerry"
- * String.slugify("Größe"); // "groesse"
- * String.slugify("я люблю единорогов"); // "ya-lyublyu-edinorogov"
- * String.slugify("../etc/passwd"); // "etc-passwd"
- * String.slugify("日本語"); // ""
+ * String.slug("Hello World!"); // "hello-world"
+ * String.slug("  Déjà Vu  "); // "deja-vu"
+ * String.slug("Conway's Law"); // "conways-law"
+ * String.slug("Tom & Jerry"); // "tom-and-jerry"
+ * String.slug("Größe"); // "groesse"
+ * String.slug("я люблю единорогов"); // "ya-lyublyu-edinorogov"
+ * String.slug("../etc/passwd"); // "etc-passwd"
+ * String.slug("日本語"); // ""
  * ```
  */
-export function slugify(target: string): string {
+export function slug(target: string): string {
     let result = target.replaceAll("&", " and ")
     // eslint-disable-next-line no-control-regex
     if (/[^\x00-\x7F]/.test(result)) result = transliterate(result)

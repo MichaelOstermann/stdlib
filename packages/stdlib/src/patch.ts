@@ -65,7 +65,7 @@ import { kebabCase as String_kebabCase } from "./String/kebabCase"
 import { links as String_links } from "./String/links"
 import { pascalCase as String_pascalCase } from "./String/pascalCase"
 import { score as String_score } from "./String/score"
-import { slugify as String_slugify } from "./String/slugify"
+import { slug as String_slug } from "./String/slug"
 import { snakeCase as String_snakeCase } from "./String/snakeCase"
 import { titleCase as String_titleCase } from "./String/titleCase"
 import { uncapitalize as String_uncapitalize } from "./String/uncapitalize"
@@ -181,7 +181,7 @@ define(String, "String", {
     links: String_links,
     pascalCase: String_pascalCase,
     score: String_score,
-    slugify: String_slugify,
+    slug: String_slug,
     snakeCase: String_snakeCase,
     titleCase: String_titleCase,
     uncapitalize: String_uncapitalize,

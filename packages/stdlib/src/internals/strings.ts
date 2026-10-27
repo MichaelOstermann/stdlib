@@ -68,22 +68,64 @@ export type KebabCase<T extends string> = Lowercase<DelimiterCase<T, "-">>
 export type SnakeCase<T extends string> = Lowercase<DelimiterCase<T, "_">>
 export type TitleCase<T extends string> = DelimiterCase<PascalCase<T>, " ">
 
+const SEPARATOR = 0
+const LOWER = 1
+const UPPER = 2
+const DIGIT = 3
+/** Not ASCII letters, digits or separators: consecutive ones are a word of their own. */
+const OTHER = 4
+
 /**
  * The words of an identifier, without apostrophes: `helloWorld`, `hello-world` and `hello_world`
  * are `hello` and `world`
  */
 export function identifierWords(target: string): string[] {
-    return target
-        .replaceAll("'", "")
-        .replace(/[[\]{}()|/\-\\ _.]/g, " ")
-        .replace(/([a-z])(\d)/gi, "$1 $2")
-        .replace(/(\d)([a-z])/gi, "$1 $2")
-        .replace(/([\w\-./])([^\w\-./'])/g, "$1 $2")
-        .replace(/([^\w\-./'])([\w\-./])/g, "$1 $2")
-        .replace(/([a-z])([A-Z])/g, "$1 $2")
-        .replace(/([A-Z])([A-Z][a-z])/g, "$1 $2")
-        .trim()
-        .split(/\s+/)
+    const words: string[] = []
+    let word = ""
+    let prev = SEPARATOR
+    for (let i = 0; i < target.length; i++) {
+        const code = target.charCodeAt(i)
+        if (code === 39) continue
+        const kind = kindOf(target, i, code)
+        if (kind === SEPARATOR) {
+            if (word) words.push(word)
+            word = ""
+        }
+        else if (word && isBoundary(prev, kind, target, i)) {
+            words.push(word)
+            word = target[i]!
+        }
+        else {
+            word += target[i]
+        }
+        prev = kind
+    }
+    if (word || !words.length) words.push(word)
+    return words
+}
+
+function kindOf(target: string, index: number, code: number): number {
+    if (code >= 97 && code <= 122) return LOWER
+    if (code >= 65 && code <= 90) return UPPER
+    if (code >= 48 && code <= 57) return DIGIT
+    // [ ] { } ( ) | / - \ _ . and whitespace
+    if (code === 91 || code === 93 || code === 123 || code === 125 || code === 40 || code === 41 || code === 124 || code === 47 || code === 45 || code === 92 || code === 95 || code === 46) return SEPARATOR
+    if (code <= 32) return code === 32 || (code >= 9 && code <= 13) ? SEPARATOR : OTHER
+    if (code < 128) return OTHER
+    return /\s/.test(target[index]!) ? SEPARATOR : OTHER
+}
+
+function isBoundary(prev: number, kind: number, target: string, index: number): boolean {
+    if (prev === kind) {
+        // XMLHttp → XML Http: the last capital of a run starts the next word.
+        if (kind !== UPPER) return false
+        let next = index + 1
+        while (target.charCodeAt(next) === 39) next++
+        const code = target.charCodeAt(next)
+        return code >= 97 && code <= 122
+    }
+    // Letters stay together, every other change of kind starts a word.
+    return !(prev === UPPER && kind === LOWER)
 }
 
 /** `["hello", "WORLD"]` → `"HelloWorld"` */

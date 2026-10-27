@@ -34,7 +34,9 @@ export function Tokens(args: string[]): Tokens {
     for (const [index, arg] of args.entries()) {
         const isFlag = arg !== "-" && arg.startsWith("-")
         const equals = isFlag ? arg.indexOf("=") : -1
-        if (equals === -1) push(index, arg, isFlag)
+        if (equals === -1) {
+            push(index, arg, isFlag)
+        }
         else {
             push(index, arg.slice(0, equals), true)
             push(index, arg.slice(equals + 1), false)

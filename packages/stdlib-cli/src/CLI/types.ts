@@ -39,10 +39,8 @@ export type Outcome =
 
 // Plain objects instead of `Error` subclasses: `JSON.stringify(new Error())` is `{}`.
 export type CLIError =
-    | { type: "AmbiguousCommand", candidates: Command[], value: string }
-    | { type: "AmbiguousFlag", candidates: string[], value: string }
     | { type: "InvalidFlag", message: string, name: string }
     | { type: "MissingFlag", name: string }
-    | { type: "UnexpectedArgument", value: string }
-    | { type: "UnknownCommand", value: string }
-    | { type: "UnknownFlag", value: string }
+    | { type: "RepeatedFlag", name: string }
+    | { type: "UnknownCommand", candidates: Command[], value: string }
+    | { type: "UnknownFlag", candidates: string[], value: string }

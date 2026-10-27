@@ -14,7 +14,7 @@ const add = CLI.command({
         port: {
             default: "3000",
             parse: (value) => {
-                if (!/^\d+$/.test(value)) throw new Error(`Not a whole number: ${value}`)
+                if (!/^\d+$/.test(value)) throw new Error("Not a whole number")
                 return Number(value)
             },
         },
@@ -42,6 +42,10 @@ function errors(outcome: Outcome): unknown[] {
     return outcome.type === "error" ? outcome.errors : []
 }
 
+function names(error: unknown): string[] {
+    return (error as { candidates: { name: string }[] }).candidates.map((command) => command.name)
+}
+
 describe("resolve", () => {
     describe("commands", () => {
         it("runs a command with its values", async () => {
@@ -63,26 +67,28 @@ describe("resolve", () => {
         })
 
         it("needs exact names when not interactive", async () => {
-            expect(errors(await resolve("mem add --first-name John", false))).toEqual([{ type: "UnknownCommand", value: "mem" }])
+            const [error] = errors(await resolve("mem add --first-name John", false))
+            expect(error).toMatchObject({ type: "UnknownCommand", value: "mem" })
+            expect(names(error)).toEqual(["members"])
         })
 
         it("reports an ambiguous command with its candidates", async () => {
             const [error] = errors(await resolve("members re"))
-            expect(error).toMatchObject({ type: "AmbiguousCommand", value: "re" })
-            expect((error as { candidates: { name: string }[] }).candidates.map((command) => command.name).sort()).toEqual(["rekked", "remove"])
+            expect(error).toMatchObject({ type: "UnknownCommand", value: "re" })
+            expect(names(error).sort()).toEqual(["rekked", "remove"])
         })
 
         it("only runs a hidden command by its exact name", async () => {
-            expect(errors(await resolve("members pur"))).toEqual([{ type: "UnknownCommand", value: "pur" }])
+            expect(errors(await resolve("members pur"))).toEqual([{ candidates: [], type: "UnknownCommand", value: "pur" }])
             expect((await resolve("members purge")).type).toBe("run")
         })
 
         it("does not know a disabled command", async () => {
-            expect(errors(await resolve("members legacy"))).toEqual([{ type: "UnknownCommand", value: "legacy" }])
+            expect(errors(await resolve("members legacy"))).toEqual([{ candidates: [], type: "UnknownCommand", value: "legacy" }])
         })
 
         it("does not treat a lone dash as a command", async () => {
-            expect(errors(await resolve("members - --fn John"))).toEqual([{ type: "UnknownCommand", value: "-" }])
+            expect(errors(await resolve("members - --fn John"))).toEqual([{ candidates: [], type: "UnknownCommand", value: "-" }])
         })
     })
 
@@ -96,29 +102,40 @@ describe("resolve", () => {
 
         it("reports an ambiguous flag with its candidates", async () => {
             const [error] = errors(await resolve("members add --name John"))
-            expect(error).toMatchObject({ type: "AmbiguousFlag", value: "--name" })
+            expect(error).toMatchObject({ type: "UnknownFlag", value: "--name" })
             expect((error as { candidates: string[] }).candidates.sort()).toEqual(["firstName", "lastName"])
         })
 
         it("reports every unknown flag, and nothing else", async () => {
             expect(errors(await resolve("members add --frist John --xyz"))).toEqual([
-                { type: "UnknownFlag", value: "--frist" },
-                { type: "UnknownFlag", value: "--xyz" },
+                { candidates: [], type: "UnknownFlag", value: "--frist" },
+                { candidates: [], type: "UnknownFlag", value: "--xyz" },
             ])
         })
 
         it("does not treat -- as a flag name", async () => {
-            expect(errors(await resolve("members add --fn John -- --ln Doe"))).toEqual([{ type: "UnknownFlag", value: "--" }])
+            expect(errors(await resolve("members add --fn John -- --ln Doe"))).toEqual([{ candidates: [], type: "UnknownFlag", value: "--" }])
         })
 
         it("only matches a hidden flag by its exact name", async () => {
-            expect(errors(await resolve("members add --fn John --sec s"))).toEqual([{ type: "UnknownFlag", value: "--sec" }])
+            expect(errors(await resolve("members add --fn John --sec s"))).toEqual([{ candidates: [], type: "UnknownFlag", value: "--sec" }])
             const outcome = await resolve("members add --fn John --secret s")
             expect(outcome.type === "run" && outcome.values["secret"]).toBe("s")
         })
 
         it("does not know a disabled flag", async () => {
-            expect(errors(await resolve("members add --fn John --legacy x"))).toEqual([{ type: "UnknownFlag", value: "--legacy" }])
+            expect(errors(await resolve("members add --fn John --legacy x"))).toEqual([{ candidates: [], type: "UnknownFlag", value: "--legacy" }])
+        })
+
+        it("suggests what a flag could mean when not interactive", async () => {
+            expect(errors(await resolve("members add --fn John", false))).toEqual([{ candidates: ["firstName"], type: "UnknownFlag", value: "--fn" }])
+        })
+
+        it("reports words before the first flag as unknown flags", async () => {
+            expect(errors(await resolve("members add first-name John --ln Doe"))).toEqual([
+                { candidates: ["firstName"], type: "UnknownFlag", value: "first-name" },
+                { candidates: [], type: "UnknownFlag", value: "John" },
+            ])
         })
     })
 
@@ -135,7 +152,7 @@ describe("resolve", () => {
 
         it("takes the value after = as a word", async () => {
             const outcome = await resolve("members add --first-name=Mary Ann --port=-1", false)
-            expect(errors(outcome)).toEqual([{ message: "Not a whole number: -1", name: "port", type: "InvalidFlag" }])
+            expect(errors(outcome)).toEqual([{ message: "Not a whole number", name: "port", type: "InvalidFlag" }])
             const outcome2 = await resolve("members add --fn=Mary Ann --ln=")
             expect(outcome2.type === "run" && outcome2.values).toMatchObject({ firstName: "Mary Ann", lastName: "" })
         })
@@ -145,11 +162,11 @@ describe("resolve", () => {
             expect(outcome.type === "run" && outcome.values["port"]).toBe(8080)
         })
 
-        it("reports what is invalid, missing and unexpected together", async () => {
-            expect(errors(await resolve("members add extra --port abc"))).toEqual([
+        it("reports what is invalid, missing and repeated together", async () => {
+            expect(errors(await resolve("members add --ln Doe --port abc --ln Smith"))).toEqual([
                 { name: "firstName", type: "MissingFlag" },
-                { message: "Not a whole number: abc", name: "port", type: "InvalidFlag" },
-                { type: "UnexpectedArgument", value: "extra" },
+                { name: "lastName", type: "RepeatedFlag" },
+                { message: "Not a whole number", name: "port", type: "InvalidFlag" },
             ])
         })
 
@@ -159,10 +176,9 @@ describe("resolve", () => {
             ])
         })
 
-        it("leaves a repeated flag over", async () => {
-            expect(errors(await resolve("members add --fn John --fn Jane"))).toEqual([
-                { type: "UnexpectedArgument", value: "--fn" },
-                { type: "UnexpectedArgument", value: "Jane" },
+        it("reports a repeated flag once", async () => {
+            expect(errors(await resolve("members add --fn John --fn Jane --fn=Joe"))).toEqual([
+                { name: "firstName", type: "RepeatedFlag" },
             ])
         })
 

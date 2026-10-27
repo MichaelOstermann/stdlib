@@ -138,39 +138,60 @@ function label(value: Shape | null) {
 
 This only works because `match` has `.case()`, `.shape()` and `.cond()` instead of a single `.with()`: Whether `.with(x)` compares a value, a shape or runs a predicate depends on the type of `x`, so it can't be compiled, while each of ours can only mean one thing. [pattycake](https://github.com/aidenybai/pattycake), a compiler for ts-pattern, has been stuck as "highly experimental" since early 2024, falling back to ts-pattern for whatever it can't compile.
 
-### `Object.setPath`
+### `Object` functions
 
-Other functions like `Object.setPath` also sometimes have an opportunity to be optimized into handwritten code.
+`Object.setPath`, `Object.merge` and `Object.pick` are compiled into handwritten code when their keys are written out: a path, an object literal and an array of strings.
 
-The price is bundle size: About 150 bytes per path, minified, once per module that uses it.
+The price is bundle size: About 120 to 160 bytes per set of keys, minified, once per module that uses it.
 
 <Tabs sync={false} hash={false}>
 <Tab title="Before">
 
 ```ts
-const next = Object.setPath(state, "user.settings.theme", "dark")
+const a = Object.setPath(state, "user.settings.theme", "dark")
+const b = Object.merge(task, { done, title: "New" })
+const c = Object.pick(task, ["id", "title"])
 ```
 
 </Tab>
 <Tab title="After">
 
 ```ts
-const next = setPath0(state, "dark")
+const a = setPath0(state, "dark")
+const b = merge0(task, done, "New")
+const c = pick0(task)
 
 function setPath0(t, v) {
     const t0 = t.user, t1 = t0.settings, t2 = t1.theme
     if (Object.is(t2, v) && "theme" in t1) return t
     return { ...t, user: { ...t0, settings: { ...t1, theme: v } } }
 }
+
+function merge0(t, v0, v1) {
+    if (Object.is(t.done, v0) && "done" in t && Object.is(t.title, v1) && "title" in t) return t
+    return { ...t, done: v0, title: v1 }
+}
+
+function pick0(t) {
+    const r = {}
+    if (Object.hasOwn(t, "id")) r.id = t.id
+    if (Object.hasOwn(t, "title")) r.title = t.title
+    return r
+}
 ```
 
 </Tab>
 </Tabs>
 
-|                   | `Object.setPath` | `Object.setPath`, compiled |
-| ----------------- | ---------------- | -------------------------- |
-| Nothing changed   | 36 ns · 32 B     | 2 ns · 0 B                 |
-| Something changed | 97 ns · 233 B    | 31 ns · 200 B              |
+The object literal of `Object.merge` is never created, its values are passed along instead.
+
+|                                     | Runtime       | Compiled      |
+| ----------------------------------- | ------------- | ------------- |
+| `Object.setPath`, nothing changed   | 36 ns · 32 B  | 2 ns · 0 B    |
+| `Object.setPath`, something changed | 97 ns · 233 B | 31 ns · 200 B |
+| `Object.merge`, nothing changed     | 58 ns · 136 B | 3 ns · 0 B    |
+| `Object.merge`, something changed   | 60 ns · 208 B | 15 ns · 72 B  |
+| `Object.pick`                       | 38 ns · 56 B  | 20 ns · 56 B  |
 
 ### pipe
 

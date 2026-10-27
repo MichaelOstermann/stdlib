@@ -15,6 +15,9 @@ import { setOwn } from "../internals/objects"
  * ```ts
  * Object.pick({ a: 1, b: 2, c: 3 }, ["a", "c"]); // { a: 1, c: 3 }
  * ```
+ *
+ * With `stdlib-transform`, an array of strings is compiled into a function of its own, which copies
+ * each property directly.
  */
 export function pick<T extends object, K extends KeysOfUnion<T>>(target: T, keys: Iterable<K>): DistributedPick<T, K>
 export function pick(target: Record<PropertyKey, unknown>, keys: Iterable<PropertyKey>): Record<PropertyKey, unknown> {

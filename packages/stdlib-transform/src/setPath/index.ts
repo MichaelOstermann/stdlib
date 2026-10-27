@@ -45,7 +45,7 @@ export function transformSetPaths(code: string, filePath: string): MagicString {
     walk(program, {
         scopeTracker,
         enter(node) {
-            if (node.type !== "CallExpression" || node.optional || !isSetPath(node.callee)) return
+            if (node.type !== "CallExpression" || node.optional || !isObjectCall(node.callee, "setPath")) return
             if (scopeTracker.getDeclaration("Object")) return
 
             const [target, path, value] = node.arguments
@@ -71,25 +71,25 @@ export function transformSetPaths(code: string, filePath: string): MagicString {
     return ms
 }
 
-/** `Object.setPath` */
-function isSetPath(node: Node): boolean {
+/** `Object.setPath`, `Object.merge`, … */
+export function isObjectCall(node: Node, name: string): boolean {
     return node.type === "MemberExpression"
         && !node.computed
         && !node.optional
         && node.object.type === "Identifier"
         && node.object.name === "Object"
         && node.property.type === "Identifier"
-        && node.property.name === "setPath"
+        && node.property.name === name
 }
 
 /** The string of `"a.b"` or `` `a.b` ``. */
-function stringOf(node: Node): string | undefined {
+export function stringOf(node: Node): string | undefined {
     if (node.type === "Literal" && typeof node.value === "string") return node.value
     if (node.type === "TemplateLiteral" && !node.expressions.length) return node.quasis[0]!.value.cooked ?? undefined
     return undefined
 }
 
-function id(ids: Set<string>, base: string): string {
+export function id(ids: Set<string>, base: string): string {
     let count = 0
     while (ids.has(`${base}${count}`)) count++
     ids.add(`${base}${count}`)
@@ -118,14 +118,14 @@ function compile(name: string, keys: string[]): string {
     ].join("\n")
 }
 
-function access(key: string): string {
+export function access(key: string): string {
     return isIdentifier(key) ? `.${key}` : `[${JSON.stringify(key)}]`
 }
 
-function property(key: string): string {
+export function property(key: string): string {
     return isIdentifier(key) ? key : JSON.stringify(key)
 }
 
-function isIdentifier(key: string): boolean {
+export function isIdentifier(key: string): boolean {
     return /^[a-z_$][\w$]*$/i.test(key)
 }

@@ -8,6 +8,10 @@ for runtime in node bun; do
     bun benchmarks/run.ts match --runtime=$runtime --transform
     bun benchmarks/run.ts setPath --runtime=$runtime
     bun benchmarks/run.ts setPath --runtime=$runtime --transform
+    bun benchmarks/run.ts merge --runtime=$runtime
+    bun benchmarks/run.ts merge --runtime=$runtime --transform
+    bun benchmarks/run.ts pick --runtime=$runtime
+    bun benchmarks/run.ts pick --runtime=$runtime --transform
     bun benchmarks/run.ts pipe --runtime=$runtime
     bun benchmarks/run.ts pipe --runtime=$runtime --transform
     bun benchmarks/run.ts map --runtime=$runtime --transform

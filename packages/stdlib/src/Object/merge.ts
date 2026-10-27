@@ -16,6 +16,9 @@ import { ownKeys, setOwn } from "../internals/objects"
  * Object.merge(task, { title: "New" }); // { ...task, title: "New" }
  * Object.merge(task, { title: task.title }); // task
  * ```
+ *
+ * With `stdlib-transform`, an object literal is compiled into a function of its own, which compares
+ * and copies each property directly, without creating the object.
  */
 export function merge<T extends object>(target: T, source: Partial<NoInfer<T>>): T {
     const keys = ownKeys(source) as (keyof T)[]

@@ -14,7 +14,7 @@ export const globals: Readonly<Record<string, readonly string[]>> = {
     JSON: ["safeStringify", "tryParse", "tryStringify"],
     Map: ["delete", "isShallowEqual", "set"],
     Math: ["clamp", "mod", "roundTo"],
-    Object: ["defaults", "indexBy", "isShallowEqual", "merge", "omit", "pick", "set", "setPath"],
+    Object: ["defaults", "indexBy", "isShallowEqual", "merge", "omit", "set", "setPath"],
     Promise: ["sleep"],
     Retry: ["again", "run"],
     Set: ["add", "delete", "isShallowEqual"],

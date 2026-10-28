@@ -45,7 +45,6 @@ import type { indexBy as Object_indexBy } from "./Object/indexBy"
 import type { isShallowEqual as Object_isShallowEqual } from "./Object/isShallowEqual"
 import type { merge as Object_merge } from "./Object/merge"
 import type { omit as Object_omit } from "./Object/omit"
-import type { pick as Object_pick } from "./Object/pick"
 import type { set as Object_set } from "./Object/set"
 import type { setPath as Object_setPath } from "./Object/setPath"
 import type { sleep as Promise_sleep } from "./Promise/sleep"
@@ -131,7 +130,6 @@ declare global {
         isShallowEqual: typeof Object_isShallowEqual
         merge: typeof Object_merge
         omit: typeof Object_omit
-        pick: typeof Object_pick
         set: typeof Object_set
         setPath: typeof Object_setPath
     }

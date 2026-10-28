@@ -33,12 +33,6 @@ Pattern matching with type-safe exhaustiveness checks, inspired by [ts-pattern](
 | Nothing changed   | 3 ns · 0 B   | 43 ns · 176 B |
 | Something changed | 15 ns · 72 B | 45 ns · 176 B |
 
-`Object.pick`
-
-|          | stdlib       | remeda        |
-| -------- | ------------ | ------------- |
-| Per call | 20 ns · 56 B | 54 ns · 153 B |
-
 Nothing/Something changed: Our functions return the original input when nothing changed:
 
 ```ts

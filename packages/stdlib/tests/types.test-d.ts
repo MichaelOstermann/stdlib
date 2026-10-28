@@ -5,7 +5,6 @@ import { delete as deleteKey } from "../src/Map/delete"
 import { set } from "../src/Map/set"
 import { defaults } from "../src/Object/defaults"
 import { omit } from "../src/Object/omit"
-import { pick } from "../src/Object/pick"
 import { add } from "../src/Set/add"
 
 declare const mixed: (number | string)[]
@@ -41,8 +40,7 @@ describe("types", () => {
         add(mutableSet, "a")
     })
 
-    it("should pick and omit", () => {
-        expectTypeOf(pick({ a: 1, b: "b" }, ["a"])).toEqualTypeOf<{ a: number }>()
+    it("should omit", () => {
         expectTypeOf(omit({ a: 1, b: "b" }, ["a"])).toEqualTypeOf<{ b: string }>()
     })
 

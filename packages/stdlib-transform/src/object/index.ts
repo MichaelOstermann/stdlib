@@ -2,31 +2,22 @@ import type { Node } from "oxc-parser"
 import MagicString from "magic-string"
 import { parseSync } from "oxc-parser"
 import { ScopeTracker, walk } from "oxc-walker"
-import { access, id, isObjectCall, property, stringOf } from "../setPath"
+import { access, id, isObjectCall, property } from "../setPath"
 
 /**
- * Compiles `Object.merge` calls whose source is an object literal, and `Object.pick` calls whose
- * keys are an array of strings, into a function of their own, one per set of keys and module:
+ * Compiles `Object.merge` calls whose source is an object literal into a function of their own, one
+ * per set of keys and module:
  *
  * ```ts
  * Object.merge(task, { title: "New", done })
- * Object.pick(task, ["id", "title"])
  * ```
  *
  * ```ts
  * merge0(task, "New", done)
- * pick0(task)
  *
  * function merge0(t, v0, v1) {
  *     if (Object.is(t.title, v0) && "title" in t && Object.is(t.done, v1) && "done" in t) return t
  *     return { ...t, title: v0, done: v1 }
- * }
- *
- * function pick0(t) {
- *     const r = {}
- *     if (Object.hasOwn(t, "id")) r.id = t.id
- *     if (Object.hasOwn(t, "title")) r.title = t.title
- *     return r
  * }
  * ```
  *
@@ -48,49 +39,38 @@ export function transformObjects(code: string, filePath: string): MagicString {
         },
     })
 
-    /** The name of the function of each set of keys, and what it compiles. */
-    const functions = new Map<string, { keys: string[], name: string, compile: (name: string, keys: string[]) => string }>()
-    const nameOf = (base: "merge" | "pick", keys: string[], compile: (name: string, keys: string[]) => string): string => {
-        const key = `${base}:${JSON.stringify(keys)}`
+    /** The name of the function of each set of keys. */
+    const functions = new Map<string, { keys: string[], name: string }>()
+    const nameOf = (keys: string[]): string => {
+        const key = JSON.stringify(keys)
         let fn = functions.get(key)
-        if (!fn) functions.set(key, fn = { compile, keys, name: id(ids, base) })
+        if (!fn) functions.set(key, fn = { keys, name: id(ids, "merge") })
         return fn.name
     }
 
     walk(program, {
         scopeTracker,
         enter(node) {
-            if (node.type !== "CallExpression" || node.optional) return
-            const isMerge = isObjectCall(node.callee, "merge")
-            if (!isMerge && !isObjectCall(node.callee, "pick")) return
+            if (node.type !== "CallExpression" || node.optional || !isObjectCall(node.callee, "merge")) return
             if (scopeTracker.getDeclaration("Object")) return
             if (node.arguments.length !== 2 || node.arguments.some((argument) => argument.type === "SpreadElement")) return
             const [target, source] = node.arguments as [Node, Node]
 
-            if (isMerge) {
-                const entries = entriesOf(source)
-                if (!entries) return
-                const keys = entries.map(([key]) => key)
-                ms.overwrite(node.callee.start, node.callee.end, nameOf("merge", keys, compileMerge))
-                // The values stay where they are, for calls inside of them to be compiled as well.
-                let end = target.end
-                for (const [, value] of entries) {
-                    ms.overwrite(end, value.start, ", ")
-                    end = value.end
-                }
-                ms.overwrite(end, node.end, ")")
+            const entries = entriesOf(source)
+            if (!entries) return
+            ms.overwrite(node.callee.start, node.callee.end, nameOf(entries.map(([key]) => key)))
+            // The values stay where they are, for calls inside of them to be compiled as well.
+            let end = target.end
+            for (const [, value] of entries) {
+                ms.overwrite(end, value.start, ", ")
+                end = value.end
             }
-            else {
-                const keys = keysOf(source)
-                if (!keys) return
-                ms.overwrite(node.callee.start, node.callee.end, nameOf("pick", keys, compilePick))
-                ms.overwrite(target.end, node.end, ")")
-            }
+            ms.overwrite(end, node.end, ")")
         },
     })
 
     // Declarations are hoisted, so they can go at the end, where every line before stays where it is.
-    for (const { compile, keys, name } of functions.values()) ms.append(`\n${compile(name, keys)}\n`)
+    for (const { keys, name } of functions.values()) ms.append(`\n${compileMerge(name, keys)}\n`)
     return ms
 }
 
@@ -111,18 +91,6 @@ function entriesOf(node: Node): [string, Node][] | undefined {
     return entries
 }
 
-/** The strings of `["a", "b"]`, once each. */
-function keysOf(node: Node): string[] | undefined {
-    if (node.type !== "ArrayExpression") return
-    const keys: string[] = []
-    for (const element of node.elements) {
-        const key = element && element.type !== "SpreadElement" ? stringOf(element) : undefined
-        if (key === undefined || key === "__proto__") return
-        if (!keys.includes(key)) keys.push(key)
-    }
-    return keys
-}
-
 /** A function that compares each property, and copies `t` once one differs. */
 function compileMerge(name: string, keys: string[]): string {
     const values = keys.map((_, index) => `v${index}`)
@@ -133,17 +101,6 @@ function compileMerge(name: string, keys: string[]): string {
         `function ${name}(t, ${values.join(", ")}) {`,
         `    if (${same}) return t`,
         `    return { ...t, ${copy} }`,
-        `}`,
-    ].join("\n")
-}
-
-/** A function that copies each property `t` has of its own. */
-function compilePick(name: string, keys: string[]): string {
-    return [
-        `function ${name}(t) {`,
-        `    const r = {}`,
-        ...keys.map((key) => `    if (Object.hasOwn(t, ${JSON.stringify(key)})) r${access(key)} = t${access(key)}`),
-        `    return r`,
         `}`,
     ].join("\n")
 }

@@ -83,7 +83,7 @@ export function isObjectCall(node: Node, name: string): boolean {
 }
 
 /** The string of `"a.b"` or `` `a.b` ``. */
-export function stringOf(node: Node): string | undefined {
+function stringOf(node: Node): string | undefined {
     if (node.type === "Literal" && typeof node.value === "string") return node.value
     if (node.type === "TemplateLiteral" && !node.expressions.length) return node.quasis[0]!.value.cooked ?? undefined
     return undefined

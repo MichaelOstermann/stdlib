@@ -140,7 +140,7 @@ This only works because `match` has `.case()`, `.shape()` and `.cond()` instead 
 
 ### `Object` functions
 
-`Object.setPath`, `Object.merge` and `Object.pick` are compiled into handwritten code when their keys are written out: a path, an object literal and an array of strings.
+`Object.setPath` and `Object.merge` are compiled into handwritten code when their keys are written out: a path and an object literal.
 
 The price is bundle size: About 120 to 160 bytes per set of keys, minified, once per module that uses it.
 
@@ -150,7 +150,6 @@ The price is bundle size: About 120 to 160 bytes per set of keys, minified, once
 ```ts
 const a = Object.setPath(state, "user.settings.theme", "dark")
 const b = Object.merge(task, { done, title: "New" })
-const c = Object.pick(task, ["id", "title"])
 ```
 
 </Tab>
@@ -159,7 +158,6 @@ const c = Object.pick(task, ["id", "title"])
 ```ts
 const a = setPath0(state, "dark")
 const b = merge0(task, done, "New")
-const c = pick0(task)
 
 function setPath0(t, v) {
     const t0 = t.user, t1 = t0.settings, t2 = t1.theme
@@ -170,13 +168,6 @@ function setPath0(t, v) {
 function merge0(t, v0, v1) {
     if (Object.is(t.done, v0) && "done" in t && Object.is(t.title, v1) && "title" in t) return t
     return { ...t, done: v0, title: v1 }
-}
-
-function pick0(t) {
-    const r = {}
-    if (Object.hasOwn(t, "id")) r.id = t.id
-    if (Object.hasOwn(t, "title")) r.title = t.title
-    return r
 }
 ```
 
@@ -191,7 +182,6 @@ The object literal of `Object.merge` is never created, its values are passed alo
 | `Object.setPath`, something changed | 97 ns · 233 B | 31 ns · 200 B |
 | `Object.merge`, nothing changed     | 58 ns · 136 B | 3 ns · 0 B    |
 | `Object.merge`, something changed   | 60 ns · 208 B | 15 ns · 72 B  |
-| `Object.pick`                       | 38 ns · 56 B  | 20 ns · 56 B  |
 
 ### pipe
 

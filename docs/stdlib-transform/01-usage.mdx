@@ -1,0 +1,96 @@
+---
+title: Usage
+---
+
+## Installation
+
+```package-install
+npm i -D @monstermann/stdlib-transform
+```
+
+## Setup
+
+### Vite, Rolldown, tsdown
+
+<Tabs sync={false} hash={false}>
+<Tab title="Vite">
+
+```ts vite.config.ts
+import { stdlib } from "@monstermann/stdlib-transform"
+import { defineConfig } from "vite"
+
+export default defineConfig({
+    plugins: [stdlib()],
+})
+```
+
+</Tab>
+<Tab title="Rolldown">
+
+```ts rolldown.config.ts
+import { stdlib } from "@monstermann/stdlib-transform"
+import { defineConfig } from "rolldown"
+
+export default defineConfig({
+    input: "src/index.ts",
+    plugins: [stdlib()],
+})
+```
+
+</Tab>
+<Tab title="tsdown">
+
+```ts tsdown.config.ts
+import { stdlib } from "@monstermann/stdlib-transform"
+import { defineConfig } from "tsdown"
+
+export default defineConfig({
+    entry: "src/index.ts",
+    plugins: [stdlib()],
+})
+```
+
+</Tab>
+</Tabs>
+
+### Bun
+
+For `Bun.build`:
+
+```ts build.ts
+import { stdlibBun } from "@monstermann/stdlib-transform"
+
+await Bun.build({
+    entrypoints: ["./src/index.ts"],
+    plugins: [stdlibBun()],
+})
+```
+
+For `bun run` and `bun test`, register it in a preload:
+
+```ts preload.ts
+import { stdlibBun } from "@monstermann/stdlib-transform"
+import { plugin } from "bun"
+
+plugin(stdlibBun())
+```
+
+```toml bunfig.toml
+preload = ["./preload.ts"]
+
+[test]
+preload = ["./preload.ts"]
+```
+
+Bun only uses the first plugin that returns something for a file. With other plugins, call `transform(code, path)` from your own instead.
+
+## Options
+
+| Option    | Default                   | Description                                                  |
+| --------- | ------------------------- | ------------------------------------------------------------ |
+| `include` | `/\.m?[jt]sx?(?:\?.*)?$/` | Only files whose path matches one of these are transformed.  |
+| `exclude` |                           | Files whose path matches one of these are skipped.           |
+| `debug`   | `false`                   | `true`, or a RegExp of paths: prints what is being replaced. |
+| `enforce` |                           | `"pre"` or `"post"`, not for Bun.                            |
+
+Dependencies in `node_modules` are never transformed.

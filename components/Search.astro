@@ -1,0 +1,18 @@
+---
+// The built-in search, followed by a link to the repository with the look of the header's other
+// icon buttons, instead of the site footer that only held this link.
+import { GITHUB_MARK } from "blume/components/github-mark.ts"
+import Search from "blume/components/layout/Search.astro"
+---
+
+<Search {...Astro.props} />
+<a
+    aria-label="GitHub"
+    class="inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+    data-blume-tooltip="GitHub"
+    href="https://github.com/MichaelOstermann/stdlib"
+    rel="noopener noreferrer"
+    target="_blank"
+>
+    <svg aria-hidden="true" fill="currentColor" height="18" set:html={GITHUB_MARK} viewBox="0 0 16 16" width="18" />
+</a>

@@ -16,7 +16,7 @@ import { access, id, isObjectCall, property } from "../setPath"
  * merge0(task, "New", done)
  *
  * function merge0(t, v0, v1) {
- *     if (Object.is(t.title, v0) && "title" in t && Object.is(t.done, v1) && "done" in t) return t
+ *     if (Object.is(t.title, v0) && Object.is(t.done, v1)) return t
  *     return { ...t, title: v0, done: v1 }
  * }
  * ```
@@ -95,7 +95,7 @@ function entriesOf(node: Node): [string, Node][] | undefined {
 function compileMerge(name: string, keys: string[]): string {
     const values = keys.map((_, index) => `v${index}`)
     // Object.is, as everywhere else: V8 compares objects with === several times slower.
-    const same = keys.map((key, index) => `Object.is(t${access(key)}, ${values[index]}) && ${JSON.stringify(key)} in t`).join(" && ")
+    const same = keys.map((key, index) => `Object.is(t${access(key)}, ${values[index]})`).join(" && ")
     const copy = keys.map((key, index) => `${property(key)}: ${values[index]}`).join(", ")
     return [
         `function ${name}(t, ${values.join(", ")}) {`,

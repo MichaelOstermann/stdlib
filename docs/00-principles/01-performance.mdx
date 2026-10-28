@@ -161,12 +161,12 @@ const b = merge0(task, done, "New")
 
 function setPath0(t, v) {
     const t0 = t.user, t1 = t0.settings, t2 = t1.theme
-    if (Object.is(t2, v) && "theme" in t1) return t
+    if (Object.is(t2, v)) return t
     return { ...t, user: { ...t0, settings: { ...t1, theme: v } } }
 }
 
 function merge0(t, v0, v1) {
-    if (Object.is(t.done, v0) && "done" in t && Object.is(t.title, v1) && "title" in t) return t
+    if (Object.is(t.done, v0) && Object.is(t.title, v1)) return t
     return { ...t, done: v0, title: v1 }
 }
 ```

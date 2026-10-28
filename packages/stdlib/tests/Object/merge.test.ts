@@ -21,12 +21,9 @@ describe("Object.merge", () => {
         expect(merge({ a: 1, [symbol]: 2 }, { [symbol]: 2 })).toEqual({ a: 1, [symbol]: 2 })
     })
 
-    it("should add a key that is set to undefined", () => {
+    it("should return the target for a missing key that is set to undefined", () => {
         const target: { a: number, b?: number } = { a: 1 }
-        const result = merge(target, { b: undefined })
-        expect(result).not.toBe(target)
-        expect("b" in result).toBe(true)
-        expect(merge(result, { b: undefined })).toBe(result)
+        expect(merge(target, { b: undefined })).toBe(target)
     })
 
     it("should treat __proto__ as a key like any other", () => {

@@ -17,7 +17,7 @@ describe("transformObjects", () => {
     it("should compile a merge into a function of its own", () => {
         expect(run(`const a = Object.merge(task, { title: "New", done })`)).toBe(`const a = merge0(task, "New", done)
 function merge0(t, v0, v1) {
-    if (Object.is(t.title, v0) && "title" in t && Object.is(t.done, v1) && "done" in t) return t
+    if (Object.is(t.title, v0) && Object.is(t.done, v1)) return t
     return { ...t, title: v0, done: v1 }
 }
 `)
@@ -58,6 +58,9 @@ function merge0(t, v0, v1) {
         const [changed, merged] = both(`Object.merge(target, { title: "New", "a-b": 1 })`, task, (t) => merge(t, { "a-b": 1, "title": "New" }))
         expect(changed).toEqual(merged)
         expect(Object.keys(changed as object)).toEqual(Object.keys(merged as object))
-        expect(both(`Object.merge(target, { a: undefined })`, {}, (t) => merge(t, { a: undefined }))[0]).toEqual({ a: undefined })
+        const empty = {}
+        const [compiled, runtime] = both(`Object.merge(target, { a: undefined })`, empty, (t) => merge(t, { a: undefined }))
+        expect(compiled).toBe(empty)
+        expect(runtime).toBe(empty)
     })
 })

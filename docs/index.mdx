@@ -6,34 +6,91 @@ title: Introduction
 
 [How we did it](./00-principles/01-performance.mdx).
 
+Operations per second, more is better, and the bytes each operation allocates. Choosing an engine switches every table.
+
 Pattern matching with type-safe exhaustiveness checks, inspired by [ts-pattern](https://github.com/gvergnaud/ts-pattern):
 
-|          | stdlib     | ts-pattern      |
-| -------- | ---------- | --------------- |
-| Per call | 2 ns · 0 B | 187 ns · 1.7 KB |
+<Tabs inline syncKey="engine" hash={false}>
+<Tab title="V8">
 
-`Array.map`
+| ops/s · B/op | stdlib     | ts-pattern    |
+| ------------ | ---------- | ------------- |
+| Per call     | 425M · 0 B | 6.1M · 1.7 KB |
 
-|                   | stdlib          | remeda          | immer           | mutative       |
-| ----------------- | --------------- | --------------- | --------------- | -------------- |
-| Nothing changed   | 186 ns · 2 B    | 4.1 µs · 8.3 KB | 442 µs · 148 KB | 245 µs · 67 KB |
-| Something changed | 921 ns · 8.2 KB | 4.0 µs · 8.2 KB | 434 µs · 155 KB | 250 µs · 75 KB |
+</Tab>
+<Tab title="JSC">
+
+| ops/s    | stdlib | ts-pattern |
+| -------- | ------ | ---------- |
+| Per call | 785M   | 13M        |
+
+</Tab>
+</Tabs>
+
+`Array.map`, 1000 items
+
+<Tabs inline syncKey="engine" hash={false}>
+<Tab title="V8">
+
+| ops/s · B/op | stdlib        | remeda        | immer         | mutative     |
+| ------------ | ------------- | ------------- | ------------- | ------------ |
+| Unchanged    | 5.3M · 2 B    | 254K · 8.2 KB | 2.5K · 148 KB | 3.9K · 66 KB |
+| Changed      | 1.2M · 8.2 KB | 245K · 8.2 KB | 2.4K · 158 KB | 4.1K · 75 KB |
+
+</Tab>
+<Tab title="JSC">
+
+| ops/s     | stdlib | remeda | immer | mutative |
+| --------- | ------ | ------ | ----- | -------- |
+| Unchanged | 4.7M   | 1.2M   | 3.8K  | 13K      |
+| Changed   | 816K   | 914K   | 3.0K  | 13K      |
+
+</Tab>
+</Tabs>
 
 `Object.setPath`
 
-|                   | stdlib        | remeda          | immer           | mutative        |
-| ----------------- | ------------- | --------------- | --------------- | --------------- |
-| Nothing changed   | 2 ns · 0 B    | 548 ns · 1.0 KB | 704 ns · 2.8 KB | 400 ns · 2.7 KB |
-| Something changed | 31 ns · 200 B | 564 ns · 1.0 KB | 1.5 µs · 3.8 KB | 535 ns · 3.5 KB |
+<Tabs inline syncKey="engine" hash={false}>
+<Tab title="V8">
+
+| ops/s · B/op | stdlib      | remeda        | immer         | mutative      |
+| ------------ | ----------- | ------------- | ------------- | ------------- |
+| Unchanged    | 434M · 0 B  | 1.8M · 1.0 KB | 1.5M · 2.8 KB | 2.6M · 2.7 KB |
+| Changed      | 33M · 200 B | 1.8M · 1.0 KB | 669K · 3.8 KB | 1.8M · 3.5 KB |
+
+</Tab>
+<Tab title="JSC">
+
+| ops/s     | stdlib | remeda | immer | mutative |
+| --------- | ------ | ------ | ----- | -------- |
+| Unchanged | 691M   | 3.6M   | 1.8M  | 2.2M     |
+| Changed   | 30M    | 3.7M   | 225K  | 1.8M     |
+
+</Tab>
+</Tabs>
 
 `Object.merge`
 
-|                   | stdlib       | remeda        |
-| ----------------- | ------------ | ------------- |
-| Nothing changed   | 3 ns · 0 B   | 43 ns · 176 B |
-| Something changed | 15 ns · 72 B | 45 ns · 176 B |
+<Tabs inline syncKey="engine" hash={false}>
+<Tab title="V8">
 
-Nothing/Something changed: Our functions return the original input when nothing changed:
+| ops/s · B/op | stdlib     | remeda      |
+| ------------ | ---------- | ----------- |
+| Unchanged    | 328M · 0 B | 23M · 176 B |
+| Changed      | 65M · 72 B | 24M · 176 B |
+
+</Tab>
+<Tab title="JSC">
+
+| ops/s     | stdlib | remeda |
+| --------- | ------ | ------ |
+| Unchanged | 929M   | 19M    |
+| Changed   | 80M    | 18M    |
+
+</Tab>
+</Tabs>
+
+Unchanged/Changed: Our functions return the original input when nothing changed:
 
 ```ts
 const a = [1, 2, 3]

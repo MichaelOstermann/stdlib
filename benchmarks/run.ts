@@ -23,10 +23,10 @@ const file = await build(name, transform)
 const cases = (await run("bun", file)).trim().split("\n")
 const engine = runtime === "node" ? "V8" : "JavaScriptCore"
 console.log(`\n${name}, ${engine}${transform ? ", through stdlib-transform" : ""}\n`)
-console.log(runtime === "node" ? "| | Time | Bytes |\n|---|---|---|" : "| | Time |\n|---|---|")
+console.log(runtime === "node" ? "| | Ops/s | B/op |\n|---|---|---|" : "| | Ops/s |\n|---|---|")
 for (const kase of cases) {
     const { bytes, ns } = JSON.parse(await run(runtime, file, kase)) as { bytes?: number, ns: number }
-    console.log(bytes === undefined ? `| ${kase} | ${time(ns)} |` : `| ${kase} | ${time(ns)} | ${size(bytes)} |`)
+    console.log(bytes === undefined ? `| ${kase} | ${rate(ns)} |` : `| ${kase} | ${rate(ns)} | ${size(bytes)} |`)
 }
 
 async function build(name: string, transform: boolean): Promise<string> {
@@ -63,12 +63,14 @@ async function run(runtime: "bun" | "node", file: string, kase?: string): Promis
     return kase === undefined ? output : output.trim().split("\n").at(-1)!
 }
 
-function time(ns: number): string {
-    if (ns >= 1000) return `${(ns / 1000).toFixed(1)} µs`
-    return `${ns < 10 ? ns.toFixed(1) : ns.toFixed(0)} ns`
+/** Calls per second, from nanoseconds per call: 37 ns is 27M. */
+function rate(ns: number): string {
+    const ops = 1e9 / ns
+    const [value, unit] = ops >= 1e9 ? [ops / 1e9, "B"] : ops >= 1e6 ? [ops / 1e6, "M"] : ops >= 1e3 ? [ops / 1e3, "K"] : [ops, ""]
+    return `${value < 10 ? value.toFixed(1) : value.toFixed(0)}${unit}`
 }
 
 function size(bytes: number): string {
-    if (bytes >= 1000) return `${(bytes / 1000).toFixed(1)} KB`
+    if (bytes >= 1000) return `${(bytes / 1000).toFixed(bytes >= 100_000 ? 0 : 1)} KB`
     return `${Math.max(0, bytes).toFixed(0)} B`
 }

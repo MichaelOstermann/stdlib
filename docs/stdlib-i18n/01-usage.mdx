@@ -1,0 +1,73 @@
+---
+title: Usage
+---
+
+## Installation
+
+```package-install
+npm i -D @monstermann/stdlib-i18n @monstermann/stdlib-transform
+```
+
+Set up [`stdlib-transform`](../stdlib-transform/usage) for your bundler, without it every message ends up in every bundle.
+
+## Messages
+
+One key per message, with one translation per language:
+
+```yaml i18n/auth.yaml
+auth.signIn:
+  en: Sign in
+  de: Anmelden
+
+auth.codeSent:
+  en: We sent a code to {email}
+  de: Wir haben einen Code an {email} gesendet
+```
+
+Files and their names don't matter, they are only used for organization - they all get bundled together.
+
+Translations are written in the [ICU message format](https://unicode-org.github.io/icu/userguide/format_parse/messages/):
+
+| Syntax                                          | Props                        |
+| ----------------------------------------------- | ---------------------------- |
+| `Hello {name}`                                  | `{ name: number \| string }` |
+| `{count, number} new`                           | `{ count: number }`          |
+| `Due {when, date, short}`, `{when, time}`       | `{ when: Date \| number }`   |
+| `{count, plural, one {# task} other {# tasks}}` | `{ count: number }`          |
+| `{place, selectordinal, one {#st} other {#th}}` | `{ place: number }`          |
+| `{role, select, admin {Admin} other {Member}}`  | `{ role: string }`           |
+
+## Compiling
+
+```json package.json
+{
+    "scripts": {
+        "i18n": "stdlib-i18n --messages 'i18n/*.yaml' --output src/i18n"
+    }
+}
+```
+
+- `--messages` can take several globs
+- The `output` folder gets an `index.ts` and a `_messages.ts`
+- Git ignored files are skipped
+
+## Translating
+
+Every message takes the language first, then its props:
+
+```ts
+import { m } from "./i18n"
+
+m.auth.signIn({ lang: "de" })
+m.auth.codeSent({ lang: "de" }, { email: "ada@example.com" })
+```
+
+As shown in the [introduction](./introduction), you can build your own wrappers to automate `MessageContext`, for example building a `useMessage` hook for react, or building an abstraction that pulls user preferences from a database for servers.
+
+## Auto-imports
+
+Depending on your setup, the TypeScript LSP may autocomplete from `_messages.ts` in your editor, which you can prevent by telling it to skip files starting with `_`:
+
+```json
+{ "autoImportSpecifierExcludeRegexes": ["(^|/)_[^/]*$"] }
+```

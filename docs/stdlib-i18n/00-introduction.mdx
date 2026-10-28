@@ -1,0 +1,96 @@
+---
+title: Introduction
+---
+
+`stdlib-i18n` is a small CLI tool that takes yaml files containing translations in the [ICU message format](https://unicode-org.github.io/icu/) and generates type-safe functions for them, which can be tree-shaken via [`stdlib-transform`](../stdlib-transform/introduction).
+
+## How it works
+
+```yaml messages.yaml
+hello:
+  en: Hello {name}!
+  de: Hallo {name}!
+```
+
+```sh
+bun run i18n --messages './*.yaml' --output ./i18n
+```
+
+Which generates two files that roughly look like this:
+
+<Tabs sync={false} hash={false}>
+<Tab title="i18n/index.ts">
+
+```ts
+import * as i18n from "./_messages"
+
+export type Lang = "de" | "en"
+export type MessageContext = { lang: Lang }
+
+export const m = {
+    hello: i18n._hello,
+}
+```
+
+</Tab>
+<Tab title="i18n/_messages.ts">
+
+```ts
+import type { MessageContext } from "./index"
+
+export function _hello(ctx: MessageContext, props: { name: string }): string {}
+```
+
+</Tab>
+</Tabs>
+
+You can use these as-is:
+
+```ts
+import { m } from "i18n"
+
+// "Hello John!"
+m.hello({ lang: "en" }, { name: "John" })
+```
+
+Our `stdlib-transform` will tree-shake the above:
+
+```ts
+import { _hello } from "i18n/_messages"
+
+_hello({ lang: "en" }, { name: "John" })
+```
+
+And you can build [whatever you need](../principles/primitives) on top:
+
+```ts
+const $lang = Signal<Lang>("en")
+
+export function t<T>(message: (ctx: MessageContext, props: T) => string, props: T): string
+export function t(message: (ctx: MessageContext) => string): string
+export function t(message: (ctx: MessageContext, props?: unknown) => string, props?: unknown): string {
+    return message({ lang: $lang() }, props)
+}
+
+t(m.hello, { name: "John" })
+```
+
+## Why
+
+We built this mostly out of frustration after trying several popular i18n tools (metrics not kept up to date):
+
+- **Complexity**: Their documentation contains between **24,000 - 42,000 words**
+- **Bloat**: For just 3 messages, we saw bundle sizes between **4.4kB - 14kB** (gzipped)
+- **Size**: The installation sizes ranged between **12MB - 200MB**
+- [**Dependencies**](../principles/dependencies): The libraries we found contained up to **110** dependencies
+- [**Performance**](../principles/performance): Our benchmarks showed a range between **6ns - 3.4µs**
+- **Flexibility**: We couldn't find a way to cleanly integrate these with signals
+
+In comparison with `stdlib-i18n`:
+
+- **Complexity**: ~800 words, about 3 minutes of reading
+- **Bloat**: 0.4kB (gzipped)
+- **Size**: 6.7MB, 5MB of it is `oxc-parser` for `stdlib-transform`
+- **Dependencies**: 12, most of them for `stdlib-transform`
+- **Performance**: Best case: \<1ns, worst case: 390ns
+- **Flexibility**: It takes you a minute to do whatever you want

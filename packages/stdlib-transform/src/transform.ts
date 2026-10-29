@@ -4,6 +4,7 @@ import { transform as treeshake } from "@monstermann/barrels-treeshake"
 import { SourceMap } from "magic-string"
 import { transformGlobals } from "./globals"
 import { globals, values } from "./globals.manifest"
+import { transformMessages } from "./i18n"
 import { transformImports } from "./imports"
 import { guards, packages } from "./manifest"
 import { transformMatches } from "./match"
@@ -41,6 +42,7 @@ export interface StdlibResult {
  * - `Object.setPath()` calls with a path that is written out and `Object.merge()` calls with an
  *   object literal are compiled into a function of their own
  * - everything else (`pipe`, `Result`, …) is imported from the file it lives in
+ * - `m.auth.signIn` of `@monstermann/stdlib-i18n` becomes a direct import of `_authSignIn`
  * - in React components and hooks, reads of signals are wrapped with `useReactive` and their
  *   signals and effects created with `useSignal` and `useSignalEffect`, all from
  *   `@monstermann/stdlib-react`
@@ -59,6 +61,12 @@ export function transform(code: string, filePath: string, options: StdlibOptions
     if (react) {
         code = react.toString()
         maps.push(react.generateMap(generateMap))
+    }
+
+    const messages = transformMessages(code, filePath)
+    if (messages) {
+        code = messages.toString()
+        maps.push(messages.generateMap(generateMap))
     }
 
     const imported = code.includes(from)

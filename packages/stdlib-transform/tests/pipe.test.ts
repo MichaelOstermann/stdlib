@@ -1,4 +1,3 @@
-/* eslint-disable no-template-curly-in-string -- what is replaced is run, to compare it to what it replaces */
 import { describe, expect, it } from "bun:test"
 import { transformPipes } from "../src/pipe"
 

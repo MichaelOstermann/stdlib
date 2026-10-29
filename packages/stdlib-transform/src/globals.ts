@@ -21,7 +21,7 @@ export interface GlobalsOptions {
 }
 
 /** Nodes of TypeScript that contain code, every other one is about types. */
-const expressions = new Set([
+export const expressions = new Set([
     "TSAsExpression",
     "TSEnumBody",
     "TSEnumDeclaration",

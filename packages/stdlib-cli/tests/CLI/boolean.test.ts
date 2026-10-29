@@ -17,7 +17,8 @@ function resolve(line: string): Promise<Outcome> {
 
 async function values(line: string): Promise<unknown> {
     const outcome = await resolve(line)
-    return outcome.type === "run" ? outcome.values : outcome.errors
+    if (outcome.type === "run") return outcome.values
+    return outcome.type === "error" ? outcome.errors : outcome.type
 }
 
 describe("boolean", () => {

@@ -39,6 +39,6 @@
     },
     "devDependencies": {
         "@monstermann/stdlib": "workspace:*",
-        "rolldown": "1.2.12"
+        "rolldown": "1.2.16"
     }
 }

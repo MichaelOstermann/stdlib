@@ -1,4 +1,6 @@
+import type { Token } from "../internals/Tokens"
 import type { Command, Option } from "./types"
+import { readWords } from "../internals/readWords"
 
 /** An option as it is written in `CLI.command`, everything can be left out. */
 export interface OptionInput {
@@ -8,7 +10,9 @@ export interface OptionInput {
     example?: string
     hidden?: boolean
     optional?: boolean
+    usage?: string
     parse?: (value: string) => unknown
+    read?: (token: Token) => string | undefined
 }
 
 /**
@@ -69,6 +73,8 @@ export function command<const I extends Record<string, OptionInput>>(options: {
             hidden: input.hidden ?? false,
             optional: input.optional ?? false,
             parse: input.parse ?? ((value) => value),
+            read: input.read ?? readWords,
+            usage: input.usage ?? "<value>",
         }
     }
 

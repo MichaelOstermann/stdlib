@@ -78,6 +78,13 @@ export async function resolve(program: Command, argv: string[], options: { inter
         else values[name] = result.value
     }
 
+    // Words no flag took, after one that takes none: `--json extra`.
+    for (let token = tokens.head; token; token = token.next) {
+        const result = match(names, token.value, false)
+        const candidates = "match" in result ? [result.match] : result.candidates
+        errors.push({ candidates: candidates.map(({ name }) => name), type: "UnknownFlag", value: token.value })
+    }
+
     if (errors.length && givenNothing) return { command, errors: [{ type: "NothingToRun" }], path, type: "error" }
     if (errors.length) return { command, errors, path, type: "error" }
     return { command, path, type: "run", values }
@@ -103,12 +110,13 @@ function match<T extends { hidden: boolean, name: string }>(items: T[], value: s
     return { candidates }
 }
 
-/**
- * Takes the flag and every word up to the next flag, joined with spaces: `--name Mary Ann` is
- * `Mary Ann`, as is `--name=Mary Ann`. Falls back to the default, and parses what it got.
- */
+/** Reads the flag where it was given, falls back to the default, and parses what it got. */
 async function readFlag(name: string, option: Option, tokens: Token[]): Promise<{ error: CLIError } | { value: unknown }> {
-    const given = tokens.map(take)
+    const given = tokens.map((token) => {
+        const value = option.read(token)
+        token.remove()
+        return value
+    })
     if (given.length > 1) return { error: { name, type: "RepeatedFlag" } }
     if (given.length === 1 && given[0] === undefined) return { error: { message: "Requires a value", name, type: "InvalidFlag" } }
     const value = given[0] ?? option.default
@@ -121,17 +129,4 @@ async function readFlag(name: string, option: Option, tokens: Token[]): Promise<
     catch (error) {
         return { error: { message: error instanceof Error ? error.message : String(error), name, type: "InvalidFlag" } }
     }
-}
-
-/**
- * Removes the flag and the words after it, and joins those words, `undefined` when there are none.
- */
-function take(token: Token): string | undefined {
-    const words: string[] = []
-    while (token.next && !token.next.isFlag()) {
-        words.push(token.next.value)
-        token.next.remove()
-    }
-    token.remove()
-    return words.length ? words.join(" ") : undefined
 }

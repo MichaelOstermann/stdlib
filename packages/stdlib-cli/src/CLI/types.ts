@@ -1,3 +1,5 @@
+import type { Token } from "../internals/Tokens"
+
 export interface Command {
     commands: Command[]
     /** A short, one line description. */
@@ -27,8 +29,16 @@ export interface Option {
     hidden: boolean
     /** A missing flag is `undefined` instead of a `MissingFlagError`. */
     optional: boolean
+    /** What help shows after the flag for its value, `<value>` by default, nothing for a switch. */
+    usage: string
     /** Turns the given value into what the handler gets. Throws, or rejects, when it is invalid. */
     parse: (value: string) => unknown
+    /**
+     * Takes the value of the flag from the words after it, removing the ones it takes, and
+     * `undefined` when there is none. By default every word up to the next flag, joined with
+     * spaces.
+     */
+    read: (token: Token) => string | undefined
 }
 
 /**

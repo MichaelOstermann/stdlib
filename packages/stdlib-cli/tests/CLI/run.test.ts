@@ -48,7 +48,7 @@ describe("run", () => {
             expect(stdout).toHaveBeenLastCalledWith("greet\nGreets someone\n\nCommands:\n  hello  Says hello\n")
         }
         await CLI.run(program, { argv: ["hello", "--name", "Jane", "--xyz", "--help"] })
-        expect(stdout).toHaveBeenLastCalledWith("greet hello\nSays hello\n\nOptions:\n  --name  Who to greet\n")
+        expect(stdout).toHaveBeenLastCalledWith("greet hello\nSays hello\n\nOptions:\n  --name <value>  Who to greet\n")
         expect(ran).toBeUndefined()
         expect(process.exitCode).toBe(0)
     })
@@ -57,14 +57,14 @@ describe("run", () => {
         await CLI.run(program, { argv: [] })
         expect(stderr).toHaveBeenCalledWith("greet\nGreets someone\n\nCommands:\n  hello  Says hello\n")
         await CLI.run(program, { argv: ["hello"] })
-        expect(stderr).toHaveBeenLastCalledWith("greet hello\nSays hello\n\nOptions:\n  --name  Who to greet\n")
+        expect(stderr).toHaveBeenLastCalledWith("greet hello\nSays hello\n\nOptions:\n  --name <value>  Who to greet\n")
         expect(ran).toBeUndefined()
         expect(process.exitCode).toBe(1)
     })
 
     it("prints errors to stderr and exits with 1", async () => {
         await CLI.run(program, { argv: ["hello", "--nme", "Jane"] })
-        expect(stderr).toHaveBeenCalledWith("Unknown flag: --nme Did you mean: --name\n\nOptions:\n  --name  Who to greet\n\nSee all options: greet hello --help\n")
+        expect(stderr).toHaveBeenCalledWith("Unknown flag: --nme Did you mean: --name\n\nOptions:\n  --name <value>  Who to greet\n\nSee all options: greet hello --help\n")
         expect(ran).toBeUndefined()
         expect(process.exitCode).toBe(1)
     })

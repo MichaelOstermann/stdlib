@@ -115,7 +115,7 @@ function optionSection(options: [string, Option][]): string {
 }
 
 function commandTable(commands: Command[]): string {
-    return table(commands.map((command) => [command.name, command.desc]), colors.blue)
+    return table(commands.map((command) => [command.name, colors.blue(command.name), command.desc]))
 }
 
 function optionTable(options: [string, Option][]): string {
@@ -124,24 +124,25 @@ function optionTable(options: [string, Option][]): string {
         if (option.default !== undefined) notes.push(colors.dim(`(Default: ${option.default})`))
         else if (option.optional) notes.push(colors.dim("(Optional)"))
         if (option.example !== undefined) notes.push(colors.dim(`(Example: ${option.example})`))
-        return [flag(name), notes.filter(Boolean).join(" ")]
-    }), colors.cyan)
+        const typed = [flag(name), option.usage].filter(Boolean)
+        return [typed.join(" "), [colors.cyan(typed[0]!), ...typed.slice(1).map(colors.dim)].join(" "), notes.filter(Boolean).join(" ")]
+    }))
 }
 
 /**
- * Two columns, indented by two spaces, the first one painted. The second one wraps to the width of
- * the terminal, when it is known and Bun can wrap it.
+ * Two columns, indented by two spaces, the first one given as text and painted. The second one
+ * wraps to the width of the terminal, when it is known and Bun can wrap it.
  */
-function table(rows: [string, string][], paint: (text: string) => string): string {
+function table(rows: [text: string, painted: string, right: string][]): string {
     const width = Math.max(...rows.map(([left]) => left.length))
     const indent = " ".repeat(2 + width + 2)
     const columns = process.stdout.columns
     return rows
-        .map(([left, right]) => {
+        .map(([left, painted, right]) => {
             const wrapped = typeof Bun !== "undefined" && columns
                 ? Bun.wrapAnsi(right, Math.max(columns - indent.length, 20), { hard: true })
                 : right
-            return `  ${paint(left)}${" ".repeat(width - left.length)}  ${wrapped.replaceAll("\n", `\n${indent}`)}`.trimEnd()
+            return `  ${painted}${" ".repeat(width - left.length)}  ${wrapped.replaceAll("\n", `\n${indent}`)}`.trimEnd()
         })
         .join("\n")
 }

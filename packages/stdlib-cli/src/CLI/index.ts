@@ -1,5 +1,6 @@
 import { colors } from "./colors"
 import { command } from "./command"
+import { format } from "./format"
 import { isAgent } from "./isAgent"
 import { isCI } from "./isCI"
 import { isInteractive } from "./isInteractive"
@@ -13,6 +14,7 @@ export type { CLIError, Command, Option, Outcome } from "./types"
 export const CLI = {
     ...colors,
     command,
+    format,
     isAgent,
     isCI,
     isInteractive,

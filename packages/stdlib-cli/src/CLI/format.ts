@@ -9,11 +9,12 @@ import { colors } from "./colors"
  * ```
  *
  * The text to print for the help or the errors of an outcome of `CLI.resolve`, and an empty string
- * for one that runs.
+ * for one that runs. `NothingToRun` is shown as the help.
  *
- * Help lists the commands and options of the command. Errors list what went wrong, one per line
- * with what an unknown name could have meant, followed by the commands or options they name, or all
- * of them when they name none. Typed values are never shown, only names.
+ * Help names the command as it is typed, and lists its commands and options. Errors list what went
+ * wrong, one per line with what an unknown name could have meant, followed by the commands or
+ * options they name, or all of them when they name none, and how to see all of them. Typed values
+ * are never shown, only names.
  *
  * Errors are red, commands blue, flags cyan, headings bold and notes such as `(Optional)` dim, when
  * `CLI.shouldColor()` says so.
@@ -21,45 +22,55 @@ import { colors } from "./colors"
  * ## Example
  *
  * ```ts
- * const outcome = await CLI.resolve(commands, ["members", "ad"], { interactive: false });
+ * const outcome = await CLI.resolve(miko, ["members", "ad"], { interactive: false });
  * console.error(CLI.format(outcome));
  * // Unknown command: ad Did you mean: add
  * //
  * // Commands:
  * //   add  Add a member
+ * //
+ * // See all commands: miko members --help
  * ```
  */
 export function format(outcome: Outcome): string {
     if (outcome.type === "run") return ""
     const { command } = outcome
-    if (outcome.type === "help") {
-        const commands = visibleCommands(command)
-        const options = enabledOptions(command).filter(([, option]) => !option.hidden)
-        return paragraphs([
-            command.desc,
-            commands.length ? `${heading("Commands")}\n${commandTable(commands)}` : "",
-            options.length ? `${heading("Options")}\n${optionTable(options)}` : "",
-        ])
-    }
+    const typed = outcome.path.join(" ")
+    if (outcome.type === "help") return help(command, typed)
 
     const { errors } = outcome
+    if (errors[0]!.type === "NothingToRun") return help(command, typed)
     const lines = errors.map(line).join("\n")
 
     // The commands or options that are named, hidden ones too, otherwise every one help shows.
     if (errors[0]!.type === "UnknownCommand") {
         const named = errors.flatMap((error) => (error.type === "UnknownCommand" ? error.candidates : []))
-        return paragraphs([lines, `${heading("Commands")}\n${commandTable(named.length ? named : visibleCommands(command))}`])
+        return paragraphs([lines, commandSection(named.length ? named : visibleCommands(command)), seeAll("commands", typed)])
     }
     const named = new Set(errors.flatMap((error) => (error.type === "UnknownFlag" ? error.candidates : "name" in error ? [error.name] : [])))
     const options = enabledOptions(command)
     const affected = options.filter(([name]) => named.has(name))
-    return paragraphs([lines, `${heading("Options")}\n${optionTable(affected.length ? affected : options.filter(([, option]) => !option.hidden))}`])
+    return paragraphs([lines, optionSection(affected.length ? affected : options.filter(([, option]) => !option.hidden)), seeAll("options", typed)])
+}
+
+function help(command: Command, typed: string): string {
+    return paragraphs([
+        [colors.bold(typed), command.desc].filter(Boolean).join("\n"),
+        commandSection(visibleCommands(command)),
+        optionSection(enabledOptions(command).filter(([, option]) => !option.hidden)),
+    ])
+}
+
+/** `See all options: miko members add --help` */
+function seeAll(what: string, typed: string): string {
+    return `See all ${what}: ${colors.blue(typed)} ${colors.cyan("--help")}`
 }
 
 function line(error: CLIError): string {
     switch (error.type) {
         case "UnknownCommand": return `${colors.red("Unknown command:")} ${colors.blue(error.value)}${didYouMean(error.candidates.map((command) => colors.blue(command.name)))}`
         case "UnknownFlag": return `${colors.red("Unknown flag:")} ${colors.cyan(error.value)}${didYouMean(error.candidates.map((name) => colors.cyan(flag(name))))}`
+        case "NothingToRun": return ""
         case "MissingFlag": return `${colors.red("Missing flag:")} ${colors.cyan(flag(error.name))}`
         case "InvalidFlag": return `${colors.red("Invalid flag:")} ${colors.cyan(flag(error.name))} ${error.message}`
         case "RepeatedFlag": return `${colors.red("Invalid flag:")} ${colors.cyan(flag(error.name))} Given more than once`
@@ -91,6 +102,16 @@ function enabledOptions(command: Command): [string, Option][] {
 
 function isRequired(option: Option): boolean {
     return !option.optional && option.default === undefined
+}
+
+function commandSection(commands: Command[]): string {
+    if (!commands.length) return ""
+    return `${heading("Commands")}\n${commandTable(commands)}`
+}
+
+function optionSection(options: [string, Option][]): string {
+    if (!options.length) return ""
+    return `${heading("Options")}\n${optionTable(options)}`
 }
 
 function commandTable(commands: Command[]): string {

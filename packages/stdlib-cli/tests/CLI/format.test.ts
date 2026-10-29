@@ -56,6 +56,7 @@ describe("format", () => {
     it("lists the commands of a command that only groups others", async () => {
         expect(await format("members")).toBe(
             [
+                "miko members",
                 "Manage members",
                 "",
                 "Commands:",
@@ -74,6 +75,8 @@ describe("format", () => {
                 "Commands:",
                 "  remove  Remove a member",
                 "  rekked  Rename a member",
+                "",
+                "See all commands: miko members --help",
             ].join("\n"),
         )
     })
@@ -87,6 +90,8 @@ describe("format", () => {
                 "  add     Add a member",
                 "  remove  Remove a member",
                 "  rekked  Rename a member",
+                "",
+                "See all commands: miko members --help",
             ].join("\n"),
         )
     })
@@ -101,6 +106,8 @@ describe("format", () => {
                 "  --first-name  First name (Example: Jane)",
                 "  --nickname    Shown instead of the first name where there",
                 "                is room for it (Optional)",
+                "",
+                "See all options: miko members add --help",
             ].join("\n"),
         )
     })
@@ -115,6 +122,8 @@ describe("format", () => {
                 "  --nickname    Shown instead of the first name where there",
                 "                is room for it (Optional)",
                 "  --port        Port to listen on (Default: 3000)",
+                "",
+                "See all options: miko members add --help",
             ].join("\n"),
         )
     })
@@ -131,6 +140,8 @@ describe("format", () => {
                 "  --nickname    Shown instead of the first name where there",
                 "                is room for it (Optional)",
                 "  --port        Port to listen on (Default: 3000)",
+                "",
+                "See all options: miko members add --help",
             ].join("\n"),
         )
         expect(await format("members add --first-name Jane --port abc")).toBe(
@@ -139,6 +150,8 @@ describe("format", () => {
                 "",
                 "Options:",
                 "  --port  Port to listen on (Default: 3000)",
+                "",
+                "See all options: miko members add --help",
             ].join("\n"),
         )
     })
@@ -156,6 +169,8 @@ describe("format", () => {
                 "",
                 "Options:",
                 "  --secret  Only for tests (Optional)",
+                "",
+                "See all options: miko members add --help",
             ].join("\n"),
         )
         expect(await format("members add --xyz")).not.toContain("--secret")

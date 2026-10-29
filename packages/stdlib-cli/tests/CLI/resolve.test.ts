@@ -51,7 +51,7 @@ describe("resolve", () => {
         it("runs a command with its values", async () => {
             const outcome = await resolve("members add --first-name John")
             expect(outcome.type).toBe("run")
-            expect(outcome.path).toEqual(["members", "add"])
+            expect(outcome.path).toEqual(["miko", "members", "add"])
             expect(outcome.type === "run" && outcome.values).toEqual({ firstName: "John", lastName: undefined, port: 3000 })
         })
 
@@ -59,18 +59,29 @@ describe("resolve", () => {
             const program = CLI.command({ name: "greet", options: { name: {} }, handler() {} })
             const outcome = await CLI.resolve(program, ["--name", "Jane"], { interactive: false })
             expect(outcome.type === "run" && outcome.values).toEqual({ name: "Jane" })
-            expect(outcome.path).toEqual([])
+            expect(outcome.path).toEqual(["greet"])
         })
 
-        it("shows the help of a command without a handler", async () => {
-            expect((await resolve("members")).type).toBe("help")
-            expect((await resolve("")).type).toBe("help")
+        it("has nothing to run for a command without a handler", async () => {
+            expect(errors(await resolve("members"))).toEqual([{ type: "NothingToRun" }])
+            expect(errors(await resolve(""))).toEqual([{ type: "NothingToRun" }])
+        })
+
+        it("has nothing to run for a command that was given nothing and needs something", async () => {
+            expect(errors(await resolve("members add"))).toEqual([{ type: "NothingToRun" }])
+            expect((await resolve("members remove")).type).toBe("run")
+        })
+
+        it("shows help for --help or -h after the commands, over every other flag", async () => {
+            expect((await resolve("members add --xyz --port abc -h")).type).toBe("help")
+            expect((await resolve("members --HELP")).type).toBe("help")
+            expect(errors(await resolve("membrs --help", false))[0]).toMatchObject({ type: "UnknownCommand" })
         })
 
         it("abbreviates when interactive", async () => {
             const outcome = await resolve("mem a --fn John")
             expect(outcome.type).toBe("run")
-            expect(outcome.path).toEqual(["members", "add"])
+            expect(outcome.path).toEqual(["miko", "members", "add"])
         })
 
         it("needs exact names when not interactive", async () => {

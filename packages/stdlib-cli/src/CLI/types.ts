@@ -31,7 +31,10 @@ export interface Option {
     parse: (value: string) => unknown
 }
 
-/** What came out of reading argv, before anything is printed or run. */
+/**
+ * What came out of reading argv, before anything is printed or run. `path` is the command as it is
+ * typed, starting with the name of the program.
+ */
 export type Outcome =
     | { type: "error", command: Command, errors: CLIError[], path: string[] }
     | { type: "help", command: Command, path: string[] }
@@ -41,6 +44,8 @@ export type Outcome =
 export type CLIError =
     | { type: "InvalidFlag", message: string, name: string }
     | { type: "MissingFlag", name: string }
+    /** A command that only groups others, or that was given nothing and can't run without it. */
+    | { type: "NothingToRun" }
     | { type: "RepeatedFlag", name: string }
     | { type: "UnknownCommand", candidates: Command[], value: string }
     | { type: "UnknownFlag", candidates: string[], value: string }

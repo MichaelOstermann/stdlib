@@ -1,5 +1,6 @@
 import type { Token } from "../internals/Tokens"
 import type { CLIError, Command, Option, Outcome } from "./types"
+import { normalize } from "../internals/normalize"
 import { Tokens } from "../internals/Tokens"
 
 /**
@@ -14,8 +15,12 @@ import { Tokens } from "../internals/Tokens"
  * ```
  *
  * Reads `argv` into what should happen, without printing or running anything: the command to run
- * with its values, the help of a command that only groups others, or every error that was found.
- * `program` is the command the program itself is, `argv` comes after its name.
+ * with its values, its help, or every error that was found. `program` is the command the program
+ * itself is, `argv` comes after its name.
+ *
+ * `--help` or `-h` anywhere after the commands asks for help, which wins over every other flag. A
+ * command that only groups others, or that was given nothing and can't run without it, is a
+ * `NothingToRun` error.
  *
  * Names are settled before values: a command or flag that names nothing, or more than one, stops
  * there, as do words before the first flag. Then every option is read, and what is missing, invalid
@@ -27,7 +32,7 @@ import { Tokens } from "../internals/Tokens"
  */
 export async function resolve(program: Command, argv: string[], options: { interactive: boolean }): Promise<Outcome> {
     const tokens = Tokens(argv)
-    const path: string[] = []
+    const path = [program.name]
     let command = program
 
     // Commands: words up to the first flag, as long as the command has commands of its own.
@@ -39,6 +44,10 @@ export async function resolve(program: Command, argv: string[], options: { inter
         path.push(command.name)
         tokens.head.remove()
     }
+
+    if (tokens.flags().some((token) => ["h", "help"].includes(normalize(token.value)))) return { command, path, type: "help" }
+    if (!command.handler) return { command, errors: [{ type: "NothingToRun" }], path, type: "error" }
+    const givenNothing = !tokens.head
 
     const flags = Object.entries(command.options).filter(([, option]) => option.enabled)
     const names = flags.map(([name, option]) => ({ hidden: option.hidden, name }))
@@ -69,14 +78,9 @@ export async function resolve(program: Command, argv: string[], options: { inter
         else values[name] = result.value
     }
 
+    if (errors.length && givenNothing) return { command, errors: [{ type: "NothingToRun" }], path, type: "error" }
     if (errors.length) return { command, errors, path, type: "error" }
-    if (!command.handler) return { command, path, type: "help" }
     return { command, path, type: "run", values }
-}
-
-/** `firstName`, `first-name`, `FIRST_NAME` and `--first-name` are all `firstname`. */
-function normalize(name: string): string {
-    return name.replace(/[^a-z0-9]/gi, "").toLowerCase()
 }
 
 /**

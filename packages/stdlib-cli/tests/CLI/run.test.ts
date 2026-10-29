@@ -42,16 +42,45 @@ describe("run", () => {
         expect(process.exitCode).toBe(0)
     })
 
-    it("prints help to stdout", async () => {
-        await CLI.run(program, { argv: [] })
-        expect(stdout).toHaveBeenCalledWith("Greets someone\n\nCommands:\n  hello  Says hello\n")
+    it("prints help that was asked for to stdout", async () => {
+        for (const flag of ["--help", "-h", "--HELP"]) {
+            await CLI.run(program, { argv: [flag] })
+            expect(stdout).toHaveBeenLastCalledWith("greet\nGreets someone\n\nCommands:\n  hello  Says hello\n")
+        }
+        await CLI.run(program, { argv: ["hello", "--name", "Jane", "--xyz", "--help"] })
+        expect(stdout).toHaveBeenLastCalledWith("greet hello\nSays hello\n\nOptions:\n  --name  Who to greet\n")
+        expect(ran).toBeUndefined()
         expect(process.exitCode).toBe(0)
     })
 
-    it("prints errors to stderr and exits with 1", async () => {
+    it("prints help to stderr and exits with 1 when nothing is given", async () => {
+        await CLI.run(program, { argv: [] })
+        expect(stderr).toHaveBeenCalledWith("greet\nGreets someone\n\nCommands:\n  hello  Says hello\n")
         await CLI.run(program, { argv: ["hello"] })
-        expect(stderr).toHaveBeenCalledWith("Missing flag: --name\n\nOptions:\n  --name  Who to greet\n")
+        expect(stderr).toHaveBeenLastCalledWith("greet hello\nSays hello\n\nOptions:\n  --name  Who to greet\n")
         expect(ran).toBeUndefined()
+        expect(process.exitCode).toBe(1)
+    })
+
+    it("prints errors to stderr and exits with 1", async () => {
+        await CLI.run(program, { argv: ["hello", "--nme", "Jane"] })
+        expect(stderr).toHaveBeenCalledWith("Unknown flag: --nme Did you mean: --name\n\nOptions:\n  --name  Who to greet\n\nSee all options: greet hello --help\n")
+        expect(ran).toBeUndefined()
+        expect(process.exitCode).toBe(1)
+    })
+
+    it("does not report help after an unknown command", async () => {
+        await CLI.run(program, { argv: ["xyz", "--help"] })
+        expect(stdout).not.toHaveBeenCalled()
+        expect(process.exitCode).toBe(1)
+    })
+
+    it("prints the version when it has one", async () => {
+        await CLI.run(program, { argv: ["--version"], version: "1.2.0" })
+        expect(stdout).toHaveBeenCalledWith("1.2.0\n")
+        expect(process.exitCode).toBe(0)
+        await CLI.run(program, { argv: ["--version"] })
+        expect(stderr).toHaveBeenCalledWith("greet\nGreets someone\n\nCommands:\n  hello  Says hello\n")
         expect(process.exitCode).toBe(1)
     })
 })

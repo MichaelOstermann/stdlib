@@ -7,7 +7,7 @@ import { Tokens } from "../internals/Tokens"
  *
  * ```ts
  * function CLI.resolve(
- *     commands: Command[],
+ *     program: Command,
  *     argv: string[],
  *     options: { interactive: boolean },
  * ): Promise<Outcome>
@@ -15,6 +15,7 @@ import { Tokens } from "../internals/Tokens"
  *
  * Reads `argv` into what should happen, without printing or running anything: the command to run
  * with its values, the help of a command that only groups others, or every error that was found.
+ * `program` is the command the program itself is, `argv` comes after its name.
  *
  * Names are settled before values: a command or flag that names nothing, or more than one, stops
  * there, as do words before the first flag. Then every option is read, and what is missing, invalid
@@ -24,10 +25,10 @@ import { Tokens } from "../internals/Tokens"
  * flag. When `interactive`, names can also be abbreviated, `mem a --fn` for
  * `members add --first-name`, as long as only one name fits.
  */
-export async function resolve(commands: Command[], argv: string[], options: { interactive: boolean }): Promise<Outcome> {
+export async function resolve(program: Command, argv: string[], options: { interactive: boolean }): Promise<Outcome> {
     const tokens = Tokens(argv)
     const path: string[] = []
-    let command = root(commands)
+    let command = program
 
     // Commands: words up to the first flag, as long as the command has commands of its own.
     while (tokens.head && !tokens.head.isFlag() && command.commands.length) {
@@ -71,11 +72,6 @@ export async function resolve(commands: Command[], argv: string[], options: { in
     if (errors.length) return { command, errors, path, type: "error" }
     if (!command.handler) return { command, path, type: "help" }
     return { command, path, type: "run", values }
-}
-
-/** The commands at the top, as the commands of a command without a name. */
-function root(commands: Command[]): Command {
-    return { commands, desc: "", enabled: true, handler: undefined, hidden: false, name: "", options: {} }
 }
 
 /** `firstName`, `first-name`, `FIRST_NAME` and `--first-name` are all `firstname`. */

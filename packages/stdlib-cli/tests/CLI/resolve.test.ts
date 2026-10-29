@@ -35,7 +35,7 @@ const commands = [
 ]
 
 function resolve(line: string, interactive = true): Promise<Outcome> {
-    return CLI.resolve(commands, line ? line.split(" ") : [], { interactive })
+    return CLI.resolve(CLI.command({ commands, name: "miko" }), line ? line.split(" ") : [], { interactive })
 }
 
 function errors(outcome: Outcome): unknown[] {
@@ -53,6 +53,13 @@ describe("resolve", () => {
             expect(outcome.type).toBe("run")
             expect(outcome.path).toEqual(["members", "add"])
             expect(outcome.type === "run" && outcome.values).toEqual({ firstName: "John", lastName: undefined, port: 3000 })
+        })
+
+        it("runs a program that is a single command", async () => {
+            const program = CLI.command({ name: "greet", options: { name: {} }, handler() {} })
+            const outcome = await CLI.resolve(program, ["--name", "Jane"], { interactive: false })
+            expect(outcome.type === "run" && outcome.values).toEqual({ name: "Jane" })
+            expect(outcome.path).toEqual([])
         })
 
         it("shows the help of a command without a handler", async () => {
@@ -184,7 +191,7 @@ describe("resolve", () => {
 
         it("awaits an async parse", async () => {
             const command = CLI.command({ name: "wait", options: { delay: { parse: async (value) => Number(value) } }, handler() {} })
-            const outcome = await CLI.resolve([command], ["wait", "--delay", "5"], { interactive: false })
+            const outcome = await CLI.resolve(command, ["--delay", "5"], { interactive: false })
             expect(outcome.type === "run" && outcome.values["delay"]).toBe(5)
         })
     })

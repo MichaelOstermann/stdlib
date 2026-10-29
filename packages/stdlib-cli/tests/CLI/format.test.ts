@@ -34,7 +34,7 @@ const commands = [
 ]
 
 async function format(line: string): Promise<string> {
-    return CLI.format(await CLI.resolve(commands, line.split(" "), { interactive: false }))
+    return CLI.format(await CLI.resolve(CLI.command({ commands, name: "miko" }), line.split(" "), { interactive: false }))
 }
 
 let columns: number | undefined

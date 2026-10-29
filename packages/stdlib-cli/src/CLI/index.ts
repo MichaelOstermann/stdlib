@@ -5,6 +5,7 @@ import { isAgent } from "./isAgent"
 import { isCI } from "./isCI"
 import { isInteractive } from "./isInteractive"
 import { resolve } from "./resolve"
+import { run } from "./run"
 import { shouldColor } from "./shouldColor"
 
 export type { Colors } from "./colors"
@@ -19,5 +20,6 @@ export const CLI = {
     isCI,
     isInteractive,
     resolve,
+    run,
     shouldColor,
 }

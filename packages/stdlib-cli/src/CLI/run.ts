@@ -1,5 +1,6 @@
 import type { Command } from "./types"
 import { normalize } from "../internals/normalize"
+import { colors } from "./colors"
 import { format } from "./format"
 import { isInteractive } from "./isInteractive"
 import { resolve } from "./resolve"
@@ -22,7 +23,7 @@ import { resolve } from "./resolve"
  * it.
  *
  * Help goes to stdout. Errors go to stderr and set the exit code to 1, including the help shown
- * when there is nothing to run.
+ * when there is nothing to run, and what the handler throws: its message, in red.
  *
  * ## Example
  *
@@ -47,7 +48,13 @@ export async function run(program: Command, options: { argv?: string[], version?
         process.stdout.write(`${format(outcome)}\n`)
     }
     else if (outcome.type === "run") {
-        await outcome.command.handler!(outcome.values)
+        try {
+            await outcome.command.handler!(outcome.values)
+        }
+        catch (error) {
+            process.stderr.write(`${colors.red(error instanceof Error ? error.message : String(error))}\n`)
+            process.exitCode = 1
+        }
     }
     else {
         process.stderr.write(`${format(outcome)}\n`)

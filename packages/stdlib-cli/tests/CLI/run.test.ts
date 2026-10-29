@@ -75,6 +75,21 @@ describe("run", () => {
         expect(process.exitCode).toBe(1)
     })
 
+    it("prints what the handler throws to stderr and exits with 1", async () => {
+        const failing = CLI.command({
+            name: "fail",
+            options: { with: {} },
+            handler: async ({ with: thrown }) => {
+                throw thrown === "error" ? new Error("Server is not running") : thrown
+            },
+        })
+        await CLI.run(failing, { argv: ["--with", "error"] })
+        expect(stderr).toHaveBeenLastCalledWith("Server is not running\n")
+        await CLI.run(failing, { argv: ["--with", "text"] })
+        expect(stderr).toHaveBeenLastCalledWith("text\n")
+        expect(process.exitCode).toBe(1)
+    })
+
     it("prints the version when it has one", async () => {
         await CLI.run(program, { argv: ["--version"], version: "1.2.0" })
         expect(stdout).toHaveBeenCalledWith("1.2.0\n")

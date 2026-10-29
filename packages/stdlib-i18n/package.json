@@ -1,0 +1,43 @@
+{
+    "name": "@monstermann/stdlib-i18n",
+    "type": "module",
+    "version": "0.1.0",
+    "description": "Compiles translations in YAML into typed functions, with only the messages the code uses.",
+    "author": "Michael Ostermann <michaelostermann@me.com>",
+    "license": "MIT",
+    "homepage": "https://github.com/MichaelOstermann/stdlib",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/MichaelOstermann/stdlib.git"
+    },
+    "bugs": {
+        "url": "https://github.com/MichaelOstermann/stdlib/issues"
+    },
+    "keywords": [],
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.mts",
+            "import": "./dist/index.mjs"
+        }
+    },
+    "main": "./dist/index.mjs",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.mts",
+    "bin": {
+        "stdlib-i18n": "./dist/cli.mjs"
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "bundle": "tsdown"
+    },
+    "dependencies": {
+        "@monstermann/stdlib-cli": "workspace:^"
+    },
+    "devDependencies": {
+        "@formatjs/icu-messageformat-parser": "^3.5.21",
+        "@monstermann/stdlib-transform": "workspace:*"
+    }
+}

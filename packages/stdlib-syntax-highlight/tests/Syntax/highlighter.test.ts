@@ -9,7 +9,7 @@ const scope = (title: string) => Syntax.languages.find((language) => language.ti
 const wasm = readFileSync(new URL("../../../../target/wasm32-unknown-unknown/release/stdlib_syntax_highlight.wasm", import.meta.url))
 const bytes = () => wasm.buffer.slice(wasm.byteOffset, wasm.byteOffset + wasm.byteLength)
 const highlighter = Syntax.highlighter(bytes())
-for (const title of ["CSS", "Rust", "TypeScript React"]) await highlighter.load(scope(title))
+for (const title of ["CSS", "Rust", "TSX"]) await highlighter.load(scope(title))
 
 function highlight(text: string, title: string): [string, string | undefined][] {
     let at = 0
@@ -29,8 +29,8 @@ describe("highlighter", () => {
         ])
     })
 
-    it("highlights TypeScript React", async () => {
-        expect(highlight('const a = <div class="x">{b}</div>', "TypeScript React")).toEqual([
+    it("highlights TSX", async () => {
+        expect(highlight('const a = <div class="x">{b}</div>', "TSX")).toEqual([
             ["const", "keyword"],
             [" ", undefined],
             ["a", "variable"],
@@ -64,7 +64,7 @@ describe("highlighter", () => {
     })
 
     it("colors code inside a string as code", async () => {
-        expect(highlight("`a ${b.c}`", "TypeScript React")).toEqual([
+        expect(highlight("`a ${b.c}`", "TSX")).toEqual([
             ["`a ", "string"],
             ["${", "keyword"],
             ["b", "variable"],
@@ -194,7 +194,7 @@ describe("highlighter", () => {
     })
 
     it("gives the same tokens when it re-tokenizes only what changed", async () => {
-        const typescript = scope("TypeScript React")
+        const typescript = scope("TSX")
         const css = scope("CSS")
         let text = readFileSync(new URL("../../src/Syntax/highlighter.ts", import.meta.url), "utf8")
         // A fixed sequence of edits that looks random, so a failure can be reproduced

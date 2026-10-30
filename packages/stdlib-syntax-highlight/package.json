@@ -30,6 +30,7 @@
         "dist"
     ],
     "scripts": {
+        "languages": "bun scripts/languages.ts",
         "bundle": "tsdown && cargo build --release --target wasm32-unknown-unknown -p stdlib-syntax-highlight && cp ../../target/wasm32-unknown-unknown/release/stdlib_syntax_highlight.wasm dist/highlight.wasm"
     },
     "peerDependencies": {

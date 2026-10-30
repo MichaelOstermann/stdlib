@@ -6,7 +6,7 @@ describe("find", () => {
         expect(find("ts")?.title).toBe("TypeScript")
         expect(find("typescript")?.title).toBe("TypeScript")
         expect(find("TypeScript")?.title).toBe("TypeScript")
-        expect(find(" tsx ")?.title).toBe("TypeScript React")
+        expect(find(" tsx ")?.title).toBe("TSX")
         expect(find("C#")?.title).toBe("C#")
     })
 
@@ -63,7 +63,7 @@ describe("find", () => {
             "fish": "Fish",
             "fs": "F#",
             "fsharp": "F#",
-            "gitignore": "Git Ignore",
+            "gitignore": "Ignore List",
             "go": "Go",
             "golang": "Go",
             "gql": "GraphQL",
@@ -84,13 +84,13 @@ describe("find", () => {
             "jl": "Julia",
             "js": "JavaScript",
             "json": "JSON",
-            "json5": "JavaScript",
+            "json5": "JSON5",
             "jsonc": "JSONC",
             "jsx": "JavaScript",
             "julia": "Julia",
             "kotlin": "Kotlin",
             "kt": "Kotlin",
-            "latex": "LaTeX",
+            "latex": "TeX",
             "less": "Less",
             "lisp": "Common Lisp",
             "lua": "Lua",
@@ -138,14 +138,14 @@ describe("find", () => {
             "svelte": "Svelte",
             "swift": "Swift",
             "terraform": "Terraform",
-            "tex": "LaTeX",
+            "tex": "TeX",
             "tf": "Terraform",
             "toml": "TOML",
             "ts": "TypeScript",
-            "tsx": "TypeScript React",
+            "tsx": "TSX",
             "typescript": "TypeScript",
             "v": "V",
-            "vim": "Vimscript",
+            "vim": "Vim script",
             "vue": "Vue",
             "wasm": "WebAssembly",
             "wat": "WebAssembly",

@@ -1,0 +1,2 @@
+// Taken from @wooorm/starry-night@3.11.0 (lang/source.netlinx.erb.js), MIT, Copyright (c) 2013-2015 Alex McLain
+export default '{"patterns":[{"include":"#erb"},{"include":"source.netlinx"}],"repository":{"erb":{"begin":"<%","beginCaptures":{"0":{"name":"punctuation.section.scope.netlinx.erb"}},"end":"%>","endCaptures":{"0":{"name":"punctuation.section.scope.netlinx.erb"}},"name":"meta.block.netlinx.erb","patterns":[{"include":"source.ruby"}]}},"scopeName":"source.netlinx.erb"}'

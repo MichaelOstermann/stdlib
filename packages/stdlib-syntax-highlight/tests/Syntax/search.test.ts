@@ -11,8 +11,8 @@ describe("search", () => {
     })
 
     it("gives the best matches first", () => {
-        expect(titles("typesc").slice(0, 2)).toEqual(["TypeScript", "TypeScript React"])
-        expect(titles("typescript react")).toEqual(["TypeScript React"])
+        expect(titles("typesc").slice(0, 2)).toEqual(["TypeScript", "TSX"])
+        expect(titles("typescript react")).toEqual(["TSX"])
         expect(titles("docker")[0]).toBe("Dockerfile")
     })
 

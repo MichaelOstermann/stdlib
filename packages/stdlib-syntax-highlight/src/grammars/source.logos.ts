@@ -1,0 +1,2 @@
+// Taken from @wooorm/starry-night@3.11.0 (lang/source.logos.js), MIT, Copyright (c) 2016 David Murray
+export default '{"patterns":[{"match":"%(init|hookf|hook|subclass|group|class|new|ctor|end|config|orig|log|dtor|property|c)","name":"keyword.source.logos"},{"captures":{"1":{"name":"keyword.source.logos"}},"match":"%c\\\\(([A-Za-z$_]+)\\\\)"},{"include":"source.objc"},{"include":"source.c++"}],"scopeName":"source.logos"}'

@@ -1,0 +1,2 @@
+// Taken from @wooorm/starry-night@3.11.0 (lang/source.c.nwscript.js), ISC, Copyright (c) 2018-2026, John Gardner
+export default '{"injections":{"R:source.c.nwscript - (string | comment)":{"patterns":[{"match":"\\\\b(?:effect|itemproperty|location|object|string|talent|vector)\\\\b","name":"support.type.nwscript.c"},{"match":"\\\\b[A-Z_][A-Z0-9_]*\\\\b","name":"support.constant.nwscript.c"}]}},"patterns":[{"include":"source.c"}],"scopeName":"source.c.nwscript"}'

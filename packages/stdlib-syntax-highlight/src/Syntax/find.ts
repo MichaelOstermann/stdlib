@@ -1,9 +1,7 @@
 import type { Language } from "."
+import { plain } from "./internals/plain"
 import { languages } from "./languages"
 import { search } from "./search"
-
-// Fence words that mark a block as no language, which the fuzzy match would otherwise turn into one
-const plain = ["log", "output", "plain", "plaintext", "text", "txt"]
 
 /**
  * # find

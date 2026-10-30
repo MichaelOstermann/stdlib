@@ -19,10 +19,10 @@ const unpopular = 0.8
  *
  * ```ts
  * Syntax.search("").length;
- * // 86
+ * // 64
  *
  * Syntax.search("typesc").map((language) => language.title);
- * // ["TypeScript", "TypeScript React", ...]
+ * // ["TypeScript", "TSX", ...]
  * ```
  */
 export function search(query: string): Language[] {

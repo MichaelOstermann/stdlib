@@ -53,7 +53,9 @@ import { setPath as Object_setPath } from "./Object/setPath"
 import { sleep as Promise_sleep } from "./Promise/sleep"
 import { add as Set_add } from "./Set/add"
 import { delete as Set_delete } from "./Set/delete"
+import { difference as Set_difference } from "./Set/difference"
 import { isShallowEqual as Set_isShallowEqual } from "./Set/isShallowEqual"
+import { union as Set_union } from "./Set/union"
 import { camelCase as String_camelCase } from "./String/camelCase"
 import { capitalize as String_capitalize } from "./String/capitalize"
 import { constantCase as String_constantCase } from "./String/constantCase"
@@ -165,7 +167,9 @@ define(Promise, "Promise", {
 define(Set, "Set", {
     add: Set_add,
     delete: Set_delete,
+    difference: Set_difference,
     isShallowEqual: Set_isShallowEqual,
+    union: Set_union,
 })
 
 define(String, "String", {

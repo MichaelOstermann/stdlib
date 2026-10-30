@@ -6,6 +6,8 @@ import { set } from "../src/Map/set"
 import { defaults } from "../src/Object/defaults"
 import { omit } from "../src/Object/omit"
 import { add } from "../src/Set/add"
+import { difference } from "../src/Set/difference"
+import { union } from "../src/Set/union"
 
 declare const mixed: (number | string)[]
 declare const mutableMap: Map<string, number>
@@ -23,12 +25,16 @@ describe("types", () => {
         expectTypeOf(set(mutableMap, "a", 1)).toEqualTypeOf<Map<string, number>>()
         expectTypeOf(deleteKey(mutableMap, "a")).toEqualTypeOf<Map<string, number>>()
         expectTypeOf(add(mutableSet, 1)).toEqualTypeOf<Set<number>>()
+        expectTypeOf(union(mutableSet, [1])).toEqualTypeOf<Set<number>>()
+        expectTypeOf(difference(mutableSet, [1])).toEqualTypeOf<Set<number>>()
         expectTypeOf(unique(mixed)).toEqualTypeOf<(number | string)[]>()
     })
 
     it("should return something readonly for something readonly", () => {
         expectTypeOf(set(readonlyMap, "a", 1)).toEqualTypeOf<ReadonlyMap<string, number>>()
         expectTypeOf(add(readonlySet, 1)).toEqualTypeOf<ReadonlySet<number>>()
+        expectTypeOf(union(readonlySet, [1])).toEqualTypeOf<ReadonlySet<number>>()
+        expectTypeOf(difference(readonlySet, [1])).toEqualTypeOf<ReadonlySet<number>>()
     })
 
     it("should reject what does not fit", () => {

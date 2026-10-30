@@ -17,7 +17,7 @@ export const globals: Readonly<Record<string, readonly string[]>> = {
     Object: ["defaults", "indexBy", "isShallowEqual", "merge", "omit", "set", "setPath"],
     Promise: ["sleep"],
     Retry: ["again", "run"],
-    Set: ["add", "delete", "isShallowEqual"],
+    Set: ["add", "delete", "difference", "isShallowEqual", "union"],
     String: ["camelCase", "capitalize", "constantCase", "dedent", "escapeHTML", "graphemes", "kebabCase", "links", "pascalCase", "score", "slug", "snakeCase", "titleCase", "uncapitalize", "words"],
 }
 

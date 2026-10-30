@@ -50,7 +50,9 @@ import type { setPath as Object_setPath } from "./Object/setPath"
 import type { sleep as Promise_sleep } from "./Promise/sleep"
 import type { add as Set_add } from "./Set/add"
 import type { delete as Set_delete } from "./Set/delete"
+import type { difference as Set_difference } from "./Set/difference"
 import type { isShallowEqual as Set_isShallowEqual } from "./Set/isShallowEqual"
+import type { union as Set_union } from "./Set/union"
 import type { camelCase as String_camelCase } from "./String/camelCase"
 import type { capitalize as String_capitalize } from "./String/capitalize"
 import type { constantCase as String_constantCase } from "./String/constantCase"
@@ -141,7 +143,9 @@ declare global {
     interface SetConstructor {
         add: typeof Set_add
         delete: typeof Set_delete
+        difference: typeof Set_difference
         isShallowEqual: typeof Set_isShallowEqual
+        union: typeof Set_union
     }
 
     interface StringConstructor {

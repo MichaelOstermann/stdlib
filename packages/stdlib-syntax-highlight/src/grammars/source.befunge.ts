@@ -1,0 +1,2 @@
+// Taken from @wooorm/starry-night@3.11.0 (lang/source.befunge.js), MIT, Copyright (c) 2014 Johan Asplund
+export default '{"patterns":[{"match":"[0-9]","name":"constant.numberic.bf"},{"match":"[+\\\\-*/%!`]","name":"storage.type.bf"},{"match":"[#<>^v?|_@]","name":"storage.type.bf"},{"match":"[:$\\"]","name":"stack.bf"},{"match":"[.,&~]","name":"function.io.bf"},{"match":"[pg]","name":"storage.type.bf"},{"match":"\\"(.*?)\\"","name":"comment.block.bf"}],"scopeName":"source.befunge"}'

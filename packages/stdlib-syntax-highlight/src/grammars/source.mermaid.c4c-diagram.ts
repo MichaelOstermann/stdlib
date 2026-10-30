@@ -1,0 +1,2 @@
+// Taken from @wooorm/starry-night@3.11.0 (lang/source.mermaid.c4c-diagram.js), ISC, Copyright (c) 2022-2026, John Gardner
+export default '{"patterns":[{"include":"#main"}],"repository":{"main":{"patterns":[{"include":"source.mermaid#a11y"},{"include":"source.mermaid#directive"},{"include":"source.mermaid#comment"},{"include":"source.mermaid#direction"},{"include":"source.mermaid.user-journey#title"},{"include":"source.wsd"}]}},"scopeName":"source.mermaid.c4c-diagram"}'

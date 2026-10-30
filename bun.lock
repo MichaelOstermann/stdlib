@@ -36,17 +36,6 @@
         "@monstermann/stdlib": "workspace:^",
       },
     },
-    "packages/stdlib-highlight": {
-      "name": "@monstermann/stdlib-highlight",
-      "version": "0.1.0",
-      "devDependencies": {
-        "@monstermann/stdlib": "workspace:*",
-        "@monstermann/stdlib-transform": "workspace:*",
-      },
-      "peerDependencies": {
-        "@monstermann/stdlib": "workspace:^",
-      },
-    },
     "packages/stdlib-i18n": {
       "name": "@monstermann/stdlib-i18n",
       "version": "0.1.0",
@@ -93,6 +82,17 @@
         "dprint": "^0.61.1",
         "oxlint": "^1.87.0",
         "oxlint-tsgolint": "^7.0.2003",
+      },
+    },
+    "packages/stdlib-syntax-highlight": {
+      "name": "@monstermann/stdlib-syntax-highlight",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@monstermann/stdlib": "workspace:*",
+        "@monstermann/stdlib-transform": "workspace:*",
+      },
+      "peerDependencies": {
+        "@monstermann/stdlib": "workspace:^",
       },
     },
     "packages/stdlib-transform": {
@@ -414,13 +414,13 @@
 
     "@monstermann/stdlib-cli": ["@monstermann/stdlib-cli@workspace:packages/stdlib-cli"],
 
-    "@monstermann/stdlib-highlight": ["@monstermann/stdlib-highlight@workspace:packages/stdlib-highlight"],
-
     "@monstermann/stdlib-i18n": ["@monstermann/stdlib-i18n@workspace:packages/stdlib-i18n"],
 
     "@monstermann/stdlib-react": ["@monstermann/stdlib-react@workspace:packages/stdlib-react"],
 
     "@monstermann/stdlib-style": ["@monstermann/stdlib-style@workspace:packages/stdlib-style"],
+
+    "@monstermann/stdlib-syntax-highlight": ["@monstermann/stdlib-syntax-highlight@workspace:packages/stdlib-syntax-highlight"],
 
     "@monstermann/stdlib-transform": ["@monstermann/stdlib-transform@workspace:packages/stdlib-transform"],
 

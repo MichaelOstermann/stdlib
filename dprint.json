@@ -1,6 +1,8 @@
 {
     "extends": "./node_modules/@monstermann/stdlib-style/dprint.json",
     "excludes": [
-        "docs/stdlib-style/00-introduction.mdx"
+        "docs/stdlib-style/00-introduction.mdx",
+        "packages/stdlib-syntax-highlight/src/grammars/*.ts",
+        "!packages/stdlib-syntax-highlight/src/grammars/index.ts"
     ]
 }

@@ -1,0 +1,2 @@
+// Taken from @wooorm/starry-night@3.11.0 (lang/source.bf.js), MIT, Copyright (c) 2013 Felix Bytow <felix.bytow@googlemail.com>
+export default '{"patterns":[{"match":"[+-]","name":"constant.character.modify-value.bf"},{"match":"[<>]","name":"keyword.operator.modify-pointer.bf"},{"match":"[.,]","name":"entity.name.function.io.bf"},{"match":"\\\\[","name":"punctuation.definition.tag.begin.bf"},{"match":"\\\\]","name":"punctuation.definition.tag.end.bf"},{"match":"[^-.,+<>\\\\[\\\\]]","name":"comment.block.bf"}],"scopeName":"source.bf"}'

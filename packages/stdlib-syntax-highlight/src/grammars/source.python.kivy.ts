@@ -1,0 +1,2 @@
+// Taken from @wooorm/starry-night@3.11.0 (lang/source.python.kivy.js), MIT, Copyright (c) 2022 Vibhakar Solanki
+export default '{"patterns":[{"match":"#:.*?$","name":"support.type.kivy"},{"match":"#.*?$","name":"comment.kivy"},{"match":"\\\\<.+\\\\>","name":"support.class.kivy"},{"match":"[A-Za-z][A-Za-z0-9]+$","name":"support.function.kivy"},{"match":".*?:$","name":"support.function.kivy"},{"match":"(.*?):$","name":"entity.name.section.kivy"},{"include":"source.python"}],"scopeName":"source.python.kivy"}'

@@ -1,0 +1,27 @@
+// The classes a token can have, the same and in the same order as CLASSES in crates/stdlib-syntax-highlight/src/theme.rs:
+// the tokenizer gives the index here plus one
+export const tokenClasses = [
+    "attribute",
+    "bold",
+    "comment",
+    "constant",
+    "deleted",
+    "escape",
+    "function",
+    "heading",
+    "inserted",
+    "invalid",
+    "italic",
+    "keyword",
+    "link",
+    "number",
+    "operator",
+    "parameter",
+    "property",
+    "quote",
+    "regexp",
+    "string",
+    "tag",
+    "type",
+    "variable",
+] as const

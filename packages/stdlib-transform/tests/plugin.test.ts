@@ -47,6 +47,16 @@ describe("manifest", () => {
         }
     })
 
+    it("should list everything @monstermann/stdlib-syntax-highlight exports, each member of a namespace in a file of its own", async () => {
+        const highlight = Path.resolve(import.meta.dirname, "../../stdlib-syntax-highlight/src")
+        const { functions, namespaces } = packages.get("@monstermann/stdlib-syntax-highlight")!
+        const exports = await import(Path.join(highlight, "index"))
+        expect([...namespaces, ...functions.keys()].sort()).toEqual(Object.keys(exports).sort())
+        for (const name of namespaces) {
+            for (const member of Object.keys(exports[name])) expect(member in await import(Path.join(highlight, name, `${member}.ts`))).toBe(true)
+        }
+    })
+
     it("should list everything @monstermann/stdlib makes available on globals", async () => {
         for (const [global, names] of Object.entries(globals)) {
             // An object of functions that is a global of its own, like Duration.

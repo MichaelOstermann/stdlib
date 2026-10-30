@@ -3,6 +3,15 @@
 version = 4
 
 [[package]]
+name = "aho-corasick"
+version = "1.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c982642fa9e8606056828ee9a8505737230110bb1099153c79efe865c59d12ba"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "allocator-api2"
 version = "0.2.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -192,6 +201,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "da7c62ceae207dd37ea5b845da6a0696c799f85e97da1ab5b7910be3c1c80223"
 
 [[package]]
+name = "ferroni"
+version = "1.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d351d39b1650cd5011c280c111227a698ab8332b41ee4ab9969c9113c5178c6c"
+dependencies = [
+ "aho-corasick",
+ "bitflags",
+ "memchr",
+ "smallvec",
+]
+
+[[package]]
 name = "foldhash"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -314,6 +335,19 @@ dependencies = [
  "hashbrown 0.17.1",
  "serde",
  "serde_core",
+]
+
+[[package]]
+name = "irosashi"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ada7a32c62750bfd71044027a5650d2ecb973ecc717c47df7bf6b0abe5cac25b"
+dependencies = [
+ "bitflags",
+ "ferroni",
+ "serde",
+ "serde_json",
+ "thiserror",
 ]
 
 [[package]]
@@ -746,6 +780,14 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
+name = "stdlib-syntax-highlight"
+version = "0.0.0"
+dependencies = [
+ "irosashi",
+ "serde_json",
+]
 
 [[package]]
 name = "syn"

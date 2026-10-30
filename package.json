@@ -7,8 +7,8 @@
     "scripts": {
         "benchmarks": "sh benchmarks/bench.sh",
         "globals": "bun scripts/globals.ts",
-        "checks": "bun run style && dprint check && oxlint && tsc && tsc -p packages/stdlib && tsc -p packages/stdlib-web && tsc -p packages/stdlib-react && tsc -p packages/stdlib-cli && bun test",
-        "bundles": "bun run --filter '*' bundle",
+        "build": "bun run --filter '*' bundle",
+        "check": "bun run build && dprint check && oxlint && tsc && tsc -p packages/stdlib && tsc -p packages/stdlib-web && tsc -p packages/stdlib-react && tsc -p packages/stdlib-cli && tsc -p packages/stdlib-syntax-highlight && bun test",
         "docs:dev": "blume dev",
         "docs:build": "blume build",
         "style": "bun run --filter @monstermann/stdlib-style bundle",

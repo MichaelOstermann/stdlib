@@ -113,6 +113,17 @@ describe("transform", () => {
         `))
     })
 
+    it("should import the members of the namespaces of @monstermann/stdlib-syntax-highlight directly", () => {
+        expect(run(`
+            import { Syntax, type Language } from "@monstermann/stdlib-syntax-highlight";
+            const language: Language | undefined = Syntax.find("ts");
+        `)).toBe(dedent(`
+            import type { Language } from "@monstermann/stdlib-syntax-highlight";
+            import { find as _find } from "@monstermann/stdlib-syntax-highlight/Syntax/find.mjs";
+            const language: Language | undefined = _find("ts");
+        `))
+    })
+
     it("should import the namespaces of @monstermann/stdlib-web that are used as a value from their own file", () => {
         expect(run(`
             import { Rect, type Placement } from "@monstermann/stdlib-web";

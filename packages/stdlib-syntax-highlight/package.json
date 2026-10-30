@@ -1,0 +1,42 @@
+{
+    "name": "@monstermann/stdlib-syntax-highlight",
+    "type": "module",
+    "version": "0.1.0",
+    "description": "Syntax highlighting with TextMate grammars, tokenized in WebAssembly, each grammar loaded the first time it is used.",
+    "author": "Michael Ostermann <michaelostermann@me.com>",
+    "license": "MIT",
+    "homepage": "https://github.com/MichaelOstermann/stdlib",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/MichaelOstermann/stdlib.git"
+    },
+    "bugs": {
+        "url": "https://github.com/MichaelOstermann/stdlib/issues"
+    },
+    "keywords": [
+        "highlight",
+        "syntax",
+        "textmate"
+    ],
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.mts",
+            "import": "./dist/index.mjs"
+        },
+        "./*": "./dist/*"
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "bundle": "tsdown && cargo build --release --target wasm32-unknown-unknown -p stdlib-syntax-highlight && cp ../../target/wasm32-unknown-unknown/release/stdlib_syntax_highlight.wasm dist/highlight.wasm"
+    },
+    "peerDependencies": {
+        "@monstermann/stdlib": "workspace:^"
+    },
+    "devDependencies": {
+        "@monstermann/stdlib": "workspace:*",
+        "@monstermann/stdlib-transform": "workspace:*"
+    }
+}

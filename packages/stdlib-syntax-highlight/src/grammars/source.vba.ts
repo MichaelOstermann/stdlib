@@ -1,0 +1,2 @@
+// Taken from @wooorm/starry-night@3.11.0 (lang/source.vba.js), MPL-2.0, from https://github.com/serkonda7/vscode-vba
+export default '{"patterns":[{"include":"#keywords"},{"include":"#types"},{"include":"source.vb6"}],"repository":{"keywords":{"patterns":[{"match":"(?i)\\\\bPtrSafe\\\\b","name":"keyword.other.vba"},{"match":"(?i)\\\\bOption (Compare Database|Private Module)\\\\b","name":"keyword.other.option.vba"}]},"types":{"patterns":[{"match":"(?i)(?<= As )(LongLong|LongPtr)\\\\b","name":"support.type.builtin.vba"}]}},"scopeName":"source.vba"}'

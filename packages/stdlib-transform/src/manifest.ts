@@ -43,6 +43,7 @@ export const functions: ReadonlyMap<string, string> = new Map([
  */
 export const packages: ReadonlyMap<string, Package> = new Map([
     ["@monstermann/stdlib", { functions, namespaces }],
+    ["@monstermann/stdlib-syntax-highlight", { functions: new Map(), namespaces: new Set(["Syntax"]) }],
     ["@monstermann/stdlib-web", { functions: new Map(), namespaces: new Set(["DOM", "Placement", "Rect", "Shortcut"]) }],
 ])
 

@@ -235,7 +235,7 @@ const notices = [...groups.values()].map((group) => `${group.entries.join("\n\n"
 writeFileSync(licenseFile, `${license.slice(0, license.indexOf(`${rule}src/grammars/`))}${rule}${notices.join(rule)}\n`)
 
 // dprint sorts the keys and wraps the long lines
-execFileSync("dprint", ["fmt", join(root, "src/grammars/index.ts"), languagesFile], { cwd: root, stdio: "ignore" })
+execFileSync(join(root, "../../node_modules/.bin/dprint"), ["fmt", join(root, "src/grammars/index.ts"), languagesFile], { cwd: root, stdio: "ignore" })
 rmSync(starryDir, { force: true, recursive: true })
 console.log(`${entries.length} languages, ${entries.filter((entry) => entry.popular).length} popular, ${needed.size} grammars`)
 if (unlicensed.length) console.log(`Left out, their grammar has no license in starry-night's notice: ${unlicensed.join(", ")}`)

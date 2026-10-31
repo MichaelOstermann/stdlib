@@ -12,7 +12,7 @@
         "docs:dev": "blume dev",
         "docs:build": "blume build",
         "style": "bun run --filter @monstermann/stdlib-style bundle",
-        "format": "dprint fmt && oxlint --fix"
+        "format": "dprint fmt && oxlint --fix --fix-suggestions"
     },
     "devDependencies": {
         "@monstermann/stdlib-style": "workspace:*",

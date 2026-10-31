@@ -1,0 +1,87 @@
+---
+title: Usage
+---
+
+## Installation
+
+```package-install
+npm i @monstermann/stdlib @monstermann/stdlib-syntax-highlight
+```
+
+Set up [`stdlib-transform`](../stdlib-transform/usage) for your bundler, without it `Syntax` and its 769 language definitions end up in every bundle that uses one of its functions.
+
+## Starting the highlighter
+
+The highlighter runs in WebAssembly, which ships as a file of its own. How you get its URL depends on your bundler, with Vite:
+
+```ts
+import wasmUrl from "@monstermann/stdlib-syntax-highlight/highlight.wasm?url"
+
+const highlighter = Syntax.highlighter(fetch(wasmUrl))
+```
+
+`Syntax.highlighter` returns right away and starts the WebAssembly in the background. Given an `ArrayBuffer` instead of a `Response`, it is ready at once.
+
+## Highlighting
+
+Load the language first, by its `scope`, then highlight as often as you like, synchronously:
+
+```ts
+const rust = Syntax.find("rust")!
+
+await highlighter.load(rust.scope)
+
+highlighter.highlight("let a = 1", rust.scope)
+// [
+//     { class: "keyword", length: 3 },
+//     { class: undefined, length: 1 },
+//     { class: "variable", length: 1 },
+//     ...
+// ]
+```
+
+- `load` fetches the grammars once, however often you call it
+- `highlight` gives no tokens until the language is loaded
+- The tokens cover the whole text, `length` counts UTF-16 code units like `string.length`
+- Highlighting the same language again after an edit only retokenizes the lines that changed
+
+## Signals
+
+In order to keep the API as synchronous as possible, we ship signals that tell you when the highlighter is ready and the languages have loaded:
+
+```ts
+highlighter.$ready() // Whether the WebAssembly is started
+highlighter.$loading() // The scopes that are being loaded
+highlighter.$loaded() // The scopes that can be highlighted
+```
+
+For example:
+
+```ts
+const rust = Syntax.find("rust")!
+
+Effect(() => {
+    // No need to await:
+    highlighter.load(rust.scope)
+
+    // Refresh once the grammar is loaded:
+    if (!highlighter.$loaded().has(rust.scope)) return
+
+    // We can now ship highlights:
+    const tokens = highlighter.highlight("let a = 1", rust.scope)
+    console.log(tokens)
+})
+```
+
+## Languages
+
+```ts
+Syntax.languages // Language[]
+
+Syntax.find("ts")?.scope // "source.ts"
+Syntax.find("Python")?.scope // "source.python"
+Syntax.find("text") // undefined
+
+Syntax.search("") // The popular languages, sorted by title
+Syntax.search("type") // TypeScript, TSX, ...
+```

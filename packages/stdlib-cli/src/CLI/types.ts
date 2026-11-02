@@ -1,5 +1,3 @@
-import type { Token } from "../internals/Tokens"
-
 export interface Command {
     commands: Command[]
     /** A short, one line description. */
@@ -15,6 +13,11 @@ export interface Command {
 
 export interface Option {
     /**
+     * The values it can be given, matched like flag names: by their exact name, or when
+     * interactive, by an abbreviation that fits only one.
+     */
+    choices: readonly string[] | undefined
+    /**
      * Used when the flag is missing, passed through `parse` like a given value, and shown in help
      * as it is.
      */
@@ -23,22 +26,14 @@ export interface Option {
     desc: string
     /** A disabled option does not exist: it can't be given, and help does not show it. */
     enabled: boolean
-    /** A value as someone would type it, eg. `25m`, shown in help and next to an invalid value. */
+    /** A value as someone would type it, eg. `25m`, shown in help. */
     example: string | undefined
     /** A hidden option can be given, but only by its exact name, and help does not show it. */
     hidden: boolean
     /** A missing flag is `undefined` instead of a `MissingFlagError`. */
     optional: boolean
-    /** What help shows after the flag for its value, `<value>` by default, nothing for a switch. */
-    usage: string
     /** Turns the given value into what the handler gets. Throws, or rejects, when it is invalid. */
     parse: (value: string) => unknown
-    /**
-     * Takes the value of the flag from the words after it, removing the ones it takes, and
-     * `undefined` when there is none. By default every word up to the next flag, joined with
-     * spaces.
-     */
-    read: (token: Token) => string | undefined
 }
 
 /**

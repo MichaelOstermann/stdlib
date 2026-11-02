@@ -103,10 +103,9 @@ describe("format", () => {
                 "Unknown flag: --fn Did you mean: --first-name",
                 "",
                 "Options:",
-                "  --first-name <value>  First name (Example: Jane)",
-                "  --nickname <value>    Shown instead of the first name",
-                "                        where there is room for it",
-                "                        (Optional)",
+                "  --first-name  First name (Example: Jane)",
+                "  --nickname    Shown instead of the first name where there",
+                "                is room for it (Optional)",
                 "",
                 "See all options: miko members add --help",
             ].join("\n"),
@@ -119,11 +118,10 @@ describe("format", () => {
                 "Unknown flag: --xyz",
                 "",
                 "Options:",
-                "  --first-name <value>  First name (Example: Jane)",
-                "  --nickname <value>    Shown instead of the first name",
-                "                        where there is room for it",
-                "                        (Optional)",
-                "  --port <value>        Port to listen on (Default: 3000)",
+                "  --first-name  First name (Example: Jane)",
+                "  --nickname    Shown instead of the first name where there",
+                "                is room for it (Optional)",
+                "  --port        Port to listen on (Default: 3000)",
                 "",
                 "See all options: miko members add --help",
             ].join("\n"),
@@ -138,11 +136,10 @@ describe("format", () => {
                 "Invalid flag: --port Not a whole number",
                 "",
                 "Options:",
-                "  --first-name <value>  First name (Example: Jane)",
-                "  --nickname <value>    Shown instead of the first name",
-                "                        where there is room for it",
-                "                        (Optional)",
-                "  --port <value>        Port to listen on (Default: 3000)",
+                "  --first-name  First name (Example: Jane)",
+                "  --nickname    Shown instead of the first name where there",
+                "                is room for it (Optional)",
+                "  --port        Port to listen on (Default: 3000)",
                 "",
                 "See all options: miko members add --help",
             ].join("\n"),
@@ -152,7 +149,7 @@ describe("format", () => {
                 "Invalid flag: --port Not a whole number",
                 "",
                 "Options:",
-                "  --port <value>  Port to listen on (Default: 3000)",
+                "  --port  Port to listen on (Default: 3000)",
                 "",
                 "See all options: miko members add --help",
             ].join("\n"),
@@ -171,7 +168,7 @@ describe("format", () => {
                 "Invalid flag: --secret Given more than once",
                 "",
                 "Options:",
-                "  --secret <value>  Only for tests (Optional)",
+                "  --secret  Only for tests (Optional)",
                 "",
                 "See all options: miko members add --help",
             ].join("\n"),
@@ -180,8 +177,22 @@ describe("format", () => {
         expect(await format("members add --sec")).not.toContain("--secret")
     })
 
+    it("lists the choices of an option", async () => {
+        const command = CLI.command({ name: "print", options: { format: { choices: ["json", "text"], default: "text", desc: "Output" } }, handler() {} })
+        expect(CLI.format(await CLI.resolve(command, ["--format", "xml"], { interactive: false }))).toBe(
+            [
+                "Invalid flag: --format Not one of: json, text",
+                "",
+                "Options:",
+                "  --format  Output (One of: json, text) (Default: text)",
+                "",
+                "See all options: print --help",
+            ].join("\n"),
+        )
+    })
+
     it("leaves long lines as they are when the width of the terminal is unknown", async () => {
         process.stdout.columns = undefined!
-        expect(await format("members add --nickname")).toContain("  --nickname <value>    Shown instead of the first name where there is room for it (Optional)")
+        expect(await format("members add --nickname")).toContain("  --nickname    Shown instead of the first name where there is room for it (Optional)")
     })
 })

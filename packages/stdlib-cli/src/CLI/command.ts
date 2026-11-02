@@ -1,26 +1,23 @@
-import type { Token } from "../internals/Tokens"
 import type { Command, Option } from "./types"
-import { readWords } from "../internals/readWords"
 
 /** An option as it is written in `CLI.command`, everything can be left out. */
 export interface OptionInput {
+    choices?: readonly string[]
     default?: string
     desc?: string
     enabled?: boolean
     example?: string
     hidden?: boolean
     optional?: boolean
-    usage?: string
     parse?: (value: string) => unknown
-    read?: (token: Token) => string | undefined
 }
 
 /**
- * What the handler gets for an option: what `parse` resolves to, or the string as given, and
- * `undefined` when it can be missing.
+ * What the handler gets for an option: what `parse` resolves to, one of its `choices`, or the
+ * string as given, and `undefined` when it can be missing.
  */
 type Value<I> =
-    | (I extends { parse: (value: string) => infer V } ? Awaited<V> : string)
+    | (I extends { parse: (value: string) => infer V } ? Awaited<V> : I extends { choices: readonly (infer C)[] } ? C : string)
     | (I extends { default?: undefined, optional: true } ? undefined : never)
 
 /**
@@ -48,6 +45,7 @@ type Value<I> =
  *         email: { desc: "Email of the member", example: "jane@example.com" },
  *         port: { desc: "Port to listen on", default: "3000", parse: Number },
  *         nickname: { desc: "Nickname of the member", optional: true },
+ *         format: { desc: "How to print the member", choices: ["json", "text"], default: "text" },
  *     },
  *     handler({ email, port, nickname }) {},
  * });
@@ -66,6 +64,7 @@ export function command<const I extends Record<string, OptionInput>>(options: {
     const filled: Record<string, Option> = {}
     for (const [name, input] of Object.entries(inputs)) {
         filled[name] = {
+            choices: input.choices,
             default: input.default,
             desc: input.desc ?? "",
             enabled: input.enabled ?? true,
@@ -73,8 +72,6 @@ export function command<const I extends Record<string, OptionInput>>(options: {
             hidden: input.hidden ?? false,
             optional: input.optional ?? false,
             parse: input.parse ?? ((value) => value),
-            read: input.read ?? readWords,
-            usage: input.usage ?? "<value>",
         }
     }
 

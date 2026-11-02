@@ -1,4 +1,3 @@
-import { boolean } from "./boolean"
 import { colors } from "./colors"
 import { command } from "./command"
 import { format } from "./format"
@@ -12,7 +11,6 @@ import { resolve } from "./resolve"
 import { run } from "./run"
 import { shouldColor } from "./shouldColor"
 
-export type { Token } from "../internals/Tokens"
 export type { Colors } from "./colors"
 export type { OptionInput } from "./command"
 export type { Input } from "./input"
@@ -21,7 +19,6 @@ export type { CLIError, Command, Option, Outcome } from "./types"
 
 export const CLI = {
     ...colors,
-    boolean,
     command,
     format,
     input,

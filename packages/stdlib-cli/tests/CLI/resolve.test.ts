@@ -8,6 +8,7 @@ const add = CLI.command({
     handler() {},
     options: {
         firstName: { desc: "First name" },
+        format: { choices: ["json", "jsonl", "text"], default: "text" },
         lastName: { desc: "Last name", optional: true },
         legacy: { enabled: false, optional: true },
         secret: { hidden: true, optional: true },
@@ -52,7 +53,7 @@ describe("resolve", () => {
             const outcome = await resolve("members add --first-name John")
             expect(outcome.type).toBe("run")
             expect(outcome.path).toEqual(["miko", "members", "add"])
-            expect(outcome.type === "run" && outcome.values).toEqual({ firstName: "John", lastName: undefined, port: 3000 })
+            expect(outcome.type === "run" && outcome.values).toEqual({ firstName: "John", format: "text", lastName: undefined, port: 3000 })
         })
 
         it("runs a program that is a single command", async () => {
@@ -112,7 +113,7 @@ describe("resolve", () => {
 
     describe("flag names", () => {
         it("ignores casing and dashes", async () => {
-            for (const flag of ["--firstName", "--first-name", "--first_name", "-FIRST_NAME", "--firstname"]) {
+            for (const flag of ["--firstName", "--first-name", "--first_name", "--FIRST_NAME", "--firstname"]) {
                 const outcome = await resolve(`members add ${flag} John`, false)
                 expect(outcome.type === "run" && outcome.values["firstName"]).toBe("John")
             }
@@ -147,6 +148,19 @@ describe("resolve", () => {
 
         it("suggests what a flag could mean when not interactive", async () => {
             expect(errors(await resolve("members add --fn John", false))).toEqual([{ candidates: ["firstName"], type: "UnknownFlag", value: "--fn" }])
+        })
+
+        it("takes a word with a single dash for a value, also before the first flag", async () => {
+            const outcome = await resolve("members add --fn -John --port=3000 --ln -")
+            expect(outcome.type === "run" && outcome.values).toMatchObject({ firstName: "-John", lastName: "-" })
+            expect(errors(await resolve("members add -fn John"))).toEqual([
+                { candidates: ["firstName"], type: "UnknownFlag", value: "-fn" },
+                { candidates: [], type: "UnknownFlag", value: "John" },
+            ])
+        })
+
+        it("still shows help for -h", async () => {
+            expect((await resolve("members add --fn John -h")).type).toBe("help")
         })
 
         it("reports words before the first flag as unknown flags", async () => {
@@ -198,6 +212,40 @@ describe("resolve", () => {
             expect(errors(await resolve("members add --fn John --fn Jane --fn=Joe"))).toEqual([
                 { name: "firstName", type: "RepeatedFlag" },
             ])
+        })
+
+        it("takes one of the choices, ignoring casing and dashes", async () => {
+            const outcome = await resolve("members add --first-name John --format JSON", false)
+            expect(outcome.type === "run" && outcome.values["format"]).toBe("json")
+        })
+
+        it("abbreviates a choice when interactive and only one fits", async () => {
+            const outcome = await resolve("members add --fn John --format t")
+            expect(outcome.type === "run" && outcome.values["format"]).toBe("text")
+            expect(errors(await resolve("members add --fn John --format js"))).toEqual([
+                { message: "Did you mean: json, jsonl", name: "format", type: "InvalidFlag" },
+            ])
+        })
+
+        it("suggests choices when not interactive, or lists them when none is close", async () => {
+            expect(errors(await resolve("members add --first-name John --format t", false))).toEqual([
+                { message: "Did you mean: text", name: "format", type: "InvalidFlag" },
+            ])
+            expect(errors(await resolve("members add --fn John --format xml"))).toEqual([
+                { message: "Not one of: json, jsonl, text", name: "format", type: "InvalidFlag" },
+            ])
+        })
+
+        it("gives the handler the choices as a type", () => {
+            CLI.command({
+                name: "print",
+                options: { format: { choices: ["json", "text"] }, level: { choices: ["1", "2"], parse: Number } },
+                handler({ format, level }) {
+                    const json: "json" | "text" = format
+                    const number: number = level
+                    return [json, number]
+                },
+            })
         })
 
         it("awaits an async parse", async () => {

@@ -1,7 +1,5 @@
-import type { Token } from "../internals/Tokens"
 import type { CLIError, Command, Option, Outcome } from "./types"
 import { normalize } from "../internals/normalize"
-import { Tokens } from "../internals/Tokens"
 
 /**
  * # resolve
@@ -22,50 +20,55 @@ import { Tokens } from "../internals/Tokens"
  * command that only groups others, or that was given nothing and can't run without it, is a
  * `NothingToRun` error.
  *
+ * A flag starts with `--`, and takes every word up to the next one as its value, joined with
+ * spaces, also words that start with a single dash: `--name Mary Ann`, `--offset -5`. `--name=Mary`
+ * is the same as `--name Mary`.
+ *
  * Names are settled before values: a command or flag that names nothing, or more than one, stops
  * there, as do words before the first flag. Then every option is read, and what is missing, invalid
  * or repeated is reported together.
  *
- * Casing and dashes never matter: `--firstName`, `--first-name` and `-FIRST_NAME` are the same
- * flag. When `interactive`, names can also be abbreviated, `mem a --fn` for
- * `members add --first-name`, as long as only one name fits.
+ * Casing and dashes never matter: `--firstName`, `--first-name` and `--FIRST_NAME` are the same
+ * flag. When `interactive`, names and choices can also be abbreviated, `mem a --fn` for
+ * `members add --first-name`, as long as only one fits.
  */
 export async function resolve(program: Command, argv: string[], options: { interactive: boolean }): Promise<Outcome> {
-    const tokens = Tokens(argv)
     const path = [program.name]
     let command = program
+    let words = argv
 
-    // Commands: words up to the first flag, as long as the command has commands of its own.
-    while (tokens.head && !tokens.head.isFlag() && command.commands.length) {
-        const value = tokens.head.value
+    // Commands: words up to the first one with a dash, as long as the command has commands of its own.
+    while (words.length && !(words[0]!.length > 1 && words[0]!.startsWith("-")) && command.commands.length) {
+        const value = words[0]!
         const result = match(command.commands.filter((command) => command.enabled), value, options.interactive)
         if ("candidates" in result) return { command, errors: [{ candidates: result.candidates, type: "UnknownCommand", value }], path, type: "error" }
         command = result.match
         path.push(command.name)
-        tokens.head.remove()
+        words = words.slice(1)
     }
 
-    if (tokens.flags().some((token) => ["h", "help"].includes(normalize(token.value)))) return { command, path, type: "help" }
+    if (words.some((word) => word.startsWith("-") && ["h", "help"].includes(normalize(word)))) return { command, path, type: "help" }
     if (!command.handler) return { command, errors: [{ type: "NothingToRun" }], path, type: "error" }
-    const givenNothing = !tokens.head
 
     const flags = Object.entries(command.options).filter(([, option]) => option.enabled)
     const names = flags.map(([name, option]) => ({ hidden: option.hidden, name }))
 
     // Flag names: every flag names exactly one option, and no words come before the first one.
-    const given = new Map<string, Token[]>()
+    const given = new Map<string, string[][]>()
     const nameErrors: CLIError[] = []
-    while (tokens.head && !tokens.head.isFlag()) {
-        const value = tokens.head.value
-        const result = match(names, value, false)
-        const candidates = "match" in result ? [result.match] : result.candidates
-        nameErrors.push({ candidates: candidates.map(({ name }) => name), type: "UnknownFlag", value })
-        tokens.head.remove()
-    }
-    for (const token of tokens.flags()) {
-        const result = match(names, token.value, options.interactive)
-        if ("candidates" in result) nameErrors.push({ candidates: result.candidates.map(({ name }) => name), type: "UnknownFlag", value: token.value })
-        else given.set(result.match.name, [...given.get(result.match.name) ?? [], token])
+    let current: string[] | undefined
+    for (const word of words) {
+        if (!word.startsWith("--")) {
+            if (current) current.push(word)
+            else nameErrors.push({ candidates: suggest(names, word), type: "UnknownFlag", value: word })
+            continue
+        }
+        const equals = word.indexOf("=")
+        const value = equals === -1 ? word : word.slice(0, equals)
+        current = equals === -1 ? [] : [word.slice(equals + 1)]
+        const result = match(names, value, options.interactive)
+        if ("candidates" in result) nameErrors.push({ candidates: result.candidates.map(({ name }) => name), type: "UnknownFlag", value })
+        else given.set(result.match.name, [...given.get(result.match.name) ?? [], current])
     }
     if (nameErrors.length) return { command, errors: nameErrors, path, type: "error" }
 
@@ -73,19 +76,12 @@ export async function resolve(program: Command, argv: string[], options: { inter
     const values: Record<string, unknown> = {}
     const errors: CLIError[] = []
     for (const [name, option] of flags) {
-        const result = await readFlag(name, option, given.get(name) ?? [])
+        const result = await readFlag(name, option, given.get(name) ?? [], options.interactive)
         if ("error" in result) errors.push(result.error)
         else values[name] = result.value
     }
 
-    // Words no flag took, after one that takes none: `--json extra`.
-    for (let token = tokens.head; token; token = token.next) {
-        const result = match(names, token.value, false)
-        const candidates = "match" in result ? [result.match] : result.candidates
-        errors.push({ candidates: candidates.map(({ name }) => name), type: "UnknownFlag", value: token.value })
-    }
-
-    if (errors.length && givenNothing) return { command, errors: [{ type: "NothingToRun" }], path, type: "error" }
+    if (errors.length && !words.length) return { command, errors: [{ type: "NothingToRun" }], path, type: "error" }
     if (errors.length) return { command, errors, path, type: "error" }
     return { command, path, type: "run", values }
 }
@@ -110,18 +106,30 @@ function match<T extends { hidden: boolean, name: string }>(items: T[], value: s
     return { candidates }
 }
 
-/** Reads the flag where it was given, falls back to the default, and parses what it got. */
-async function readFlag(name: string, option: Option, tokens: Token[]): Promise<{ error: CLIError } | { value: unknown }> {
-    const given = tokens.map((token) => {
-        const value = option.read(token)
-        token.remove()
-        return value
-    })
+/** The names a word before the first flag could have meant. */
+function suggest(names: { hidden: boolean, name: string }[], word: string): string[] {
+    const result = match(names, word, false)
+    return ("match" in result ? [result.match] : result.candidates).map(({ name }) => name)
+}
+
+/**
+ * The words each time the flag was given, or its default, one of its choices, and parsed.
+ */
+async function readFlag(name: string, option: Option, given: string[][], interactive: boolean): Promise<{ error: CLIError } | { value: unknown }> {
     if (given.length > 1) return { error: { name, type: "RepeatedFlag" } }
-    if (given.length === 1 && given[0] === undefined) return { error: { message: "Requires a value", name, type: "InvalidFlag" } }
-    const value = given[0] ?? option.default
+    if (given[0]?.length === 0) return { error: { message: "Requires a value", name, type: "InvalidFlag" } }
+    let value = given[0]?.join(" ") ?? option.default
     if (value === undefined && option.optional) return { value: undefined }
     if (value === undefined) return { error: { name, type: "MissingFlag" } }
+
+    if (option.choices) {
+        const result = match(option.choices.map((choice) => ({ hidden: false, name: choice })), value, interactive)
+        if ("candidates" in result) {
+            const message = result.candidates.length ? `Did you mean: ${result.candidates.map((choice) => choice.name).join(", ")}` : `Not one of: ${option.choices.join(", ")}`
+            return { error: { message, name, type: "InvalidFlag" } }
+        }
+        value = result.match.name
+    }
 
     try {
         return { value: await option.parse(value) }

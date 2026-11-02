@@ -121,11 +121,11 @@ function commandTable(commands: Command[]): string {
 function optionTable(options: [string, Option][]): string {
     return table(options.map(([name, option]) => {
         const notes = [option.desc]
+        if (option.choices) notes.push(colors.dim(`(One of: ${option.choices.join(", ")})`))
         if (option.default !== undefined) notes.push(colors.dim(`(Default: ${option.default})`))
         else if (option.optional) notes.push(colors.dim("(Optional)"))
         if (option.example !== undefined) notes.push(colors.dim(`(Example: ${option.example})`))
-        const typed = [flag(name), option.usage].filter(Boolean)
-        return [typed.join(" "), [colors.cyan(typed[0]!), ...typed.slice(1).map(colors.dim)].join(" "), notes.filter(Boolean).join(" ")]
+        return [flag(name), colors.cyan(flag(name)), notes.filter(Boolean).join(" ")]
     }))
 }
 

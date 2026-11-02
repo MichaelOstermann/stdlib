@@ -10,13 +10,12 @@ const SYNC_END = "\x1b[?2026l"
  * # render
  *
  * ```ts
- * function CLI.render(lines: (width: number) => string[]): () => void
+ * function CLI.render(lines: (width: number, done: boolean) => string[]): () => void
  * ```
  *
  * Writes the lines below what is already in the terminal, and writes them again whenever a signal
  * that `lines` read changes, or the width of the terminal. Lines are cut to that width. Returns
- * what stops it, which draws them one last time and leaves them where they are, or nothing when
- * there are none.
+ * what stops it, which draws them one last time with `done` set, and leaves those lines on screen.
  *
  * The cursor is shown where a `CLI.input` in the lines has it, and hidden when there is none. One
  * at a time, and nothing else should write to the terminal in the meantime.
@@ -24,15 +23,14 @@ const SYNC_END = "\x1b[?2026l"
  * ## Example
  *
  * ```ts
- * const $text = Signal("");
+ * const email = CLI.input();
  *
- * const stop = CLI.render((width) => [
- *     `Email  ${$text()}${CLI.inverse(" ")}`,
- *     CLI.dim("Press Enter to continue"),
- * ]);
+ * const stop = CLI.render((width, done) => done
+ *     ? [`Email  ${CLI.dim(email.$value())}`]
+ *     : [`Email  ${email(width - 7)}`, CLI.dim("Press Enter to continue")]);
  * ```
  */
-export function render(lines: (width: number) => string[]): () => void {
+export function render(lines: (width: number, done: boolean) => string[]): () => void {
     const $width = Signal(process.stdout.columns)
     const resize = (): void => {
         $width(process.stdout.columns)
@@ -48,11 +46,11 @@ export function render(lines: (width: number) => string[]): () => void {
     process.stdout.on("resize", resize)
     process.on("exit", showCursor)
 
-    const draw = (): void => {
+    const draw = (done: boolean): void => {
         const width = $width()
         const before = erase(written, cursor, width)
         cursor = undefined
-        const frame = lines(width).map((line, row) => {
+        const frame = lines(width, done).map((line, row) => {
             const index = line.indexOf(CURSOR)
             if (index !== -1) cursor ??= { col: Math.min(Bun.stringWidth(line.slice(0, index)), width - 1), row }
             return Bun.sliceAnsi(line.replaceAll(CURSOR, ""), 0, width)
@@ -60,12 +58,11 @@ export function render(lines: (width: number) => string[]): () => void {
         written = frame.map((line) => Bun.stringWidth(line))
         process.stdout.write(`${SYNC_START}${HIDE_CURSOR}${before}${frame.join("\n")}${place(cursor, frame.length)}${SYNC_END}`)
     }
-    const stop = Effect(draw)
+    const stop = Effect(() => draw(false))
 
     return () => {
         stop()
-        // Within a batch, as in `CLI.onKey`, what changed right before has not been drawn yet.
-        draw()
+        draw(true)
         process.stdout.off("resize", resize)
         process.off("exit", showCursor)
         // Below the last line, for what is written next.

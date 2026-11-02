@@ -361,11 +361,12 @@ impl Sort<'_> {
     /// The members of an interface or type literal: tags, index signatures, properties, multi-line properties,
     /// methods, multi-line methods. `tags` are the properties that go first.
     fn signatures(&mut self, members: &[TSSignature], tags: &[String]) {
-        // The order of call signatures decides which overload TypeScript picks.
-        if members.iter().any(|member| matches!(member, TSSignature::TSCallSignatureDeclaration(_) | TSSignature::TSConstructSignatureDeclaration(_))) {
-            return;
-        }
         let entries = members.iter().map(|member| {
+            // The order of call signatures decides which overload TypeScript picks: they stay where they
+            // are, and the members on either side are sorted on their own, as perfectionist does.
+            if matches!(member, TSSignature::TSCallSignatureDeclaration(_) | TSSignature::TSConstructSignatureDeclaration(_)) {
+                return Entry::Barrier;
+            }
             let span = member.span();
             let text = self.slice(span).trim_end_matches([',', ';']);
             let before_annotation = |annotation: Option<&TSTypeAnnotation>| annotation.map_or(text, |annotation| &self.text[span.start as usize..annotation.span.start as usize]);
@@ -655,7 +656,8 @@ mod tests {
         assert_eq!(format("interface A {\n    c(): void\n    b: string\n    [key: string]: unknown\n    a: {\n        d: 1\n    }\n    e: () => void\n}\n"), "interface A {\n    [key: string]: unknown\n    b: string\n    a: {\n        d: 1\n    }\n    c(): void\n    e: () => void\n}\n");
         assert_eq!(format("type A = { b: string, a?: number }\n"), "type A = { a?: number, b: string }\n");
         assert_eq!(format("interface A {\n    c: 1\n    [b]: 2\n    a: 3\n}\n"), "interface A {\n    a: 3\n    [b]: 2\n    c: 1\n}\n");
-        unchanged("interface A {\n    (b: string): void\n    (a: number): void\n    c: 1\n    a: 2\n}\n");
+        assert_eq!(format("interface A {\n    (b: string): void\n    (a: number): void\n    c: 1\n    a: 2\n}\n"), "interface A {\n    (b: string): void\n    (a: number): void\n    a: 2\n    c: 1\n}\n");
+        assert_eq!(format("interface A {\n    b: 1\n    a: 2\n    new (): A\n    d: 3\n    c: 4\n}\n"), "interface A {\n    a: 2\n    b: 1\n    new (): A\n    c: 4\n    d: 3\n}\n");
     }
 
     #[test]

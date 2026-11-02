@@ -10,20 +10,20 @@ export interface Input {
     /** Where the cursor is, as an index into the value, always between two characters. */
     $cursor: Signal<number>
     $value: Signal<string>
+    clear: () => void
     deleteNextChar: () => void
     deleteNextWord: () => void
     deletePrevChar: () => void
     deletePrevWord: () => void
     goToEnd: () => void
-    clear: () => void
     goToNextChar: () => void
     goToNextWord: () => void
-    onKey: (key: Key) => boolean
     goToPrevChar: () => void
     goToPrevWord: () => void
     goToStart: () => void
     /** Inserts at the cursor and moves it behind. Line breaks become spaces. */
     insertText: (text: string) => void
+    onKey: (key: Key) => boolean
 }
 
 const graphemes = new Intl.Segmenter(undefined, { granularity: "grapheme" })

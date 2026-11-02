@@ -1,10 +1,10 @@
 import type { Key } from "./onKey"
-import { colors } from "./colors"
+import { CURSOR } from "../internals/cursor"
 
 export interface Input {
     /**
-     * The part of the value that fits in `width` columns, around the cursor, which is drawn
-     * inverse.
+     * The part of the value that fits in `width` columns, around the cursor, which `CLI.render`
+     * puts where it is.
      */
     (width: number): string
     /** Where the cursor is, as an index into the value, always between two characters. */
@@ -80,8 +80,8 @@ export function input(): Input {
         if (cursor < scroll) scroll = cursor
         while (scroll < cursor && Bun.stringWidth(value.slice(scroll, cursor) + at) > width) scroll = nextChar(value, scroll)
         while (scroll > 0 && Bun.stringWidth(`${value.slice(prevChar(value, scroll))} `) <= width) scroll = prevChar(value, scroll)
-        const line = value.slice(scroll, cursor) + colors.inverse(at) + value.slice(cursor + at.length)
-        return Bun.sliceAnsi(line, 0, width)
+        const shown = Bun.sliceAnsi(value.slice(scroll), 0, width)
+        return shown.slice(0, cursor - scroll) + CURSOR + shown.slice(cursor - scroll)
     }
 
     return Object.assign(draw, {

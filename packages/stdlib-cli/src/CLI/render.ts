@@ -1,3 +1,5 @@
+import { CURSOR } from "../internals/cursor"
+
 const HIDE_CURSOR = "\x1b[?25l"
 const SHOW_CURSOR = "\x1b[?25h"
 // Terminals that support it show the frame once it is complete, the others ignore it.
@@ -16,8 +18,8 @@ const SYNC_END = "\x1b[?2026l"
  * what stops it, which draws them one last time and leaves them where they are, or nothing when
  * there are none.
  *
- * The cursor is hidden until then: draw your own, e.g. with `CLI.inverse`. One at a time, and
- * nothing else should write to the terminal in the meantime.
+ * The cursor is shown where a `CLI.input` in the lines has it, and hidden when there is none. One
+ * at a time, and nothing else should write to the terminal in the meantime.
  *
  * ## Example
  *
@@ -40,6 +42,7 @@ export function render(lines: (width: number) => string[]): () => void {
     }
     // The widths of the lines on screen, to know how many rows they take after a resize.
     let written: number[] = []
+    let cursor: Cursor | undefined
 
     process.stdout.write(HIDE_CURSOR)
     process.stdout.on("resize", resize)
@@ -47,9 +50,15 @@ export function render(lines: (width: number) => string[]): () => void {
 
     const draw = (): void => {
         const width = $width()
-        const frame = lines(width).map((line) => Bun.sliceAnsi(line, 0, width))
-        process.stdout.write(`${SYNC_START}${erase(written, width)}${frame.join("\n")}${SYNC_END}`)
+        const before = erase(written, cursor, width)
+        cursor = undefined
+        const frame = lines(width).map((line, row) => {
+            const index = line.indexOf(CURSOR)
+            if (index !== -1) cursor ??= { col: Math.min(Bun.stringWidth(line.slice(0, index)), width - 1), row }
+            return Bun.sliceAnsi(line.replaceAll(CURSOR, ""), 0, width)
+        })
         written = frame.map((line) => Bun.stringWidth(line))
+        process.stdout.write(`${SYNC_START}${HIDE_CURSOR}${before}${frame.join("\n")}${place(cursor, frame.length)}${SYNC_END}`)
     }
     const stop = Effect(draw)
 
@@ -59,16 +68,34 @@ export function render(lines: (width: number) => string[]): () => void {
         draw()
         process.stdout.off("resize", resize)
         process.off("exit", showCursor)
-        process.stdout.write(written.length ? `\n${SHOW_CURSOR}` : SHOW_CURSOR)
+        // Below the last line, for what is written next.
+        const down = cursor ? written.length - 1 - cursor.row : 0
+        process.stdout.write(`${down ? `\x1b[${down}B` : ""}${written.length ? "\n" : ""}${SHOW_CURSOR}`)
     }
 }
 
+interface Cursor {
+    col: number
+    row: number
+}
+
+/** From the end of the last line to the cursor, shown, or nowhere, hidden. */
+function place(cursor: Cursor | undefined, rows: number): string {
+    if (!cursor) return ""
+    const up = rows - 1 - cursor.row
+    return `${up ? `\x1b[${up}A` : ""}\x1b[${cursor.col + 1}G${SHOW_CURSOR}`
+}
+
 /**
- * Moves to the start of the first line written and erases everything below. A terminal that got
- * narrower may have wrapped them, into as many rows as they are wide now.
+ * Moves from the cursor, or the end of the last line, to the start of the first line written, and
+ * erases everything below. A terminal that got narrower may have wrapped them, into as many rows as
+ * they are wide now.
  */
-function erase(widths: number[], width: number): string {
+function erase(widths: number[], cursor: Cursor | undefined, width: number): string {
     if (!widths.length) return ""
-    const rows = widths.reduce((sum, line) => sum + Math.max(1, Math.ceil(line / width)), 0)
-    return `\r${rows > 1 ? `\x1b[${rows - 1}A` : ""}\x1b[J`
+    const rows = (lines: number[]): number => lines.reduce((sum, line) => sum + Math.max(1, Math.ceil(line / width)), 0)
+    const up = cursor
+        ? rows(widths.slice(0, cursor.row)) + Math.floor(cursor.col / width)
+        : rows(widths) - 1
+    return `\r${up ? `\x1b[${up}A` : ""}\x1b[J`
 }

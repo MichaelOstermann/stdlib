@@ -1,4 +1,4 @@
-import type { Memo, ReadonlyEmitter, ReadonlySignal, Signal } from "@monstermann/stdlib"
+import type { ReadonlyEmitter, ReadonlySignal, Signal } from "@monstermann/stdlib"
 import type { PlacementPosition } from "@monstermann/stdlib-web"
 import type { TransitionStatus } from "./useTransitionStatus"
 import { Emitter } from "@monstermann/stdlib"
@@ -11,7 +11,7 @@ export interface Modal {
     /** Whether the modal is open. The stack closes it by setting this to `false`. */
     readonly $open: Signal<boolean>
     /** Where to put `$floating` next to its trigger. Dialogs have none. */
-    readonly $position?: Memo<PlacementPosition | undefined>
+    readonly $position?: ReadonlySignal<PlacementPosition | undefined>
     readonly $status: ReadonlySignal<TransitionStatus>
     /**
      * The element that opens and closes the modal, a button for example. Clicks on it do not close

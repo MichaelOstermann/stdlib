@@ -80,7 +80,7 @@ export const Effect: {
      * The function that `computation` returns is called like the one of an effect. What stops the
      * watcher is returned, and `this.dispose()` stops it from the inside, like an effect.
      */
-    watch: <T>(dependencies: ReadonlySignal<T> | Memo<T> | (() => T), computation: (this: EffectContext, next: NoInfer<T>, prev: NoInfer<T>) => (() => void) | void, options?: WatchOptions<NoInfer<T>>) => () => void
+    watch: <T>(dependencies: ReadonlySignal<T> | (() => T), computation: (this: EffectContext, next: NoInfer<T>, prev: NoInfer<T>) => (() => void) | void, options?: WatchOptions<NoInfer<T>>) => () => void
 } = Object.assign(create, {
     defer,
     watch,
@@ -115,7 +115,7 @@ function defer<T = void>(computation: (this: EffectContext, resolve: (value: T) 
     }).finally(() => effect?.dispose())
 }
 
-function watch<T>(dependencies: ReadonlySignal<T> | Memo<T> | (() => T), computation: (this: EffectContext, next: T, prev: T) => (() => void) | void, options?: WatchOptions<T>): () => void {
+function watch<T>(dependencies: ReadonlySignal<T> | (() => T), computation: (this: EffectContext, next: T, prev: T) => (() => void) | void, options?: WatchOptions<T>): () => void {
     // A function is turned into a memo, to only run when it returns something else.
     const read = "kind" in dependencies ? dependencies : Memo(dependencies, options)
     let init = false

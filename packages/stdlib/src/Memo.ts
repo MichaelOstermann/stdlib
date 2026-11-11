@@ -1,14 +1,5 @@
+import type { ReadonlySignal } from "./Signal"
 import { RawMemo } from "./internals/system"
-
-/** A value that is computed from signals and other memos: call it to read. */
-export interface Memo<T = any> {
-    /**
-     * Returns the value, computed again when something it read changed. Inside of a memo or an
-     * effect, that one runs again when the value changes.
-     */
-    (): T
-    readonly kind: "Memo"
-}
 
 export interface MemoOptions<T> {
     /**
@@ -19,12 +10,12 @@ export interface MemoOptions<T> {
 }
 
 /** A memo of a map, and of each of its entries. */
-export interface MemoIndex<K, V> extends Memo<ReadonlyMap<K, V>> {
+export interface MemoIndex<K, V> extends ReadonlySignal<ReadonlyMap<K, V>> {
     /**
      * Returns a memo of the entry of `key`, which only changes when that entry does. They are
      * created when asked for, and held weakly.
      */
-    for: (key: K) => Memo<V | undefined>
+    for: (key: K) => ReadonlySignal<V | undefined>
     /**
      * Returns the entry of `key`. Inside of a memo or an effect, that one only runs again when that
      * entry changes.
@@ -56,11 +47,11 @@ export interface MemoIndex<K, V> extends Memo<ReadonlyMap<K, V>> {
  *
  * $peopleById(); // ReadonlyMap<number, Person>
  * $peopleById.get(0); // Person | undefined
- * $peopleById.for(0); // Memo<Person | undefined>
+ * $peopleById.for(0); // ReadonlySignal<Person | undefined>
  * ```
  */
 export const Memo: {
-    <T>(computation: () => T, options?: MemoOptions<NoInfer<T>>): Memo<T>
+    <T>(computation: () => T, options?: MemoOptions<NoInfer<T>>): ReadonlySignal<T>
     /**
      * Creates a memo of a map from a list, `by` returns the key and the value of an element. The
      * map stays the same when none of its entries changed, `equals` compares the values of an
@@ -71,7 +62,7 @@ export const Memo: {
     indexed: <T, K, V>(target: () => readonly T[], by: (value: NoInfer<T>) => [K, V], options?: MemoOptions<V>) => MemoIndex<K, V>
 } = Object.assign(create, { indexed })
 
-function create<T>(computation: () => T, options?: MemoOptions<NoInfer<T>>): Memo<T> {
+function create<T>(computation: () => T, options?: MemoOptions<NoInfer<T>>): ReadonlySignal<T> {
     const equals = options?.equals
     let init = false
     let prev: T
@@ -85,16 +76,16 @@ function create<T>(computation: () => T, options?: MemoOptions<NoInfer<T>>): Mem
         }
         : computation)
 
-    const memo = (() => raw.get()) as { kind: "Memo" } & Memo<T>
-    memo.kind = "Memo"
+    const memo = (() => raw.get()) as { kind: "Signal" } & ReadonlySignal<T>
+    memo.kind = "Signal"
 
     return memo
 }
 
 function indexed<T, K, V>(target: () => readonly T[], by: (value: NoInfer<T>) => [K, V], options?: MemoOptions<V>): MemoIndex<K, V> {
     const equals = options?.equals
-    const cache = new Map<K, WeakRef<Memo<V | undefined>>>()
-    const finalizers = new FinalizationRegistry<{ key: K, ref: WeakRef<Memo<V | undefined>> }>(({ key, ref }) => {
+    const cache = new Map<K, WeakRef<ReadonlySignal<V | undefined>>>()
+    const finalizers = new FinalizationRegistry<{ key: K, ref: WeakRef<ReadonlySignal<V | undefined>> }>(({ key, ref }) => {
         if (cache.get(key) === ref) cache.delete(key)
     })
 

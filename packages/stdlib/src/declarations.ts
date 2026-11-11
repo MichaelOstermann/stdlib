@@ -216,8 +216,6 @@ declare global {
      * be declared with `type`, an `interface` is not accepted.
      */
     type JSONValue = import("./JSON/types").JSONValue
-    /** A value that is computed from signals and other memos: call it to read. */
-    type Memo<T = any> = import("./Memo").Memo<T>
     /** A successful result that holds `value`. */
     type Ok<T, E = never> = import("./Result").Ok<T, E>
     /** A signal that can only be read. */

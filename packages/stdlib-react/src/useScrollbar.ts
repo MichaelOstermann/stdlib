@@ -9,16 +9,16 @@ export interface Scrollbar {
     /** Whether the pointer is over the element that scrolls. */
     readonly $hovered: ReadonlySignal<boolean>
     /** Whether the content is taller than the element, and there is something to scroll. */
-    readonly $overflows: Memo<boolean>
+    readonly $overflows: ReadonlySignal<boolean>
     /**
      * How far the element is scrolled, from `0` at the top to `1` at the bottom: where the thumb is
      * on the track.
      */
-    readonly $progress: Memo<number>
+    readonly $progress: ReadonlySignal<number>
     /**
      * How much of the content is in view, from `0` to `1`: how much of the track the thumb covers.
      */
-    readonly $ratio: Memo<number>
+    readonly $ratio: ReadonlySignal<number>
     /** Whether the element scrolled within the last 500 milliseconds. */
     readonly $scrolling: ReadonlySignal<boolean>
     /**

@@ -27,7 +27,7 @@ export interface Token {
 export interface Highlighter {
     $loaded: ReadonlySignal<ReadonlySet<string>>
     $loading: ReadonlySignal<ReadonlySet<string>>
-    $ready: Memo<boolean>
+    $ready: ReadonlySignal<boolean>
     highlight: (text: string, scope: string) => Token[]
     load: (scope: string) => Promise<void>
 }

@@ -11,7 +11,7 @@ import { useModalStack } from "./useModalStack"
 
 /** A modal next to its trigger: a tooltip or a popover. */
 export interface AnchoredModal<K extends "popover" | "tooltip"> extends Modal {
-    readonly $position: Memo<PlacementPosition | undefined>
+    readonly $position: ReadonlySignal<PlacementPosition | undefined>
     readonly $status: ReadonlySignal<TransitionStatus>
     readonly kind: K
 }

@@ -24,7 +24,7 @@ import { useSyncExternalStore } from "react"
  * }
  * ```
  */
-export function useReactive<T>(value: ReadonlySignal<T> | Memo<T> | (() => T)): T {
+export function useReactive<T>(value: ReadonlySignal<T> | (() => T)): T {
     const read = "kind" in value ? value : Memo(value)
 
     const subscribe = (onChange: () => void) => {

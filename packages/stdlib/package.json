@@ -47,7 +47,10 @@
             "types": "./dist/patch.d.mts",
             "import": "./dist/patch.mjs"
         },
-        "./*": "./dist/*"
+        "./*": {
+            "types": "./dist/*.d.mts",
+            "import": "./dist/*.mjs"
+        }
     },
     "files": [
         "dist"

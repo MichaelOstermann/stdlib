@@ -18,8 +18,8 @@ describe("transform", () => {
             Duration.SECOND;
             Duration.parse(text);
         `)).toBe(dedent(`
-            import { SECOND as _SECOND } from "@monstermann/stdlib/Duration/SECOND.mjs";
-            import { parse as _parse } from "@monstermann/stdlib/Duration/parse.mjs";
+            import { SECOND as _SECOND } from "@monstermann/stdlib/Duration/SECOND";
+            import { parse as _parse } from "@monstermann/stdlib/Duration/parse";
             _SECOND;
             _parse(text);
         `))
@@ -31,7 +31,7 @@ describe("transform", () => {
             Array.removeAll(a, [1]);
             Function.debounce(b, { wait: 1 });
         `)).toBe(dedent(`
-            import { removeAll as _removeAll } from "@monstermann/stdlib/Array/removeAll.mjs";import { debounce as _debounce } from "@monstermann/stdlib/Function/debounce.mjs";
+            import { removeAll as _removeAll } from "@monstermann/stdlib/Array/removeAll";import { debounce as _debounce } from "@monstermann/stdlib/Function/debounce";
             _removeAll(a, [1]);
             _debounce(b, { wait: 1 });
         `))
@@ -44,7 +44,7 @@ describe("transform", () => {
             export const a = pipe(b, b => Array.map(b, v => match(v).case(1, Duration.SECOND).unwrapOr(c)));
             export const d = Ok(match);
         `)).toBe(dedent(`
-            import { map as _map } from "@monstermann/stdlib/Array/map.mjs";import { SECOND as _SECOND } from "@monstermann/stdlib/Duration/SECOND.mjs";import { Ok } from "@monstermann/stdlib/Result.mjs";import { match } from "@monstermann/stdlib/match.mjs";
+            import { map as _map } from "@monstermann/stdlib/Array/map";import { SECOND as _SECOND } from "@monstermann/stdlib/Duration/SECOND";import { Ok } from "@monstermann/stdlib/Result";import { match } from "@monstermann/stdlib/match";
             export const a = _map(b, v => ((v === (1)) ? (_SECOND)
             : (c)));
             export const d = Ok(match);
@@ -69,7 +69,7 @@ describe("transform", () => {
             import { match, pipe, Duration } from "@monstermann/stdlib";
             pipe(a, a => Array.map(a, v => match(v).case(1, Duration.SECOND).unwrapOr(b)));
         `)).toBe(`\n${dedent(`
-            import { map as _map } from "@monstermann/stdlib/Array/map.mjs";import { SECOND as _SECOND } from "@monstermann/stdlib/Duration/SECOND.mjs";
+            import { map as _map } from "@monstermann/stdlib/Array/map";import { SECOND as _SECOND } from "@monstermann/stdlib/Duration/SECOND";
             _map(a, v => ((v === (1)) ? (_SECOND)
             : (b)));
         `)}`)
@@ -80,9 +80,9 @@ describe("transform", () => {
             import { pipe, match as m, Duration } from "@monstermann/stdlib";
             call(pipe, m, Duration.parse);
         `)).toBe(dedent(`
-            import { pipe } from "@monstermann/stdlib/pipe.mjs";
-            import { match as m } from "@monstermann/stdlib/match.mjs";
-            import { parse as _parse } from "@monstermann/stdlib/Duration/parse.mjs";
+            import { pipe } from "@monstermann/stdlib/pipe";
+            import { match as m } from "@monstermann/stdlib/match";
+            import { parse as _parse } from "@monstermann/stdlib/Duration/parse";
             call(pipe, m, _parse);
         `))
     })
@@ -92,7 +92,7 @@ describe("transform", () => {
             import { Duration } from "@monstermann/stdlib";
             call(Duration);
         `)).toBe(dedent(`
-            import { Duration } from "@monstermann/stdlib/Duration/index.mjs";
+            import { Duration } from "@monstermann/stdlib/Duration/index";
             call(Duration);
         `))
     })
@@ -104,10 +104,10 @@ describe("transform", () => {
             const rect: Rect = Rect.origin;
             DOM.scrollBy(element, { duration: Duration.SECOND });
         `)).toBe(dedent(`
-            import { scrollBy as _scrollBy } from "@monstermann/stdlib-web/DOM/scrollBy.mjs";
-            import { origin as _origin } from "@monstermann/stdlib-web/Rect/origin.mjs";
+            import { scrollBy as _scrollBy } from "@monstermann/stdlib-web/DOM/scrollBy";
+            import { origin as _origin } from "@monstermann/stdlib-web/Rect/origin";
             import type { Rect } from "@monstermann/stdlib-web";
-            import { SECOND as _SECOND } from "@monstermann/stdlib/Duration/SECOND.mjs";
+            import { SECOND as _SECOND } from "@monstermann/stdlib/Duration/SECOND";
             const rect: Rect = _origin;
             _scrollBy(element, { duration: _SECOND });
         `))
@@ -119,7 +119,7 @@ describe("transform", () => {
             const language: Language | undefined = Syntax.find("ts");
         `)).toBe(dedent(`
             import type { Language } from "@monstermann/stdlib-syntax-highlight";
-            import { find as _find } from "@monstermann/stdlib-syntax-highlight/Syntax/find.mjs";
+            import { find as _find } from "@monstermann/stdlib-syntax-highlight/Syntax/find";
             const language: Language | undefined = _find("ts");
         `))
     })
@@ -130,7 +130,7 @@ describe("transform", () => {
             call(Rect);
         `)).toBe(dedent(`
             import type { Placement } from "@monstermann/stdlib-web";
-            import { Rect } from "@monstermann/stdlib-web/Rect/index.mjs";
+            import { Rect } from "@monstermann/stdlib-web/Rect/index";
             call(Rect);
         `))
     })
@@ -142,8 +142,8 @@ describe("transform", () => {
             let b: Result<number, string>;
         `)).toBe(dedent(`
             import type { Result } from "@monstermann/stdlib";
-            import { pipe } from "@monstermann/stdlib/pipe.mjs";
-            import { SECOND as _SECOND } from "@monstermann/stdlib/Duration/SECOND.mjs";
+            import { pipe } from "@monstermann/stdlib/pipe";
+            import { SECOND as _SECOND } from "@monstermann/stdlib/Duration/SECOND";
             const a: number = _SECOND;
             let b: Result<number, string>;
         `))
@@ -166,8 +166,8 @@ describe("transform", () => {
             const a = (value, other, pattern) => match(value).onCase(1, v => match(other).case(v, "same").shape(pattern, [_, v], "alike").unwrap()).unwrapOrElse(() => match(other).case(2, "other").unwrapOr("none"));
         `)).toBe(dedent(`
 
-            import { matches as matches0 } from "@monstermann/stdlib/internals/match/matches.mjs";
-            import { throwUnmatched as throwUnmatched0 } from "@monstermann/stdlib/internals/match/throwUnmatched.mjs";
+            import { matches as matches0 } from "@monstermann/stdlib/internals/match/matches";
+            import { throwUnmatched as throwUnmatched0 } from "@monstermann/stdlib/internals/match/throwUnmatched";
             const a = (value, other, pattern) => ((value === (1)) ? (((other === (value)) ? ("same")
             : (matches0(other, pattern) || (Array.isArray(other) && other.length === 2 && other[1] === (value))) ? ("alike")
             : throwUnmatched0(other)))
@@ -181,7 +181,7 @@ describe("transform", () => {
             import { _, match } from "@monstermann/stdlib";
             const a = (value) => match(value).shape([_], "one").unwrapOr(_);
         `)).toBe(dedent(`
-            import { _ } from "@monstermann/stdlib/_.mjs";
+            import { _ } from "@monstermann/stdlib/_";
             const a = (value) => ((Array.isArray(value) && value.length === 1) ? ("one")
             : (_));
         `))
@@ -192,7 +192,7 @@ describe("transform", () => {
             import { match } from "@monstermann/stdlib";
             const a = match(value).case(1, "one").unwrapOr("other");
             const b = match;
-        `)).toStartWith(`import { match } from "@monstermann/stdlib/match.mjs";`)
+        `)).toStartWith(`import { match } from "@monstermann/stdlib/match";`)
     })
 
     it("should leave unknown exports, other packages and namespace imports alone", () => {

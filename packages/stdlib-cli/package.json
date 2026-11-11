@@ -26,7 +26,10 @@
             "types": "./dist/index.d.mts",
             "import": "./dist/index.mjs"
         },
-        "./*": "./dist/*"
+        "./*": {
+            "types": "./dist/*.d.mts",
+            "import": "./dist/*.mjs"
+        }
     },
     "files": [
         "dist"

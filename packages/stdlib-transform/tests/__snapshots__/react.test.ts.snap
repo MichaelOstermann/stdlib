@@ -348,7 +348,7 @@ export function Logger({ message }) {
 `;
 
 exports[`react Should leave signals and effects alone outside of top-level statements 1`] = `
-"import { Signal } from "@monstermann/stdlib/Signal.mjs";import { Effect } from "@monstermann/stdlib/Effect.mjs";const $global = Signal(0)
+"import { Signal } from "@monstermann/stdlib/Signal";import { Effect } from "@monstermann/stdlib/Effect";const $global = Signal(0)
 Effect(() => console.log($global()))
 export function Component({ open }) {
     const stop = Effect(() => {})
@@ -377,8 +377,8 @@ export function Component() {
 
 exports[`react Should follow imports of Signal and Effect 1`] = `
 "import { useSignalEffect } from "@monstermann/stdlib-react";
-import { Signal as S } from "@monstermann/stdlib/Signal.mjs";
-import { Effect as E } from "@monstermann/stdlib/Effect.mjs";
+import { Signal as S } from "@monstermann/stdlib/Signal";
+import { Effect as E } from "@monstermann/stdlib/Effect";
 import { Signal } from "some-other-package"
 import { useSignal as useS } from "@monstermann/stdlib-react"
 export function Component() {

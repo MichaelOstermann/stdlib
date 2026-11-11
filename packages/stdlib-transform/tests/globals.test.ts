@@ -4,7 +4,7 @@ import { transformGlobals } from "../src/globals"
 
 const options: GlobalsOptions = {
     guards: ["@monstermann/stdlib/globals", "@monstermann/stdlib/patch"],
-    resolve: (global, name) => `@monstermann/stdlib/${global}/${name}.mjs`,
+    resolve: (global, name) => `@monstermann/stdlib/${global}/${name}`,
     globals: {
         Array: ["map", "removeAll"],
         Duration: ["parse"],
@@ -12,8 +12,8 @@ const options: GlobalsOptions = {
         Math: ["clamp"],
     },
     values: {
-        Duration: "@monstermann/stdlib/Duration/index.mjs",
-        pipe: "@monstermann/stdlib/pipe.mjs",
+        Duration: "@monstermann/stdlib/Duration/index",
+        pipe: "@monstermann/stdlib/pipe",
     },
 }
 
@@ -33,7 +33,7 @@ describe("transformGlobals", () => {
             const a = Array.removeAll(values, [1]);
             const b = Math.clamp(a.length, 0, 5);
         `)).toBe(dedent(`
-            import { removeAll as _removeAll } from "@monstermann/stdlib/Array/removeAll.mjs";import { clamp as _clamp } from "@monstermann/stdlib/Math/clamp.mjs";const a = _removeAll(values, [1]);
+            import { removeAll as _removeAll } from "@monstermann/stdlib/Array/removeAll";import { clamp as _clamp } from "@monstermann/stdlib/Math/clamp";const a = _removeAll(values, [1]);
             const b = _clamp(a.length, 0, 5);
         `))
     })
@@ -43,7 +43,7 @@ describe("transformGlobals", () => {
             Array.removeAll(a, b);
             Array.removeAll(c, d);
         `)).toBe(dedent(`
-            import { removeAll as _removeAll } from "@monstermann/stdlib/Array/removeAll.mjs";_removeAll(a, b);
+            import { removeAll as _removeAll } from "@monstermann/stdlib/Array/removeAll";_removeAll(a, b);
             _removeAll(c, d);
         `))
     })
@@ -56,7 +56,7 @@ describe("transformGlobals", () => {
 
             Math.clamp(a, 0, 1);
         `)).toBe(dedent(`
-            import { clamp as _clamp } from "@monstermann/stdlib/Math/clamp.mjs";
+            import { clamp as _clamp } from "@monstermann/stdlib/Math/clamp";
             import { a } from "./a";
 
             _clamp(a, 0, 1);
@@ -69,7 +69,7 @@ describe("transformGlobals", () => {
             Math.clamp(a, 0, 1);
         `)).toBe(dedent(`
             "use client";
-            import { clamp as _clamp } from "@monstermann/stdlib/Math/clamp.mjs";_clamp(a, 0, 1);
+            import { clamp as _clamp } from "@monstermann/stdlib/Math/clamp";_clamp(a, 0, 1);
         `))
     })
 
@@ -90,7 +90,7 @@ describe("transformGlobals", () => {
             }
             Array.removeAll(a, b);
         `)).toBe(dedent(`
-            import { removeAll as _removeAll } from "@monstermann/stdlib/Array/removeAll.mjs";import { Math } from "./math";
+            import { removeAll as _removeAll } from "@monstermann/stdlib/Array/removeAll";import { Math } from "./math";
             Math.clamp(a, 0, 1);
             function run(Array) {
                 return Array.removeAll(a, b);
@@ -104,7 +104,7 @@ describe("transformGlobals", () => {
             signal(Array.removeAll);
             typeof Math.clamp;
         `)).toBe(dedent(`
-            import { removeAll as _removeAll } from "@monstermann/stdlib/Array/removeAll.mjs";import { clamp as _clamp } from "@monstermann/stdlib/Math/clamp.mjs";signal(_removeAll);
+            import { removeAll as _removeAll } from "@monstermann/stdlib/Array/removeAll";import { clamp as _clamp } from "@monstermann/stdlib/Math/clamp";signal(_removeAll);
             typeof _clamp;
         `))
     })
@@ -113,7 +113,7 @@ describe("transformGlobals", () => {
         expect(run(`
             Map.delete(map, key);
         `)).toBe(dedent(`
-            import { delete as _delete } from "@monstermann/stdlib/Map/delete.mjs";_delete(map, key);
+            import { delete as _delete } from "@monstermann/stdlib/Map/delete";_delete(map, key);
         `))
     })
 
@@ -123,7 +123,7 @@ describe("transformGlobals", () => {
             Array.map(a, f);
             Map.map(b, f);
         `)).toBe(dedent(`
-            import { map as _map1 } from "@monstermann/stdlib/Array/map.mjs";import { map as _map2 } from "@monstermann/stdlib/Map/map.mjs";const _map = 1;
+            import { map as _map1 } from "@monstermann/stdlib/Array/map";import { map as _map2 } from "@monstermann/stdlib/Map/map";const _map = 1;
             _map1(a, f);
             _map2(b, f);
         `))
@@ -133,7 +133,7 @@ describe("transformGlobals", () => {
         expect(() => run(`const { clamp } = Math;`)).toThrow("Math.clamp")
         expect(() => run(`Math["clamp"](a, 0, 1);`)).toThrow("Math.clamp")
         expect(() => run(`Math.clamp = () => 0;`)).toThrow("Math.clamp")
-        expect(run(`const { max } = Math; Math["min"](a, b); Math.clamp(a, 0, 1);`)).toBe(`import { clamp as _clamp } from "@monstermann/stdlib/Math/clamp.mjs";const { max } = Math; Math["min"](a, b); _clamp(a, 0, 1);`)
+        expect(run(`const { max } = Math; Math["min"](a, b); Math.clamp(a, 0, 1);`)).toBe(`import { clamp as _clamp } from "@monstermann/stdlib/Math/clamp";const { max } = Math; Math["min"](a, b); _clamp(a, 0, 1);`)
     })
 
     it("should import what is a global of its own", () => {
@@ -141,7 +141,7 @@ describe("transformGlobals", () => {
             const a = pipe(1, b);
             Duration.parse(c);
         `)).toBe(dedent(`
-            import { parse as _parse } from "@monstermann/stdlib/Duration/parse.mjs";import { pipe } from "@monstermann/stdlib/pipe.mjs";const a = pipe(1, b);
+            import { parse as _parse } from "@monstermann/stdlib/Duration/parse";import { pipe } from "@monstermann/stdlib/pipe";const a = pipe(1, b);
             _parse(c);
         `))
     })
@@ -153,7 +153,7 @@ describe("transformGlobals", () => {
             const { parse } = Duration;
             Duration["parse"](a);
         `)).toBe(dedent(`
-            import { Duration } from "@monstermann/stdlib/Duration/index.mjs";call(Duration);
+            import { Duration } from "@monstermann/stdlib/Duration/index";call(Duration);
             Duration.unknown();
             const { parse } = Duration;
             Duration["parse"](a);
@@ -173,28 +173,28 @@ describe("transformGlobals", () => {
             const b = c as Duration;
             function d(pipe) { return pipe(1); }
         `)).toBe(dedent(`
-            import { pipe } from "@monstermann/stdlib/pipe.mjs";const a = { pipe };
+            import { pipe } from "@monstermann/stdlib/pipe";const a = { pipe };
             const b = c as Duration;
             function d(pipe) { return pipe(1); }
         `))
     })
 
     it("should import what is exported", () => {
-        expect(run(`export { pipe as p, Duration };`)).toBe(`import { pipe } from "@monstermann/stdlib/pipe.mjs";import { Duration } from "@monstermann/stdlib/Duration/index.mjs";export { pipe as p, Duration };`)
-        expect(run(`export default pipe;`)).toBe(`import { pipe } from "@monstermann/stdlib/pipe.mjs";export default pipe;`)
+        expect(run(`export { pipe as p, Duration };`)).toBe(`import { pipe } from "@monstermann/stdlib/pipe";import { Duration } from "@monstermann/stdlib/Duration/index";export { pipe as p, Duration };`)
+        expect(run(`export default pipe;`)).toBe(`import { pipe } from "@monstermann/stdlib/pipe";export default pipe;`)
         expect(run(`export { a as pipe };`)).toBe(undefined)
         expect(run(`export { pipe } from "./pipe";`)).toBe(undefined)
         expect(run(`export * as Duration from "./rect";`)).toBe(undefined)
     })
 
     it("should replace what is used in enums", () => {
-        expect(run(`enum A { pipe = Math.clamp(1, 0, 2), B = Duration.parse(a) }`)).toBe(`import { clamp as _clamp } from "@monstermann/stdlib/Math/clamp.mjs";import { parse as _parse } from "@monstermann/stdlib/Duration/parse.mjs";enum A { pipe = _clamp(1, 0, 2), B = _parse(a) }`)
-        expect(run(`enum A { B = pipe(1) }`)).toBe(`import { pipe } from "@monstermann/stdlib/pipe.mjs";enum A { B = pipe(1) }`)
+        expect(run(`enum A { pipe = Math.clamp(1, 0, 2), B = Duration.parse(a) }`)).toBe(`import { clamp as _clamp } from "@monstermann/stdlib/Math/clamp";import { parse as _parse } from "@monstermann/stdlib/Duration/parse";enum A { pipe = _clamp(1, 0, 2), B = _parse(a) }`)
+        expect(run(`enum A { B = pipe(1) }`)).toBe(`import { pipe } from "@monstermann/stdlib/pipe";enum A { B = pipe(1) }`)
         expect(run(`enum Duration { A }`)).toBe(undefined)
     })
 
     it("should see through what is put around a global", () => {
-        expect(run(`(Math).clamp(a, 0, 1);`)).toBe(`import { clamp as _clamp } from "@monstermann/stdlib/Math/clamp.mjs";_clamp(a, 0, 1);`)
+        expect(run(`(Math).clamp(a, 0, 1);`)).toBe(`import { clamp as _clamp } from "@monstermann/stdlib/Math/clamp";_clamp(a, 0, 1);`)
         expect(run(`Math!.clamp(a, 0, 1);`)).toContain(`_clamp(a, 0, 1);`)
         expect(run(`(Math as any).clamp(a, 0, 1);`)).toContain(`_clamp(a, 0, 1);`)
         expect(() => run(`const { clamp } = Math as any;`)).toThrow("Math.clamp")
@@ -228,7 +228,7 @@ describe("transformGlobals", () => {
         expect(() => run(`[Math.clamp] = [a];`)).toThrow("Math.clamp")
         expect(() => run(`({ a: Math.clamp } = b);`)).toThrow("Math.clamp")
         expect(() => run(`Math.clamp++;`)).toThrow("Math.clamp")
-        expect(run(`delete Duration.parse;`)).toBe(`import { Duration } from "@monstermann/stdlib/Duration/index.mjs";delete Duration.parse;`)
+        expect(run(`delete Duration.parse;`)).toBe(`import { Duration } from "@monstermann/stdlib/Duration/index";delete Duration.parse;`)
     })
 
     it("should keep every line where it is when a guard has no semicolon", () => {
@@ -238,7 +238,7 @@ describe("transformGlobals", () => {
             ;(Math.clamp)(a, 0, 1)
             b()
         `)).toBe(dedent(`
-            import { clamp as _clamp } from "@monstermann/stdlib/Math/clamp.mjs";
+            import { clamp as _clamp } from "@monstermann/stdlib/Math/clamp";
 
             ;(_clamp)(a, 0, 1)
             b()

@@ -13,7 +13,7 @@ export interface GlobalsOptions {
     guards: readonly string[]
     /**
      * Globals that are values themselves, and where each one is imported from:
-     * `{ pipe: "@monstermann/stdlib/pipe.mjs" }`
+     * `{ pipe: "@monstermann/stdlib/pipe" }`
      */
     values?: Readonly<Record<string, string>>
     /** Where a member is imported from, it is exported there under its own name. */
@@ -59,7 +59,7 @@ const mentions = new WeakMap<GlobalsOptions["globals"], (code: string) => boolea
  * ```
  *
  * ```ts
- * import { removeAll as _removeAll } from "@monstermann/stdlib/Array/removeAll.mjs";
+ * import { removeAll as _removeAll } from "@monstermann/stdlib/Array/removeAll";
  * _removeAll(values, [1, 2]);
  * ```
  *

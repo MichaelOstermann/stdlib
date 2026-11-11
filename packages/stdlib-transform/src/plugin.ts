@@ -78,19 +78,23 @@ export interface StdlibBunPlugin {
  * there are others.
  */
 export function stdlibBun({ debug, exclude = [], include = modules }: Omit<StdlibPluginOptions, "enforce"> = {}): StdlibBunPlugin {
-    const excluded = [dependencies, exclude].flat()
+    const excluded = [exclude].flat()
 
     return {
         name: "stdlib",
         setup(build) {
-            for (const filter of [include].flat()) {
-                build.onLoad({ filter }, async ({ loader, path }) => {
+            for (const pattern of [include].flat()) {
+                build.onLoad({ filter: withoutDependencies(pattern) }, async ({ loader, path }) => {
                     const code = await readFile(path, "utf8")
-                    if (excluded.some((pattern) => pattern.test(path))) return { contents: code, loader }
+                    if (excluded.some((excludedPattern) => excludedPattern.test(path))) return { contents: code, loader }
                     const result = transform(code, path, { debug: debug instanceof RegExp ? debug.test(path) : debug })
                     return { contents: result?.code ?? code, loader }
                 })
             }
         },
     }
+}
+
+function withoutDependencies(pattern: RegExp): RegExp {
+    return new RegExp(`^(?!.*${dependencies.source})[\\s\\S]*?(?:${pattern.source})`, pattern.flags)
 }

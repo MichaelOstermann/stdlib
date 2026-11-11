@@ -2,7 +2,7 @@
 
 /**
  * What @monstermann/stdlib makes available on globals, each is a file of the same name: `Array.map`
- * → `Array/map.mjs`.
+ * → `Array/map`.
  */
 export const globals: Readonly<Record<string, readonly string[]>> = {
     Array: ["chunk", "filter", "isShallowEqual", "map", "mapFirstWhere", "mapLastWhere", "mapWhere", "maxBy", "minBy", "partition", "removeAll", "removeFirst", "removeFirstWhere", "removeLast", "removeLastWhere", "removeWhere", "replaceFirst", "replaceFirstWhere", "replaceLast", "replaceLastWhere", "sample", "shuffle", "sortBy", "sortByLocale", "unique", "uniqueBy"],
@@ -21,7 +21,7 @@ export const globals: Readonly<Record<string, readonly string[]>> = {
     String: ["camelCase", "capitalize", "constantCase", "dedent", "escapeHTML", "graphemes", "kebabCase", "links", "pascalCase", "score", "slug", "snakeCase", "titleCase", "uncapitalize", "words"],
 }
 
-/** Globals that are values themselves, and the file each one lives in: `pipe` → `pipe.mjs`. */
+/** Globals that are values themselves, and the file each one lives in: `pipe` → `pipe`. */
 export const values: Readonly<Record<string, string>> = {
     Action: "Action",
     AsyncEmitter: "Emitter",

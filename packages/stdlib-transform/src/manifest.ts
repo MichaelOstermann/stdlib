@@ -1,8 +1,8 @@
 /** What a package exports, for importing each of it from the file it lives in. */
 export interface Package {
-    /** Everything that is not a namespace, and the file it lives in: `pipe` → `pipe.mjs`. */
+    /** Everything that is not a namespace, and the file it lives in: `pipe` → `pipe`. */
     functions: ReadonlyMap<string, string>
-    /** Each member is a file of the same name: `Duration.parse` → `Duration/parse.mjs`. */
+    /** Each member is a file of the same name: `Duration.parse` → `Duration/parse`. */
     namespaces: ReadonlySet<string>
 }
 

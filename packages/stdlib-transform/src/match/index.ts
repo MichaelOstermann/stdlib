@@ -168,7 +168,7 @@ export function transformMatches(code: string, filePath: string, from: string, h
     // Without an import to put them next to, they are added to an existing line, so every line stays where it is.
     const first = program.body.find((node) => node.type !== "ExpressionStatement" || !node.directive)
     for (const name of added) {
-        const helper = `import { ${name} as ${helpers[name]} } from "${from}/internals/match/${name}.mjs";`
+        const helper = `import { ${name} as ${helpers[name]} } from "${from}/internals/match/${name}";`
         if (match.node) ctx.ms.appendLeft(match.node.end, `\n${helper}`)
         else ctx.ms.appendLeft(first?.start ?? code.length, helper)
     }

@@ -13,7 +13,7 @@ const src = Path.resolve(import.meta.dirname, "../../stdlib/src")
 /** Resolves the files of the published package to their sources, to not depend on a build. */
 function resolveSource(path: string): string | undefined {
     if (!path.startsWith("@monstermann/stdlib/")) return
-    return Path.join(src, path.slice("@monstermann/stdlib/".length).replace(/\.mjs$/, ".ts"))
+    return Path.join(src, `${path.slice("@monstermann/stdlib/".length)}.ts`)
 }
 
 async function evaluate(code: string): Promise<unknown> {
@@ -143,15 +143,12 @@ describe("stdlibBun", () => {
         expect(code).not.toContain("did not run")
     })
 
-    it("should leave dependencies alone", async () => {
-        const loaders: ((args: { loader: string, path: string }) => Promise<{ contents: string }>)[] = []
-        stdlibBun().setup<string>({ onLoad: (_, callback) => loaders.push(callback) })
-        const dir = await mkdtemp(Path.join(tmpdir(), "stdlib-transform-"))
-        await Bun.write(Path.join(dir, "a.ts"), "Array.removeAll(a, b);")
-        await Bun.write(Path.join(dir, "node_modules/b/c.ts"), "Array.removeAll(a, b);")
+    it("should leave dependencies alone", () => {
+        const filters: RegExp[] = []
+        stdlibBun({ include: /\.ts$/ }).setup<string>({ onLoad: ({ filter }) => filters.push(filter) })
 
-        expect((await loaders[0]!({ loader: "ts", path: Path.join(dir, "a.ts") })).contents).toContain("_removeAll(a, b)")
-        expect((await loaders[0]!({ loader: "ts", path: Path.join(dir, "node_modules/b/c.ts") })).contents).toBe("Array.removeAll(a, b);")
-        await rm(dir, { recursive: true })
+        expect(filters[0]!.test("/a/src/b.ts")).toBe(true)
+        expect(filters[0]!.test("/a/node_modules/b/c.ts")).toBe(false)
+        expect(filters[0]!.test("/a/src/b.js")).toBe(false)
     })
 })

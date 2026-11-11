@@ -18,8 +18,8 @@ const from = "@monstermann/stdlib"
 const globalsOptions = {
     globals,
     guards: guards.map((name) => `${from}/${name}`),
-    values: Object.fromEntries(Object.entries(values).map(([name, file]) => [name, `${from}/${file}.mjs`])),
-    resolve: (global: string, name: string): string => `${from}/${global}/${name}.mjs`,
+    values: Object.fromEntries(Object.entries(values).map(([name, file]) => [name, `${from}/${file}`])),
+    resolve: (global: string, name: string): string => `${from}/${global}/${name}`,
 }
 
 export interface StdlibOptions {
@@ -120,7 +120,7 @@ export function transform(code: string, filePath: string, options: StdlibOptions
             debug: options.debug,
             resolve({ importAlias, importName, importPath, propertyName }) {
                 if (!importName || !packages.get(importPath)?.namespaces.has(importName)) return
-                return `import { ${propertyName} as ${importAlias} } from "${importPath}/${importName}/${propertyName}.mjs";`
+                return `import { ${propertyName} as ${importAlias} } from "${importPath}/${importName}/${propertyName}";`
             },
         })
         if (shaken) {

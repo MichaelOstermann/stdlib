@@ -124,12 +124,12 @@ Object.defineProperty(globalThis, Symbol.for("@monstermann/stdlib/patch"), { con
 `)
 
 await write("packages/stdlib-transform/src/globals.manifest.ts", `${header}
-/** What @monstermann/stdlib makes available on globals, each is a file of the same name: \`Array.map\` → \`Array/map.mjs\`. */
+/** What @monstermann/stdlib makes available on globals, each is a file of the same name: \`Array.map\` → \`Array/map\`. */
 export const globals: Readonly<Record<string, readonly string[]>> = {
 ${Object.entries(members).sort(([a], [b]) => a.localeCompare(b)).map(([global, names]) => `    ${global}: [${names.map((name) => `"${name}"`).join(", ")}],`).join("\n")}
 }
 
-/** Globals that are values themselves, and the file each one lives in: \`pipe\` → \`pipe.mjs\`. */
+/** Globals that are values themselves, and the file each one lives in: \`pipe\` → \`pipe\`. */
 export const values: Readonly<Record<string, string>> = {
 ${Object.entries(values).map(([name, file]) => `    ${name}: "${file}",`).join("\n")}
 }

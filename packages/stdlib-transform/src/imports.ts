@@ -13,8 +13,8 @@ import { packages } from "./manifest"
  *
  * ```ts
  * import type { Result } from "@monstermann/stdlib";
- * import { pipe } from "@monstermann/stdlib/pipe.mjs";
- * import { Arr } from "@monstermann/stdlib/Arr/index.mjs";
+ * import { pipe } from "@monstermann/stdlib/pipe";
+ * import { Arr } from "@monstermann/stdlib/Arr/index";
  * ```
  */
 export function transformImports(code: string, filePath: string, unused: ReadonlySet<string>): MagicString {
@@ -38,8 +38,8 @@ export function transformImports(code: string, filePath: string, unused: Readonl
             const text = code.slice(specifier.imported.start, specifier.end)
             if (specifier.importKind === "type") types.push(text)
             else if (unused.has(name)) continue
-            else if (pkg.namespaces.has(name)) imports.push(`import { ${text} } from "${from}/${name}/index.mjs";`)
-            else if (pkg.functions.has(name)) imports.push(`import { ${text} } from "${from}/${pkg.functions.get(name)}.mjs";`)
+            else if (pkg.namespaces.has(name)) imports.push(`import { ${text} } from "${from}/${name}/index";`)
+            else if (pkg.functions.has(name)) imports.push(`import { ${text} } from "${from}/${pkg.functions.get(name)}";`)
             else rest.push(text)
         }
 

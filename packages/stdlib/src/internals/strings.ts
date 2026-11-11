@@ -1,15 +1,20 @@
 // The splitting of words and the types that tell its result are taken from string-ts, MIT License, Copyright (c) 2023 Gustavo Guichard.
 
 type IsStringLiteral<T extends string> = [T] extends [string]
-    ? [string] extends [T] ? false
+    ? [string] extends [T]
+        ? false
         : Uppercase<T> extends Uppercase<Lowercase<T>>
-            ? Lowercase<T> extends Lowercase<Uppercase<T>> ? true : false
+            ? Lowercase<T> extends Lowercase<Uppercase<T>>
+                ? true
+                : false
             : false
     : false
 
 type Join<T extends readonly string[], D extends string = ""> = IsStringLiteral<D | T[number]> extends true
     ? T extends readonly [infer First extends string, ...infer Rest extends string[]]
-        ? Rest extends [] ? First : `${First}${D}${Join<Rest, D>}`
+        ? Rest extends []
+            ? First
+            : `${First}${D}${Join<Rest, D>}`
         : ""
     : string
 
@@ -24,7 +29,9 @@ type Reject<T, C, O extends unknown[] = []> = T extends [infer First, ...infer R
 type DropSuffix<T extends string, S extends string> = string extends S | T ? string : T extends `${infer Rest}${S}` ? Rest : T
 
 type ReplaceAll<T extends string, L extends string, R extends string = ""> = IsStringLiteral<L | R | T> extends true
-    ? T extends `${infer Rest}${L}${infer Rest2}` ? `${Rest}${R}${ReplaceAll<Rest2, L, R>}` : T
+    ? T extends `${infer Rest}${L}${infer Rest2}`
+        ? `${Rest}${R}${ReplaceAll<Rest2, L, R>}`
+        : T
     : string
 
 type UpperLetter = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z"
@@ -47,16 +54,25 @@ type RemoveApostrophe<T extends string> = ReplaceAll<T, "'">
  */
 type Words<S extends string, W extends string = "", P extends string = ""> = IsStringLiteral<P | S | W> extends true
     ? S extends `${infer C}${infer Rest}`
-        ? IsSeparator<C> extends true ? Reject<[W, ...Words<Rest>], "">
-            : P extends "" ? Reject<Words<Rest, C, C>, "">
-            : [false, true] extends [IsDigit<P>, IsDigit<C>] ? [W, ...Words<Rest, C, C>]
-            : [true, false] extends [IsDigit<P>, IsDigit<C>] ? [W, ...Words<Rest, C, C>]
-            : [false, true] extends [IsSpecial<P>, IsSpecial<C>] ? [W, ...Words<Rest, C, C>]
-            : [true, false] extends [IsSpecial<P>, IsSpecial<C>] ? [W, ...Words<Rest, C, C>]
-            : [true, true] extends [IsDigit<P>, IsDigit<C>] ? Reject<Words<Rest, `${W}${C}`, C>, "">
-            : [true, true] extends [IsLower<P>, IsUpper<C>] ? [W, ...Words<Rest, C, C>]
-            : [true, true] extends [IsUpper<P>, IsLower<C>] ? [DropSuffix<W, P>, ...Words<Rest, `${P}${C}`, C>]
-            : Reject<Words<Rest, `${W}${C}`, C>, "">
+        ? IsSeparator<C> extends true
+            ? Reject<[W, ...Words<Rest>], "">
+            : P extends ""
+                ? Reject<Words<Rest, C, C>, "">
+                : [false, true] extends [IsDigit<P>, IsDigit<C>]
+                    ? [W, ...Words<Rest, C, C>]
+                    : [true, false] extends [IsDigit<P>, IsDigit<C>]
+                        ? [W, ...Words<Rest, C, C>]
+                        : [false, true] extends [IsSpecial<P>, IsSpecial<C>]
+                            ? [W, ...Words<Rest, C, C>]
+                            : [true, false] extends [IsSpecial<P>, IsSpecial<C>]
+                                ? [W, ...Words<Rest, C, C>]
+                                : [true, true] extends [IsDigit<P>, IsDigit<C>]
+                                    ? Reject<Words<Rest, `${W}${C}`, C>, "">
+                                    : [true, true] extends [IsLower<P>, IsUpper<C>]
+                                        ? [W, ...Words<Rest, C, C>]
+                                        : [true, true] extends [IsUpper<P>, IsLower<C>]
+                                            ? [DropSuffix<W, P>, ...Words<Rest, `${P}${C}`, C>]
+                                            : Reject<Words<Rest, `${W}${C}`, C>, "">
         : Reject<[W], "">
     : string[]
 

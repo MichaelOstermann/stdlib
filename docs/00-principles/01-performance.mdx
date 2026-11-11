@@ -138,10 +138,13 @@ function label(value: Shape | null) {
 import { throwUnmatched } from "@monstermann/stdlib/internals/match/throwUnmatched.mjs"
 
 function label(value: Shape | null) {
-    return value === null ? "Nothing"
-        : typeof value === "object" && value !== null && value.kind === "circle" ? "A circle"
-        : typeof value === "object" && value !== null && value.kind === "square" ? "A square"
-        : throwUnmatched(value)
+    return value === null
+        ? "Nothing"
+        : typeof value === "object" && value !== null && value.kind === "circle"
+            ? "A circle"
+            : typeof value === "object" && value !== null && value.kind === "square"
+                ? "A square"
+                : throwUnmatched(value)
 }
 ```
 

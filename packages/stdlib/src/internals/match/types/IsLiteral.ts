@@ -11,5 +11,7 @@ export type IsLiteral<T> = IsNonNullableLiteral<T> extends true
     : T extends null | undefined
         ? true
         : T extends number
-            ? `${number}` extends `${T}` ? false : true
+            ? `${number}` extends `${T}`
+                ? false
+                : true
             : false

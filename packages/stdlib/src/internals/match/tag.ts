@@ -68,7 +68,9 @@ export const tag = function (value: Record<PropertyKey, unknown>, key: PropertyK
     // Nothing else is a tag: an object would be handled by what it turns into as a string.
     const name = typeof tag === "string"
         ? tag
-        : typeof tag === "number" || typeof tag === "boolean" || tag == null ? String(tag) : undefined
+        : typeof tag === "number" || typeof tag === "boolean" || tag == null
+            ? String(tag)
+            : undefined
     const handler = name !== undefined && Object.hasOwn(handlers, name) ? handlers[name] : handlers["_"]
     if (!handler) return throwUnmatched(value)
     return handler(value)

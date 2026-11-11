@@ -5,9 +5,13 @@ import type { IsUnion } from "type-fest"
 export type Widen<T> = IsUnion<T> extends true
     ? T
     : T extends string
-        ? IsEnumMember<T> extends true ? T : string
+        ? IsEnumMember<T> extends true
+            ? T
+            : string
         : T extends number
-            ? IsEnumMember<T> extends true ? T : number
+            ? IsEnumMember<T> extends true
+                ? T
+                : number
             : T extends boolean
                 ? boolean
                 : T extends bigint
@@ -18,7 +22,11 @@ export type Widen<T> = IsUnion<T> extends true
 type IsEnumMember<T extends number | string> = string extends T
     ? false
     : number extends T
-        ? `${number}` extends `${T}` ? false : true
+        ? `${number}` extends `${T}`
+            ? false
+            : true
         : T extends number
             ? false
-            : `${T}` extends T ? false : true
+            : `${T}` extends T
+                ? false
+                : true

@@ -2,13 +2,21 @@ type Key<T> = [T] extends [readonly unknown[]] ? never : [T] extends [object] ? 
 
 type PathOf<T, P extends string, Done extends string = ""> =
     P extends `${infer Head}.${infer Rest}`
-        ? Head extends Key<T> ? PathOf<T[Head], Rest, `${Done}${Head}.`> : `${Done}${Key<T>}`
-        : P extends Key<T> ? `${Done}${P}` : `${Done}${Key<T>}`
+        ? Head extends Key<T>
+            ? PathOf<T[Head], Rest, `${Done}${Head}.`>
+            : `${Done}${Key<T>}`
+        : P extends Key<T>
+            ? `${Done}${P}`
+            : `${Done}${Key<T>}`
 
 type ValueAt<T, P extends string> =
     P extends `${infer Head}.${infer Rest}`
-        ? Head extends Key<T> ? ValueAt<T[Head], Rest> : never
-        : P extends Key<T> ? T[P] : never
+        ? Head extends Key<T>
+            ? ValueAt<T[Head], Rest>
+            : never
+        : P extends Key<T>
+            ? T[P]
+            : never
 
 /**
  * # setPath

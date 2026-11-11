@@ -13,14 +13,18 @@ export type Drop<T, P> = IsUnion<P> extends true
         ? CanMatch<T, P> extends true
             // Tuples that can be of another length are still to be matched.
             ? P extends AnyArray
-                ? [Get<T, "length">] extends [Get<P, "length">] ? DropOne<T, P> : T
+                ? [Get<T, "length">] extends [Get<P, "length">]
+                    ? DropOne<T, P>
+                    : T
                 : DropOne<T, P>
             : T
         : never
 
 type DropOne<T, P> = P extends Primitive
     ? IsUnit<P> extends true
-        ? T extends P ? never : T
+        ? T extends P
+            ? never
+            : T
         : T
     : DropFields<T, P, ComparedKeys<P>>
 
@@ -28,7 +32,9 @@ type DropOne<T, P> = P extends Primitive
 // which only needs the fields of the pattern to be taken apart, instead of every field of the input up front.
 type DropFields<T, P, K> = IsExact<P> extends true
     // Nothing is compared by a tuple of wildcards, which matches all there is.
-    ? [K] extends [never] ? never : DropKeys<T, P, UnionToTuple<K>>
+    ? [K] extends [never]
+        ? never
+        : DropKeys<T, P, UnionToTuple<K>>
     : T
 
 type DropKeys<T, P, K> = K extends [infer Head, ...infer Tail]

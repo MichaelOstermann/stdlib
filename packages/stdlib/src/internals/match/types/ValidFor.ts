@@ -5,7 +5,9 @@ import type { Narrow } from "./Narrow"
 export type ValidFor<Input, Seen, P, T> = [Problems<Input, Seen, P>] extends [never] ? T : MatchError<Problems<Input, Seen, P>>
 
 type Problems<Input, Seen, P> = P extends readonly [infer Head, ...infer Tail]
-    ? [Problem<Input, Seen, Head>] extends [never] ? Problems<Input, Seen, Tail> : Problem<Input, Seen, Head>
+    ? [Problem<Input, Seen, Head>] extends [never]
+        ? Problems<Input, Seen, Tail>
+        : Problem<Input, Seen, Head>
     : never
 
 type Problem<Input, Seen, P> = [Narrow<Input, P>] extends [never]

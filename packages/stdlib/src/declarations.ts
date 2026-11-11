@@ -57,6 +57,7 @@ import type { camelCase as String_camelCase } from "./String/camelCase"
 import type { capitalize as String_capitalize } from "./String/capitalize"
 import type { constantCase as String_constantCase } from "./String/constantCase"
 import type { dedent as String_dedent } from "./String/dedent"
+import type { distance as String_distance } from "./String/distance"
 import type { escapeHTML as String_escapeHTML } from "./String/escapeHTML"
 import type { graphemes as String_graphemes } from "./String/graphemes"
 import type { kebabCase as String_kebabCase } from "./String/kebabCase"
@@ -153,6 +154,7 @@ declare global {
         capitalize: typeof String_capitalize
         constantCase: typeof String_constantCase
         dedent: typeof String_dedent
+        distance: typeof String_distance
         escapeHTML: typeof String_escapeHTML
         graphemes: typeof String_graphemes
         kebabCase: typeof String_kebabCase

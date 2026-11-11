@@ -60,6 +60,7 @@ import { camelCase as String_camelCase } from "./String/camelCase"
 import { capitalize as String_capitalize } from "./String/capitalize"
 import { constantCase as String_constantCase } from "./String/constantCase"
 import { dedent as String_dedent } from "./String/dedent"
+import { distance as String_distance } from "./String/distance"
 import { escapeHTML as String_escapeHTML } from "./String/escapeHTML"
 import { graphemes as String_graphemes } from "./String/graphemes"
 import { kebabCase as String_kebabCase } from "./String/kebabCase"
@@ -177,6 +178,7 @@ define(String, "String", {
     capitalize: String_capitalize,
     constantCase: String_constantCase,
     dedent: String_dedent,
+    distance: String_distance,
     escapeHTML: String_escapeHTML,
     graphemes: String_graphemes,
     kebabCase: String_kebabCase,

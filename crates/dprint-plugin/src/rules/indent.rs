@@ -9,12 +9,9 @@
 //! `${}`, and the inner lines of a block comment move together with its first line.
 
 use oxc_ast::AstKind;
-use oxc_ast::ast::Expression;
-use oxc_ast::ast::TSType;
 use oxc_ast_visit::Visit;
 use oxc_parser::Kind;
 use oxc_span::GetSpan;
-use rustc_hash::FxHashSet;
 
 use crate::edits::Edits;
 use crate::source::Item;
@@ -26,7 +23,7 @@ pub fn run(source: &Source, edits: &mut Edits) {
     let text = source.text;
     let items = source.items();
 
-    let mut containers = Containers { text, list: Vec::new(), cases: FxHashSet::default() };
+    let mut containers = Containers { text, list: Vec::new() };
     containers.visit_program(source.program);
     containers.brackets(source);
     let mut containers = containers.list;
@@ -176,18 +173,9 @@ impl Container {
 struct Containers<'s> {
     text: &'s str,
     list: Vec<Container>,
-    /// Ternaries that continue a list of cases, `: c ? d`, which line up with the ternary before them.
-    cases: FxHashSet<usize>,
 }
 
 impl Containers<'_> {
-    /// An alternate that is a ternary with its `?` on its first line continues a list of cases.
-    fn case(&mut self, alternate: oxc_span::Span, consequent: oxc_span::Span) {
-        if !self.text[alternate.start as usize..consequent.start as usize].contains('\n') {
-            self.cases.insert(alternate.start as usize);
-        }
-    }
-
     fn leading_operator(&self, offset: usize) -> bool {
         self.text[offset..].starts_with(['|', '&'])
     }
@@ -211,22 +199,6 @@ impl Containers<'_> {
 impl<'a> Visit<'a> for Containers<'_> {
     fn enter_node(&mut self, kind: AstKind<'a>) {
         let span = kind.span();
-        match kind {
-            AstKind::ConditionalExpression(it) => {
-                if let Expression::ConditionalExpression(alternate) = it.alternate.without_parentheses() {
-                    self.case(alternate.span, alternate.consequent.span());
-                }
-            }
-            AstKind::TSConditionalType(it) => {
-                if let TSType::TSConditionalType(alternate) = &it.false_type {
-                    self.case(alternate.span, alternate.true_type.span());
-                }
-            }
-            _ => {}
-        }
-        if matches!(kind, AstKind::ConditionalExpression(_) | AstKind::TSConditionalType(_)) && self.cases.contains(&(span.start as usize)) {
-            return;
-        }
         let shape = match kind {
             AstKind::Program(_) => Shape::Program,
             AstKind::IfStatement(_) => Shape::If,
@@ -283,7 +255,7 @@ mod tests {
         restores("const a = b\n    .c()\n    .d((e) => {\n        f()\n    })\n    .g()\n");
         restores("const a = b\n    && c\n    && d\n");
         restores("const a = b\n    ? c\n    : d\n");
-        restores("const a = b ? c\n    : d ? e\n    : f\n");
+        restores("const a = b\n    ? c\n    : d\n        ? e\n        : f\n");
         restores("const a = b\n    ? c\n    : d\n        ? e\n        : f\n");
         restores("const a =\n    b\n");
         restores("type A =\n    | B\n    | C\n");

@@ -386,12 +386,19 @@ const label = done ? "Done" : "Open"
 </Tab>
 </Tabs>
 
-A chain of ternaries with its first break before a `:` is a list of cases, one per line, and stays as it is:
+The ternaries in its results follow along:
 
 ```ts
-const label = done ? "Done"
-    : failed ? "Failed"
-    : "Open"
+// Before:
+const label = done
+    ? "Done" : failed ? "Failed" : "Open"
+
+// After:
+const label = done
+    ? "Done"
+    : failed
+        ? "Failed"
+        : "Open"
 ```
 
 #### if/else and try

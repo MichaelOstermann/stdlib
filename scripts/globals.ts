@@ -54,6 +54,8 @@ const types: Record<string, [file: string, parameters?: string]> = {
     Color: ["Color/index"],
     Emitter: ["Emitter", "T = void"],
     Err: ["Result", "E, T = never"],
+    JSONObject: ["JSON/types"],
+    JSONValue: ["JSON/types"],
     Memo: ["Memo", "T = any"],
     Ok: ["Result", "T, E = never"],
     ReadonlySignal: ["Signal", "T = any"],

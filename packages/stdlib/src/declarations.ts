@@ -209,6 +209,13 @@ declare global {
     type Emitter<T = void> = import("./Emitter").Emitter<T>
     /** A result that failed, `value` is the error. */
     type Err<E, T = never> = import("./Result").Err<E, T>
+    /** An object whose values are all `JSONValue`. */
+    type JSONObject = import("./JSON/types").JSONObject
+    /**
+     * Anything `JSON.stringify` turns into the same value `JSON.parse` gives back. Objects have to
+     * be declared with `type`, an `interface` is not accepted.
+     */
+    type JSONValue = import("./JSON/types").JSONValue
     /** A value that is computed from signals and other memos: call it to read. */
     type Memo<T = any> = import("./Memo").Memo<T>
     /** A successful result that holds `value`. */

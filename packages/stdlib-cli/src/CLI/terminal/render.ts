@@ -1,4 +1,4 @@
-import { CURSOR } from "../internals/cursor"
+import { CURSOR } from "../../internals/cursor"
 
 const HIDE_CURSOR = "\x1b[?25l"
 const SHOW_CURSOR = "\x1b[?25h"
@@ -10,22 +10,22 @@ const SYNC_END = "\x1b[?2026l"
  * # render
  *
  * ```ts
- * function CLI.render(lines: (width: number, done: boolean) => string[]): () => void
+ * function CLI.terminal.render(lines: (width: number, done: boolean) => string[]): () => void
  * ```
  *
  * Writes the lines below what is already in the terminal, and writes them again whenever a signal
  * that `lines` read changes, or the width of the terminal. Lines are cut to that width. Returns
  * what stops it, which draws them one last time with `done` set, and leaves those lines on screen.
  *
- * The cursor is shown where a `CLI.input` in the lines has it, and hidden when there is none. One
- * at a time, and nothing else should write to the terminal in the meantime.
+ * The cursor is shown where a `CLI.terminal.input` in the lines has it, and hidden when there is
+ * none. One at a time, and nothing else should write to the terminal in the meantime.
  *
  * ## Example
  *
  * ```ts
- * const email = CLI.input();
+ * const email = CLI.terminal.input();
  *
- * const stop = CLI.render((width, done) => done
+ * const stop = CLI.terminal.render((width, done) => done
  *     ? [`Email  ${CLI.dim(email.$value())}`]
  *     : [`Email  ${email(width - 7)}`, CLI.dim("Press Enter to continue")]);
  * ```

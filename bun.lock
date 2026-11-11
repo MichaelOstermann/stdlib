@@ -28,6 +28,9 @@
     "packages/stdlib-cli": {
       "name": "@monstermann/stdlib-cli",
       "version": "0.1.0",
+      "dependencies": {
+        "@standard-schema/spec": "^1.1.0",
+      },
       "devDependencies": {
         "@monstermann/stdlib": "workspace:*",
         "@monstermann/stdlib-transform": "workspace:*",

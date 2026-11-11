@@ -40,6 +40,9 @@
     "peerDependencies": {
         "@monstermann/stdlib": "workspace:^"
     },
+    "dependencies": {
+        "@standard-schema/spec": "^1.1.0"
+    },
     "devDependencies": {
         "@monstermann/stdlib": "workspace:*",
         "@monstermann/stdlib-transform": "workspace:*"

@@ -36,11 +36,12 @@ const PASTE_OFF = "\x1b[?2004l"
  * # onKey
  *
  * ```ts
- * function CLI.onKey(callback: (key: Key) => void): () => void
+ * function CLI.terminal.onKey(callback: (key: Key) => void): () => void
  * ```
  *
  * Calls `callback` with every key pressed in the terminal, and with everything pasted at once.
- * Returns what stops it. What `callback` changes counts as one change: `CLI.render` draws once.
+ * Returns what stops it. What `callback` changes counts as one change: `CLI.terminal.render` draws
+ * once.
  *
  * Ctrl+C is a key like any other until it is stopped, and no longer stops the program: handle it.
  * Escape arrives half a second late, since it is also how arrow keys and Alt start.
@@ -48,7 +49,7 @@ const PASTE_OFF = "\x1b[?2004l"
  * ## Example
  *
  * ```ts
- * const stop = CLI.onKey((key) => {
+ * const stop = CLI.terminal.onKey((key) => {
  *     if (key.ctrl && key.name === "c") process.exit(130);
  *     if (key.name === "Enter") stop();
  *     else $text($text() + key.text);

@@ -1,87 +1,52 @@
-import type { Command, Option } from "./types"
-
-/** An option as it is written in `CLI.command`, everything can be left out. */
-export interface OptionInput {
-    choices?: readonly string[]
-    default?: string
-    desc?: string
-    enabled?: boolean
-    example?: string
-    hidden?: boolean
-    optional?: boolean
-    parse?: (value: string) => unknown
-}
-
-/**
- * What the handler gets for an option: what `parse` resolves to, one of its `choices`, or the
- * string as given, and `undefined` when it can be missing.
- */
-type Value<I> =
-    | (I extends { parse: (value: string) => infer V } ? Awaited<V> : I extends { choices: readonly (infer C)[] } ? C : string)
-    | (I extends { default?: undefined, optional: true } ? undefined : never)
+import type { Command, CommandConfig, CommandOptions, Commands } from "./types"
 
 /**
  * # command
  *
  * ```ts
- * function CLI.command(options: {
- *     name: string
- *     desc?: string
- *     enabled?: boolean
- *     hidden?: boolean
- *     commands?: Command[]
- *     options?: Record<string, OptionInput>
- *     handler?: (values) => unknown | Promise<unknown>
- * }): Command
+ * function CLI.command(): Command
  * ```
+ *
+ * A command: its options, its subcommands and what it does. Its name is the key it gets in
+ * `.commands()` of its parent. Each call returns a new command, so one can be the base of others.
+ *
+ * `.action()` receives the values of the options. When it returns nothing, that counts as `Ok()`.
+ * Setting `.options()` again drops the action, it was written for the options before.
  *
  * ## Example
  *
  * ```ts
- * const add = CLI.command({
- *     name: "add",
- *     desc: "Add a member",
- *     options: {
- *         email: { desc: "Email of the member", example: "jane@example.com" },
- *         port: { desc: "Port to listen on", default: "3000", parse: Number },
- *         nickname: { desc: "Nickname of the member", optional: true },
- *         format: { desc: "How to print the member", choices: ["json", "text"], default: "text" },
- *     },
- *     handler({ email, port, nickname }) {},
- * });
+ * const add = CLI.command()
+ *     .desc("Add a member")
+ *     .options({ email: CLI.string().desc("Their email address") })
+ *     .action(({ email }) => {
+ *         if (email.endsWith("@example.com")) return Err("Not a real address")
+ *         return Ok({ email })
+ *     })
+ *
+ * const members = CLI.command()
+ *     .desc("Manage who has access")
+ *     .commands({ add })
+ *
+ * await add.config.action({ email: "john@miko.dev" }) // Ok({ email: "john@miko.dev" })
  * ```
  */
-export function command<const I extends Record<string, OptionInput>>(options: {
-    commands?: Command[]
-    desc?: string
-    enabled?: boolean
-    hidden?: boolean
-    name: string
-    options?: I
-    handler?: (values: { [K in keyof I]: Value<I[K]> }) => unknown
-}): Command {
-    const inputs: Record<string, OptionInput> = options.options ?? {}
-    const filled: Record<string, Option> = {}
-    for (const [name, input] of Object.entries(inputs)) {
-        filled[name] = {
-            choices: input.choices,
-            default: input.default,
-            desc: input.desc ?? "",
-            enabled: input.enabled ?? true,
-            example: input.example,
-            hidden: input.hidden ?? false,
-            optional: input.optional ?? false,
-            parse: input.parse ?? ((value) => value),
-        }
-    }
+export function command(): Command {
+    return build({ action: undefined, commands: {}, options: {} })
+}
 
+function build<O extends CommandOptions, C extends Commands, T, E, HasAction extends boolean>(
+    config: CommandConfig<O, C, T, E, HasAction>,
+): Command<O, C, T, E, HasAction> {
     return {
-        commands: options.commands ?? [],
-        desc: options.desc ?? "",
-        enabled: options.enabled ?? true,
-        handler: options.handler as Command["handler"],
-        hidden: options.hidden ?? false,
-        name: options.name,
-        options: filled,
+        config,
+        kind: "command",
+        commands: (commands) => build({ ...config, commands }),
+        desc: (desc) => build({ ...config, desc }),
+        options: (options) => build({ ...config, action: undefined, options }),
+        action: (action) => build({
+            ...config,
+            action: async (options) => (await action(options) ?? Ok()) as Result<never, never>,
+        }),
     }
 }

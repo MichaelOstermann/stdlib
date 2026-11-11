@@ -1,63 +1,119 @@
-import type { Command } from "./types"
-import { normalize } from "../internals/normalize"
-import { colors } from "./colors"
-import { format } from "./format"
-import { isInteractive } from "./isInteractive"
-import { resolve } from "./resolve"
+import type { AnyCommand, ResolvedCommand } from "./types"
+import { colors } from "../internals/colors"
+import { boolean } from "./boolean"
+import { help as commandHelp } from "./commands/help"
+import { resolve as resolveCommand } from "./commands/resolve"
+import { human } from "./env/human"
+import { resolve as resolveHelp } from "./help/resolve"
+import { prompt as promptOptions } from "./options/prompt"
+import { resolve as resolveOptions } from "./options/resolve"
+
+const globalOptions = { help: boolean().desc("Show this help") }
 
 /**
  * # run
  *
  * ```ts
- * function CLI.run(
- *     program: Command,
- *     options?: { argv?: string[], version?: string },
- * ): Promise<void>
+ * function CLI.run(command: AnyCommand, input: { name: string, argv?: string[], encode?: Encode, rpc?: AnyCommand }): Promise<void>
  * ```
  *
- * Runs the program with the arguments it was started with: calls the handler of the command they
- * name, or prints its help or the errors.
+ * Runs the program `command` is the root of, named `name`, with `argv` from the command line by
+ * default: finds the command, reads its options and calls its action. What the action returns is
+ * printed, an `Err` and anything thrown on stderr, with exit code 1.
  *
- * `program` is the command the program itself is: one with a handler and options, or one that
- * groups commands. `argv` defaults to `process.argv.slice(2)`. With a `version`, `--version` prints
- * it.
+ * A person at a terminal who gives no options is asked for each of them instead.
  *
- * Help goes to stdout. Errors go to stderr and set the exit code to 1, including the help shown
- * when there is nothing to run, and what the handler throws: its message, in red.
+ * `--help` anywhere, or a command without an action, prints the help of that command.
+ *
+ * Commands under `rpc` are for programs: they never ask, and print what the action returns, what
+ * was wrong with the command or its options, or what it or `encode` threw, on stdout. `encode`
+ * turns that `Result` into what is printed, one line of JSON by default:
+ * `{ "ok": true, "value": … }` or `{ "ok": false, "value": … }`.
  *
  * ## Example
  *
  * ```ts
- * await CLI.run(CLI.command({
- *     name: "miko",
- *     commands: [members, login],
- * }), { version: "1.2.0" });
+ * const rpc = CLI.command().desc("For programs, prints JSON").commands({ members })
+ * const miko = CLI.command().commands({ members, rpc })
+ *
+ * await CLI.run(miko, { name: "miko", rpc })
  * ```
  */
-export async function run(program: Command, options: { argv?: string[], version?: string } = {}): Promise<void> {
-    const argv = options.argv ?? process.argv.slice(2)
-    // `process.stdout.write` instead of `console.log`, and `stderr` instead of `console.error`, which
-    // Bun paints red when colors are forced.
-    if (options.version !== undefined && argv.length === 1 && argv[0]!.startsWith("-") && normalize(argv[0]!) === "version") {
-        process.stdout.write(`${options.version}\n`)
+export async function run(command: AnyCommand, input: { argv?: string[], encode?: Encode, name: string, rpc?: AnyCommand }): Promise<void> {
+    const help = resolveHelp(input.argv ?? process.argv.slice(2))
+    const encode = input.encode ?? ((result) => `${JSON.stringify(result)}\n`)
+
+    const resolved = resolveCommand({ argv: help.argv, command })
+    const isRPC = input.rpc !== undefined && [...resolved.parents, resolved.command].includes(input.rpc)
+    if (resolved.error && isRPC) {
+        process.stdout.write(encode(Err(resolved.error)))
+        return
+    }
+    if (resolved.error) {
+        process.exitCode = 1
+        process.stderr.write(`${resolved.message}\n`)
         return
     }
 
-    const outcome = await resolve(program, argv, { interactive: isInteractive() })
-    if (outcome.type === "help") {
-        process.stdout.write(`${format(outcome)}\n`)
+    const action = resolved.command.config.action
+    if (help.isHelp || !action) {
+        const path = [input.name, ...resolved.path]
+        process.stdout.write(`${commandHelp({ command: resolved.command, globalOptions, path })}\n`)
+        return
     }
-    else if (outcome.type === "run") {
-        try {
-            await outcome.command.handler!(outcome.values)
-        }
-        catch (error) {
-            process.stderr.write(`${colors.red(error instanceof Error ? error.message : String(error))}\n`)
-            process.exitCode = 1
-        }
+
+    if (isRPC) {
+        process.stdout.write(await call(action, resolved, encode))
+        return
     }
-    else {
-        process.stderr.write(`${format(outcome)}\n`)
+
+    const prompted = human() && !resolved.argv.length
+    const options = prompted
+        ? { options: await promptOptions(resolved.command) }
+        : await resolveOptions({ argv: resolved.argv, command: resolved.command })
+    if (options.error) {
         process.exitCode = 1
+        process.stderr.write(`${options.message}\n`)
+        return
     }
+
+    try {
+        const result = await action(options.options as never)
+        if (!result.ok) process.exitCode = 1
+        if (!result.ok) process.stderr.write(`${colors.red(text(result.value))}\n`)
+        if (result.ok && result.value !== undefined) process.stdout.write(`${text(result.value)}\n`)
+    }
+    catch (thrown) {
+        process.exitCode = 1
+        const error = thrown instanceof Error ? thrown : new Error(String(thrown))
+        const stack = (error.stack || "").split("\n").slice(1).join("\n")
+        if (error.message) {
+            process.stderr.write(colors.red(`${colors.bold(error.name)}: ${error.message}\n`))
+        }
+        else {
+            process.stderr.write(colors.red(`${colors.bold(error.name)}\n`))
+        }
+        if (stack) {
+            process.stderr.write(`${colors.dim(stack)}\n`)
+        }
+    }
+}
+
+type Encode = (result: Result<unknown, unknown>) => string | Uint8Array
+
+async function call(action: (options: never) => Promise<Result<unknown, unknown>>, resolved: ResolvedCommand, encode: Encode): Promise<string | Uint8Array> {
+    const options = await resolveOptions({ argv: resolved.argv, command: resolved.command })
+    if (options.error) return encode(Err(options.error))
+    try {
+        return encode(await action(options.options as never))
+    }
+    catch (thrown) {
+        const error = thrown instanceof Error ? thrown : new Error(String(thrown))
+        return encode(Err({ message: error.message, stack: error.stack, type: "CLIUnhandledExceptionError" }))
+    }
+}
+
+function text(value: unknown): string {
+    if (typeof value === "string") return value
+    return Bun.inspect(value, { colors: false })
 }

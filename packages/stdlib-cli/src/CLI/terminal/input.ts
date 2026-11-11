@@ -1,14 +1,11 @@
 import type { Key } from "./onKey"
-import { CURSOR } from "../internals/cursor"
+import { CURSOR } from "../../internals/cursor"
 
 export interface Input {
-    /**
-     * The part of the value that fits in `width` columns, around the cursor, which `CLI.render`
-     * puts where it is.
-     */
     (width: number): string
-    /** Where the cursor is, as an index into the value, always between two characters. */
     $cursor: Signal<number>
+    /** What is wrong with the value, set by whoever checks it. */
+    $error: Signal<string | undefined>
     $value: Signal<string>
     clear: () => void
     deleteNextChar: () => void
@@ -21,7 +18,6 @@ export interface Input {
     goToPrevChar: () => void
     goToPrevWord: () => void
     goToStart: () => void
-    /** Inserts at the cursor and moves it behind. Line breaks become spaces. */
     insertText: (text: string) => void
     onKey: (key: Key) => boolean
 }
@@ -33,24 +29,21 @@ const words = new Intl.Segmenter(undefined, { granularity: "word" })
  * # input
  *
  * ```ts
- * function CLI.input(): Input
+ * function CLI.terminal.input(): Input
  * ```
  *
  * A line of text that can be edited, with a cursor. It does not listen to keys: call its methods
- * from `CLI.onKey`, and draw it in `CLI.render`. When the value is wider than the room it gets, it
- * scrolls to keep the cursor in view.
- *
- * Characters are what a person sees as one, also emoji and accented letters. Words are what
- * `Intl.Segmenter` finds: `jane@example.com` is two, `jane` and `example.com`.
+ * from `CLI.terminal.onKey`, and draw it in `CLI.terminal.render`. When the value is wider than the
+ * room it gets, it scrolls to keep the cursor in view.
  *
  * ## Example
  *
  * ```ts
- * const email = CLI.input();
+ * const email = CLI.terminal.input();
  *
- * CLI.render((width) => [`Email  ${email(width - 7)}`]);
+ * CLI.terminal.render((width) => [`Email  ${email(width - 7)}`]);
  *
- * CLI.onKey((key) => {
+ * CLI.terminal.onKey((key) => {
  *     if (key.name === "Backspace") email.deletePrevChar();
  *     else if (key.name === "ArrowLeft") email.goToPrevChar();
  *     else email.insertText(key.text);
@@ -60,6 +53,7 @@ const words = new Intl.Segmenter(undefined, { granularity: "word" })
 export function input(): Input {
     const $value = Signal("")
     const $cursor = Signal(0)
+    const $error = Signal<string | undefined>(undefined)
     // The index of the first character shown, kept between draws so the value only scrolls when the
     // cursor would leave the room.
     let scroll = 0
@@ -86,6 +80,7 @@ export function input(): Input {
 
     return Object.assign(draw, {
         $cursor,
+        $error,
         $value,
         deleteNextChar: () => edit($cursor(), nextChar($value(), $cursor()), ""),
         deleteNextWord: () => edit($cursor(), nextWordEnd($value(), $cursor()), ""),
@@ -133,7 +128,6 @@ function nextChar(value: string, index: number): number {
     return grapheme ? grapheme.index + grapheme.segment.length : value.length
 }
 
-/** The start of the word the cursor is in, or of the one before. */
 function prevWordStart(value: string, index: number): number {
     let start = 0
     for (const segment of words.segment(value)) {
@@ -143,7 +137,6 @@ function prevWordStart(value: string, index: number): number {
     return start
 }
 
-/** The end of the word the cursor is in, or of the one after. */
 function nextWordEnd(value: string, index: number): number {
     for (const segment of words.segment(value)) {
         const end = segment.index + segment.segment.length

@@ -22,16 +22,16 @@ const VARIABLES = [
 ]
 
 /**
- * # isAgent
+ * # agent
  *
  * ```ts
- * function CLI.isAgent(): boolean
+ * function CLI.env.agent(): boolean
  * ```
  *
  * Whether a coding agent runs this process: Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot
  * and others, by the environment variables they set.
  */
-export function isAgent(): boolean {
+export function agent(): boolean {
     const env = process.env
     if (env[CONVENTION]) return true
     if (VARIABLES.some((name) => env[name])) return true

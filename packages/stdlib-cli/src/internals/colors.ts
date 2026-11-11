@@ -1,7 +1,7 @@
 // Taken from createColors of picocolors@1.1.1, picocolors.js, ISC License, Copyright (c) 2021-2024 Oleksii Raspopov, Kostiantyn Denysov, Anton Verinov.
 // Without the bright colors and `gray`, which terminal themes paint in whatever color they like, and without detecting whether to color.
 
-import { shouldColor } from "./shouldColor"
+import { color } from "../CLI/env/color"
 
 type Codes = readonly [open: string, close: string, replace?: string]
 
@@ -32,29 +32,10 @@ const STYLES = {
 
 export type Colors = Record<keyof typeof STYLES, (text: string) => string>
 
-/**
- * # colors
- *
- * ```ts
- * function CLI.red(text: string): string // and bold, dim, italic, underline, inverse, strikethrough,
- *                                        // black, green, yellow, blue, magenta, cyan, white, bgRed, …
- * ```
- *
- * Text in a color or style, or as it is when `CLI.shouldColor()` says no, asked on every call.
- * Styles nest: `CLI.bold(CLI.red("Error"))`.
- *
- * There are no bright colors and no gray: terminal themes paint those in whatever color they like.
- *
- * ## Example
- *
- * ```ts
- * console.log(CLI.green("Member added"), CLI.dim("(jane@example.com)"));
- * ```
- */
 export const colors = Object.fromEntries(
     Object.entries(STYLES).map(([name, codes]) => {
         const paint = style(codes)
-        return [name, (text: string) => (shouldColor() ? paint(text) : text)]
+        return [name, (text: string) => (color() ? paint(text) : text)]
     }),
 ) as Colors
 

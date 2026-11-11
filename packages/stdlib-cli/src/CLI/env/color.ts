@@ -1,12 +1,12 @@
-import { isAgent } from "./isAgent"
-import { isCI } from "./isCI"
-import { isInteractive } from "./isInteractive"
+import { agent } from "./agent"
+import { ci } from "./ci"
+import { human } from "./human"
 
 /**
- * # shouldColor
+ * # color
  *
  * ```ts
- * function CLI.shouldColor(): boolean
+ * function CLI.env.color(): boolean
  * ```
  *
  * Whether output gets colors: only for a person at a terminal. `NO_COLOR` turns them off and
@@ -15,12 +15,12 @@ import { isInteractive } from "./isInteractive"
  * Agents, CI, pipes and `TERM=dumb` get plain text: escape codes are noise to an agent, and CI logs
  * end up read by one too.
  */
-export function shouldColor(): boolean {
+export function color(): boolean {
     const env = process.env
     if (env["NO_COLOR"]) return false
     if (env["FORCE_COLOR"]) return true
-    if (isAgent()) return false
-    if (isCI()) return false
+    if (agent()) return false
+    if (ci()) return false
     if (env["TERM"] === "dumb") return false
-    return isInteractive()
+    return human()
 }

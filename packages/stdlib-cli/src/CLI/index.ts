@@ -2,6 +2,7 @@ import { colors } from "../internals/colors"
 import { boolean } from "./boolean"
 import { command } from "./command"
 import { help as commandHelp } from "./commands/help"
+import { pick as pickCommand } from "./commands/pick"
 import { resolve as resolveCommand } from "./commands/resolve"
 import { enumI } from "./enum"
 import { agent } from "./env/agent"
@@ -21,6 +22,7 @@ import { render } from "./terminal/render"
 import { select } from "./terminal/select"
 
 export type { Colors } from "../internals/colors"
+export type { PickedCommand } from "./commands/pick"
 export type { ConfirmOptions, ConfirmSlot } from "./terminal/confirm"
 export type { Input } from "./terminal/input"
 export type { Key } from "./terminal/onKey"
@@ -59,7 +61,7 @@ export const CLI = {
     ...colors,
     boolean,
     command,
-    commands: { help: commandHelp, resolve: resolveCommand },
+    commands: { help: commandHelp, pick: pickCommand, resolve: resolveCommand },
     enum: enumI,
     env: { agent, ci, color, human },
     help: { resolve: resolveHelp },

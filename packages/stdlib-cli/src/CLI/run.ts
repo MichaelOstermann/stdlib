@@ -2,18 +2,20 @@ import type { AnyCommand, ResolvedCommand } from "./types"
 import { colors } from "../internals/colors"
 import { boolean } from "./boolean"
 import { help as commandHelp } from "./commands/help"
+import { pick as pickCommand } from "./commands/pick"
 import { resolve as resolveCommand } from "./commands/resolve"
 import { human } from "./env/human"
 import { resolve as resolveHelp } from "./help/resolve"
 import { resolve as resolveOptions } from "./options/resolve"
 
 const globalOptions = { help: boolean().desc("Show this help") }
+const rootOptions = { ...globalOptions, version: boolean().desc("Show the version") }
 
 /**
  * # run
  *
  * ```ts
- * function CLI.run(command: AnyCommand, input: { name: string, argv?: string[], encode?: Encode, rpc?: AnyCommand }): Promise<void>
+ * function CLI.run(command: AnyCommand, input: { name: string, argv?: string[], encode?: Encode, rpc?: AnyCommand, version?: string }): Promise<void>
  * ```
  *
  * Runs the program `command` is the root of, named `name`, with `argv` from the command line by
@@ -23,7 +25,11 @@ const globalOptions = { help: boolean().desc("Show this help") }
  * A person at a terminal is asked for the options: all of them when none are given, otherwise the
  * ones that are missing or invalid.
  *
- * `--help` anywhere, or a command without an action, prints the help of that command.
+ * A person at a terminal who runs a command without an action, like the program itself, picks one
+ * of the commands below it.
+ *
+ * `--help` anywhere, or a command without an action, prints the help of that command. With a
+ * `version`, `--version` after the name of the program prints it.
  *
  * Commands under `rpc` are for programs: they never ask, and print what the action returns, what
  * was wrong with the command or its options, or what it or `encode` threw, on stdout. `encode`
@@ -36,12 +42,18 @@ const globalOptions = { help: boolean().desc("Show this help") }
  * const rpc = CLI.command().desc("For programs, prints JSON").commands({ members })
  * const miko = CLI.command().commands({ members, rpc })
  *
- * await CLI.run(miko, { name: "miko", rpc })
+ * await CLI.run(miko, { name: "miko", rpc, version: "1.2.0" })
  * ```
  */
-export async function run(command: AnyCommand, input: { argv?: string[], encode?: Encode, name: string, rpc?: AnyCommand }): Promise<void> {
+export async function run(command: AnyCommand, input: { argv?: string[], encode?: Encode, name: string, rpc?: AnyCommand, version?: string }): Promise<void> {
     const help = resolveHelp(input.argv ?? process.argv.slice(2))
     const encode = input.encode ?? ((result) => `${JSON.stringify(result)}\n`)
+
+    const isVersion = help.argv.length === 1 && help.argv[0] === "--version"
+    if (input.version !== undefined && isVersion && !help.isHelp) {
+        process.stdout.write(`${input.version}\n`)
+        return
+    }
 
     const resolved = resolveCommand({ argv: help.argv, command })
     const isRPC = input.rpc !== undefined && [...resolved.parents, resolved.command].includes(input.rpc)
@@ -55,10 +67,15 @@ export async function run(command: AnyCommand, input: { argv?: string[], encode?
         return
     }
 
-    const action = resolved.command.config.action
+    const isPicking = human() && !isRPC && !help.isHelp && !resolved.command.config.action && !resolved.argv.length
+    const picked = isPicking ? await pickCommand({ command: resolved.command, path: [input.name, ...resolved.path], rpc: input.rpc }) : undefined
+    const target = picked?.command ?? resolved.command
+
+    const action = target.config.action
     if (help.isHelp || !action) {
         const path = [input.name, ...resolved.path]
-        process.stdout.write(`${commandHelp({ command: resolved.command, globalOptions, path })}\n`)
+        const isRoot = !resolved.path.length && input.version !== undefined
+        process.stdout.write(`${commandHelp({ command: resolved.command, globalOptions: isRoot ? rootOptions : globalOptions, path })}\n`)
         return
     }
 
@@ -67,7 +84,7 @@ export async function run(command: AnyCommand, input: { argv?: string[], encode?
         return
     }
 
-    const options = await resolveOptions({ argv: resolved.argv, command: resolved.command, prompt: human() })
+    const options = await resolveOptions({ argv: resolved.argv, command: target, prompt: human() })
     if (options.error) {
         process.exitCode = 1
         process.stderr.write(`${options.message}\n`)

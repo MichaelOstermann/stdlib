@@ -20,7 +20,10 @@ const miko = CLI.command().desc("Everything miko").commands({ members, rpc, serv
 let stdout = ""
 let stderr = ""
 
+const isTTY = process.stdout.isTTY
+
 beforeEach(() => {
+    process.stdout.isTTY = false
     process.exitCode = 0
     stdout = ""
     stderr = ""
@@ -35,11 +38,12 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+    process.stdout.isTTY = isTTY
     process.exitCode = 0
 })
 
 function run(line: string, encode?: (result: Result<unknown, unknown>) => string): Promise<void> {
-    return CLI.run(miko, { argv: line.split(" "), encode, name: "miko", rpc })
+    return CLI.run(miko, { argv: line.split(" "), encode, name: "miko", rpc, version: "1.2.0" })
 }
 
 describe("CLI.run", () => {
@@ -88,6 +92,26 @@ describe("CLI.run", () => {
         await run("members")
         expect(Bun.stripANSI(stdout)).toStartWith("Command:\n  miko members\n")
         expect(process.exitCode).toBe(0)
+    })
+
+    it("should print the version for --version after the name of the program", async () => {
+        await run("--version")
+        expect(stdout).toBe("1.2.0\n")
+        expect(process.exitCode).toBe(0)
+    })
+
+    it("should list --version in the help of the program only", async () => {
+        await run("--help")
+        expect(Bun.stripANSI(stdout)).toContain("  --version  Show the version")
+        stdout = ""
+        await run("members --help")
+        expect(Bun.stripANSI(stdout)).not.toContain("--version")
+    })
+
+    it("should not know --version below the program", async () => {
+        await run("members add --version")
+        expect(Bun.stripANSI(stderr)).toContain("Unknown option --version")
+        expect(process.exitCode).toBe(1)
     })
 
     describe("rpc", () => {

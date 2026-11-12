@@ -82,6 +82,7 @@ export type CamelCase<T extends string> = Uncapitalize<PascalCase<T>>
 export type ConstantCase<T extends string> = Uppercase<DelimiterCase<T, "_">>
 export type KebabCase<T extends string> = Lowercase<DelimiterCase<T, "-">>
 export type SnakeCase<T extends string> = Lowercase<DelimiterCase<T, "_">>
+export type SentenceCase<T extends string> = Capitalize<Lowercase<DelimiterCase<T, " ">>>
 export type TitleCase<T extends string> = DelimiterCase<PascalCase<T>, " ">
 
 const SEPARATOR = 0

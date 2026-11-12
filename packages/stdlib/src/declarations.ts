@@ -64,6 +64,7 @@ import type { kebabCase as String_kebabCase } from "./String/kebabCase"
 import type { links as String_links } from "./String/links"
 import type { pascalCase as String_pascalCase } from "./String/pascalCase"
 import type { score as String_score } from "./String/score"
+import type { sentenceCase as String_sentenceCase } from "./String/sentenceCase"
 import type { slug as String_slug } from "./String/slug"
 import type { snakeCase as String_snakeCase } from "./String/snakeCase"
 import type { titleCase as String_titleCase } from "./String/titleCase"
@@ -161,6 +162,7 @@ declare global {
         links: typeof String_links
         pascalCase: typeof String_pascalCase
         score: typeof String_score
+        sentenceCase: typeof String_sentenceCase
         slug: typeof String_slug
         snakeCase: typeof String_snakeCase
         titleCase: typeof String_titleCase

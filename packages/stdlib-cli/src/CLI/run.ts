@@ -5,7 +5,6 @@ import { help as commandHelp } from "./commands/help"
 import { resolve as resolveCommand } from "./commands/resolve"
 import { human } from "./env/human"
 import { resolve as resolveHelp } from "./help/resolve"
-import { prompt as promptOptions } from "./options/prompt"
 import { resolve as resolveOptions } from "./options/resolve"
 
 const globalOptions = { help: boolean().desc("Show this help") }
@@ -21,7 +20,8 @@ const globalOptions = { help: boolean().desc("Show this help") }
  * default: finds the command, reads its options and calls its action. What the action returns is
  * printed, an `Err` and anything thrown on stderr, with exit code 1.
  *
- * A person at a terminal who gives no options is asked for each of them instead.
+ * A person at a terminal is asked for the options: all of them when none are given, otherwise the
+ * ones that are missing or invalid.
  *
  * `--help` anywhere, or a command without an action, prints the help of that command.
  *
@@ -67,10 +67,7 @@ export async function run(command: AnyCommand, input: { argv?: string[], encode?
         return
     }
 
-    const prompted = human() && !resolved.argv.length
-    const options = prompted
-        ? { options: await promptOptions(resolved.command) }
-        : await resolveOptions({ argv: resolved.argv, command: resolved.command })
+    const options = await resolveOptions({ argv: resolved.argv, command: resolved.command, prompt: human() })
     if (options.error) {
         process.exitCode = 1
         process.stderr.write(`${options.message}\n`)

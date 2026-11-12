@@ -4,6 +4,7 @@ import { Layout } from "../../internals/Layout"
 import { Parse } from "../../internals/Parse"
 import { suggest } from "../../internals/suggest"
 import { help } from "./help"
+import { prompt } from "./prompt"
 
 /** What argv said about one option: nothing, a flag without a value, or a value. */
 type Given =
@@ -15,7 +16,7 @@ type Given =
  * # resolve
  *
  * ```ts
- * function CLI.options.resolve<C extends AnyCommand>(input: { argv: string[], command: C }): Promise<ResolvedOptions<C>>
+ * function CLI.options.resolve<C extends AnyCommand>(input: { argv: string[], command: C, prompt?: boolean }): Promise<ResolvedOptions<C>>
  * ```
  *
  * Reads the options of `command` from `argv`: `--first-name John`, `--first-name=John`, and for
@@ -23,6 +24,10 @@ type Given =
  *
  * When something is missing, invalid or unknown, returns `error` with every problem, and `message`
  * to show for them with the options they are about.
+ *
+ * With `prompt`, it asks in the terminal instead: for every option when `argv` is empty, otherwise
+ * for the ones that are missing or invalid, starting at what was typed. Unknown words are still an
+ * `error`, before anything is asked.
  *
  * ## Example
  *
@@ -32,7 +37,7 @@ type Given =
  * else await add.config.action(resolved.options)
  * ```
  */
-export async function resolve<C extends AnyCommand>(input: { argv: string[], command: C }): Promise<ResolvedOptions<C>> {
+export async function resolve<C extends AnyCommand>(input: { argv: string[], command: C, prompt?: boolean }): Promise<ResolvedOptions<C>> {
     const options = input.command.config.options
     const names = Object.keys(options)
     const flags = names.map((name) => `--${String.kebabCase(name)}`)
@@ -77,11 +82,25 @@ export async function resolve<C extends AnyCommand>(input: { argv: string[], com
         index++
     }
 
+    const asking = input.prompt === true && !errors.length
     const values: Record<string, unknown> = {}
     for (const name of names) {
-        const value = await valueOf(name, options[name]!, given.get(name) ?? { type: "absent" })
-        if (value.ok) values[name] = value.value
-        if (!value.ok) errors.unshift(...value.value)
+        const option = options[name]!
+        const typed = given.get(name) ?? { type: "absent" }
+        if (asking && !input.argv.length) {
+            values[name] = await prompt(name, option, undefined)
+            continue
+        }
+        const value = await valueOf(name, option, typed)
+        if (value.ok) {
+            values[name] = value.value
+            continue
+        }
+        if (asking) {
+            values[name] = await prompt(name, option, typed.type === "value" ? String(typed.value) : undefined)
+            continue
+        }
+        errors.unshift(...value.value)
     }
 
     if (errors.length) {

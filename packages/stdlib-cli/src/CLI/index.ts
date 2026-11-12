@@ -10,7 +10,6 @@ import { color } from "./env/color"
 import { human } from "./env/human"
 import { resolve as resolveHelp } from "./help/resolve"
 import { help as optionsHelp } from "./options/help"
-import { prompt as promptOptions } from "./options/prompt"
 import { resolve as resolveOptions } from "./options/resolve"
 import { run } from "./run"
 import { string } from "./string"
@@ -49,6 +48,7 @@ export type {
     InferOption,
     InferOptions,
     InferRPC,
+    MergeOptions,
     ResolvedCommand,
     ResolvedOptions,
     StringOption,
@@ -63,7 +63,7 @@ export const CLI = {
     enum: enumI,
     env: { agent, ci, color, human },
     help: { resolve: resolveHelp },
-    options: { help: optionsHelp, prompt: promptOptions, resolve: resolveOptions },
+    options: { help: optionsHelp, resolve: resolveOptions },
     run,
     string,
     terminal: { confirm, input, onKey, prompt, render, select },

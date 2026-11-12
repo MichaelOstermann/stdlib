@@ -112,6 +112,14 @@ describe("CLI.options.resolve", () => {
         ])
     })
 
+    it("should report unknown words before asking anything", async () => {
+        const resolved = await CLI.options.resolve({ argv: ["--nope"], command: add, prompt: true })
+        expect(resolved.error?.errors).toEqual([
+            { option: "email", type: "CLIMissingOptionError" },
+            { input: "--nope", type: "CLIUnknownOptionError" },
+        ])
+    })
+
     it("should show the problems and the options they are about", async () => {
         const resolved = await resolve("--emial a@b.c")
         expect(Bun.stripANSI(resolved.message!)).toBe([

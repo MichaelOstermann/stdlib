@@ -66,7 +66,8 @@ export interface Command<
     action: <R extends Result<unknown, unknown> | void>(action: (options: InferOptions<O>) => R | Promise<R>) => Command<O, C, ActionValue<R>, ActionError<R>, true>
     commands: <const C extends Commands>(commands: C) => Command<O, C, T, E, HasAction>
     desc: (desc: string) => Command<O, C, T, E, HasAction>
-    options: <const O extends CommandOptions>(options: O) => Command<O, C, never, never, false>
+    option: <const N extends string, X extends CommandOption>(name: N, option: X) => Command<MergeOptions<O, Record<N, X>>, C, never, never, false>
+    options: <const P extends CommandOptions>(options: P) => Command<MergeOptions<O, P>, C, never, never, false>
 }
 
 export interface CommandConfig<O extends CommandOptions, C extends Commands, T, E, HasAction extends boolean> {
@@ -75,6 +76,11 @@ export interface CommandConfig<O extends CommandOptions, C extends Commands, T, 
     desc?: string
     options: O
 }
+
+/**
+ * The options of `A`, with those of `B` added at the end, or in place of the ones of the same name.
+ */
+export type MergeOptions<A, B> = Omit<A, keyof B> & B
 
 export type ActionValue<R> = InferOk<Exclude<R, void>> | (undefined extends R ? void : never)
 export type ActionError<R> = InferErr<Exclude<R, void>>
@@ -89,7 +95,7 @@ export interface AnyCommand {
     }
 }
 
-export type InferOptions<X> = X extends { config: { options: infer O } } ? InferOptions<O> : { [K in keyof X]: InferOption<X[K]> }
+export type InferOptions<X> = X extends { config: { options: infer O } } ? InferOptions<O> : { -readonly [K in keyof X]: InferOption<X[K]> }
 
 export type InferOption<O> = O extends StringOption<infer T, infer Optional, infer Defaulted>
     ? Value<T, Optional, Defaulted>

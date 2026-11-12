@@ -17,6 +17,21 @@ describe("CLI.command", () => {
         expect(command.config.action).toBeUndefined()
     })
 
+    it("should add options after the ones that are there, and replace those of the same name in place", () => {
+        const command = CLI
+            .command()
+            .option("email", CLI.string())
+            .options({ notify: CLI.boolean(), seats: CLI.string() })
+            .option("email", CLI.string().optional(true))
+        expect(Object.keys(command.config.options)).toEqual(["email", "notify", "seats"])
+        expect(command.config.options.email.config.optional).toBe(true)
+    })
+
+    it("should forget the action when an option is added", () => {
+        const command = CLI.command().action(() => {}).option("email", CLI.string())
+        expect(command.config.action).toBeUndefined()
+    })
+
     it("should return a new command each time, leaving the one it was made from as it is", () => {
         const base = CLI.command().desc("Base")
         const changed = base.desc("Changed")

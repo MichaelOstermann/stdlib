@@ -26,17 +26,26 @@ const miko = CLI.command().commands({ empty, members, serve })
 describe("InferOptions", () => {
     it("should be the values the action gets", () => {
         expectTypeOf<InferOptions<typeof add>>().toEqualTypeOf<{
-            readonly email: string
-            readonly firstName: string | undefined
-            readonly notify: boolean
-            readonly role: "admin" | "member"
-            readonly seats: number
-            readonly team: "a" | "b"
+            email: string
+            firstName: string | undefined
+            notify: boolean
+            role: "admin" | "member"
+            seats: number
+            team: "a" | "b"
         }>()
     })
 })
 
 describe("Command", () => {
+    it("should merge the options of .option() and .options(), the last of the same name wins", () => {
+        const command = CLI
+            .command()
+            .option("email", CLI.string())
+            .options({ seats: CLI.string().default("1") })
+            .option("email", CLI.string().optional(true))
+        expectTypeOf<InferOptions<typeof command>>().toEqualTypeOf<{ email: string | undefined, seats: string }>()
+    })
+
     it("should know what the action returns", () => {
         expectTypeOf(add.config.action).returns.toEqualTypeOf<Promise<Result<string, "Taken">>>()
         expectTypeOf(serve.config.action).returns.toEqualTypeOf<Promise<Result<void, never>>>()

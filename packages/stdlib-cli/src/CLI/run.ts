@@ -1,4 +1,4 @@
-import type { AnyCommand, ResolvedCommand } from "./types"
+import type { AnyCommand } from "./types"
 import { colors } from "../internals/colors"
 import { boolean } from "./boolean"
 import { help as commandHelp } from "./commands/help"
@@ -15,12 +15,13 @@ const rootOptions = { ...globalOptions, version: boolean().desc("Show the versio
  * # run
  *
  * ```ts
- * function CLI.run(command: AnyCommand, input: { name: string, argv?: string[], encode?: Encode, rpc?: AnyCommand, version?: string }): Promise<void>
+ * function CLI.run(command: AnyCommand, input: { name: string, argv?: string[], rpc?: AnyCommand, version?: string }): Promise<void>
  * ```
  *
  * Runs the program `command` is the root of, named `name`, with `argv` from the command line by
  * default: finds the command, reads its options and calls its action. What the action returns is
- * printed, an `Err` and anything thrown on stderr, with exit code 1.
+ * printed with its `.format()`, an `Ok` on stdout, an `Err` on stderr with exit code 1. Anything it
+ * throws is printed on stderr, with exit code 1.
  *
  * A person at a terminal is asked for the options: all of them when none are given, otherwise the
  * ones that are missing or invalid.
@@ -31,10 +32,9 @@ const rootOptions = { ...globalOptions, version: boolean().desc("Show the versio
  * `--help` anywhere, or a command without an action, prints the help of that command. With a
  * `version`, `--version` after the name of the program prints it.
  *
- * Commands under `rpc` are for programs: they never ask, and print what the action returns, what
- * was wrong with the command or its options, or what it or `encode` threw, on stdout. `encode`
- * turns that `Result` into what is printed, one line of JSON by default:
- * `{ "ok": true, "value": … }` or `{ "ok": false, "value": … }`.
+ * Commands under `rpc` are for programs: they never ask, and print one line of JSON on stdout,
+ * `{ "ok": true, "value": … }` or `{ "ok": false, "value": … }`, with what the action returns, what
+ * was wrong with the command or its options, or what it threw.
  *
  * ## Example
  *
@@ -45,27 +45,24 @@ const rootOptions = { ...globalOptions, version: boolean().desc("Show the versio
  * await CLI.run(miko, { name: "miko", rpc, version: "1.2.0" })
  * ```
  */
-export async function run(command: AnyCommand, input: { argv?: string[], encode?: Encode, name: string, rpc?: AnyCommand, version?: string }): Promise<void> {
+export async function run(command: AnyCommand, input: { argv?: string[], name: string, rpc?: AnyCommand, version?: string }): Promise<void> {
+    write(await output(command, input))
+}
+
+type Output = { exitCode?: number, stderr?: string, stdout?: string }
+
+type Action = (options: never) => Promise<Result<JSONValue, JSONValue>>
+
+async function output(command: AnyCommand, input: { argv?: string[], name: string, rpc?: AnyCommand, version?: string }): Promise<Output> {
     const help = resolveHelp(input.argv ?? process.argv.slice(2))
-    const encode = input.encode ?? ((result) => `${JSON.stringify(result)}\n`)
 
     const isVersion = help.argv.length === 1 && help.argv[0] === "--version"
-    if (input.version !== undefined && isVersion && !help.isHelp) {
-        process.stdout.write(`${input.version}\n`)
-        return
-    }
+    if (input.version !== undefined && isVersion && !help.isHelp) return { stdout: input.version }
 
     const resolved = resolveCommand({ argv: help.argv, command })
     const isRPC = input.rpc !== undefined && [...resolved.parents, resolved.command].includes(input.rpc)
-    if (resolved.error && isRPC) {
-        process.stdout.write(encode(Err(resolved.error)))
-        return
-    }
-    if (resolved.error) {
-        process.exitCode = 1
-        process.stderr.write(`${resolved.message}\n`)
-        return
-    }
+    if (resolved.error && isRPC) return { stdout: JSON.stringify(Err(resolved.error)) }
+    if (resolved.error) return { exitCode: 1, stderr: resolved.message }
 
     const isPicking = human() && !isRPC && !help.isHelp && !resolved.command.config.action && !resolved.argv.length
     const picked = isPicking ? await pickCommand({ command: resolved.command, path: [input.name, ...resolved.path], rpc: input.rpc }) : undefined
@@ -75,59 +72,49 @@ export async function run(command: AnyCommand, input: { argv?: string[], encode?
     if (help.isHelp || !action) {
         const path = [input.name, ...resolved.path]
         const isRoot = !resolved.path.length && input.version !== undefined
-        process.stdout.write(`${commandHelp({ command: resolved.command, globalOptions: isRoot ? rootOptions : globalOptions, path })}\n`)
-        return
+        return { stdout: commandHelp({ command: resolved.command, globalOptions: isRoot ? rootOptions : globalOptions, path }) }
     }
 
-    if (isRPC) {
-        process.stdout.write(await call(action, resolved, encode))
-        return
-    }
+    if (isRPC) return rpcOutput(target, action, resolved.argv)
+    return terminalOutput(target, action, resolved.argv)
+}
 
-    const options = await resolveOptions({ argv: resolved.argv, command: target, prompt: human() })
-    if (options.error) {
-        process.exitCode = 1
-        process.stderr.write(`${options.message}\n`)
-        return
+async function rpcOutput(command: AnyCommand, action: Action, argv: string[]): Promise<Output> {
+    const options = await resolveOptions({ argv, command })
+    if (options.error) return { stdout: JSON.stringify(Err(options.error)) }
+    try {
+        return { stdout: JSON.stringify(await action(options.options as never)) }
     }
+    catch (thrown) {
+        const error = thrown instanceof Error ? thrown : new Error(String(thrown))
+        return { stdout: JSON.stringify(Err({ message: error.message, stack: error.stack, type: "CLIUnhandledExceptionError" })) }
+    }
+}
 
+async function terminalOutput(command: AnyCommand, action: Action, argv: string[]): Promise<Output> {
+    const options = await resolveOptions({ argv, command, prompt: human() })
+    if (options.error) return { exitCode: 1, stderr: options.message }
     try {
         const result = await action(options.options as never)
-        if (!result.ok) process.exitCode = 1
-        if (!result.ok) process.stderr.write(`${colors.red(text(result.value))}\n`)
-        if (result.ok && result.value !== undefined) process.stdout.write(`${text(result.value)}\n`)
+        if (!result.ok) return { exitCode: 1, stderr: command.config.format(result as never) }
+        return { stdout: command.config.format(result as never) }
     }
     catch (thrown) {
-        process.exitCode = 1
-        const error = thrown instanceof Error ? thrown : new Error(String(thrown))
-        const stack = (error.stack || "").split("\n").slice(1).join("\n")
-        if (error.message) {
-            process.stderr.write(colors.red(`${colors.bold(error.name)}: ${error.message}\n`))
-        }
-        else {
-            process.stderr.write(colors.red(`${colors.bold(error.name)}\n`))
-        }
-        if (stack) {
-            process.stderr.write(`${colors.dim(stack)}\n`)
-        }
+        return { exitCode: 1, stderr: thrownText(thrown) }
     }
 }
 
-type Encode = (result: Result<unknown, unknown>) => string | Uint8Array
-
-async function call(action: (options: never) => Promise<Result<unknown, unknown>>, resolved: ResolvedCommand, encode: Encode): Promise<string | Uint8Array> {
-    const options = await resolveOptions({ argv: resolved.argv, command: resolved.command })
-    if (options.error) return encode(Err(options.error))
-    try {
-        return encode(await action(options.options as never))
-    }
-    catch (thrown) {
-        const error = thrown instanceof Error ? thrown : new Error(String(thrown))
-        return encode(Err({ message: error.message, stack: error.stack, type: "CLIUnhandledExceptionError" }))
-    }
+function thrownText(thrown: unknown): string {
+    const error = thrown instanceof Error ? thrown : new Error(String(thrown))
+    const name = colors.bold(error.name)
+    const title = colors.red(error.message ? `${name}: ${error.message}` : name)
+    const stack = (error.stack || "").split("\n").slice(1).join("\n")
+    if (!stack) return title
+    return `${title}\n${colors.dim(stack)}`
 }
 
-function text(value: unknown): string {
-    if (typeof value === "string") return value
-    return Bun.inspect(value, { colors: false })
+function write(output: Output): void {
+    if (output.exitCode) process.exitCode = output.exitCode
+    if (output.stdout) process.stdout.write(`${output.stdout}\n`)
+    if (output.stderr) process.stderr.write(`${output.stderr}\n`)
 }

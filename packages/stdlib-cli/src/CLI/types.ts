@@ -54,27 +54,39 @@ export type CommandOptions = Record<string, CommandOption>
 
 export type Commands = Record<string, AnyCommand>
 
-export interface Command<
-    O extends CommandOptions = Record<never, never>,
-    C extends Commands = Record<never, never>,
-    T = never,
-    E = never,
-    HasAction extends boolean = false,
-> {
-    readonly config: CommandConfig<O, C, T, E, HasAction>
+export interface Command<O extends CommandOptions = Record<never, never>, C extends Commands = Record<never, never>> {
+    readonly config: CommandConfig<O, C>
     readonly kind: "command"
-    action: <R extends Result<unknown, unknown> | void>(action: (options: InferOptions<O>) => R | Promise<R>) => Command<O, C, ActionValue<R>, ActionError<R>, true>
-    commands: <const C extends Commands>(commands: C) => Command<O, C, T, E, HasAction>
-    desc: (desc: string) => Command<O, C, T, E, HasAction>
-    option: <const N extends string, X extends CommandOption>(name: N, option: X) => Command<MergeOptions<O, Record<N, X>>, C, never, never, false>
-    options: <const P extends CommandOptions>(options: P) => Command<MergeOptions<O, P>, C, never, never, false>
+    action: <R extends Result<JSONValue, JSONValue> | void>(action: (options: InferOptions<O>) => R | Promise<R>) => ActionCommand<O, C, ActionValue<R>, ActionError<R>>
+    commands: <const C extends Commands>(commands: C) => Command<O, C>
+    desc: (desc: string) => Command<O, C>
+    format: (format: (result: Result<JSONValue, JSONValue>) => string) => Command<O, C>
+    option: <const N extends string, X extends CommandOption>(name: N, option: X) => Command<MergeOptions<O, Record<N, X>>, C>
+    options: <const P extends CommandOptions>(options: P) => Command<MergeOptions<O, P>, C>
 }
 
-export interface CommandConfig<O extends CommandOptions, C extends Commands, T, E, HasAction extends boolean> {
-    action: HasAction extends true ? (options: InferOptions<O>) => Promise<Result<T, E>> : undefined
+export interface CommandConfig<O extends CommandOptions, C extends Commands> {
+    action: undefined
     commands: C
     desc?: string
     options: O
+    format: (result: Result<JSONValue, JSONValue>) => string
+}
+
+export interface ActionCommand<O extends CommandOptions, C extends Commands, T extends JSONValue, E extends JSONValue> {
+    readonly config: ActionCommandConfig<O, C, T, E>
+    readonly kind: "command"
+    commands: <const C extends Commands>(commands: C) => ActionCommand<O, C, T, E>
+    desc: (desc: string) => ActionCommand<O, C, T, E>
+    format: (format: (result: Result<T, E>) => string) => ActionCommand<O, C, T, E>
+}
+
+export interface ActionCommandConfig<O extends CommandOptions, C extends Commands, T extends JSONValue, E extends JSONValue> {
+    commands: C
+    desc?: string
+    options: O
+    action: (options: InferOptions<O>) => Promise<Result<T, E>>
+    format: (result: Result<T, E>) => string
 }
 
 /**
@@ -82,16 +94,17 @@ export interface CommandConfig<O extends CommandOptions, C extends Commands, T, 
  */
 export type MergeOptions<A, B> = Omit<A, keyof B> & B
 
-export type ActionValue<R> = InferOk<Exclude<R, void>> | (undefined extends R ? void : never)
+export type ActionValue<R> = InferOk<Exclude<R, void>> | (undefined extends R ? null : never)
 export type ActionError<R> = InferErr<Exclude<R, void>>
 
 export interface AnyCommand {
     kind: "command"
     config: {
-        action: ((options: never) => Promise<Result<unknown, unknown>>) | undefined
+        action: ((options: never) => Promise<Result<JSONValue, JSONValue>>) | undefined
         commands: Commands
         desc?: string
         options: CommandOptions
+        format: (result: never) => string
     }
 }
 

@@ -2,19 +2,14 @@ import { describe, expect, it } from "bun:test"
 import { CLI } from "../../src"
 
 describe("CLI.command", () => {
-    it("should return Ok when the action returns nothing", async () => {
+    it("should return Ok(null) when the action returns nothing", async () => {
         const command = CLI.command().action(() => {})
-        expect(await command.config.action({})).toEqual(Ok(undefined))
+        expect(await command.config.action({})).toEqual(Ok(null))
     })
 
     it("should return what the action returns, also when it is async", async () => {
         const command = CLI.command().action(async () => Err("Nope"))
         expect(await command.config.action({})).toEqual(Err("Nope"))
-    })
-
-    it("should forget the action when the options change", () => {
-        const command = CLI.command().action(() => {}).options({ email: CLI.string() })
-        expect(command.config.action).toBeUndefined()
     })
 
     it("should add options after the ones that are there, and replace those of the same name in place", () => {
@@ -27,9 +22,14 @@ describe("CLI.command", () => {
         expect(command.config.options.email.config.optional).toBe(true)
     })
 
-    it("should forget the action when an option is added", () => {
-        const command = CLI.command().action(() => {}).option("email", CLI.string())
-        expect(command.config.action).toBeUndefined()
+    it("should have no action, option or options after the action", () => {
+        const command = CLI.command().action(() => {})
+        expect(Object.keys(command)).toEqual(["config", "kind", "commands", "desc", "format"])
+    })
+
+    it("should keep the format when the action is added", () => {
+        const format = () => "Done"
+        expect(CLI.command().format(format).action(() => {}).config.format).toBe(format)
     })
 
     it("should return a new command each time, leaving the one it was made from as it is", () => {

@@ -8,14 +8,18 @@ const add = CLI
     .action(({ email }) => {
         if (email === "taken@miko.dev") return Err("This email is already a member")
         if (email === "crash@miko.dev") throw new Error("Database went away")
-        if (email === "big@miko.dev") return Ok(10n)
         if (email === "quiet@miko.dev") return
         return Ok({ email })
     })
 const members = CLI.command().desc("Manage who has access").commands({ add })
 const serve = CLI.command().desc("Start the server").action(() => Ok("Listening"))
+const status = CLI
+    .command()
+    .format((result) => `${result.ok ? "ok" : "err"} ${String(result.value)}`)
+    .action(() => Ok({ up: true }))
+    .format((result) => result.ok ? `Up: ${result.value.up}` : "Down")
 const rpc = CLI.command().desc("For programs, prints JSON").commands({ members, serve })
-const miko = CLI.command().desc("Everything miko").commands({ members, rpc, serve })
+const miko = CLI.command().desc("Everything miko").commands({ members, rpc, serve, status })
 
 let stdout = ""
 let stderr = ""
@@ -42,8 +46,8 @@ afterEach(() => {
     process.exitCode = 0
 })
 
-function run(line: string, encode?: (result: Result<unknown, unknown>) => string): Promise<void> {
-    return CLI.run(miko, { argv: line.split(" "), encode, name: "miko", rpc, version: "1.2.0" })
+function run(line: string): Promise<void> {
+    return CLI.run(miko, { argv: line.split(" "), name: "miko", rpc, version: "1.2.0" })
 }
 
 describe("CLI.run", () => {
@@ -54,6 +58,11 @@ describe("CLI.run", () => {
         expect(stdout).toBe('Listening\n{\n  email: "a@b.c",\n}\n')
         expect(stderr).toBe("")
         expect(process.exitCode).toBe(0)
+    })
+
+    it("should print with the last format", async () => {
+        await run("status")
+        expect(stdout).toBe("Up: true\n")
     })
 
     it("should print nothing when the action returns nothing", async () => {
@@ -145,16 +154,9 @@ describe("CLI.run", () => {
             expect(result.value.stack).toStartWith("Error: Database went away\n")
         })
 
-        it("should print what encode throws as JSON", async () => {
-            await run("rpc members add --email big@miko.dev")
-            const result = JSON.parse(stdout)
-            expect(result.value.type).toBe("CLIUnhandledExceptionError")
-            expect(result.value.message).toContain("BigInt")
-        })
-
-        it("should print with encode", async () => {
-            await run("rpc serve", (result) => `${result.ok ? "ok" : "err"} ${String(result.value)}\n`)
-            expect(stdout).toBe("ok Listening\n")
+        it("should print null when the action returns nothing", async () => {
+            await run("rpc members add --email quiet@miko.dev")
+            expect(stdout).toBe('{"value":null,"ok":true}\n')
         })
 
         it("should print the help for --help, and for commands without an action", async () => {

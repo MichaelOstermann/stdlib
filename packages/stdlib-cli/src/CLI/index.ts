@@ -29,6 +29,8 @@ export type { Key } from "./terminal/onKey"
 export type { PromptOptions, PromptSlot } from "./terminal/prompt"
 export type { SelectOptions, SelectSlot } from "./terminal/select"
 export type {
+    ActionCommand,
+    ActionCommandConfig,
     AnyCommand,
     BooleanOption,
     BooleanOptionConfig,

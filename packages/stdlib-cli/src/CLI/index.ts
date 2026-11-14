@@ -13,6 +13,7 @@ import { resolve as resolveHelp } from "./help/resolve"
 import { help as optionsHelp } from "./options/help"
 import { resolve as resolveOptions } from "./options/resolve"
 import { run } from "./run"
+import { show } from "./show"
 import { string } from "./string"
 import { confirm } from "./terminal/confirm"
 import { input } from "./terminal/input"
@@ -23,6 +24,7 @@ import { select } from "./terminal/select"
 
 export type { Colors } from "../internals/colors"
 export type { PickedCommand } from "./commands/pick"
+export type { ShowOptions } from "./show"
 export type { ConfirmOptions, ConfirmSlot } from "./terminal/confirm"
 export type { Input } from "./terminal/input"
 export type { Key } from "./terminal/onKey"
@@ -69,6 +71,7 @@ export const CLI = {
     help: { resolve: resolveHelp },
     options: { help: optionsHelp, resolve: resolveOptions },
     run,
+    show,
     string,
     terminal: { confirm, input, onKey, prompt, render, select },
 }

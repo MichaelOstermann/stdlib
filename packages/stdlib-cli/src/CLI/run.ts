@@ -1,5 +1,4 @@
 import type { AnyCommand } from "./types"
-import { colors } from "../internals/colors"
 import { boolean } from "./boolean"
 import { help as commandHelp } from "./commands/help"
 import { pick as pickCommand } from "./commands/pick"
@@ -7,6 +6,7 @@ import { resolve as resolveCommand } from "./commands/resolve"
 import { human } from "./env/human"
 import { resolve as resolveHelp } from "./help/resolve"
 import { resolve as resolveOptions } from "./options/resolve"
+import { show } from "./show"
 
 const globalOptions = { help: boolean().desc("Show this help") }
 const rootOptions = { ...globalOptions, version: boolean().desc("Show the version") }
@@ -21,7 +21,7 @@ const rootOptions = { ...globalOptions, version: boolean().desc("Show the versio
  * Runs the program `command` is the root of, named `name`, with `argv` from the command line by
  * default: finds the command, reads its options and calls its action. What the action returns is
  * printed with its `.format()`, an `Ok` on stdout, an `Err` on stderr with exit code 1. Anything it
- * throws is printed on stderr, with exit code 1.
+ * throws is printed on stderr with `CLI.show`, with exit code 1.
  *
  * A person at a terminal is asked for the options: all of them when none are given, otherwise the
  * ones that are missing or invalid.
@@ -100,17 +100,8 @@ async function terminalOutput(command: AnyCommand, action: Action, argv: string[
         return { stdout: command.config.format(result as never) }
     }
     catch (thrown) {
-        return { exitCode: 1, stderr: thrownText(thrown) }
+        return { exitCode: 1, stderr: show(Error.from(thrown)) }
     }
-}
-
-function thrownText(thrown: unknown): string {
-    const error = thrown instanceof Error ? thrown : new Error(String(thrown))
-    const name = colors.bold(error.name)
-    const title = colors.red(error.message ? `${name}: ${error.message}` : name)
-    const stack = (error.stack || "").split("\n").slice(1).join("\n")
-    if (!stack) return title
-    return `${title}\n${colors.dim(stack)}`
 }
 
 function write(output: Output): void {

@@ -55,7 +55,7 @@ describe("CLI.run", () => {
         await run("serve")
         expect(stdout).toBe("Listening\n")
         await run("members add --email a@b.c")
-        expect(stdout).toBe('Listening\n{\n  email: "a@b.c",\n}\n')
+        expect(stdout).toBe("Listening\nemail: a@b.c\n")
         expect(stderr).toBe("")
         expect(process.exitCode).toBe(0)
     })
@@ -74,13 +74,13 @@ describe("CLI.run", () => {
     it("should print an Err on stderr, with exit code 1", async () => {
         await run("members add --email taken@miko.dev")
         expect(stdout).toBe("")
-        expect(Bun.stripANSI(stderr)).toBe("This email is already a member\n")
+        expect(Bun.stripANSI(stderr)).toBe("Error: This email is already a member\n")
         expect(process.exitCode).toBe(1)
     })
 
     it("should print what the action throws on stderr, with exit code 1", async () => {
         await run("members add --email crash@miko.dev")
-        expect(Bun.stripANSI(stderr)).toStartWith("Error: Database went away\n    at ")
+        expect(Bun.stripANSI(stderr)).toBe("Error: Database went away\n")
         expect(process.exitCode).toBe(1)
     })
 

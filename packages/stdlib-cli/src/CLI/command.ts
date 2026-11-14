@@ -1,5 +1,5 @@
 import type { ActionCommand, ActionCommandConfig, ActionError, ActionValue, Command, CommandConfig, CommandOption, CommandOptions, Commands, InferOptions, MergeOptions } from "./types"
-import { format } from "../internals/format"
+import { show } from "./show"
 
 /**
  * # command
@@ -41,7 +41,13 @@ import { format } from "../internals/format"
  * ```
  */
 export function command(): Command {
-    return build({ action: undefined, commands: {}, format, options: {} })
+    return build({ action: undefined, commands: {}, format: showResult, options: {} })
+}
+
+function showResult(result: Result<JSONValue, JSONValue>): string {
+    if (result.value === null) return ""
+    if (!result.ok) return show(Error.from(result.value))
+    return show(result.value)
 }
 
 function build<O extends CommandOptions, C extends Commands>(config: CommandConfig<O, C>): Command<O, C> {

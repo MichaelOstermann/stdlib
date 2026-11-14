@@ -46,6 +46,7 @@ import { mod as Math_mod } from "./Math/mod"
 import { roundTo as Math_roundTo } from "./Math/roundTo"
 import { defaults as Object_defaults } from "./Object/defaults"
 import { indexBy as Object_indexBy } from "./Object/indexBy"
+import { isPlainObject as Object_isPlainObject } from "./Object/isPlainObject"
 import { isShallowEqual as Object_isShallowEqual } from "./Object/isShallowEqual"
 import { merge as Object_merge } from "./Object/merge"
 import { omit as Object_omit } from "./Object/omit"
@@ -160,6 +161,7 @@ define(Math, "Math", {
 define(Object, "Object", {
     defaults: Object_defaults,
     indexBy: Object_indexBy,
+    isPlainObject: Object_isPlainObject,
     isShallowEqual: Object_isShallowEqual,
     merge: Object_merge,
     omit: Object_omit,

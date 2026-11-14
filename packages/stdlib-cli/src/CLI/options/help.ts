@@ -53,7 +53,7 @@ function row(name: string, option: CommandOption): [string, string] {
         notes.push(`options: ${Object.keys(option.config.options).join(", ")}`)
     }
 
-    const note = notes.length ? colors.dim(`(${notes.join(", ").trim()})`) : ""
+    const note = notes.length ? colors.dim(`(${notes.join(", ")})`) : ""
     return [flag, `${desc} ${note}`.trim()]
 }
 

@@ -19,8 +19,9 @@ type Given =
  * function CLI.options.resolve<C extends AnyCommand>(input: { argv: string[], command: C, prompt?: boolean }): Promise<ResolvedOptions<C>>
  * ```
  *
- * Reads the options of `command` from `argv`: `--first-name John`, `--first-name=John`, and for
- * booleans `--force`, `--no-force` and `--force=false`. The last one given wins.
+ * Reads the options of `command` from `argv`: `--first-name John`, `--first-name=John`, an empty
+ * `--first-name=`, and for booleans `--force`, `--no-force` and `--force=false`. The last one given
+ * wins.
  *
  * When something is missing, invalid or unknown, returns `error` with every problem, and `message`
  * to show for them with the options they are about.
@@ -66,11 +67,11 @@ export async function resolve<C extends AnyCommand>(input: { argv: string[], com
         if (name === undefined) {
             errors.push({ input: flag, type: "CLIUnknownOptionError" })
             const next = input.argv[index + 1]
-            if (inline === undefined && next !== undefined && !next.startsWith("-")) index++
+            if (inline === undefined && next !== undefined && !next.startsWith("--")) index++
             continue
         }
         if (inline !== undefined) {
-            given.set(name, inline === "" ? { type: "empty" } : { type: "value", value: inline })
+            given.set(name, { type: "value", value: inline })
             continue
         }
         const next = input.argv[index + 1]

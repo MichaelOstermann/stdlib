@@ -55,9 +55,10 @@ export function confirm(options: ConfirmOptions): Promise<boolean> {
                 process.exit(130)
             }
             if (key.name === "ArrowLeft" || key.name === "ArrowRight" || key.name === "Tab") $value(!$value())
-            if (key.name === "y" || key.name === "Y") $value(true)
-            if (key.name === "n" || key.name === "N") $value(false)
-            if (key.name !== "Enter" && key.name.toLowerCase() !== "y" && key.name.toLowerCase() !== "n") return
+            const letter = key.text.toLowerCase()
+            if (letter === "y") $value(true)
+            if (letter === "n") $value(false)
+            if (key.name !== "Enter" && letter !== "y" && letter !== "n") return
             stopKeys()
             stopRender()
             resolve($value())

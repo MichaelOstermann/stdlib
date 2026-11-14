@@ -91,7 +91,11 @@ describe("CLI.options.resolve", () => {
     it("should report missing options and values", async () => {
         expect((await resolve("")).error?.errors).toEqual([{ option: "email", type: "CLIMissingOptionError" }])
         expect((await resolve("--email")).error?.errors).toEqual([{ option: "email", type: "CLIMissingValueError" }])
-        expect((await resolve("--email=")).error?.errors).toEqual([{ option: "email", type: "CLIMissingValueError" }])
+    })
+
+    it("should read = without anything after it as an empty value", async () => {
+        expect((await resolve("--email=")).options?.email).toBe("")
+        expect((await resolve("--email=a@b.c --first-name=")).options?.firstName).toBe("")
     })
 
     it("should report unknown flags, which take the next word unless it is a flag", async () => {

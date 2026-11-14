@@ -46,9 +46,10 @@ export function prompt(name: string, option: CommandOption, initial: string | un
         footer: (text, done) => done ? undefined : text.$error() && colors.red(text.$error()!),
         prefix: (_, done) => done ? `${colors.blue(label)}: ` : `${colors.magenta(label)}: `,
         parse: async (value: string): Promise<Result<unknown, string>> => {
-            if (value === "" && config.optional) return Ok(undefined)
-            if (value === "") return Err("Required")
-            const parsed = await Parse.value(config.parse, value)
+            const typed = value === "" ? config.default : value
+            if (typed === undefined && config.optional) return Ok(undefined)
+            if (typed === undefined) return Err("Required")
+            const parsed = await Parse.value(config.parse, typed)
             if (parsed.ok) return Ok(parsed.value)
             return Err(parsed.value.join("\n"))
         },

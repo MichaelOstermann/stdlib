@@ -15,7 +15,7 @@ const rootOptions = { ...globalOptions, version: boolean().desc("Show the versio
  * # run
  *
  * ```ts
- * function CLI.run(command: AnyCommand, input: { name: string, argv?: string[], prompt?: boolean, rpc?: AnyCommand, version?: string }): Promise<void>
+ * function CLI.run(command: AnyCommand, input: { name: string, argv?: string[], prompt?: false, rpc?: AnyCommand, version?: string }): Promise<void>
  * ```
  *
  * Runs the program `command` is the root of, named `name`, with `argv` from the command line by
@@ -29,7 +29,7 @@ const rootOptions = { ...globalOptions, version: boolean().desc("Show the versio
  * A person at a terminal who runs a command without an action, like the program itself, picks one
  * of the commands below it.
  *
- * `prompt: false` turns asking and picking off, they are on for `CLI.env.human()` by default.
+ * Asking and picking only happen for `CLI.env.human()`, and `prompt: false` turns them off.
  *
  * `--help` anywhere, or a command without an action, prints the help of that command. With a
  * `version`, `--version` after the name of the program prints it.
@@ -47,7 +47,7 @@ const rootOptions = { ...globalOptions, version: boolean().desc("Show the versio
  * await CLI.run(miko, { name: "miko", rpc, version: "1.2.0" })
  * ```
  */
-export async function run(command: AnyCommand, input: { argv?: string[], name: string, prompt?: boolean, rpc?: AnyCommand, version?: string }): Promise<void> {
+export async function run(command: AnyCommand, input: { argv?: string[], name: string, prompt?: false, rpc?: AnyCommand, version?: string }): Promise<void> {
     write(await output(command, input))
 }
 
@@ -58,11 +58,11 @@ type Action = NonNullable<AnyCommand["config"]["action"]>
 async function output(command: AnyCommand, input: {
     argv?: string[]
     name: string
-    prompt?: boolean
+    prompt?: false
     rpc?: AnyCommand
     version?: string
 }): Promise<Output> {
-    const prompt = input.prompt ?? human()
+    const prompt = input.prompt !== false && human()
     const help = resolveHelp(input.argv ?? process.argv.slice(2))
 
     const isVersion = help.argv.length === 1 && help.argv[0] === "--version"

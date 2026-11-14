@@ -1,38 +1,44 @@
-/* eslint-disable no-console */
-import type { I18nDiagnostic } from "./types"
+import type { I18nDiagnostic, I18nResult } from "./types"
 import { CLI } from "@monstermann/stdlib-cli"
 import { compile } from "./compile"
 
-await CLI.run(CLI.command({
-    desc: "Compiles YAML files with ICU messages into TypeScript",
-    name: "stdlib-i18n",
-    options: {
-        // Words are paths or globs, the shell may have expanded them already.
-        messages: { desc: "Globs of the YAML files", example: "'i18n/*.yaml'", parse: (value) => value.split(/\s+/) },
-        output: { desc: "The folder to generate the messages in", example: "app/i18n" },
-    },
-    async handler({ messages, output }) {
-        const { errors, output: result, warnings } = await compile({ messages, output }, process.cwd())
+const program = CLI
+    .command()
+    .desc("Compiles YAML files with ICU messages into TypeScript")
+    .option("messages", CLI
+        .string()
+        .desc("Globs of the YAML files")
+        .example("i18n/*.yaml")
+        .parse((value) => Ok(value.split(/\s+/))))
+    .option("output", CLI
+        .string()
+        .desc("The folder to generate the messages in")
+        .example("app/i18n"))
+    .action(async ({ messages, output }) => {
+        const result = await compile({ messages, output }, process.cwd())
+        if (result.errors.length) return Err(report(result))
+        return Ok(report(result))
+    })
+    .format((result) => result.value)
 
-        for (const error of errors) console.log(`${CLI.red(location(error))} ${error.message}`)
-        for (const warning of warnings) console.log(`${CLI.yellow(location(warning))} ${warning.message}`)
-        if (errors.length || warnings.length) console.log()
+await CLI.run(program, { name: "stdlib-i18n" })
 
-        if (result) {
-            if (result.written) console.log(`${CLI.green(result.path)} ${count(result.messages, "message")}`)
-            else console.log(CLI.dim(`${result.path} ${count(result.messages, "message")}, unchanged`))
-        }
+function report({ errors, output, warnings }: I18nResult): string {
+    const lines = [
+        ...errors.map((error) => `${CLI.red(location(error))} ${error.message}`),
+        ...warnings.map((warning) => `${CLI.yellow(location(warning))} ${warning.message}`),
+    ]
+    if (lines.length) lines.push("")
 
-        if (errors.length) {
-            const counts = [count(errors.length, "error"), ...warnings.length ? [count(warnings.length, "warning")] : []]
-            console.log(CLI.red(`${counts.join(", ")}, nothing written`))
-            process.exitCode = 1
-            return
-        }
+    if (output?.written) lines.push(`${CLI.green(output.path)} ${count(output.messages, "message")}`)
+    if (output && !output.written) lines.push(CLI.dim(`${output.path} ${count(output.messages, "message")}, unchanged`))
 
-        if (warnings.length) console.log(CLI.yellow(count(warnings.length, "warning")))
-    },
-}))
+    const counts = [count(errors.length, "error"), ...warnings.length ? [count(warnings.length, "warning")] : []]
+    if (errors.length) lines.push(CLI.red(`${counts.join(", ")}, nothing written`))
+    if (!errors.length && warnings.length) lines.push(CLI.yellow(count(warnings.length, "warning")))
+
+    return lines.join("\n")
+}
 
 // `i18n/auth.yaml:3:5:`, which terminals and editors can jump to.
 function location({ column, line, path }: I18nDiagnostic): string {

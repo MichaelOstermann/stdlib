@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test"
+import { describe, expect, expectTypeOf, it } from "bun:test"
 import { from } from "../../src/Error/from"
 
 describe("Error.from", () => {
@@ -9,12 +9,33 @@ describe("Error.from", () => {
         expect(error.message).toBe("Nope")
     })
 
-    it("should fill in a missing name and message", () => {
-        const error = new Error("x")
+    it("should fill in a missing name and message in a copy", () => {
+        const error = new TypeError("x")
         error.name = ""
-        Object.assign(error, { message: 3 })
-        expect(from(error).name).toBe("Error")
-        expect(from(error).message).toBe("")
+        Object.assign(error, { code: 3, message: 3 })
+        const fixed = from(error) as TypeError & { code: number }
+        expect(fixed).not.toBe(error)
+        expect(fixed).toBeInstanceOf(TypeError)
+        expect(fixed.name).toBe("TypeError")
+        expect(fixed.message).toBe("")
+        expect(fixed.code).toBe(3)
+        expect(error.name).toBe("")
+    })
+
+    it("should not change the error it is given", () => {
+        const error = new Error("x", { cause: "y" })
+        const fixed = from(error)
+        expect(error.cause).toBe("y")
+        expect(fixed.cause).toBeInstanceOf(Error)
+        expect((fixed.cause as Error).message).toBe("y")
+        expect(fixed.message).toBe("x")
+        expect(fixed.stack).toBe(error.stack)
+    })
+
+    it("should keep the type of an error, anything else is an Error", () => {
+        expectTypeOf(from(new TypeError("x"))).toEqualTypeOf<TypeError>()
+        expectTypeOf(from("x" as unknown)).toEqualTypeOf<Error>()
+        expectTypeOf(from("x" as RangeError | string)).toEqualTypeOf<RangeError | Error>()
     })
 
     it("should turn anything else into the message", () => {
@@ -61,7 +82,9 @@ describe("Error.from", () => {
         expect(from(hostile) instanceof Error).toBe(true)
         const nameless = new Error("x")
         Object.defineProperty(nameless, "name", { get: () => { throw new Error("nope") } })
-        expect(from(nameless) === nameless).toBe(true)
+        const named = from(nameless)
+        expect(named === nameless).toBe(false)
+        expect(named.name).toBe("Error")
         expect(from(Object.freeze(new Error("frozen"))).message).toBe("frozen")
     })
 })

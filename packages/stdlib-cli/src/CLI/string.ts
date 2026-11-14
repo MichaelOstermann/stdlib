@@ -10,6 +10,9 @@ import type { StringOption, StringOptionConfig } from "./types"
  * An option that takes text: `--first-name John` or `--first-name=John`. Each call returns a new
  * option, so one can be the base of others.
  *
+ * `.default()` with `undefined` keeps the option as it is, so it can take an environment variable
+ * that may not be set.
+ *
  * ## Example
  *
  * ```ts
@@ -17,6 +20,10 @@ import type { StringOption, StringOptionConfig } from "./types"
  *     .desc("How many seats they get")
  *     .default("1")
  *     .parse((value) => Number.isInteger(Number(value)) ? Ok(Number(value)) : Err("Must be a whole number"))
+ *
+ * const password = CLI.string()
+ *     .desc("Your password")
+ *     .default(process.env.MIKO_PASSWORD)
  * ```
  */
 export function string(): StringOption {
@@ -27,7 +34,7 @@ function build<T, Optional extends boolean, Defaulted extends boolean>(config: S
     return {
         config,
         kind: "string",
-        default: (value) => build({ ...config, default: value }),
+        default: (value: string | undefined) => build({ ...config, default: value ?? config.default }),
         desc: (desc) => build({ ...config, desc }),
         example: (example) => build({ ...config, example }),
         optional: (optional) => build({ ...config, optional }),

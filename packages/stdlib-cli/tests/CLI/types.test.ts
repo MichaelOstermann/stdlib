@@ -81,6 +81,12 @@ describe("InferRPC", () => {
         expectTypeOf<keyof RPC["serve"]>().toEqualTypeOf<"status">()
     })
 
+    it("should only count a default that is not undefined", () => {
+        const env: string | undefined = process.env["MIKO_PASSWORD"]
+        const command = CLI.command().options({ kept: CLI.string().default("1").default(env), password: CLI.string().default(env) }).action(() => {})
+        expectTypeOf<Parameters<InferRPC<typeof command>>[0]>().toEqualTypeOf<{ kept?: string, password: string }>()
+    })
+
     it("should take the options as they are typed, optional when they fall back to something", () => {
         expectTypeOf<Parameters<RPC["members"]["add"]>[0]>().toEqualTypeOf<{
             email: string

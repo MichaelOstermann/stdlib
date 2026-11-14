@@ -4,7 +4,10 @@ import type { Parse } from "../internals/Parse"
 export interface StringOption<T = string, Optional extends boolean = false, Defaulted extends boolean = false> {
     readonly config: StringOptionConfig<T>
     readonly kind: "string"
-    default: (value: string) => StringOption<T, Optional, true>
+    default: {
+        (value: string): StringOption<T, Optional, true>
+        (value: string | undefined): StringOption<T, Optional, Defaulted>
+    }
     desc: (desc: string) => StringOption<T, Optional, Defaulted>
     example: (example: string) => StringOption<T, Optional, Defaulted>
     optional: <O extends boolean>(optional: O) => StringOption<T, O, Defaulted>

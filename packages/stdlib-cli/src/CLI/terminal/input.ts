@@ -29,12 +29,15 @@ const words = new Intl.Segmenter(undefined, { granularity: "word" })
  * # input
  *
  * ```ts
- * function CLI.terminal.input(): Input
+ * function CLI.terminal.input(options?: { mask?: string }): Input
  * ```
  *
  * A line of text that can be edited, with a cursor. It does not listen to keys: call its methods
  * from `CLI.terminal.onKey`, and draw it in `CLI.terminal.render`. When the value is wider than the
  * room it gets, it scrolls to keep the cursor in view.
+ *
+ * With a `mask`, each character is drawn as the mask, like `*` for a password, and moving or
+ * deleting by word goes to the start or end. An empty mask draws nothing at all.
  *
  * ## Example
  *
@@ -50,7 +53,8 @@ const words = new Intl.Segmenter(undefined, { granularity: "word" })
  * });
  * ```
  */
-export function input(): Input {
+export function input(options: { mask?: string } = {}): Input {
+    const mask = options.mask
     const $value = Signal("")
     const $cursor = Signal(0)
     const $error = Signal<string | undefined>(undefined)
@@ -67,8 +71,8 @@ export function input(): Input {
     }
 
     const draw = (width: number): string => {
-        const value = $value()
-        const cursor = Math.min($cursor(), value.length)
+        const value = mask === undefined ? $value() : masked($value(), mask)
+        const cursor = mask === undefined ? Math.min($cursor(), value.length) : masked($value().slice(0, $cursor()), mask).length
         const at = value.slice(cursor, nextChar(value, cursor)) || " "
         // Behind the last character there has to be room for the cursor.
         if (cursor < scroll) scroll = cursor
@@ -83,14 +87,14 @@ export function input(): Input {
         $error,
         $value,
         deleteNextChar: () => edit($cursor(), nextChar($value(), $cursor()), ""),
-        deleteNextWord: () => edit($cursor(), nextWordEnd($value(), $cursor()), ""),
+        deleteNextWord: () => edit($cursor(), mask === undefined ? nextWordEnd($value(), $cursor()) : $value().length, ""),
         deletePrevChar: () => edit(prevChar($value(), $cursor()), $cursor(), ""),
-        deletePrevWord: () => edit(prevWordStart($value(), $cursor()), $cursor(), ""),
+        deletePrevWord: () => edit(mask === undefined ? prevWordStart($value(), $cursor()) : 0, $cursor(), ""),
         goToEnd: () => $cursor($value().length),
         goToNextChar: () => $cursor(nextChar($value(), $cursor())),
-        goToNextWord: () => $cursor(nextWordEnd($value(), $cursor())),
+        goToNextWord: () => $cursor(mask === undefined ? nextWordEnd($value(), $cursor()) : $value().length),
         goToPrevChar: () => $cursor(prevChar($value(), $cursor())),
-        goToPrevWord: () => $cursor(prevWordStart($value(), $cursor())),
+        goToPrevWord: () => $cursor(mask === undefined ? prevWordStart($value(), $cursor()) : 0),
         goToStart: () => $cursor(0),
         insertText: (text: string) => edit($cursor(), $cursor(), text.replaceAll(/\r\n|[\r\n]/g, " ")),
         clear: () => batch(() => {
@@ -112,6 +116,10 @@ export function input(): Input {
             return true
         },
     })
+}
+
+function masked(value: string, mask: string): string {
+    return mask.repeat([...graphemes.segment(value)].length)
 }
 
 function prevChar(value: string, index: number): number {

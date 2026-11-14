@@ -11,6 +11,8 @@ export interface PromptOptions {
     header?: PromptSlot
     /** The value it starts with. */
     initial?: string
+    /** Drawn for each character instead of it, like `*` for a password. */
+    mask?: string
     /** Shown dimmed while there is no value. */
     placeholder?: string
     prefix?: PromptSlot
@@ -48,7 +50,7 @@ export function prompt(options: PromptOptions): Promise<string>
 export function prompt<T>(options: PromptOptions & { parse: Parse<T> }): Promise<T>
 export function prompt(options: PromptOptions & { parse?: Parse<unknown> }): Promise<unknown> {
     const parse = options.parse ?? ((value: string) => Ok(value))
-    const text = input()
+    const text = input({ mask: options.mask })
     if (options.initial) text.insertText(options.initial)
 
     const check = async (value: string): Promise<Result<unknown, string[]>> => {

@@ -34,6 +34,11 @@ describe("CLI.options.help", () => {
         expect(help("it's $HOME")).toBe("Options:\n  --name  (example: 'it'\\''s $HOME')")
     })
 
+    it("should not show the default of a sensitive option, only that it can be left out", () => {
+        const help = CLI.options.help({ password: CLI.string().desc("Your password").default("hunter2").sensitive(true) })
+        expect(Bun.stripANSI(help)).toBe("Options:\n  --password  Your password (optional)")
+    })
+
     it("should be empty without options", () => {
         expect(CLI.options.help({})).toBe("")
     })

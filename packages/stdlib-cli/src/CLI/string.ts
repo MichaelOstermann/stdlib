@@ -13,6 +13,9 @@ import type { StringOption, StringOptionConfig } from "./types"
  * `.default()` with `undefined` keeps the option as it is, so it can take an environment variable
  * that may not be set.
  *
+ * `.sensitive(true)` is for passwords and the like: the value is masked while it is typed, and the
+ * help does not show the default.
+ *
  * ## Example
  *
  * ```ts
@@ -24,10 +27,11 @@ import type { StringOption, StringOptionConfig } from "./types"
  * const password = CLI.string()
  *     .desc("Your password")
  *     .default(process.env.MIKO_PASSWORD)
+ *     .sensitive(true)
  * ```
  */
 export function string(): StringOption {
-    return build({ optional: false, parse: (value) => Ok(value) })
+    return build({ optional: false, sensitive: false, parse: (value) => Ok(value) })
 }
 
 function build<T, Optional extends boolean, Defaulted extends boolean>(config: StringOptionConfig<T>): StringOption<T, Optional, Defaulted> {
@@ -39,5 +43,6 @@ function build<T, Optional extends boolean, Defaulted extends boolean>(config: S
         example: (example) => build({ ...config, example }),
         optional: (optional) => build({ ...config, optional }),
         parse: (parse) => build({ ...config, parse }),
+        sensitive: (sensitive) => build({ ...config, sensitive }),
     }
 }

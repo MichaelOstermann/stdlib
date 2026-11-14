@@ -12,6 +12,7 @@ export interface StringOption<T = string, Optional extends boolean = false, Defa
     example: (example: string) => StringOption<T, Optional, Defaulted>
     optional: <O extends boolean>(optional: O) => StringOption<T, O, Defaulted>
     parse: <U>(parse: Parse<U>) => StringOption<U, Optional, Defaulted>
+    sensitive: (sensitive: boolean) => StringOption<T, Optional, Defaulted>
 }
 
 export interface StringOptionConfig<T> {
@@ -20,6 +21,7 @@ export interface StringOptionConfig<T> {
     example?: string
     optional: boolean
     parse: Parse<T>
+    sensitive: boolean
 }
 
 export interface BooleanOption {

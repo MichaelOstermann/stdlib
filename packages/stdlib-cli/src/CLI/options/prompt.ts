@@ -41,6 +41,7 @@ export function prompt(name: string, option: CommandOption, initial: string | un
     const config = option.config
     return promptText({
         initial: initial ?? config.default,
+        mask: config.sensitive ? "*" : undefined,
         placeholder: parts([option.config.desc, config.example ? `(Example: ${config.example})` : ""]),
         footer: (text, done) => done ? undefined : text.$error() && colors.red(text.$error()!),
         prefix: (_, done) => done ? `${colors.blue(label)}: ` : `${colors.magenta(label)}: `,

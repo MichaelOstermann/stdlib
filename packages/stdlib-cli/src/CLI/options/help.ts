@@ -40,10 +40,12 @@ function row(name: string, option: CommandOption): [string, string] {
         notes.push(`example: ${example(option.config.example)}`)
     }
 
-    if (option.config.default !== undefined) {
+    const isSensitive = option.kind === "string" && option.config.sensitive
+
+    if (option.config.default !== undefined && !isSensitive) {
         notes.push(`default: ${option.config.default}`)
     }
-    else if (option.kind === "string" && option.config.optional) {
+    else if (option.kind === "string" && (option.config.optional || option.config.default !== undefined)) {
         notes.push("optional")
     }
 

@@ -9,6 +9,7 @@ export const globals: Readonly<Record<string, readonly string[]>> = {
     Bytes: ["GB", "GiB", "KB", "KiB", "MB", "MiB", "TB", "TiB", "format", "parse"],
     Color: ["alpha", "darken", "desaturate", "hue", "lighten", "mix", "oklch", "over", "parse", "rotate", "saturate"],
     Duration: ["DAY", "HOUR", "MINUTE", "SECOND", "WEEK", "backoff", "format", "jitter", "parse"],
+    Error: ["from"],
     Function: ["debounce", "middleware", "noop", "once", "throttle"],
     Interval: ["aligned"],
     JSON: ["safeStringify", "tryParse", "tryStringify"],

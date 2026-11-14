@@ -11,6 +11,7 @@ import Path from "node:path"
  */
 const interfaces: Record<string, string> = {
     Array: "ArrayConstructor",
+    Error: "ErrorConstructor",
     Function: "FunctionConstructor",
     JSON: "JSON",
     Map: "MapConstructor",

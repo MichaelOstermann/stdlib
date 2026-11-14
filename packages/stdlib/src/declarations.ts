@@ -26,6 +26,7 @@ import type { sortBy as Array_sortBy } from "./Array/sortBy"
 import type { sortByLocale as Array_sortByLocale } from "./Array/sortByLocale"
 import type { unique as Array_unique } from "./Array/unique"
 import type { uniqueBy as Array_uniqueBy } from "./Array/uniqueBy"
+import type { from as Error_from } from "./Error/from"
 import type { debounce as Function_debounce } from "./Function/debounce"
 import type { middleware as Function_middleware } from "./Function/middleware"
 import type { noop as Function_noop } from "./Function/noop"
@@ -100,6 +101,10 @@ declare global {
         sortByLocale: typeof Array_sortByLocale
         unique: typeof Array_unique
         uniqueBy: typeof Array_uniqueBy
+    }
+
+    interface ErrorConstructor {
+        from: typeof Error_from
     }
 
     interface FunctionConstructor {

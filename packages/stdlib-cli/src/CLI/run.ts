@@ -15,7 +15,7 @@ const rootOptions = { ...globalOptions, version: boolean().desc("Show the versio
  * # run
  *
  * ```ts
- * function CLI.run(command: AnyCommand, input: { name: string, argv?: string[], rpc?: AnyCommand, version?: string }): Promise<void>
+ * function CLI.run(command: AnyCommand, input: { name: string, argv?: string[], prompt?: boolean, rpc?: AnyCommand, version?: string }): Promise<void>
  * ```
  *
  * Runs the program `command` is the root of, named `name`, with `argv` from the command line by
@@ -28,6 +28,8 @@ const rootOptions = { ...globalOptions, version: boolean().desc("Show the versio
  *
  * A person at a terminal who runs a command without an action, like the program itself, picks one
  * of the commands below it.
+ *
+ * `prompt: false` turns asking and picking off, they are on for `CLI.env.human()` by default.
  *
  * `--help` anywhere, or a command without an action, prints the help of that command. With a
  * `version`, `--version` after the name of the program prints it.
@@ -45,7 +47,7 @@ const rootOptions = { ...globalOptions, version: boolean().desc("Show the versio
  * await CLI.run(miko, { name: "miko", rpc, version: "1.2.0" })
  * ```
  */
-export async function run(command: AnyCommand, input: { argv?: string[], name: string, rpc?: AnyCommand, version?: string }): Promise<void> {
+export async function run(command: AnyCommand, input: { argv?: string[], name: string, prompt?: boolean, rpc?: AnyCommand, version?: string }): Promise<void> {
     write(await output(command, input))
 }
 
@@ -53,7 +55,14 @@ type Output = { exitCode?: number, stderr?: string, stdout?: string }
 
 type Action = NonNullable<AnyCommand["config"]["action"]>
 
-async function output(command: AnyCommand, input: { argv?: string[], name: string, rpc?: AnyCommand, version?: string }): Promise<Output> {
+async function output(command: AnyCommand, input: {
+    argv?: string[]
+    name: string
+    prompt?: boolean
+    rpc?: AnyCommand
+    version?: string
+}): Promise<Output> {
+    const prompt = input.prompt ?? human()
     const help = resolveHelp(input.argv ?? process.argv.slice(2))
 
     const isVersion = help.argv.length === 1 && help.argv[0] === "--version"
@@ -64,7 +73,7 @@ async function output(command: AnyCommand, input: { argv?: string[], name: strin
     if (resolved.error && isRPC) return { stdout: JSON.stringify(Err(resolved.error)) }
     if (resolved.error) return { exitCode: 1, stderr: resolved.message }
 
-    const isPicking = human() && !isRPC && !help.isHelp && !resolved.command.config.action && !resolved.argv.length
+    const isPicking = prompt && !isRPC && !help.isHelp && !resolved.command.config.action && !resolved.argv.length
     const picked = isPicking ? await pickCommand({ command: resolved.command, path: [input.name, ...resolved.path], rpc: input.rpc }) : undefined
     const target = picked?.command ?? resolved.command
 
@@ -76,7 +85,7 @@ async function output(command: AnyCommand, input: { argv?: string[], name: strin
     }
 
     if (isRPC) return rpcOutput(target, action, resolved.argv)
-    return terminalOutput(target, action, resolved.argv)
+    return terminalOutput(target, action, resolved.argv, prompt)
 }
 
 async function rpcOutput(command: AnyCommand, action: Action, argv: string[]): Promise<Output> {
@@ -91,8 +100,8 @@ async function rpcOutput(command: AnyCommand, action: Action, argv: string[]): P
     }
 }
 
-async function terminalOutput(command: AnyCommand, action: Action, argv: string[]): Promise<Output> {
-    const options = await resolveOptions({ argv, command, prompt: human() })
+async function terminalOutput(command: AnyCommand, action: Action, argv: string[], prompt: boolean): Promise<Output> {
+    const options = await resolveOptions({ argv, command, prompt })
     if (options.error) return { exitCode: 1, stderr: options.message }
     try {
         const result = await action(options.options)

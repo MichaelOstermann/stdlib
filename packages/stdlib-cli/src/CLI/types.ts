@@ -100,11 +100,11 @@ export type ActionError<R> = InferErr<Exclude<R, void>>
 export interface AnyCommand {
     kind: "command"
     config: {
-        action: ((options: never) => Promise<Result<JSONValue, JSONValue>>) | undefined
+        action: ((options: any) => Promise<Result<JSONValue, JSONValue>>) | undefined
         commands: Commands
         desc?: string
         options: CommandOptions
-        format: (result: never) => string
+        format: (result: any) => string
     }
 }
 

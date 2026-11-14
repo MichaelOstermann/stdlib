@@ -51,7 +51,7 @@ export async function run(command: AnyCommand, input: { argv?: string[], name: s
 
 type Output = { exitCode?: number, stderr?: string, stdout?: string }
 
-type Action = (options: never) => Promise<Result<JSONValue, JSONValue>>
+type Action = NonNullable<AnyCommand["config"]["action"]>
 
 async function output(command: AnyCommand, input: { argv?: string[], name: string, rpc?: AnyCommand, version?: string }): Promise<Output> {
     const help = resolveHelp(input.argv ?? process.argv.slice(2))
@@ -83,7 +83,7 @@ async function rpcOutput(command: AnyCommand, action: Action, argv: string[]): P
     const options = await resolveOptions({ argv, command })
     if (options.error) return { stdout: JSON.stringify(Err(options.error)) }
     try {
-        return { stdout: JSON.stringify(await action(options.options as never)) }
+        return { stdout: JSON.stringify(await action(options.options)) }
     }
     catch (thrown) {
         const error = thrown instanceof Error ? thrown : new Error(String(thrown))
@@ -95,9 +95,9 @@ async function terminalOutput(command: AnyCommand, action: Action, argv: string[
     const options = await resolveOptions({ argv, command, prompt: human() })
     if (options.error) return { exitCode: 1, stderr: options.message }
     try {
-        const result = await action(options.options as never)
-        if (!result.ok) return { exitCode: 1, stderr: command.config.format(result as never) }
-        return { stdout: command.config.format(result as never) }
+        const result = await action(options.options)
+        if (!result.ok) return { exitCode: 1, stderr: command.config.format(result) }
+        return { stdout: command.config.format(result) }
     }
     catch (thrown) {
         return { exitCode: 1, stderr: show(Error.from(thrown)) }

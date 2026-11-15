@@ -19,7 +19,7 @@ const program = CLI
         if (result.errors.length) return Err(report(result))
         return Ok(report(result))
     })
-    .format((result) => result.value)
+    .format((result) => result.ok ? result.value : result.value.message)
 
 await CLI.run(program, { name: "stdlib-i18n" })
 

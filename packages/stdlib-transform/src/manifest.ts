@@ -25,6 +25,7 @@ export const functions: ReadonlyMap<string, string> = new Map([
     ["Emitter", "Emitter"],
     ["Err", "Result"],
     ["ErrAsync", "ResultAsync"],
+    ["Failure", "Failure"],
     ["match", "match"],
     ["Memo", "Memo"],
     ["Ok", "Result"],

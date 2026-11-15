@@ -26,7 +26,6 @@ import type { sortBy as Array_sortBy } from "./Array/sortBy"
 import type { sortByLocale as Array_sortByLocale } from "./Array/sortByLocale"
 import type { unique as Array_unique } from "./Array/unique"
 import type { uniqueBy as Array_uniqueBy } from "./Array/uniqueBy"
-import type { from as Error_from } from "./Error/from"
 import type { debounce as Function_debounce } from "./Function/debounce"
 import type { middleware as Function_middleware } from "./Function/middleware"
 import type { noop as Function_noop } from "./Function/noop"
@@ -102,10 +101,6 @@ declare global {
         sortByLocale: typeof Array_sortByLocale
         unique: typeof Array_unique
         uniqueBy: typeof Array_uniqueBy
-    }
-
-    interface ErrorConstructor {
-        from: typeof Error_from
     }
 
     interface FunctionConstructor {
@@ -187,6 +182,7 @@ declare global {
     const Emitter: typeof import("./Emitter").Emitter
     const Err: typeof import("./Result").Err
     const ErrAsync: typeof import("./ResultAsync").ErrAsync
+    const Failure: typeof import("./Failure").Failure
     const Interval: typeof import("./Interval/index").Interval
     const match: typeof import("./match").match
     const Memo: typeof import("./Memo").Memo
@@ -218,6 +214,12 @@ declare global {
     type Emitter<T = void> = import("./Emitter").Emitter<T>
     /** A result that failed, `value` is the error. */
     type Err<E, T = never> = import("./Result").Err<E, T>
+    /**
+     * What went wrong, as plain data that survives `JSON.stringify`, unlike an `Error`: a `name` to
+     * tell failures apart, a `message` for people, and `meta` for the rest. `cause` is the failure
+     * that led to this one, `errors` the ones it is made of.
+     */
+    type Failure<N extends string = string, M extends JSONObject = JSONObject> = import("./Failure").Failure<N, M>
     /** An object whose values are all `JSONValue`. */
     type JSONObject = import("./JSON/types").JSONObject
     /**

@@ -62,10 +62,10 @@ export type Commands = Record<string, AnyCommand>
 export interface Command<O extends CommandOptions = Record<never, never>, C extends Commands = Record<never, never>> {
     readonly config: CommandConfig<O, C>
     readonly kind: "command"
-    action: <R extends Result<JSONValue, JSONValue> | void>(action: (options: InferOptions<O>) => R | Promise<R>) => ActionCommand<O, C, ActionValue<R>, ActionError<R>>
+    action: <R extends Result<JSONValue, Failure | Error | string> | void>(action: (options: InferOptions<O>) => R | Promise<R>) => ActionCommand<O, C, ActionValue<R>, ActionError<R>>
     commands: <const C extends Commands>(commands: C) => Command<O, C>
     desc: (desc: string) => Command<O, C>
-    format: (format: (result: Result<JSONValue, JSONValue>) => string) => Command<O, C>
+    format: (format: (result: Result<JSONValue, Failure>) => string) => Command<O, C>
     option: <const N extends string, X extends CommandOption>(name: N, option: X) => Command<MergeOptions<O, Record<N, X>>, C>
     options: <const P extends CommandOptions>(options: P) => Command<MergeOptions<O, P>, C>
 }
@@ -75,10 +75,10 @@ export interface CommandConfig<O extends CommandOptions, C extends Commands> {
     commands: C
     desc?: string
     options: O
-    format: (result: Result<JSONValue, JSONValue>) => string
+    format: (result: Result<JSONValue, Failure>) => string
 }
 
-export interface ActionCommand<O extends CommandOptions, C extends Commands, T extends JSONValue, E extends JSONValue> {
+export interface ActionCommand<O extends CommandOptions, C extends Commands, T extends JSONValue, E extends Failure> {
     readonly config: ActionCommandConfig<O, C, T, E>
     readonly kind: "command"
     commands: <const C extends Commands>(commands: C) => ActionCommand<O, C, T, E>
@@ -86,7 +86,7 @@ export interface ActionCommand<O extends CommandOptions, C extends Commands, T e
     format: (format: (result: Result<T, E>) => string) => ActionCommand<O, C, T, E>
 }
 
-export interface ActionCommandConfig<O extends CommandOptions, C extends Commands, T extends JSONValue, E extends JSONValue> {
+export interface ActionCommandConfig<O extends CommandOptions, C extends Commands, T extends JSONValue, E extends Failure> {
     commands: C
     desc?: string
     options: O
@@ -94,18 +94,14 @@ export interface ActionCommandConfig<O extends CommandOptions, C extends Command
     format: (result: Result<T, E>) => string
 }
 
-/**
- * The options of `A`, with those of `B` added at the end, or in place of the ones of the same name.
- */
 export type MergeOptions<A, B> = Omit<A, keyof B> & B
-
 export type ActionValue<R> = InferOk<Exclude<R, void>> | (undefined extends R ? null : never)
-export type ActionError<R> = InferErr<Exclude<R, void>>
+export type ActionError<R> = InferErr<Exclude<R, void>> extends infer E ? E extends Failure ? E : Failure : never
 
 export interface AnyCommand {
     kind: "command"
     config: {
-        action: ((options: any) => Promise<Result<JSONValue, JSONValue>>) | undefined
+        action: ((options: any) => Promise<Result<JSONValue, Failure>>) | undefined
         commands: Commands
         desc?: string
         options: CommandOptions
@@ -129,25 +125,26 @@ type Value<T, Optional, Defaulted> = Defaulted extends true
         ? T | undefined
         : T
 
-export type CLIUnknownCommandError = { input: string, type: "CLIUnknownCommandError" }
+export type CLIUnknownCommandError = Failure<"CLIUnknownCommandError", { input: string }>
 
 export type ResolvedCommand =
     | { argv: string[], command: AnyCommand, error?: undefined, message?: undefined, parents: AnyCommand[], path: string[] }
     | { argv: string[], command: AnyCommand, error: CLIUnknownCommandError, message: string, parents: AnyCommand[], path: string[] }
 
-export type CLIInvalidOptionError = { message: string, option: string, type: "CLIInvalidOptionError" }
-export type CLIMissingOptionError = { option: string, type: "CLIMissingOptionError" }
-export type CLIMissingValueError = { option: string, type: "CLIMissingValueError" }
-export type CLIUnknownOptionError = { input: string, type: "CLIUnknownOptionError" }
+export type CLIInvalidOptionError = Failure<"CLIInvalidOptionError", { option: string }>
+export type CLIMissingOptionError = Failure<"CLIMissingOptionError", { option: string }>
+export type CLIMissingValueError = Failure<"CLIMissingValueError", { option: string }>
+export type CLIUnknownOptionError = Failure<"CLIUnknownOptionError", { input: string, suggestions: string[] }>
 export type CLIOptionError = CLIInvalidOptionError | CLIMissingOptionError | CLIMissingValueError | CLIUnknownOptionError
-export type CLIOptionsError = { errors: CLIOptionError[], type: "CLIOptionsError" }
+export type CLIOptionsError = Failure<"CLIOptionsError"> & { errors: CLIOptionError[] }
 
 /** What `CLI.options.resolve` read: the values for `action`, or what was wrong. */
 export type ResolvedOptions<C> =
     | { error?: undefined, message?: undefined, options: InferOptions<C> }
     | { error: CLIOptionsError, message: string, options?: undefined }
 
-export type CLIUnhandledExceptionError = { message: string, stack?: string, type: "CLIUnhandledExceptionError" }
+/** What an action threw, as the `cause`. */
+export type CLIUnhandledExceptionError = Failure<"CLIUnhandledExceptionError"> & { cause: Failure }
 
 /**
  * The commands of `X` with an action, nested like they are, each as a function that takes its

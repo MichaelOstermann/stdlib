@@ -3,6 +3,7 @@ import { describe, expectTypeOf, it } from "bun:test"
 import { CLI } from "../../src"
 
 type CLIErrors = CLIOptionsError | CLIUnhandledExceptionError | CLIUnknownCommandError
+type TakenError = Failure<"TakenError", { email: string }>
 
 const add = CLI
     .command()
@@ -15,7 +16,7 @@ const add = CLI
         team: CLI.enum().options({ a: "", b: "" }),
     })
     .action(({ email }) => {
-        if (email === "taken@miko.dev") return Err("Taken" as const)
+        if (email === "taken@miko.dev") return Err(Failure.of("TakenError", "Already a member", { meta: { email } }))
         return Ok(email)
     })
 const empty = CLI.command().desc("No action, nothing below")
@@ -47,7 +48,7 @@ describe("Command", () => {
     })
 
     it("should know what the action returns", () => {
-        expectTypeOf(add.config.action).returns.toEqualTypeOf<Promise<Result<string, "Taken">>>()
+        expectTypeOf(add.config.action).returns.toEqualTypeOf<Promise<Result<string, TakenError>>>()
         expectTypeOf(serve.config.action).returns.toEqualTypeOf<Promise<Result<null, never>>>()
         expectTypeOf(members.config.action).toEqualTypeOf<undefined>()
     })
@@ -59,6 +60,11 @@ describe("Command", () => {
         CLI.command().action(() => Ok({ email: undefined }))
     })
 
+    it("should turn an Error or a string the action fails with into a Failure", () => {
+        expectTypeOf(CLI.command().action(() => Err("Nope")).config.action).returns.toEqualTypeOf<Promise<Result<never, Failure>>>()
+        expectTypeOf(CLI.command().action(() => Err(new TypeError("Nope"))).config.action).returns.toEqualTypeOf<Promise<Result<never, Failure>>>()
+    })
+
     it("should only have the action once, and the options before it", () => {
         expectTypeOf(add).not.toHaveProperty("action")
         expectTypeOf(add).not.toHaveProperty("option")
@@ -67,8 +73,8 @@ describe("Command", () => {
 
     it("should format any JSON before the action, and what the action returns after it", () => {
         type Formatted<F extends (format: never) => unknown> = Parameters<Parameters<F>[0]>[0]
-        expectTypeOf<Formatted<ReturnType<typeof CLI.command>["format"]>>().toEqualTypeOf<Result<JSONValue, JSONValue>>()
-        expectTypeOf<Formatted<typeof add.format>>().toEqualTypeOf<Result<string, "Taken">>()
+        expectTypeOf<Formatted<ReturnType<typeof CLI.command>["format"]>>().toEqualTypeOf<Result<JSONValue, Failure>>()
+        expectTypeOf<Formatted<typeof add.format>>().toEqualTypeOf<Result<string, TakenError>>()
     })
 })
 
@@ -99,7 +105,7 @@ describe("InferRPC", () => {
     })
 
     it("should return what the action returns, and what can go wrong on the way", () => {
-        expectTypeOf<ReturnType<RPC["members"]["add"]>>().toEqualTypeOf<Promise<Result<string, "Taken" | CLIErrors>>>()
+        expectTypeOf<ReturnType<RPC["members"]["add"]>>().toEqualTypeOf<Promise<Result<string, TakenError | CLIErrors>>>()
         expectTypeOf<ReturnType<RPC["serve"]>>().toEqualTypeOf<Promise<Result<null, CLIErrors>>>()
         expectTypeOf<ReturnType<RPC["serve"]["status"]>>().toEqualTypeOf<Promise<Result<number, CLIErrors>>>()
     })

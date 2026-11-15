@@ -41,7 +41,7 @@ function resolveFrom(argv: string[], command: AnyCommand, parents: AnyCommand[],
     return {
         argv,
         command,
-        error: { input: next, type: "CLIUnknownCommandError" },
+        error: { message: `Unknown command ${next}`, meta: { input: next }, name: "CLIUnknownCommandError" },
         message: unknownCommandMessage(next, command),
         parents,
         path,

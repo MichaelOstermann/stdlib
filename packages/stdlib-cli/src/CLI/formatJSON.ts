@@ -1,11 +1,49 @@
-import type { ShowOptions } from "../../CLI/show"
-import { colors } from "../colors"
+import { colors } from "../internals/colors"
+
+export interface FormatOptions {
+    /**
+     * One line like `{ email: jane@miko.dev, seats: 1 }` when everything fits into `width`, off by
+     * default.
+     */
+    compact?: boolean
+    /** Items of an array or object shown before `… 3 more`, 100 by default. */
+    maxItems?: number
+    /** Characters of a string shown before `… 3 more characters`, 1000 by default. */
+    maxString?: number
+    /** The columns to fit into, the terminal by default. */
+    width?: number
+}
 
 type Limits = { maxItems: number, maxString: number }
 
 type Group = JSONObject | JSONValue[] | readonly JSONValue[]
 
-export function json(value: JSONValue, options: ShowOptions = {}): string {
+/**
+ * # formatJSON
+ *
+ * ```ts
+ * function CLI.formatJSON(value: JSONValue, options?: FormatOptions): string
+ * ```
+ *
+ * Turns JSON into text for a person, like YAML: one `key: value` or `- item` per line, nested ones
+ * indented. With `compact`, everything is on one line instead, when it fits. Strings and keys are
+ * quoted like `Bun.YAML` does, and long strings wrap in line with where they start. A string on its
+ * own is returned as it is.
+ *
+ * ## Example
+ *
+ * ```ts
+ * CLI.formatJSON({ email: "jane@miko.dev", tags: ["admin"], seats: 1 })
+ * // email: jane@miko.dev
+ * // tags:
+ * //   - admin
+ * // seats: 1
+ *
+ * CLI.formatJSON({ email: "jane@miko.dev", tags: ["admin"] }, { compact: true })
+ * // { email: jane@miko.dev, tags: [admin] }
+ * ```
+ */
+export function formatJSON(value: JSONValue, options: FormatOptions = {}): string {
     const limits = { maxItems: options.maxItems ?? 100, maxString: options.maxString ?? 1000 }
     const width = options.width ?? process.stdout.columns ?? 80
     if (typeof value === "string") return value

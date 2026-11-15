@@ -9,7 +9,7 @@ describe("CLI.command", () => {
 
     it("should return what the action returns, also when it is async", async () => {
         const command = CLI.command().action(async () => Err("Nope"))
-        expect(await command.config.action({})).toEqual(Err("Nope"))
+        expect(await command.config.action({})).toEqual(Err({ message: "Nope", name: "Error" }))
     })
 
     it("should add options after the ones that are there, and replace those of the same name in place", () => {

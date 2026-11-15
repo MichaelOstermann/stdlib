@@ -123,6 +123,17 @@ describe("CLI.run", () => {
         expect(process.exitCode).toBe(1)
     })
 
+    it("should call onError with what the action throws, in the terminal and for rpc", async () => {
+        const thrown: unknown[] = []
+        const onError = (error: unknown): void => {
+            thrown.push(error)
+        }
+        await CLI.run(miko, { argv: ["members", "add", "--email", "crash@miko.dev"], name: "miko", onError, rpc })
+        await CLI.run(miko, { argv: ["rpc", "members", "add", "--email", "crash@miko.dev"], name: "miko", onError, rpc })
+        await CLI.run(miko, { argv: ["members", "add", "--email", "taken@miko.dev"], name: "miko", onError, rpc })
+        expect(thrown.map((error) => (error as Error).message)).toEqual(["Database went away", "Database went away"])
+    })
+
     describe("rpc", () => {
         it("should print what the action returns as JSON", async () => {
             await run("rpc members add --email a@b.c")
@@ -136,10 +147,17 @@ describe("CLI.run", () => {
             await run("rpc membres")
             await run("rpc members nope")
             expect(stdout.trimEnd().split("\n").map((line) => JSON.parse(line))).toEqual([
-                { ok: false, value: "This email is already a member" },
-                { ok: false, value: { errors: [{ option: "email", type: "CLIMissingOptionError" }], type: "CLIOptionsError" } },
-                { ok: false, value: { input: "membres", type: "CLIUnknownCommandError" } },
-                { ok: false, value: { input: "nope", type: "CLIUnknownCommandError" } },
+                { ok: false, value: { message: "This email is already a member", name: "Error" } },
+                {
+                    ok: false,
+                    value: {
+                        errors: [{ message: "Missing option --email", meta: { option: "email" }, name: "CLIMissingOptionError" }],
+                        message: "Invalid options",
+                        name: "CLIOptionsError",
+                    },
+                },
+                { ok: false, value: { message: "Unknown command membres", meta: { input: "membres" }, name: "CLIUnknownCommandError" } },
+                { ok: false, value: { message: "Unknown command nope", meta: { input: "nope" }, name: "CLIUnknownCommandError" } },
             ])
             expect(stderr).toBe("")
             expect(process.exitCode).toBe(0)
@@ -149,9 +167,9 @@ describe("CLI.run", () => {
             await run("rpc members add --email crash@miko.dev")
             const result = JSON.parse(stdout)
             expect(result.ok).toBe(false)
-            expect(result.value.type).toBe("CLIUnhandledExceptionError")
-            expect(result.value.message).toBe("Database went away")
-            expect(result.value.stack).toStartWith("Error: Database went away\n")
+            expect(result.value.name).toBe("CLIUnhandledExceptionError")
+            expect(result.value.cause.message).toBe("Database went away")
+            expect(result.value.cause.stack).toStartWith("Error: Database went away\n")
         })
 
         it("should print null when the action returns nothing", async () => {

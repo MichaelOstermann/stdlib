@@ -1,4 +1,4 @@
-import type { AnyCommand, CLIOptionError, CommandOption, InferOptions, ResolvedOptions } from "../types"
+import type { AnyCommand, CLIInvalidOptionError, CLIOptionError, CLIUnknownOptionError, CommandOption, InferOptions, ResolvedOptions } from "../types"
 import { colors } from "../../internals/colors"
 import { Layout } from "../../internals/Layout"
 import { Parse } from "../../internals/Parse"
@@ -48,7 +48,7 @@ export async function resolve<C extends AnyCommand>(input: { argv: string[], com
     for (let index = 0; index < input.argv.length; index++) {
         const word = input.argv[index]!
         if (!word.startsWith("-")) {
-            errors.push({ input: word, type: "CLIUnknownOptionError" })
+            errors.push({ message: `Unknown option ${word}`, meta: { input: word, suggestions: [] }, name: "CLIUnknownOptionError" })
             continue
         }
 
@@ -65,7 +65,7 @@ export async function resolve<C extends AnyCommand>(input: { argv: string[], com
             continue
         }
         if (name === undefined) {
-            errors.push({ input: flag, type: "CLIUnknownOptionError" })
+            errors.push(unknownOption(flag, flags))
             const next = input.argv[index + 1]
             if (inline === undefined && next !== undefined && !next.startsWith("--")) index++
             continue
@@ -105,40 +105,52 @@ export async function resolve<C extends AnyCommand>(input: { argv: string[], com
     }
 
     if (errors.length) {
-        const error = { errors: sortByOption(errors, names), type: "CLIOptionsError" as const }
+        const error = { errors: sortByOption(errors, names), message: "Invalid options", name: "CLIOptionsError" as const }
         return { error, message: message(error.errors, input.command) }
     }
     return { options: values as InferOptions<C> }
 }
 
 async function valueOf(name: string, option: CommandOption, given: Given): Promise<Result<unknown, CLIOptionError[]>> {
-    if (given.type === "empty") return Err([{ option: name, type: "CLIMissingValueError" as const }])
+    const flag = `--${String.kebabCase(name)}`
+    if (given.type === "empty") return Err([{ message: `Missing a value for ${flag}`, meta: { option: name }, name: "CLIMissingValueError" as const }])
 
     if (option.kind === "boolean") {
         const value = given.type === "value" ? given.value : option.config.default
         if (value === true || value === "true") return Ok(true)
         if (value === false || value === "false") return Ok(false)
-        return Err([{ message: "Must be true or false", option: name, type: "CLIInvalidOptionError" as const }])
+        return Err([invalidOption(name, "Must be true or false")])
     }
 
     if (option.kind === "enum") {
         const value = given.type === "value" ? String(given.value) : option.config.default
         const choices = Object.keys(option.config.options)
-        if (value === undefined) return Err([{ option: name, type: "CLIMissingOptionError" as const }])
+        if (value === undefined) return Err([{ message: `Missing option ${flag}`, meta: { option: name }, name: "CLIMissingOptionError" as const }])
         if (choices.includes(value)) return Ok(value)
         const suggestions = suggest(value, choices)
         const problem = suggestions.length
             ? `Must be one of: ${choices.join(", ")}, did you mean: ${suggestions.join(", ")}?`
             : `Must be one of: ${choices.join(", ")}`
-        return Err([{ message: problem, option: name, type: "CLIInvalidOptionError" as const }])
+        return Err([invalidOption(name, problem)])
     }
 
     const value = given.type === "value" ? String(given.value) : option.config.default
     if (value === undefined && option.config.optional) return Ok(undefined)
-    if (value === undefined) return Err([{ option: name, type: "CLIMissingOptionError" as const }])
+    if (value === undefined) return Err([{ message: `Missing option ${flag}`, meta: { option: name }, name: "CLIMissingOptionError" as const }])
     const parsed = await Parse.value(option.config.parse, value)
     if (parsed.ok) return Ok(parsed.value)
-    return Err(parsed.value.map((problem) => ({ message: problem, option: name, type: "CLIInvalidOptionError" as const })))
+    return Err(parsed.value.map((problem) => invalidOption(name, problem)))
+}
+
+function invalidOption(name: string, problem: string): CLIInvalidOptionError {
+    return { message: `Invalid option --${String.kebabCase(name)}: ${problem}`, meta: { option: name }, name: "CLIInvalidOptionError" }
+}
+
+function unknownOption(flag: string, flags: string[]): CLIUnknownOptionError {
+    const typed = flag.replace(/^-+/, "")
+    const suggestions = typed ? suggest(typed, flags.map((known) => known.slice(2))).map((known) => `--${known}`) : []
+    const message = suggestions.length ? `Unknown option ${flag}, did you mean: ${suggestions.join(", ")}?` : `Unknown option ${flag}`
+    return { message, meta: { input: flag, suggestions }, name: "CLIUnknownOptionError" }
 }
 
 function splitOnce(word: string, separator: string): [string, string | undefined] {
@@ -148,42 +160,26 @@ function splitOnce(word: string, separator: string): [string, string | undefined
 }
 
 function sortByOption(errors: CLIOptionError[], names: string[]): CLIOptionError[] {
-    const known = errors.filter((error) => "option" in error).sort((a, b) => names.indexOf(optionOf(a)) - names.indexOf(optionOf(b)))
-    const unknown = errors.filter((error) => !("option" in error))
+    const known = errors.filter((error) => "option" in error.meta).sort((a, b) => names.indexOf(optionOf(a)) - names.indexOf(optionOf(b)))
+    const unknown = errors.filter((error) => !("option" in error.meta))
     return [...known, ...unknown]
 }
 
 function optionOf(error: CLIOptionError): string {
-    return "option" in error ? error.option : ""
+    return "option" in error.meta ? error.meta.option : ""
 }
 
 function message(errors: CLIOptionError[], command: AnyCommand): string {
     const options = command.config.options
     const flags = Object.keys(options).map((name) => `--${String.kebabCase(name)}`)
     const mentioned = new Set<string>()
-    const lines: string[] = []
 
     for (const error of errors) {
-        if (error.type === "CLIUnknownOptionError" && !error.input.startsWith("-")) {
-            lines.push(colors.red(`Unknown option ${colors.cyan(error.input)}`))
-            continue
-        }
-        if (error.type === "CLIUnknownOptionError") {
-            const typed = error.input.replace(/^-+/, "")
-            const suggestions = typed ? suggest(typed, flags.map((flag) => flag.slice(2))).map((flag) => `--${flag}`) : []
-            for (const flag of suggestions) mentioned.add(Object.keys(options)[flags.indexOf(flag)]!)
-            lines.push(suggestions.length
-                ? `${colors.red(`Unknown option ${colors.cyan(error.input)}`)}, did you mean: ${suggestions.map(colors.cyan).join(", ")}?`
-                : colors.red(`Unknown option ${colors.cyan(error.input)}`))
-            continue
-        }
-        mentioned.add(error.option)
-        const flag = `--${String.kebabCase(error.option)}`
-        if (error.type === "CLIMissingOptionError") lines.push(colors.red(`Missing option ${colors.cyan(flag)}`))
-        if (error.type === "CLIMissingValueError") lines.push(`${colors.red(`Invalid option ${colors.cyan(flag)}`)} Requires a value`)
-        if (error.type === "CLIInvalidOptionError") lines.push(`${colors.red(`Invalid option ${colors.cyan(flag)}`)} ${error.message}`)
+        if ("option" in error.meta) mentioned.add(error.meta.option)
+        if ("suggestions" in error.meta) for (const flag of error.meta.suggestions) mentioned.add(Object.keys(options)[flags.indexOf(flag)]!)
     }
 
+    const lines = errors.map((error) => colors.red(error.message.replaceAll(/--[\w-]+/g, (flag) => colors.cyan(flag))))
     const shown = Object.fromEntries(Object.entries(options).filter(([name]) => mentioned.has(name)))
     return Layout.paragraphs([lines.join("\n"), help(shown)])
 }

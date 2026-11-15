@@ -1,12 +1,16 @@
-import type { AnyCommand } from "./types"
+import type { AnyCommand, CLIUnhandledExceptionError } from "./types"
 import { boolean } from "./boolean"
 import { help as commandHelp } from "./commands/help"
 import { pick as pickCommand } from "./commands/pick"
 import { resolve as resolveCommand } from "./commands/resolve"
 import { human } from "./env/human"
+import { formatFailure } from "./formatFailure"
 import { resolve as resolveHelp } from "./help/resolve"
 import { resolve as resolveOptions } from "./options/resolve"
-import { show } from "./show"
+
+type Output = { exitCode?: number, stderr?: string, stdout?: string }
+type Action = NonNullable<AnyCommand["config"]["action"]>
+type OnError = (thrown: unknown) => Promise<void> | void
 
 const globalOptions = { help: boolean().desc("Show this help") }
 const rootOptions = { ...globalOptions, version: boolean().desc("Show the version") }
@@ -15,13 +19,14 @@ const rootOptions = { ...globalOptions, version: boolean().desc("Show the versio
  * # run
  *
  * ```ts
- * function CLI.run(command: AnyCommand, input: { name: string, argv?: string[], prompt?: false, rpc?: AnyCommand, version?: string }): Promise<void>
+ * function CLI.run(command: AnyCommand, input: { name: string, argv?: string[], onError?: OnError, prompt?: false, rpc?: AnyCommand, version?: string }): Promise<void>
  * ```
  *
  * Runs the program `command` is the root of, named `name`, with `argv` from the command line by
  * default: finds the command, reads its options and calls its action. What the action returns is
  * printed with its `.format()`, an `Ok` on stdout, an `Err` on stderr with exit code 1. Anything it
- * throws is printed on stderr with `CLI.show`, with exit code 1.
+ * throws goes to `onError` first, then is printed on stderr with `CLI.formatFailure`, with exit
+ * code 1.
  *
  * A person at a terminal is asked for the options: all of them when none are given, otherwise the
  * ones that are missing or invalid.
@@ -35,8 +40,8 @@ const rootOptions = { ...globalOptions, version: boolean().desc("Show the versio
  * `version`, `--version` after the name of the program prints it.
  *
  * Commands under `rpc` are for programs: they never ask, and print one line of JSON on stdout,
- * `{ "ok": true, "value": … }` or `{ "ok": false, "value": … }`, with what the action returns, what
- * was wrong with the command or its options, or what it threw.
+ * `{ "ok": true, "value": … }` or `{ "ok": false, "value": … }`, with what the action returns, or a
+ * `Failure` for what was wrong with the command or its options, or what it threw.
  *
  * ## Example
  *
@@ -47,17 +52,21 @@ const rootOptions = { ...globalOptions, version: boolean().desc("Show the versio
  * await CLI.run(miko, { name: "miko", rpc, version: "1.2.0" })
  * ```
  */
-export async function run(command: AnyCommand, input: { argv?: string[], name: string, prompt?: false, rpc?: AnyCommand, version?: string }): Promise<void> {
+export async function run(command: AnyCommand, input: {
+    argv?: string[]
+    name: string
+    onError?: OnError
+    prompt?: false
+    rpc?: AnyCommand
+    version?: string
+}): Promise<void> {
     write(await output(command, input))
 }
-
-type Output = { exitCode?: number, stderr?: string, stdout?: string }
-
-type Action = NonNullable<AnyCommand["config"]["action"]>
 
 async function output(command: AnyCommand, input: {
     argv?: string[]
     name: string
+    onError?: OnError
     prompt?: false
     rpc?: AnyCommand
     version?: string
@@ -84,23 +93,24 @@ async function output(command: AnyCommand, input: {
         return { stdout: commandHelp({ command: resolved.command, globalOptions: isRoot ? rootOptions : globalOptions, path }) }
     }
 
-    if (isRPC) return rpcOutput(target, action, resolved.argv)
-    return terminalOutput(target, action, resolved.argv, prompt)
+    if (isRPC) return rpcOutput(target, action, resolved.argv, input.onError)
+    return terminalOutput(target, action, resolved.argv, prompt, input.onError)
 }
 
-async function rpcOutput(command: AnyCommand, action: Action, argv: string[]): Promise<Output> {
+async function rpcOutput(command: AnyCommand, action: Action, argv: string[], onError: OnError | undefined): Promise<Output> {
     const options = await resolveOptions({ argv, command })
     if (options.error) return { stdout: JSON.stringify(Err(options.error)) }
     try {
         return { stdout: JSON.stringify(await action(options.options)) }
     }
     catch (thrown) {
-        const error = thrown instanceof Error ? thrown : new Error(String(thrown))
-        return { stdout: JSON.stringify(Err({ message: error.message, stack: error.stack, type: "CLIUnhandledExceptionError" })) }
+        await onError?.(thrown)
+        const error: CLIUnhandledExceptionError = { cause: Failure.from(thrown), message: "Unhandled exception", name: "CLIUnhandledExceptionError" }
+        return { stdout: JSON.stringify(Err(error)) }
     }
 }
 
-async function terminalOutput(command: AnyCommand, action: Action, argv: string[], prompt: boolean): Promise<Output> {
+async function terminalOutput(command: AnyCommand, action: Action, argv: string[], prompt: boolean, onError: OnError | undefined): Promise<Output> {
     const options = await resolveOptions({ argv, command, prompt })
     if (options.error) return { exitCode: 1, stderr: options.message }
     try {
@@ -109,7 +119,8 @@ async function terminalOutput(command: AnyCommand, action: Action, argv: string[
         return { stdout: command.config.format(result) }
     }
     catch (thrown) {
-        return { exitCode: 1, stderr: show(Error.from(thrown)) }
+        await onError?.(thrown)
+        return { exitCode: 1, stderr: formatFailure(Failure.from(thrown)) }
     }
 }
 

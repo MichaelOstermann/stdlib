@@ -36,12 +36,12 @@ describe("CLI.commands.resolve", () => {
     })
 
     it("should not take inherited properties for subcommands", () => {
-        expect(resolve("toString").error).toEqual({ input: "toString", type: "CLIUnknownCommandError" })
+        expect(resolve("toString").error).toEqual({ message: "Unknown command toString", meta: { input: "toString" }, name: "CLIUnknownCommandError" })
     })
 
     it("should report an unknown command with what it was probably meant to be", () => {
         const resolved = resolve("members ad")
-        expect(resolved.error).toEqual({ input: "ad", type: "CLIUnknownCommandError" })
+        expect(resolved.error).toEqual({ message: "Unknown command ad", meta: { input: "ad" }, name: "CLIUnknownCommandError" })
         expect(resolved.command).toBe(members)
         expect(resolved.parents).toEqual([miko])
         expect(resolved.path).toEqual(["members"])

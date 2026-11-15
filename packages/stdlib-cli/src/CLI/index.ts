@@ -9,11 +9,12 @@ import { agent } from "./env/agent"
 import { ci } from "./env/ci"
 import { color } from "./env/color"
 import { human } from "./env/human"
+import { formatFailure } from "./formatFailure"
+import { formatJSON } from "./formatJSON"
 import { resolve as resolveHelp } from "./help/resolve"
 import { help as optionsHelp } from "./options/help"
 import { resolve as resolveOptions } from "./options/resolve"
 import { run } from "./run"
-import { show } from "./show"
 import { string } from "./string"
 import { confirm } from "./terminal/confirm"
 import { input } from "./terminal/input"
@@ -24,7 +25,7 @@ import { select } from "./terminal/select"
 
 export type { Colors } from "../internals/colors"
 export type { PickedCommand } from "./commands/pick"
-export type { ShowOptions } from "./show"
+export type { FormatOptions } from "./formatJSON"
 export type { ConfirmOptions, ConfirmSlot } from "./terminal/confirm"
 export type { Input } from "./terminal/input"
 export type { Key } from "./terminal/onKey"
@@ -68,10 +69,11 @@ export const CLI = {
     commands: { help: commandHelp, pick: pickCommand, resolve: resolveCommand },
     enum: enumI,
     env: { agent, ci, color, human },
+    formatFailure,
+    formatJSON,
     help: { resolve: resolveHelp },
     options: { help: optionsHelp, resolve: resolveOptions },
     run,
-    show,
     string,
     terminal: { confirm, input, onKey, prompt, render, select },
 }

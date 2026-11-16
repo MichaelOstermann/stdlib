@@ -5,54 +5,24 @@ import { omit } from "./Object/omit"
 /**
  * What went wrong, as plain data that survives `JSON.stringify`, unlike an `Error`: a `name` to
  * tell failures apart, a `message` for people, and `meta` for the rest. `cause` is the failure that
- * led to this one, `errors` the ones it is made of.
+ * led to this one, `errors` the ones it is made of. A type of its own is a `Failure` when it has
+ * these fields.
+ *
+ * ```ts
+ * type TakenError = { name: "TakenError", message: string, meta: { email: string } }
+ * ```
  */
-export type Failure<N extends string = string, M extends JSONObject = JSONObject> = {
+export type Failure = {
     cause?: Failure
     errors?: Failure[]
     message: string
-    name: N
+    meta?: JSONObject
+    name: string
     stack?: string
-} & (JSONObject extends M ? { meta?: M } : { meta: M })
-
-/** Only in V8 and JavaScriptCore: puts the stack of where it is called into `target.stack`. */
-const captureStackTrace = (Error as { captureStackTrace?: (target: object, below: unknown) => void }).captureStackTrace
+}
 
 /** The fields of a `Failure` itself, the others of an object go into its `meta`. */
 const FIELDS = new Set(["cause", "errors", "message", "meta", "name", "stack"])
-
-/**
- * # of
- *
- * ```ts
- * Failure.of(name, message, options?)
- * ```
- *
- * A failure named `name`, with the stack of where it was made. `cause` and `errors` can be anything
- * that `Failure.from` takes.
- *
- * ## Example
- *
- * ```ts
- * Failure.of("AccountEmailTakenError", "An account with that email already exists", { meta: { email } });
- *
- * Failure.of("HttpError", "Server is busy", { cause, meta: { status: 503 } });
- * ```
- */
-function of<const N extends string, M extends JSONObject = JSONObject>(
-    name: N,
-    message: string,
-    options: { cause?: unknown, errors?: unknown[], meta?: M } = {},
-): Failure<N, M> {
-    const holder: { stack?: string } = {}
-    captureStackTrace?.(holder, of)
-    const failure: Failure = { message, name }
-    if (holder.stack) failure.stack = holder.stack.replace(/^.*/, message ? `${name}: ${message}` : name)
-    if (options.cause !== undefined) failure.cause = from(options.cause)
-    if (options.errors) failure.errors = options.errors.map((error) => from(error))
-    if (options.meta) failure.meta = options.meta
-    return failure as Failure<N, M>
-}
 
 /**
  * # from
@@ -175,6 +145,5 @@ function removeStackTraces<F extends Failure>(failure: F): F {
 
 export const Failure = {
     from,
-    of,
     removeStackTraces,
 }

@@ -1,39 +1,5 @@
-import type { JSONObject } from "../src/JSON/types"
 import { describe, expect, expectTypeOf, it } from "bun:test"
 import { Failure } from "../src/Failure"
-
-describe("Failure.of", () => {
-    it("should make a failure with the stack of where it was made", () => {
-        const failure = Failure.of("TakenError", "Already a member")
-        expect(failure.name).toBe("TakenError")
-        expect(failure.message).toBe("Already a member")
-        expect(failure.stack).toStartWith("TakenError: Already a member\n    at ")
-        expect(failure.stack).toContain("Failure.test.ts")
-        expect(failure.stack).not.toContain("Failure.ts")
-    })
-
-    it("should turn the cause and errors into failures", () => {
-        const failure = Failure.of("SaveError", "Could not save", { cause: new TypeError("fetch failed"), errors: ["one"] })
-        expect(failure.cause).toMatchObject({ message: "fetch failed", name: "TypeError" })
-        expect(failure.errors).toEqual([{ message: "one", name: "Error" }])
-    })
-
-    it("should know its name and meta", () => {
-        const failure = Failure.of("HttpError", "Server is busy", { meta: { status: 503 } })
-        expectTypeOf(failure).toEqualTypeOf<Failure<"HttpError", { status: number }>>()
-        expect(failure.meta).toEqual({ status: 503 })
-    })
-
-    it("should have a meta when it is typed", () => {
-        expectTypeOf<Failure<"HttpError", { status: number }>["meta"]>().toEqualTypeOf<{ status: number }>()
-        expectTypeOf<Failure<"HttpError">["meta"]>().toEqualTypeOf<JSONObject | undefined>()
-    })
-
-    it("should survive JSON", () => {
-        const failure = Failure.of("TakenError", "Already a member", { cause: "Duplicate key", meta: { email: "jane@miko.dev" } })
-        expect(JSON.parse(JSON.stringify(failure))).toEqual(failure)
-    })
-})
 
 describe("Failure.from", () => {
     it("should keep the name, message and stack of an error, and its fields that are JSON as meta", () => {
@@ -57,7 +23,8 @@ describe("Failure.from", () => {
     })
 
     it("should give back a failure with the same fields", () => {
-        const failure = Failure.of("TakenError", "Already a member", { cause: "Duplicate key", meta: { email: "jane@miko.dev" } })
+        type TakenError = { cause: Failure, message: string, meta: { email: string }, name: "TakenError" }
+        const failure: TakenError = { cause: { message: "Duplicate key", name: "Error" }, message: "Already a member", meta: { email: "jane@miko.dev" }, name: "TakenError" }
         expect(Failure.from(failure)).toEqual(failure)
         expectTypeOf(Failure.from(failure)).toEqualTypeOf<typeof failure>()
         expectTypeOf(Failure.from(failure as typeof failure | string)).toEqualTypeOf<typeof failure | Failure>()
@@ -90,7 +57,7 @@ describe("Failure.from", () => {
 
 describe("Failure.removeStackTraces", () => {
     it("should remove the stacks of the failure, its cause and errors, in a copy", () => {
-        const failure = Failure.of("SaveError", "Could not save", { cause: new Error("fetch failed"), errors: [new Error("one")] })
+        const failure = Failure.from(new AggregateError([new Error("one")], "Could not save", { cause: new Error("fetch failed") }))
         const removed = Failure.removeStackTraces(failure)
         expect(JSON.stringify(removed)).not.toContain("stack")
         expect(failure.stack).toBeDefined()
@@ -99,7 +66,7 @@ describe("Failure.removeStackTraces", () => {
     })
 
     it("should not change a failure without a stack", () => {
-        const failure: Failure = { cause: Failure.of("FetchError", "fetch failed"), message: "Could not save", name: "SaveError" }
+        const failure: Failure = { cause: Failure.from(new Error("fetch failed")), message: "Could not save", name: "SaveError" }
         Failure.removeStackTraces(failure)
         expect(failure.cause?.stack).toBeDefined()
     })

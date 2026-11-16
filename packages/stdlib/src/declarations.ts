@@ -219,9 +219,14 @@ declare global {
     /**
      * What went wrong, as plain data that survives `JSON.stringify`, unlike an `Error`: a `name` to
      * tell failures apart, a `message` for people, and `meta` for the rest. `cause` is the failure
-     * that led to this one, `errors` the ones it is made of.
+     * that led to this one, `errors` the ones it is made of. A type of its own is a `Failure` when
+     * it has these fields.
+     *
+     * ```ts
+     * type TakenError = { name: "TakenError", message: string, meta: { email: string } }
+     * ```
      */
-    type Failure<N extends string = string, M extends JSONObject = JSONObject> = import("./Failure").Failure<N, M>
+    type Failure = import("./Failure").Failure
     /** An object whose values are all `JSONValue`. */
     type JSONObject = import("./JSON/types").JSONObject
     /**

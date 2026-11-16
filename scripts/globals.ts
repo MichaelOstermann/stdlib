@@ -56,7 +56,7 @@ const types: Record<string, [file: string, parameters?: string]> = {
     Color: ["Color/index"],
     Emitter: ["Emitter", "T = void"],
     Err: ["Result", "E, T = never"],
-    Failure: ["Failure", "N extends string = string, M extends JSONObject = JSONObject"],
+    Failure: ["Failure"],
     JSONObject: ["JSON/types"],
     JSONValue: ["JSON/types"],
     Ok: ["Result", "T, E = never"],
@@ -107,7 +107,7 @@ ${entries.map(([global, names]) => `    interface ${interfaces[global]} {\n${nam
 ${Object.entries(values).map(([name, file]) => `    const ${name}: typeof import("./${file}").${name}`).join("\n")}
 
 ${(await Promise.all(Object.entries(types).map(async ([name, [file, parameters]]) => (await docOf(file, name)) + (parameters
-    ? `    type ${name}<${parameters}> = import("./${file}").${name}<${parameters.replaceAll(/ extends \w+| = \w+/g, "")}>`
+    ? `    type ${name}<${parameters}> = import("./${file}").${name}<${parameters.replaceAll(/ = \w+/g, "")}>`
     : `    type ${name} = import("./${file}").${name}`)))).join("\n")}
 }
 `)

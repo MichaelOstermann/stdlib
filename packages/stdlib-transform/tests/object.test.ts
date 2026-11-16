@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test"
 import { merge } from "../../stdlib/src/Object/merge"
+import { pick } from "../../stdlib/src/Object/pick"
 import { transformObjects } from "../src/object"
 
 function run(code: string): string {
@@ -9,7 +10,7 @@ function run(code: string): string {
 /** What a call returns once it has been compiled, next to what the function itself returns. */
 function both(call: string, target: object, fn: (target: any) => unknown): [unknown, unknown] {
     const compiled = run(`return ${call}`)
-    expect(compiled).not.toMatch(/Object\.merge\(/)
+    expect(compiled).not.toMatch(/Object\.(merge|pick)\(/)
     return [new Function("target", compiled)(target), fn(target)]
 }
 
@@ -62,5 +63,42 @@ function merge0(t, v0, v1) {
         const [compiled, runtime] = both(`Object.merge(target, { a: undefined })`, empty, (t) => merge(t, { a: undefined }))
         expect(compiled).toBe(empty)
         expect(runtime).toBe(empty)
+    })
+})
+
+describe("transformObjects, pick", () => {
+    it("should compile a pick into a function of its own", () => {
+        expect(run(`const a = Object.pick(user, ["email", "first-name"])`)).toBe(`const a = pick0(user)
+function pick0(t) {
+    return { email: t.email, "first-name": t["first-name"] }
+}
+`)
+    })
+
+    it("should share the function of the same keys, and compile calls inside of the target", () => {
+        const code = run(`Object.pick(Object.pick(a, ["x", "y"]), ["x"]); Object.pick(b, ["x"])`)
+        expect(code).toStartWith(`pick0(pick1(a)); pick0(b)`)
+        expect(code.match(/function pick/g)).toHaveLength(2)
+    })
+
+    it("should leave calls it can not compile", () => {
+        for (const code of [
+            `Object.pick(user, keys)`,
+            `Object.pick(user, [])`,
+            `Object.pick(user, [key])`,
+            `Object.pick(user, [...keys])`,
+            `Object.pick(user, ["a", , "b"])`,
+            `Object.pick(user, [1])`,
+            `Object.pick(user, ["__proto__"])`,
+            `Object.pick(...args)`,
+            `function f(Object) { return Object.pick(user, ["a"]) }`,
+        ]) expect(run(code)).toBe(code)
+    })
+
+    it("should do what Object.pick does", () => {
+        const target = Object.assign(Object.create({ inherited: 1 }), { a: 1, b: 2, c: undefined })
+        const [compiled, runtime] = both(`Object.pick(target, ["c", "a", "missing", "inherited"])`, target, (t) => pick(t, ["c", "a", "missing", "inherited"]))
+        expect(compiled).toEqual(runtime)
+        expect(Object.keys(compiled as object)).toEqual(Object.keys(runtime as object))
     })
 })

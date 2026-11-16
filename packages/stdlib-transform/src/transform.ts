@@ -39,8 +39,9 @@ export interface StdlibResult {
  *   and so do `Rect.bottom()` and the others of `@monstermann/stdlib-web`
  * - `match()` chains are compiled into conditional expressions
  * - `pipe()` calls are replaced with the calls they make
- * - `Object.setPath()` calls with a path that is written out and `Object.merge()` calls with an
- *   object literal are compiled into a function of their own
+ * - `Object.setPath()` calls with a path that is written out, `Object.merge()` calls with an object
+ *   literal and `Object.pick()` calls with an array of strings are compiled into a function of
+ *   their own
  * - everything else (`pipe`, `Result`, …) is imported from the file it lives in
  * - `m.auth.signIn` of `@monstermann/stdlib-i18n` becomes a direct import of `_authSignIn`
  * - in React components and hooks, reads of signals are wrapped with `useReactive` and their
@@ -106,7 +107,7 @@ export function transform(code: string, filePath: string, options: StdlibOptions
     }
 
     // Like paths: after pipes, before globals.
-    if (code.includes("merge")) {
+    if (code.includes("merge") || code.includes("pick")) {
         const objects = transformObjects(code, filePath)
         if (objects.hasChanged()) {
             code = objects.toString()

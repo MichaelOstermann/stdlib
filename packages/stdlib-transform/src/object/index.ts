@@ -5,8 +5,8 @@ import { ScopeTracker, walk } from "oxc-walker"
 import { access, id, isObjectCall, property } from "../setPath"
 
 /**
- * Compiles `Object.merge` calls whose source is an object literal into a function of their own, one
- * per set of keys and module:
+ * Compiles `Object.merge` calls whose source is an object literal, and `Object.pick` calls whose
+ * keys are an array of strings, into a function of their own, one per set of keys and module:
  *
  * ```ts
  * Object.merge(task, { title: "New", done })
@@ -18,6 +18,18 @@ import { access, id, isObjectCall, property } from "../setPath"
  * function merge0(t, v0, v1) {
  *     if (Object.is(t.title, v0) && Object.is(t.done, v1)) return t
  *     return { ...t, title: v0, done: v1 }
+ * }
+ * ```
+ *
+ * ```ts
+ * Object.pick(user, ["email", "name"])
+ * ```
+ *
+ * ```ts
+ * pick0(user)
+ *
+ * function pick0(t) {
+ *     return { email: t.email, name: t.name }
  * }
  * ```
  *
@@ -40,13 +52,36 @@ export function transformObjects(code: string, filePath: string): MagicString {
     })
 
     /** The name of the function of each set of keys. */
-    const functions = new Map<string, { keys: string[], name: string }>()
-    const nameOf = (keys: string[]): string => {
+    const merges = new Map<string, { keys: string[], name: string }>()
+    const mergeOf = (keys: string[]): string => {
         const key = JSON.stringify(keys)
-        let fn = functions.get(key)
-        if (!fn) functions.set(key, fn = { keys, name: id(ids, "merge") })
+        let fn = merges.get(key)
+        if (!fn) merges.set(key, fn = { keys, name: id(ids, "merge") })
         return fn.name
     }
+
+    const picks = new Map<string, { keys: string[], name: string }>()
+    const pickOf = (keys: string[]): string => {
+        const key = JSON.stringify(keys)
+        let fn = picks.get(key)
+        if (!fn) picks.set(key, fn = { keys, name: id(ids, "pick") })
+        return fn.name
+    }
+
+    walk(program, {
+        scopeTracker,
+        enter(node) {
+            if (node.type !== "CallExpression" || node.optional || !isObjectCall(node.callee, "pick")) return
+            if (scopeTracker.getDeclaration("Object")) return
+            if (node.arguments.length !== 2 || node.arguments.some((argument) => argument.type === "SpreadElement")) return
+            const [target, keysNode] = node.arguments as [Node, Node]
+
+            const keys = keysOf(keysNode)
+            if (!keys) return
+            ms.overwrite(node.callee.start, node.callee.end, pickOf(keys))
+            ms.overwrite(target.end, node.end, ")")
+        },
+    })
 
     walk(program, {
         scopeTracker,
@@ -58,7 +93,7 @@ export function transformObjects(code: string, filePath: string): MagicString {
 
             const entries = entriesOf(source)
             if (!entries) return
-            ms.overwrite(node.callee.start, node.callee.end, nameOf(entries.map(([key]) => key)))
+            ms.overwrite(node.callee.start, node.callee.end, mergeOf(entries.map(([key]) => key)))
             // The values stay where they are, for calls inside of them to be compiled as well.
             let end = target.end
             for (const [, value] of entries) {
@@ -70,7 +105,8 @@ export function transformObjects(code: string, filePath: string): MagicString {
     })
 
     // Declarations are hoisted, so they can go at the end, where every line before stays where it is.
-    for (const { keys, name } of functions.values()) ms.append(`\n${compileMerge(name, keys)}\n`)
+    for (const { keys, name } of merges.values()) ms.append(`\n${compileMerge(name, keys)}\n`)
+    for (const { keys, name } of picks.values()) ms.append(`\n${compilePick(name, keys)}\n`)
     return ms
 }
 
@@ -101,6 +137,30 @@ function compileMerge(name: string, keys: string[]): string {
         `function ${name}(t, ${values.join(", ")}) {`,
         `    if (${same}) return t`,
         `    return { ...t, ${copy} }`,
+        `}`,
+    ].join("\n")
+}
+
+/**
+ * The strings of `["a", "b"]`. Nothing for anything else: a spread, a hole, a value that is not a
+ * string, and `__proto__`, which sets the prototype in an object literal instead of a property.
+ */
+function keysOf(node: Node): string[] | undefined {
+    if (node.type !== "ArrayExpression" || !node.elements.length) return
+    const keys: string[] = []
+    for (const element of node.elements) {
+        if (element?.type !== "Literal" || typeof element.value !== "string" || element.value === "__proto__") return
+        keys.push(element.value)
+    }
+    return keys
+}
+
+/** A function that returns an object of the keys. */
+function compilePick(name: string, keys: string[]): string {
+    const copy = keys.map((key) => `${property(key)}: t${access(key)}`).join(", ")
+    return [
+        `function ${name}(t) {`,
+        `    return { ${copy} }`,
         `}`,
     ].join("\n")
 }

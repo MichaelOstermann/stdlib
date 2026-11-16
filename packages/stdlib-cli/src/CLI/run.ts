@@ -1,131 +1,34 @@
-import type { AnyCommand, CLIUnhandledExceptionError } from "./types"
-import { boolean } from "./boolean"
-import { help as commandHelp } from "./commands/help"
-import { pick as pickCommand } from "./commands/pick"
-import { resolve as resolveCommand } from "./commands/resolve"
-import { human } from "./env/human"
-import { formatFailure } from "./formatFailure"
-import { resolve as resolveHelp } from "./help/resolve"
-import { resolve as resolveOptions } from "./options/resolve"
-
-type Output = { exitCode?: number, stderr?: string, stdout?: string }
-type Action = NonNullable<AnyCommand["config"]["action"]>
-type OnError = (thrown: unknown) => Promise<void> | void
-
-const globalOptions = { help: boolean().desc("Show this help") }
-const rootOptions = { ...globalOptions, version: boolean().desc("Show the version") }
+import type { ResolvedArgv } from "./resolve/argv"
+import type { AnyCommand } from "./types"
+import { serve } from "../internals/serve"
+import { exec } from "./exec"
+import { format } from "./format"
+import { resolve } from "./resolve"
 
 /**
  * # run
  *
- * ```ts
- * function CLI.run(command: AnyCommand, input: { name: string, argv?: string[], onError?: OnError, prompt?: false, rpc?: AnyCommand, version?: string }): Promise<void>
- * ```
+ * Runs the command the command line asks for and prints what it returns. What went wrong goes to
+ * stderr, and the exit code becomes 1.
  *
- * Runs the program `command` is the root of, named `name`, with `argv` from the command line by
- * default: finds the command, reads its options and calls its action. What the action returns is
- * printed with its `.format()`, an `Ok` on stdout, an `Err` on stderr with exit code 1. Anything it
- * throws goes to `onError` first, then is printed on stderr with `CLI.formatFailure`, with exit
- * code 1.
+ * With `rpc`, `miko rpc …` prints JSON for other programs, and `miko rpc` on its own keeps running
+ * for `CLIClient.connect`.
  *
- * A person at a terminal is asked for the options: all of them when none are given, otherwise the
- * ones that are missing or invalid.
- *
- * A person at a terminal who runs a command without an action, like the program itself, picks one
- * of the commands below it.
- *
- * Asking and picking only happen for `CLI.env.human()`, and `prompt: false` turns them off.
- *
- * `--help` anywhere, or a command without an action, prints the help of that command. With a
- * `version`, `--version` after the name of the program prints it.
- *
- * Commands under `rpc` are for programs: they never ask, and print one line of JSON on stdout,
- * `{ "ok": true, "value": … }` or `{ "ok": false, "value": … }`, with what the action returns, or a
- * `Failure` for what was wrong with the command or its options, or what it threw.
+ * At a terminal, a person is asked for missing options, and to pick a command when there is no
+ * action. `prompt: false` turns that off.
  *
  * ## Example
  *
  * ```ts
- * const rpc = CLI.command().desc("For programs, prints JSON").commands({ members })
- * const miko = CLI.command().commands({ members, rpc })
- *
- * await CLI.run(miko, { name: "miko", rpc, version: "1.2.0" })
+ * await CLI.run(miko, { rpc })
  * ```
  */
-export async function run(command: AnyCommand, input: {
-    argv?: string[]
-    name: string
-    onError?: OnError
-    prompt?: false
-    rpc?: AnyCommand
-    version?: string
-}): Promise<void> {
-    write(await output(command, input))
-}
-
-async function output(command: AnyCommand, input: {
-    argv?: string[]
-    name: string
-    onError?: OnError
-    prompt?: false
-    rpc?: AnyCommand
-    version?: string
-}): Promise<Output> {
-    const prompt = input.prompt !== false && human()
-    const help = resolveHelp(input.argv ?? process.argv.slice(2))
-
-    const isVersion = help.argv.length === 1 && help.argv[0] === "--version"
-    if (input.version !== undefined && isVersion && !help.isHelp) return { stdout: input.version }
-
-    const resolved = resolveCommand({ argv: help.argv, command })
-    const isRPC = input.rpc !== undefined && [...resolved.parents, resolved.command].includes(input.rpc)
-    if (resolved.error && isRPC) return { stdout: JSON.stringify(Err(resolved.error)) }
-    if (resolved.error) return { exitCode: 1, stderr: resolved.message }
-
-    const isPicking = prompt && !isRPC && !help.isHelp && !resolved.command.config.action && !resolved.argv.length
-    const picked = isPicking ? await pickCommand({ command: resolved.command, path: [input.name, ...resolved.path], rpc: input.rpc }) : undefined
-    const target = picked?.command ?? resolved.command
-
-    const action = target.config.action
-    if (help.isHelp || !action) {
-        const path = [input.name, ...resolved.path]
-        const isRoot = !resolved.path.length && input.version !== undefined
-        return { stdout: commandHelp({ command: resolved.command, globalOptions: isRoot ? rootOptions : globalOptions, path }) }
-    }
-
-    if (isRPC) return rpcOutput(target, action, resolved.argv, input.onError)
-    return terminalOutput(target, action, resolved.argv, prompt, input.onError)
-}
-
-async function rpcOutput(command: AnyCommand, action: Action, argv: string[], onError: OnError | undefined): Promise<Output> {
-    const options = await resolveOptions({ argv, command })
-    if (options.error) return { stdout: JSON.stringify(Err(options.error)) }
-    try {
-        return { stdout: JSON.stringify(await action(options.options)) }
-    }
-    catch (thrown) {
-        await onError?.(thrown)
-        const error: CLIUnhandledExceptionError = { cause: Failure.from(thrown), message: "Unhandled exception", name: "CLIUnhandledExceptionError" }
-        return { stdout: JSON.stringify(Err(error)) }
-    }
-}
-
-async function terminalOutput(command: AnyCommand, action: Action, argv: string[], prompt: boolean, onError: OnError | undefined): Promise<Output> {
-    const options = await resolveOptions({ argv, command, prompt })
-    if (options.error) return { exitCode: 1, stderr: options.message }
-    try {
-        const result = await action(options.options)
-        if (!result.ok) return { exitCode: 1, stderr: command.config.format(result) }
-        return { stdout: command.config.format(result) }
-    }
-    catch (thrown) {
-        await onError?.(thrown)
-        return { exitCode: 1, stderr: formatFailure(Failure.from(thrown)) }
-    }
-}
-
-function write(output: Output): void {
-    if (output.exitCode) process.exitCode = output.exitCode
-    if (output.stdout) process.stdout.write(`${output.stdout}\n`)
-    if (output.stderr) process.stderr.write(`${output.stderr}\n`)
+export async function run(root: AnyCommand, input: { argv?: ResolvedArgv, prompt?: false, rpc?: AnyCommand } = {}): Promise<void> {
+    const execution = await exec(root, { ...input, argv: input.argv ?? resolve.argv() })
+    if (input.rpc && execution.command?.command === input.rpc && !execution.argv.isHelp) return serve(root, input.rpc)
+    const text = format.exec(execution)
+    const isFailure = !execution.result.ok
+    if (text && (!isFailure || execution.isRPC)) process.stdout.write(`${text}\n`)
+    if (text && isFailure && !execution.isRPC) process.stderr.write(`${text}\n`)
+    if (isFailure) process.exitCode = 1
 }

@@ -1,14 +1,19 @@
-import type { BooleanOption, BooleanOptionConfig } from "./types"
+export interface BooleanOption {
+    readonly config: BooleanOptionConfig
+    readonly kind: "boolean"
+    default: (value: boolean) => BooleanOption
+    desc: (desc: string) => BooleanOption
+}
+
+export interface BooleanOptionConfig {
+    default: boolean
+    desc?: string
+}
 
 /**
  * # boolean
  *
- * ```ts
- * function CLI.boolean(): BooleanOption
- * ```
- *
- * An option that is on or off, off when it is not given. Each call returns a new option, so one can
- * be the base of others.
+ * On or off, off unless given: `--force` or `--force=false`.
  *
  * ## Example
  *

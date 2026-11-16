@@ -1,198 +1,40 @@
-import type { InferErr, InferOk } from "@monstermann/stdlib"
-import type { Parse } from "../internals/Parse"
+import type { BooleanOption } from "./boolean"
+import type { EnumOption } from "./enum"
+import type { StringOption, StringValue } from "./string"
 
-export interface StringOption<T = string, Optional extends boolean = false, Defaulted extends boolean = false> {
-    readonly config: StringOptionConfig<T>
-    readonly kind: "string"
-    default: {
-        (value: string): StringOption<T, Optional, true>
-        (value: string | undefined): StringOption<T, Optional, Defaulted>
-    }
-    desc: (desc: string) => StringOption<T, Optional, Defaulted>
-    example: (example: string) => StringOption<T, Optional, Defaulted>
-    optional: <O extends boolean>(optional: O) => StringOption<T, O, Defaulted>
-    parse: <U>(parse: Parse<U>) => StringOption<U, Optional, Defaulted>
-    sensitive: (sensitive: boolean) => StringOption<T, Optional, Defaulted>
-}
-
-export interface StringOptionConfig<T> {
-    default?: string
-    desc?: string
-    example?: string
-    optional: boolean
-    parse: Parse<T>
-    sensitive: boolean
-}
-
-export interface BooleanOption {
-    readonly config: BooleanOptionConfig
-    readonly kind: "boolean"
-    default: (value: boolean) => BooleanOption
-    desc: (desc: string) => BooleanOption
-}
-
-export interface BooleanOptionConfig {
-    default: boolean
-    desc?: string
-}
-
-export interface EnumOption<K extends string = never, Defaulted extends boolean = false> {
-    readonly config: EnumOptionConfig<K>
-    readonly kind: "enum"
-    default: (value: K) => EnumOption<K, true>
-    desc: (desc: string) => EnumOption<K, Defaulted>
-    options: <const C extends Record<string, string>>(options: C) => EnumOption<keyof C & string, false>
-}
-
-export interface EnumOptionConfig<K extends string> {
-    default?: K
-    desc?: string
-    options: Record<K, string>
-}
-
-export type CommandOption =
-    | { kind: "boolean", config: BooleanOptionConfig }
-    | { kind: "enum", config: EnumOptionConfig<string> }
-    | { kind: "string", config: StringOptionConfig<unknown> }
-
-export type CommandOptions = Record<string, CommandOption>
-
-export type Commands = Record<string, AnyCommand>
-
-export interface Command<O extends CommandOptions = Record<never, never>, C extends Commands = Record<never, never>> {
-    readonly config: CommandConfig<O, C>
-    readonly kind: "command"
-    action: <R extends Result<JSONValue, Failure | Error | string> | void>(action: (options: InferOptions<O>) => R | Promise<R>) => ActionCommand<O, C, ActionValue<R>, ActionError<R>>
-    commands: <const C extends Commands>(commands: C) => Command<O, C>
-    desc: (desc: string) => Command<O, C>
-    format: (format: (result: Result<JSONValue, Failure>) => string) => Command<O, C>
-    option: <const N extends string, X extends CommandOption>(name: N, option: X) => Command<MergeOptions<O, Record<N, X>>, C>
-    options: <const P extends CommandOptions>(options: P) => Command<MergeOptions<O, P>, C>
-}
-
-export interface CommandConfig<O extends CommandOptions, C extends Commands> {
-    action: undefined
-    commands: C
-    desc?: string
-    options: O
-    format: (result: Result<JSONValue, Failure>) => string
-}
-
-export interface ActionCommand<O extends CommandOptions, C extends Commands, T extends JSONValue, E extends Failure> {
-    readonly config: ActionCommandConfig<O, C, T, E>
-    readonly kind: "command"
-    commands: <const C extends Commands>(commands: C) => ActionCommand<O, C, T, E>
-    desc: (desc: string) => ActionCommand<O, C, T, E>
-    format: (format: (result: Result<T, E>) => string) => ActionCommand<O, C, T, E>
-}
-
-export interface ActionCommandConfig<O extends CommandOptions, C extends Commands, T extends JSONValue, E extends Failure> {
-    commands: C
-    desc?: string
-    options: O
-    action: (options: InferOptions<O>) => Promise<Result<T, E>>
-    format: (result: Result<T, E>) => string
-}
-
-export type MergeOptions<A, B> = Omit<A, keyof B> & B
-export type ActionValue<R> = InferOk<Exclude<R, void>> | (undefined extends R ? null : never)
-export type ActionError<R> = InferErr<Exclude<R, void>> extends infer E ? E extends Failure ? E : Failure : never
+export type Flag = string | null
+export type AnyOption = BooleanOption | EnumOption<any, boolean> | StringOption<any, boolean, boolean>
 
 export interface AnyCommand {
-    kind: "command"
-    config: {
-        action: ((options: any) => Promise<Result<JSONValue, Failure>>) | undefined
+    readonly kind: "command"
+    readonly config: {
+        action: ((options: any) => unknown) | undefined
         commands: Commands
         desc?: string
         options: CommandOptions
-        format: (result: any) => string
     }
+    commands: (commands: Commands) => AnyCommand
 }
 
+export type Commands = Record<string, AnyCommand>
+export type CommandOptions = Record<string, AnyOption>
+export type ResolvedCommand = { command: AnyCommand, parents: AnyCommand[], path: string[] }
+
 export type InferOptions<X> = X extends { config: { options: infer O } } ? InferOptions<O> : { -readonly [K in keyof X]: InferOption<X[K]> }
-
 export type InferOption<O> = O extends StringOption<infer T, infer Optional, infer Defaulted>
-    ? Value<T, Optional, Defaulted>
+    ? StringValue<T, Optional, Defaulted>
     : O extends BooleanOption
         ? boolean
         : O extends EnumOption<infer K, boolean>
             ? K
-            : never
+            : unknown
 
-type Value<T, Optional, Defaulted> = Defaulted extends true
-    ? T
-    : Optional extends true
-        ? T | undefined
-        : T
-
-export type CLIUnknownCommandError = Failure<"CLIUnknownCommandError", { input: string }>
-
-export type ResolvedCommand =
-    | { argv: string[], command: AnyCommand, error?: undefined, message?: undefined, parents: AnyCommand[], path: string[] }
-    | { argv: string[], command: AnyCommand, error: CLIUnknownCommandError, message: string, parents: AnyCommand[], path: string[] }
-
-export type CLIInvalidOptionError = Failure<"CLIInvalidOptionError", { option: string }>
-export type CLIMissingOptionError = Failure<"CLIMissingOptionError", { option: string }>
-export type CLIMissingValueError = Failure<"CLIMissingValueError", { option: string }>
-export type CLIUnknownOptionError = Failure<"CLIUnknownOptionError", { input: string, suggestions: string[] }>
-export type CLIOptionError = CLIInvalidOptionError | CLIMissingOptionError | CLIMissingValueError | CLIUnknownOptionError
-export type CLIOptionsError = Failure<"CLIOptionsError"> & { errors: CLIOptionError[] }
-
-/** What `CLI.options.resolve` read: the values for `action`, or what was wrong. */
-export type ResolvedOptions<C> =
-    | { error?: undefined, message?: undefined, options: InferOptions<C> }
-    | { error: CLIOptionsError, message: string, options?: undefined }
-
-/** What an action threw, as the `cause`. */
-export type CLIUnhandledExceptionError = Failure<"CLIUnhandledExceptionError"> & { cause: Failure }
-
-/**
- * The commands of `X` with an action, nested like they are, each as a function that takes its
- * options as they are typed, before they are parsed, and returns what its action returns.
- */
-export type InferRPC<X> = X extends { config: { action: infer A, commands: infer C, options: infer O } }
-    ? keyof RPCCommands<C> extends never
-        ? RPCAction<A, O>
-        : RPCAction<A, O> & RPCCommands<C>
-    : never
-
-type RPCCommands<C> = RPCSimplify<{ -readonly [K in keyof C as RPCHasAction<C[K]> extends true ? K : never]: InferRPC<C[K]> }>
-
-type RPCAction<A, O> = A extends (options: never) => Promise<infer R>
-    ? (options: RPCOptions<O>) => Promise<Result<InferOk<R>, InferErr<R> | CLIOptionsError | CLIUnhandledExceptionError | CLIUnknownCommandError>>
-    : unknown
-
-type RPCHasAction<X> = X extends { config: { action: infer A, commands: infer C } }
-    ? A extends undefined
-        ? true extends { [K in keyof C]: RPCHasAction<C[K]> }[keyof C]
-            ? true
-            : false
-        : true
-    : false
-
-type RPCOptions<O> = RPCSimplify<
-    & { -readonly [K in keyof O as RPCRequired<O[K]> extends true ? K : never]: RPCOption<O[K]> }
-    & { -readonly [K in keyof O as RPCRequired<O[K]> extends true ? never : K]?: RPCOption<O[K]> }
->
-
-type RPCOption<O> = O extends StringOption<unknown, boolean, boolean>
-    ? string
-    : O extends BooleanOption
-        ? boolean
-        : O extends EnumOption<infer K, boolean>
-            ? K
-            : never
-
-type RPCRequired<O> = O extends StringOption<unknown, infer Optional, infer Defaulted>
-    ? Optional extends true
-        ? false
-        : Defaulted extends true
-            ? false
-            : true
-    : O extends EnumOption<infer _K, infer Defaulted>
-        ? Defaulted extends true
-            ? false
-            : true
-        : false
-
-type RPCSimplify<T> = { [K in keyof T]: T[K] } & {}
+export type CLIUnknownCommandError = { message: string, name: "CLIUnknownCommandError" }
+export type CLIInvalidOptionError = { message: string, meta: { option: string }, name: "CLIInvalidOptionError" }
+export type CLIMissingOptionError = { message: string, meta: { option: string }, name: "CLIMissingOptionError" }
+export type CLIUnknownOptionError = { message: string, meta: { option: string }, name: "CLIUnknownOptionError" }
+export type CLIOptionError = CLIInvalidOptionError | CLIMissingOptionError | CLIUnknownOptionError
+export type CLIOptionsError = { errors: CLIOptionError[], message: string, name: "CLIOptionsError" }
+export type CLIUnhandledExceptionError = { cause: Failure, message: string, name: "CLIUnhandledExceptionError" }
+export type CLIInvalidMessageError = { message: string, name: "CLIInvalidMessageError" }
+export type CLIError = CLIOptionsError | CLIUnhandledExceptionError | CLIUnknownCommandError

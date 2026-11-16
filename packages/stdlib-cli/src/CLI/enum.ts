@@ -1,14 +1,21 @@
-import type { EnumOption, EnumOptionConfig } from "./types"
+export interface EnumOption<K extends string = never, Defaulted extends boolean = false> {
+    readonly config: EnumOptionConfig<K>
+    readonly kind: "enum"
+    default: (value: K) => EnumOption<K, true>
+    desc: (desc: string) => EnumOption<K, Defaulted>
+    options: <const C extends Record<string, string>>(options: C) => EnumOption<keyof C & string, false>
+}
+
+export interface EnumOptionConfig<K extends string> {
+    default?: K
+    desc?: string
+    options: Record<K, string>
+}
 
 /**
  * # enum
  *
- * ```ts
- * function CLI.enum(): EnumOption
- * ```
- *
- * An option that takes one of its options, each with a description. Each call returns a new option,
- * so one can be the base of others.
+ * One of a fixed set of values, each with a description.
  *
  * ## Example
  *

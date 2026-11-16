@@ -21,16 +21,6 @@ const VARIABLES = [
     "REPL_ID", // Replit
 ]
 
-/**
- * # agent
- *
- * ```ts
- * function CLI.env.agent(): boolean
- * ```
- *
- * Whether a coding agent runs this process: Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot
- * and others, by the environment variables they set.
- */
 export function agent(): boolean {
     const env = process.env
     if (env[CONVENTION]) return true

@@ -1,79 +1,65 @@
-import { colors } from "../internals/colors"
+import { ansi } from "./ansi"
 import { boolean } from "./boolean"
 import { command } from "./command"
-import { help as commandHelp } from "./commands/help"
-import { pick as pickCommand } from "./commands/pick"
-import { resolve as resolveCommand } from "./commands/resolve"
+import { commands } from "./commands"
+import { console } from "./console"
 import { enumI } from "./enum"
-import { agent } from "./env/agent"
-import { ci } from "./env/ci"
-import { color } from "./env/color"
-import { human } from "./env/human"
-import { formatFailure } from "./formatFailure"
-import { formatJSON } from "./formatJSON"
-import { resolve as resolveHelp } from "./help/resolve"
-import { help as optionsHelp } from "./options/help"
-import { resolve as resolveOptions } from "./options/resolve"
+import { env } from "./env"
+import { exec } from "./exec"
+import { format } from "./format"
+import { help } from "./help"
+import { prompt } from "./prompt"
+import { resolve } from "./resolve"
 import { run } from "./run"
 import { string } from "./string"
-import { confirm } from "./terminal/confirm"
-import { input } from "./terminal/input"
-import { onKey } from "./terminal/onKey"
-import { prompt } from "./terminal/prompt"
-import { render } from "./terminal/render"
-import { select } from "./terminal/select"
+import { term } from "./term"
 
-export type { Colors } from "../internals/colors"
-export type { PickedCommand } from "./commands/pick"
-export type { FormatOptions } from "./formatJSON"
-export type { ConfirmOptions, ConfirmSlot } from "./terminal/confirm"
-export type { Input } from "./terminal/input"
-export type { Key } from "./terminal/onKey"
-export type { PromptOptions, PromptSlot } from "./terminal/prompt"
-export type { SelectOptions, SelectSlot } from "./terminal/select"
+export type { Colors } from "./ansi"
+export type { BooleanOption, BooleanOptionConfig } from "./boolean"
+export type { ActionCommand, ActionCommandConfig, ActionReturn, Command, CommandConfig } from "./command"
+export type { EnumOption, EnumOptionConfig } from "./enum"
+export type { Execution } from "./exec"
+export type { FormatOptions } from "./format/json"
+export type { ConfirmOptions, ConfirmSlot } from "./prompt/confirm"
+export type { SelectOptions, SelectSlot } from "./prompt/select"
+export type { TextOptions, TextSlot } from "./prompt/text"
+export type { ResolvedArgv } from "./resolve/argv"
+export type { StringOption, StringOptionConfig, StringValue } from "./string"
+export type { Input } from "./term/input"
+export type { Key } from "./term/onKey"
 export type {
-    ActionCommand,
-    ActionCommandConfig,
     AnyCommand,
-    BooleanOption,
-    BooleanOptionConfig,
+    AnyOption,
+    CLIError,
+    CLIInvalidMessageError,
     CLIInvalidOptionError,
     CLIMissingOptionError,
-    CLIMissingValueError,
     CLIOptionError,
     CLIOptionsError,
     CLIUnhandledExceptionError,
     CLIUnknownCommandError,
     CLIUnknownOptionError,
-    Command,
-    CommandConfig,
-    CommandOption,
     CommandOptions,
     Commands,
-    EnumOption,
-    EnumOptionConfig,
     InferOption,
     InferOptions,
-    InferRPC,
-    MergeOptions,
     ResolvedCommand,
-    ResolvedOptions,
-    StringOption,
-    StringOptionConfig,
 } from "./types"
 
 export const CLI = {
-    ...colors,
+    ansi,
     boolean,
     command,
-    commands: { help: commandHelp, pick: pickCommand, resolve: resolveCommand },
+    commands,
+    console,
     enum: enumI,
-    env: { agent, ci, color, human },
-    formatFailure,
-    formatJSON,
-    help: { resolve: resolveHelp },
-    options: { help: optionsHelp, resolve: resolveOptions },
+    env,
+    exec,
+    format,
+    help,
+    prompt,
+    resolve,
     run,
     string,
-    terminal: { confirm, input, onKey, prompt, render, select },
+    term,
 }

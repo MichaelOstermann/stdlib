@@ -1,35 +1,17 @@
-import { describe, expect, it } from "bun:test"
+import type { InferOptions } from "../../src"
+import { describe, expect, expectTypeOf, it } from "bun:test"
 import { CLI } from "../../src"
 
 describe("CLI.command", () => {
-    it("should return Ok(null) when the action returns nothing", async () => {
+    it("should replace the options", () => {
+        const command = CLI.command().options({ email: CLI.string() }).options({ seats: CLI.string() })
+        expect(Object.keys(command.config.options)).toEqual(["seats"])
+    })
+
+    it("should have no action or options after the action", () => {
         const command = CLI.command().action(() => {})
-        expect(await command.config.action({})).toEqual(Ok(null))
-    })
-
-    it("should return what the action returns, also when it is async", async () => {
-        const command = CLI.command().action(async () => Err("Nope"))
-        expect(await command.config.action({})).toEqual(Err({ message: "Nope", name: "Error" }))
-    })
-
-    it("should add options after the ones that are there, and replace those of the same name in place", () => {
-        const command = CLI
-            .command()
-            .option("email", CLI.string())
-            .options({ notify: CLI.boolean(), seats: CLI.string() })
-            .option("email", CLI.string().optional(true))
-        expect(Object.keys(command.config.options)).toEqual(["email", "notify", "seats"])
-        expect(command.config.options.email.config.optional).toBe(true)
-    })
-
-    it("should have no action, option or options after the action", () => {
-        const command = CLI.command().action(() => {})
-        expect(Object.keys(command)).toEqual(["config", "kind", "commands", "desc", "format"])
-    })
-
-    it("should keep the format when the action is added", () => {
-        const format = () => "Done"
-        expect(CLI.command().format(format).action(() => {}).config.format).toBe(format)
+        expect("action" in command).toBe(false)
+        expect("options" in command).toBe(false)
     })
 
     it("should return a new command each time, leaving the one it was made from as it is", () => {
@@ -40,32 +22,46 @@ describe("CLI.command", () => {
     })
 })
 
-describe("CLI.string", () => {
-    it("should return a new option each time", () => {
-        const base = CLI.string()
-        const optional = base.optional(true)
-        expect(base.config.optional).toBe(false)
-        expect(optional.config.optional).toBe(true)
+type TakenError = { message: string, meta: { email: string }, name: "TakenError" }
+
+const add = CLI
+    .command()
+    .options({
+        email: CLI.string(),
+        firstName: CLI.string().optional(true),
+        notify: CLI.boolean(),
+        role: CLI.enum().options({ admin: "", member: "" }).default("member"),
+        seats: CLI.string().default("1").parse((value) => Ok(Number(value))),
+        team: CLI.enum().options({ a: "", b: "" }),
+    })
+    .action(({ email }) => {
+        if (email === "taken@miko.dev") return Err<TakenError>({ message: "Already a member", meta: { email }, name: "TakenError" })
+        return Ok(email)
     })
 
-    it("should keep the default as it is for undefined, and take an empty string", () => {
-        expect(CLI.string().default(undefined).config.default).toBeUndefined()
-        expect(CLI.string().default("1").default(undefined).config.default).toBe("1")
-        expect(CLI.string().default("").config.default).toBe("")
-    })
-})
+const empty = CLI.command().desc("No action, nothing below")
 
-describe("CLI.boolean", () => {
-    it("should be off by default", () => {
-        expect(CLI.boolean().config.default).toBe(false)
-        expect(CLI.boolean().default(true).config.default).toBe(true)
-    })
-})
+const members = CLI.command().commands({ add, empty })
 
-describe("CLI.enum", () => {
-    it("should forget the default when the options change", () => {
-        const role = CLI.enum().options({ admin: "", member: "" }).default("member")
-        expect(role.config.default).toBe("member")
-        expect(role.options({ guest: "" }).config.default).toBeUndefined()
+describe("Command", () => {
+    it("should replace the options", () => {
+        const command = CLI.command().options({ email: CLI.string() }).options({ seats: CLI.string().default("1") })
+        expectTypeOf<InferOptions<typeof command>>().toEqualTypeOf<{ seats: string }>()
+    })
+
+    it("should have no action without one", () => {
+        expectTypeOf(members.config.action).toEqualTypeOf<undefined>()
+    })
+
+    it("should only take JSON from the action", () => {
+        // @ts-expect-error a bigint is not JSON
+        CLI.command().action(() => Ok(10n))
+        // @ts-expect-error undefined is not JSON
+        CLI.command().action(() => Ok({ email: undefined }))
+    })
+
+    it("should only have the action once, and the options before it", () => {
+        expectTypeOf(add).not.toHaveProperty("action")
+        expectTypeOf(add).not.toHaveProperty("options")
     })
 })

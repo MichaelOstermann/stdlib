@@ -1,20 +1,41 @@
-import type { StringOption, StringOptionConfig } from "./types"
+import type { Parse } from "../internals/Parse"
+
+export interface StringOption<T = string, Optional extends boolean = false, Defaulted extends boolean = false> {
+    readonly config: StringOptionConfig<T>
+    readonly kind: "string"
+    default: {
+        (value: string): StringOption<T, Optional, true>
+        (value: string | undefined): StringOption<T, Optional, Defaulted>
+    }
+    desc: (desc: string) => StringOption<T, Optional, Defaulted>
+    example: (example: string) => StringOption<T, Optional, Defaulted>
+    optional: <O extends boolean>(optional: O) => StringOption<T, O, Defaulted>
+    parse: <U>(parse: Parse<U>) => StringOption<U, Optional, Defaulted>
+    sensitive: (sensitive: boolean) => StringOption<T, Optional, Defaulted>
+}
+
+export interface StringOptionConfig<T> {
+    default?: string
+    desc?: string
+    example?: string
+    optional: boolean
+    parse: Parse<T>
+    sensitive: boolean
+}
+
+export type StringValue<T, Optional, Defaulted> = Defaulted extends true
+    ? T
+    : Optional extends true
+        ? T | undefined
+        : T
 
 /**
  * # string
  *
- * ```ts
- * function CLI.string(): StringOption<string>
- * ```
+ * Text: `--name Jane` or `--name=Jane`.
  *
- * An option that takes text: `--first-name John` or `--first-name=John`. Each call returns a new
- * option, so one can be the base of others.
- *
- * `.default()` with `undefined` keeps the option as it is, so it can take an environment variable
- * that may not be set.
- *
- * `.sensitive(true)` is for passwords and the like: the value is masked while it is typed, and the
- * help does not show the default.
+ * `.default(undefined)` changes nothing, for environment variables that may not be set.
+ * `.sensitive(true)` masks the value while it is typed, and hides the default in the help.
  *
  * ## Example
  *
@@ -37,8 +58,8 @@ export function string(): StringOption {
 function build<T, Optional extends boolean, Defaulted extends boolean>(config: StringOptionConfig<T>): StringOption<T, Optional, Defaulted> {
     return {
         config,
+        default: ((value: string | undefined) => build({ ...config, default: value ?? config.default })) as StringOption<T, Optional, Defaulted>["default"],
         kind: "string",
-        default: (value: string | undefined) => build({ ...config, default: value ?? config.default }),
         desc: (desc) => build({ ...config, desc }),
         example: (example) => build({ ...config, example }),
         optional: (optional) => build({ ...config, optional }),

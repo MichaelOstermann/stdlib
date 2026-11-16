@@ -1,9 +1,8 @@
-import type { CLIOptionsError, CLIUnhandledExceptionError, CLIUnknownCommandError, InferOptions, InferRPC } from "../../src"
+import type { InferOptions } from "../../src"
 import { describe, expectTypeOf, it } from "bun:test"
 import { CLI } from "../../src"
 
-type CLIErrors = CLIOptionsError | CLIUnhandledExceptionError | CLIUnknownCommandError
-type TakenError = Failure<"TakenError", { email: string }>
+type TakenError = { message: string, meta: { email: string }, name: "TakenError" }
 
 const add = CLI
     .command()
@@ -16,13 +15,9 @@ const add = CLI
         team: CLI.enum().options({ a: "", b: "" }),
     })
     .action(({ email }) => {
-        if (email === "taken@miko.dev") return Err(Failure.of("TakenError", "Already a member", { meta: { email } }))
+        if (email === "taken@miko.dev") return Err<TakenError>({ message: "Already a member", meta: { email }, name: "TakenError" })
         return Ok(email)
     })
-const empty = CLI.command().desc("No action, nothing below")
-const members = CLI.command().commands({ add, empty })
-const serve = CLI.command().action(() => {}).commands({ status: CLI.command().action(() => Ok(1)) })
-const miko = CLI.command().commands({ empty, members, serve })
 
 describe("InferOptions", () => {
     it("should be the values the action gets", () => {
@@ -34,79 +29,5 @@ describe("InferOptions", () => {
             seats: number
             team: "a" | "b"
         }>()
-    })
-})
-
-describe("Command", () => {
-    it("should merge the options of .option() and .options(), the last of the same name wins", () => {
-        const command = CLI
-            .command()
-            .option("email", CLI.string())
-            .options({ seats: CLI.string().default("1") })
-            .option("email", CLI.string().optional(true))
-        expectTypeOf<InferOptions<typeof command>>().toEqualTypeOf<{ email: string | undefined, seats: string }>()
-    })
-
-    it("should know what the action returns", () => {
-        expectTypeOf(add.config.action).returns.toEqualTypeOf<Promise<Result<string, TakenError>>>()
-        expectTypeOf(serve.config.action).returns.toEqualTypeOf<Promise<Result<null, never>>>()
-        expectTypeOf(members.config.action).toEqualTypeOf<undefined>()
-    })
-
-    it("should only take JSON from the action", () => {
-        // @ts-expect-error a bigint is not JSON
-        CLI.command().action(() => Ok(10n))
-        // @ts-expect-error undefined is not JSON
-        CLI.command().action(() => Ok({ email: undefined }))
-    })
-
-    it("should turn an Error or a string the action fails with into a Failure", () => {
-        expectTypeOf(CLI.command().action(() => Err("Nope")).config.action).returns.toEqualTypeOf<Promise<Result<never, Failure>>>()
-        expectTypeOf(CLI.command().action(() => Err(new TypeError("Nope"))).config.action).returns.toEqualTypeOf<Promise<Result<never, Failure>>>()
-    })
-
-    it("should only have the action once, and the options before it", () => {
-        expectTypeOf(add).not.toHaveProperty("action")
-        expectTypeOf(add).not.toHaveProperty("option")
-        expectTypeOf(add).not.toHaveProperty("options")
-    })
-
-    it("should format any JSON before the action, and what the action returns after it", () => {
-        type Formatted<F extends (format: never) => unknown> = Parameters<Parameters<F>[0]>[0]
-        expectTypeOf<Formatted<ReturnType<typeof CLI.command>["format"]>>().toEqualTypeOf<Result<JSONValue, Failure>>()
-        expectTypeOf<Formatted<typeof add.format>>().toEqualTypeOf<Result<string, TakenError>>()
-    })
-})
-
-describe("InferRPC", () => {
-    type RPC = InferRPC<typeof miko>
-
-    it("should only have the commands with an action, or with one below them", () => {
-        expectTypeOf<keyof RPC>().toEqualTypeOf<"members" | "serve">()
-        expectTypeOf<keyof RPC["members"]>().toEqualTypeOf<"add">()
-        expectTypeOf<keyof RPC["serve"]>().toEqualTypeOf<"status">()
-    })
-
-    it("should only count a default that is not undefined", () => {
-        const env: string | undefined = process.env["MIKO_PASSWORD"]
-        const command = CLI.command().options({ kept: CLI.string().default("1").default(env), password: CLI.string().default(env) }).action(() => {})
-        expectTypeOf<Parameters<InferRPC<typeof command>>[0]>().toEqualTypeOf<{ kept?: string, password: string }>()
-    })
-
-    it("should take the options as they are typed, optional when they fall back to something", () => {
-        expectTypeOf<Parameters<RPC["members"]["add"]>[0]>().toEqualTypeOf<{
-            email: string
-            firstName?: string
-            notify?: boolean
-            role?: "admin" | "member"
-            seats?: string
-            team: "a" | "b"
-        }>()
-    })
-
-    it("should return what the action returns, and what can go wrong on the way", () => {
-        expectTypeOf<ReturnType<RPC["members"]["add"]>>().toEqualTypeOf<Promise<Result<string, TakenError | CLIErrors>>>()
-        expectTypeOf<ReturnType<RPC["serve"]>>().toEqualTypeOf<Promise<Result<null, CLIErrors>>>()
-        expectTypeOf<ReturnType<RPC["serve"]["status"]>>().toEqualTypeOf<Promise<Result<number, CLIErrors>>>()
     })
 })

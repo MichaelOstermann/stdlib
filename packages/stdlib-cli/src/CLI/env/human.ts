@@ -1,13 +1,3 @@
-/**
- * # human
- *
- * ```ts
- * function CLI.env.human(): boolean
- * ```
- *
- * Whether a person is typing at a terminal: stdin and stdout are both a TTY. Scripts, pipes, CI and
- * most agents are not.
- */
 export function human(): boolean {
     // @types/node types both as TTY streams, but `isTTY` is `undefined` when piped.
     const stdin: { isTTY?: boolean } = process.stdin

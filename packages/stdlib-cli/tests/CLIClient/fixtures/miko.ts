@@ -11,4 +11,4 @@ const add = CLI
 
 export const program = CLI.command().commands({ members: CLI.command().commands({ add }) })
 
-if (import.meta.main) await CLI.run(program, { rpc: CLI.command().commands(program.config.commands) })
+if (import.meta.main) await CLI.run(program, { name: "miko", rpc: CLI.command().commands(program.config.commands) })

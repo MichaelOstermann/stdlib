@@ -1,4 +1,5 @@
-import type { CLIOptionError, CLIOptionsError, CLIUnknownOptionError, CommandOptions, Flag, InferOptions } from "../types"
+import type { CLIOptionError, CLIOptionsError, CLIUnknownOptionError, CommandOptions, InferOptions } from "../types"
+import type { ResolvedFlag } from "./argv"
 import { prompt } from "../prompt"
 import { option } from "./option"
 
@@ -15,7 +16,7 @@ import { option } from "./option"
  * await CLI.resolve.options(add.config.options, flags) // Ok({ email: "a@b.c" })
  * ```
  */
-export async function options<O extends CommandOptions>(options: O, flags: Record<string, Flag>, input: { prompt?: boolean } = {}): Promise<Result<InferOptions<O>, CLIOptionsError>> {
+export async function options<O extends CommandOptions>(options: O, flags: Record<string, ResolvedFlag[]>, input: { prompt?: boolean } = {}): Promise<Result<InferOptions<O>, CLIOptionsError>> {
     const known = Object.keys(options).map((name) => `--${String.kebabCase(name)}`)
     const unknown = Object.keys(flags).filter((flag) => !known.includes(flag))
     const isPrompting = input.prompt === true && !unknown.length

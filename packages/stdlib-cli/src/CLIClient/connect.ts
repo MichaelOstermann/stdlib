@@ -1,10 +1,10 @@
 import type { CLIClient } from "."
 
 export interface CLIClientTransport {
-    /** Calls `callback` with each line the program prints. */
-    onLine: (callback: (line: string) => void) => void
-    /** Sends one line, with its `\n`, to the program. */
-    send: (line: string) => void
+    /** Sends a request to the program. */
+    request: (text: string) => void
+    /** Calls `callback` with the text the program prints, in pieces of any size. */
+    response: (callback: (text: string) => void) => void
 }
 
 type Reply = { id: number, ok: boolean, value: unknown }
@@ -20,18 +20,13 @@ type Reply = { id: number, ok: boolean, value: unknown }
  * ```ts
  * const child = Bun.spawn(["miko", "rpc"], { stdin: "pipe", stdout: "pipe" })
  *
- * const miko = CLIClient.connect<typeof program>({
- *     onLine: async (callback) => {
- *         let rest = ""
- *         for await (const chunk of child.stdout.pipeThrough(new TextDecoderStream())) {
- *             const lines = (rest + chunk).split("\n")
- *             rest = lines.pop()!
- *             lines.forEach(callback)
- *         }
- *     },
- *     send: (line) => {
- *         child.stdin.write(line)
+ * const miko = CLIClient.connect<typeof rpc>({
+ *     request: (text) => {
+ *         child.stdin.write(text)
  *         child.stdin.flush()
+ *     },
+ *     response: async (callback) => {
+ *         for await (const text of child.stdout.pipeThrough(new TextDecoderStream())) callback(text)
  *     },
  * })
  *
@@ -41,21 +36,28 @@ type Reply = { id: number, ok: boolean, value: unknown }
 export function connect<X>(transport: CLIClientTransport): CLIClient<X> {
     const pending = new Map<number, (result: Result<unknown, unknown>) => void>()
     let nextId = 0
+    let rest = ""
 
-    transport.onLine((line) => {
+    transport.response((text) => {
+        const lines = (rest + text).split("\n")
+        rest = lines.pop()!
+        for (const line of lines) settle(line)
+    })
+
+    function settle(line: string): void {
         const reply = JSON.tryParse(line).unwrapOr(undefined) as Reply | undefined
         const resolve = reply && pending.get(reply.id)
         if (!reply || !resolve) return
         pending.delete(reply.id)
         resolve(reply.ok ? Ok(reply.value) : Err(reply.value))
-    })
+    }
 
     function call(path: string[], options: Record<string, unknown> = {}): Promise<Result<unknown, unknown>> {
         const id = nextId++
         const argv = [...path, ...flagsOf(options)]
         return new Promise((resolve) => {
             pending.set(id, resolve)
-            transport.send(`${JSON.stringify({ argv, id })}\n`)
+            transport.request(`${JSON.stringify({ argv, id })}\n`)
         })
     }
 

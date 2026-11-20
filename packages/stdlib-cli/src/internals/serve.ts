@@ -9,16 +9,16 @@ const invalidMessage: CLIInvalidMessageError = {
     name: "CLIInvalidMessageError",
 }
 
-export async function serve(root: AnyCommand, rpc: AnyCommand): Promise<void> {
+export async function serve(root: AnyCommand, input: { name: string, rpc: AnyCommand }): Promise<void> {
     for await (const line of console) {
-        if (line.trim()) void reply(root, rpc, line)
+        if (line.trim()) void reply(root, input, line)
     }
 }
 
-async function reply(root: AnyCommand, rpc: AnyCommand, line: string): Promise<void> {
+async function reply(root: AnyCommand, { name, rpc }: { name: string, rpc: AnyCommand }, line: string): Promise<void> {
     const message = JSON.tryParse(line).unwrapOr(null)
     if (!isMessage(message)) return write({ id: idOf(message), ok: false, value: invalidMessage })
-    const execution = await exec(root, { argv: resolve.argv(["rpc", ...message.argv]), prompt: false, rpc })
+    const execution = await exec(root, { argv: resolve.argv(["rpc", ...message.argv]), name, prompt: false, rpc })
     write({ id: message.id, ok: execution.result.ok, value: execution.result.value })
 }
 

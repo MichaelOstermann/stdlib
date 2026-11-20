@@ -1,5 +1,6 @@
 import type { AnyOption } from "../types"
 import { Layout } from "../../internals/Layout"
+import { quote } from "../../internals/quote"
 import { ansi } from "../ansi"
 
 /**
@@ -35,9 +36,4 @@ function notesOf(option: AnyOption): string[] {
     if (option.config.default !== undefined && option.config.sensitive) notes.push("optional")
     if (option.config.default === undefined && option.config.optional) notes.push("optional")
     return notes
-}
-
-function quote(value: string): string {
-    if (/^[\w@%+=:,./-]+$/.test(value)) return value
-    return `'${value.replaceAll("'", "'\\''")}'`
 }

@@ -2,6 +2,7 @@ import type { BooleanOption } from "../boolean"
 import type { EnumOption } from "../enum"
 import type { StringOption } from "../string"
 import type { AnyOption, CLIInvalidOptionError, CLIMissingOptionError, Flag, InferOption } from "../types"
+import type { ResolvedFlag } from "./argv"
 import { Parse } from "../../internals/Parse"
 import { prompt } from "../prompt"
 
@@ -20,28 +21,29 @@ type OptionError = CLIInvalidOptionError | CLIMissingOptionError
  * await CLI.resolve.option("seats", seats, flags) // Ok(3)
  * ```
  */
-export async function option<O extends AnyOption>(name: string, option: O, flags: Record<string, Flag>, input: { prompt?: boolean } = {}): Promise<Result<InferOption<O>, OptionError>> {
+export async function option<O extends AnyOption>(name: string, option: O, flags: Record<string, ResolvedFlag[]>, input: { prompt?: boolean } = {}): Promise<Result<InferOption<O>, OptionError>> {
     const resolved = await fromFlags(name, option, flags)
     if (resolved.ok || !input.prompt) return resolved as Result<InferOption<O>, OptionError>
     return Ok(await prompt.option(name, option))
 }
 
-function fromFlags(name: string, option: AnyOption, flags: Record<string, Flag>): Promise<Result<unknown, OptionError>> | Result<unknown, OptionError> {
-    if (option.kind === "boolean") return fromBoolean(name, option, flags)
-    if (option.kind === "enum") return fromEnum(name, option, flags)
-    return fromString(name, option, flags)
+function fromFlags(name: string, option: AnyOption, flags: Record<string, ResolvedFlag[]>): Promise<Result<unknown, OptionError>> | Result<unknown, OptionError> {
+    const given = flags[`--${String.kebabCase(name)}`] ?? []
+    if (given.length > 1) return Err<CLIInvalidOptionError>({ message: "Options can only be used once", meta: { option: name }, name: "CLIInvalidOptionError" })
+    const flag = given[0]?.value
+    if (option.kind === "boolean") return fromBoolean(name, option, flag)
+    if (option.kind === "enum") return fromEnum(name, option, flag)
+    return fromString(name, option, flag)
 }
 
-function fromBoolean(name: string, option: BooleanOption, flags: Record<string, Flag>): Result<boolean, OptionError> {
-    const flag = flags[`--${String.kebabCase(name)}`]
+function fromBoolean(name: string, option: BooleanOption, flag: Flag | undefined): Result<boolean, OptionError> {
     if (flag === undefined) return Ok(option.config.default)
     if (flag === null || flag === "true" || flag === "yes") return Ok(true)
     if (flag === "false" || flag === "no") return Ok(false)
     return Err<CLIInvalidOptionError>({ message: "Must be true or false", meta: { option: name }, name: "CLIInvalidOptionError" })
 }
 
-function fromEnum(name: string, option: EnumOption<string, boolean>, flags: Record<string, Flag>): Result<string, OptionError> {
-    const flag = flags[`--${String.kebabCase(name)}`]
+function fromEnum(name: string, option: EnumOption<string, boolean>, flag: Flag | undefined): Result<string, OptionError> {
     const keys = Object.keys(option.config.options)
     if (flag === null) return Err<CLIInvalidOptionError>({ message: "Needs a value", meta: { option: name }, name: "CLIInvalidOptionError" })
     const value = flag ?? option.config.default
@@ -50,8 +52,7 @@ function fromEnum(name: string, option: EnumOption<string, boolean>, flags: Reco
     return Err<CLIInvalidOptionError>({ message: `Must be one of: ${keys.join(", ")}`, meta: { option: name }, name: "CLIInvalidOptionError" })
 }
 
-async function fromString(name: string, option: StringOption<unknown, boolean, boolean>, flags: Record<string, Flag>): Promise<Result<unknown, OptionError>> {
-    const flag = flags[`--${String.kebabCase(name)}`]
+async function fromString(name: string, option: StringOption<unknown, boolean, boolean>, flag: Flag | undefined): Promise<Result<unknown, OptionError>> {
     if (flag === null) return Err<CLIInvalidOptionError>({ message: "Needs a value", meta: { option: name }, name: "CLIInvalidOptionError" })
     const value = flag ?? option.config.default
     if (value === undefined && option.config.optional) return Ok(undefined)

@@ -23,7 +23,7 @@ export type { FormatOptions } from "./format/json"
 export type { ConfirmOptions, ConfirmSlot } from "./prompt/confirm"
 export type { SelectOptions, SelectSlot } from "./prompt/select"
 export type { TextOptions, TextSlot } from "./prompt/text"
-export type { ResolvedArgv } from "./resolve/argv"
+export type { ResolvedArgv, ResolvedFlag } from "./resolve/argv"
 export type { StringOption, StringOptionConfig, StringValue } from "./string"
 export type { Input } from "./term/input"
 export type { Key } from "./term/onKey"
@@ -31,12 +31,12 @@ export type {
     AnyCommand,
     AnyOption,
     CLIError,
+    CLIInternalError,
     CLIInvalidMessageError,
     CLIInvalidOptionError,
     CLIMissingOptionError,
     CLIOptionError,
     CLIOptionsError,
-    CLIUnhandledExceptionError,
     CLIUnknownCommandError,
     CLIUnknownOptionError,
     CommandOptions,

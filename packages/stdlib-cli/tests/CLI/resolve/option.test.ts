@@ -28,6 +28,7 @@ describe("CLI.resolve.option", () => {
         expect<unknown>(await CLI.resolve.option("email", options.email, flags("--email"))).toEqual(Err({ message: "Needs a value", meta: { option: "email" }, name: "CLIInvalidOptionError" }))
         expect<unknown>(await CLI.resolve.option("seats", options.seats, flags("--seats x"))).toEqual(Err({ message: "Must be a whole number", meta: { option: "seats" }, name: "CLIInvalidOptionError" }))
         expect<unknown>(await CLI.resolve.option("role", options.role, flags("--role admn"))).toEqual(Err({ message: "Must be one of: admin, member", meta: { option: "role" }, name: "CLIInvalidOptionError" }))
+        expect<unknown>(await CLI.resolve.option("seats", options.seats, flags("--seats 1 --seats=2"))).toEqual(Err({ message: "Options can only be used once", meta: { option: "seats" }, name: "CLIInvalidOptionError" }))
     })
 
     it("should read booleans", async () => {

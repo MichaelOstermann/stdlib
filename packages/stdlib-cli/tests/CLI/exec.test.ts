@@ -19,7 +19,7 @@ const rpc = CLI.command().commands({ members })
 const miko = CLI.command().desc("Everything miko").commands({ members })
 
 function exec(line: string): ReturnType<typeof CLI.exec> {
-    return CLI.exec(miko, { argv: CLI.resolve.argv(line.split(" ")), prompt: false, rpc })
+    return CLI.exec(miko, { argv: CLI.resolve.argv(line.split(" ")), name: "miko", prompt: false, rpc })
 }
 
 describe("CLI.exec", () => {
@@ -36,7 +36,7 @@ describe("CLI.exec", () => {
 
     it("should give what the action fails with, and what it throws", async () => {
         expect((await exec("members add --email taken@miko.dev")).result).toEqual(Err({ message: "This email is already a member", name: "Error" }))
-        expect((await exec("members add --email crash@miko.dev")).result.value).toMatchObject({ cause: { message: "Database went away", name: "Error" }, name: "CLIUnhandledExceptionError" })
+        expect((await exec("members add --email crash@miko.dev")).result.value).toMatchObject({ cause: { message: "Database went away", name: "Error" }, name: "CLIInternalError" })
     })
 
     it("should fail for an unknown command", async () => {
@@ -63,7 +63,7 @@ describe("CLI.exec", () => {
 
     it("should know rpc by the command, not by its name", async () => {
         const own = CLI.command().commands({ rpc: CLI.command().action(() => Ok(1)) })
-        const execution = await CLI.exec(own, { argv: CLI.resolve.argv(["rpc"]), prompt: false })
+        const execution = await CLI.exec(own, { argv: CLI.resolve.argv(["rpc"]), name: "miko", prompt: false })
         expect(execution).toMatchObject({ isRPC: false, result: Ok(1) })
     })
 })

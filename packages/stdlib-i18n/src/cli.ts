@@ -22,7 +22,7 @@ const program = CLI
         return Ok(report(result))
     })
 
-await CLI.run(program)
+await CLI.run(program, { name: "stdlib-i18n" })
 
 function report({ errors, output, warnings }: I18nResult): string {
     const lines = [

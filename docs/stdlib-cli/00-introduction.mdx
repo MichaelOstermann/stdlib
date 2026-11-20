@@ -1,0 +1,206 @@
+---
+title: Introduction
+---
+
+A library for building CLI tools where the CLI _is_ the product - not something developers get as a bonus next to a GUI.
+
+We are building a local-first app where the product is primarily a CLI, and secondarily a GUI that builds all of its features by talking to the CLI. To the point where you can build your own GUI on top, your own tools, your own scripts. The entire product, including self hosting, ships as a single binary.
+
+Compared to a classical HTTP API, everything works offline and immediately - our full text search for example runs locally via [tantivy](https://github.com/quickwit-oss/tantivy) and answers within the lower milliseconds, no server involved.
+
+The same commands get used by people in a terminal, by agents and by scripts and GUIs, which all need different things.
+
+## People
+
+Traditionally CLIs have been heavily oriented around developers, and as such can be so complicated that mastering a single CLI tool should sometimes earn you a PhD title.
+
+<details>
+<summary>A few of the questions we ran into while building a parser</summary>
+
+- `--firstName`? `--first-name`? What about `--firstname`, `--Firstname`, `-irstname`? Should `mmbers` run `members` anyway?
+- Aliases that you are apparently supposed to learn: `-f` actually means `--foo`?
+- How to handle conflicting aliases? `-f` and `-F`? Why is `-s` the alias for `--no-optimize` in `awk`?
+- `--foo bar` or `--foo=bar` or `--foo="bar"` or `--foo "bar"`? Or `--foo='bar'`?
+- Is `--foo bar` a flag and a positional, or a flag with a value?
+- Is `--a=b c --d=e` allowed or should flags be strictly at the beginning or end?
+- Is `foo bar` a positional with multiple words or multiple positionals?
+- Lists: Comma separated? Space separated? `--foo a --foo b`? `--foo:a --foo:b` (esbuild)?
+- Parsing nested flags: `--foo.bar` into `{ foo: { bar } }`
+- Bundled short flags: `-abc` means `-a -b -c`, `-l5` means `--lines=5`, is `-5` a value or a flag?
+- Boolean negations: `--foo` comes with `--no-foo`
+- Trying to parse `--a=b=c` - what if you fat finger `--a=b==c`?
+- Conflicting flags: Use either `--a` or `--b` but not both
+- Everything after `--` becoming positionals
+- Required/optional/global flags, sometimes depending on which other flags are used
+- Handling default values
+- Handling unknown flags
+- Handling validations and parsing: Short fuse or collect all errors?
+- Documentation/help: Multi-line descriptions, examples, usage guides, ...
+- Dynamic commands: `foo bar` and `foo baz` static commands, otherwise `foo $PATH`
+- Resolving options from STDIN or env variables
+- Hidden/disabled commands and flags
+- Interactive inputs for missing fields
+- Behavioral changes depending on environment: Agents, CI/CDs, TTYs, piped
+- Shell autocompletion
+- "Did you mean?" outputs
+- Internationalization
+- IPC/RPC protocols
+
+Building all of this is one thing, explaining any of this is another set of problems.
+
+</details>
+
+### Syntax
+
+First of all we dropped most of the possible syntax, basically we only have flags with values (`--name John`) and flags without values (`--force`) - the usual GNU-style syntax, just stripped down to the bare minimum.
+
+Most notably we dropped positionals, because that's where we thought a lot of the complexity is coming from. For example consider:
+
+```ts
+// This does not tell you much:
+type Foo = [string, string]
+
+// Nice feature in TypeScript:
+type Foo = [firstName: string, lastName: string]
+```
+
+For similar reasons, constructing a good `--help` output, or building understandable error messages gets a bit tricky - even before going further such as optional positionals. They often get documented as `[positional]`, but it isn't immediately clear what the brackets mean, should you type them literally?
+
+We were thinking about a few more ways to make things easier to use, some examples:
+
+- By forfeiting positionals, we not only reduce the surface area of syntax to learn, we could also support greedy string parsing, for example `--name John Doe` is equivalent to `--name "John Doe"`
+- If you type something like `mmbers` and we can determine with absolute certainty that you meant to say `members`, then we could ship it either way - you get free aliases with this too: `--fn`, `--fname`, `--first` would all work in place of `--first-name` for example
+
+While making tweaks like these is not that hard to ship, we decided to not go for any of those, mostly because what would end up happening is that we ship a custom syntax that does not work anywhere else.
+
+### Option settings
+
+Typically CLI tools will give you settings such as configuring aliases - we don't have those, we only ship settings that we think are universally helpful:
+
+```ts
+const email = CLI.string().example("jane@miko.dev")
+```
+
+We can use these examples to explain exactly what you need to do in the `--help` output, including a full command you can copy as soon as every required option has one, in error messages we can show you exactly what this is supposed to look like, in interactive prompts we can show these as dimmed placeholders, and so on.
+
+### Error messages
+
+Instead of trying to come up with a magical syntax, we put our attention on error messages. Here is what you would typically get from a CLI:
+
+```
+$ miko members add --email jane@miko.dev --name John Doe
+error: unexpected argument 'Doe' found
+```
+
+Technically correct, but it doesn't tell you what to do about it. Here is ours:
+
+```
+$ miko members add --email jane@miko.dev --name John Doe
+
+Values with spaces need quotes, did you mean: 'John Doe'?
+miko members add --email jane@miko.dev --name John Doe
+                                              ^^^^^^^^
+
+See miko members add --help for more
+```
+
+We read the whole command line instead of the word that went wrong, so we can tell that `Doe` belongs to the name before it. Similarly, a word that looks like an option is recognized as one:
+
+```
+$ miko members add email jane@miko.dev
+
+Options start with --, did you mean: --email?
+miko members add email jane@miko.dev
+                 ^^^^^
+
+See miko members add --help for more
+```
+
+You get every mistake at once instead of one per attempt, with the example of the option right in the message:
+
+```
+$ miko members add --email --role=admn
+
+Needs a value, for example: --email jane@miko.dev
+miko members add --email --role=admn
+                 ^^^^^^^
+
+Unknown value, did you mean: admin?
+miko members add --email --role=admn
+                                ^^^^
+
+See miko members add --help for more
+```
+
+And nothing gets silently ignored. Often CLIs quietly take the last value when a flag is given twice:
+
+```
+$ miko members add --email jane@miko.dev --seats 2 --seats 3
+
+Options can only be used once
+miko members add --email jane@miko.dev --seats 2 --seats 3
+                                       ^^^^^^^   ^^^^^^^
+
+See miko members add --help for more
+```
+
+It might not seem like a biggie, until you build destructive commands where you'd want to be precise instead of guessing which option to pick.
+
+### Interactive prompts
+
+One of the reasons for why things such as Claude Code or the [Obsidian CLI](https://obsidian.md/cli) are so universally loved is that you can just for example type `claude`, and an interactive TUI shows up that takes you by your hand.
+
+So instead of inventing a syntax of our own, we went for interactive prompts that behave similarly.
+
+Running a command that only groups others lets you pick one, type to filter:
+
+```
+$ miko
+mem
+❯ members add     Add a member
+  members remove  Remove a member
+```
+
+Running a command without flags asks for every option, one after the other, with descriptions, examples, defaults and validation errors:
+
+```
+$ miko members add
+Email: jane@miko.dev
+Role: What they can do
+  admin   Can do everything
+❯ viewer  Can only read
+```
+
+Running a command with missing or invalid flags only asks for those:
+
+```
+$ miko members add --role admin
+Email: jane@
+Must be an email address
+```
+
+Sensitive options are masked, which also keeps them out of your shell history.
+
+## Agents
+
+Due to the increasing adoption of AI, agents in particular, CLI tools are becoming more and more attractive - a few thoughts:
+
+- No elaborate skill files, MCP servers or a full API reference like Swagger in the context: With `--help` agents explore what they need, one command at a time, including descriptions, examples and defaults
+- `miko members add --email jane@miko.dev` is simpler than practically anything else: No API documentation to read through, no SDKs, no authentication headers, no request bodies to put together - it is all offline, works instantly, and it prints error messages that are much easier to read
+- No prompts and no colors, an agent gets plain text it can read, to reduce the amount of tokens it has to parse
+
+## Scripts and GUIs
+
+Commands can be called through a [RPC protocol](./rpc), with JSON in and out, typed results and typed errors:
+
+```sh
+$ miko rpc members add --email jane@miko.dev
+{"ok":true,"value":{"email":"jane@miko.dev","role":"viewer"}}
+```
+
+For anything that calls a lot of commands, such as a GUI, `miko rpc` keeps running and answers requests as they come in, with a type-safe client for TypeScript.
+
+We did this because repeatedly spawning processes is fairly expensive, while spawning one single process that continuously reads from stdin is actually quite fast.
+
+- If your GUI does nothing but talk to the CLI, then it becomes optional to the point where people can build (or vibe code) their own GUIs and tools around it
+- Since there are no HTTP endpoints in between, how the CLI talks to your servers is up to you - JSON, MessagePack, protocol buffers, or your own binary protocol should none of them be fast enough for you

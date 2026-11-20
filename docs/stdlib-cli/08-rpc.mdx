@@ -1,0 +1,123 @@
+---
+title: RPC
+---
+
+This library features a RPC implementation with JSON as its protocol - run one-off commands or spawn a long running process for efficiency.
+
+## Setup
+
+```ts cli.ts
+const foo = CLI
+    .command()
+    .options({ bar: CLI.boolean() })
+    .action((options) => {
+        return Ok({ hello: "world" })
+        return Err({ message: "Error" })
+    })
+
+const rpc = CLI
+    .command()
+    .desc("Calls commands with JSON")
+    .commands({ foo })
+
+const root = CLI
+    .command()
+    .commands({ rpc })
+
+await CLI.run(root, { name: "miko", rpc })
+```
+
+```sh
+# { ok: true, value: { hello: "world" } }
+# { ok: false, value: { message: "Error" } }
+bun run cli.ts rpc foo --bar
+```
+
+```sh
+# Spawns a long-running process listening to stdin:
+bun run cli.ts rpc
+
+# Send requests to stdin:
+# { id: 0, argv: ["foo", "--bar"] }
+
+# Receive responses from stdout:
+# { id: 0, ok: true, value: { hello: "world" } }
+```
+
+## Client
+
+You can get a type-safe client in TypeScript:
+
+```ts
+const proc = Bun.spawn(["bun", "run", "cli.ts", "rpc"], { stdin: "pipe", stdout: "pipe" })
+
+const remote = CLIClient.connect<typeof rpc>({
+    // How to send requests:
+    request(text) {
+        proc.stdin.write(text)
+        proc.stdin.flush()
+    },
+    // How to receive responses, in pieces of any size:
+    async response(callback) {
+        for await (const text of proc.stdout.pipeThrough(new TextDecoderStream())) callback(text)
+    },
+})
+
+// Result<{ hello: string }, { message: string } | CLIError | CLIInvalidMessageError>
+const result = await remote.foo({ bar: true })
+```
+
+## Reusing
+
+There are several ways you can reuse code between RPC commands and regular ones, some examples:
+
+```ts
+const foo = CLI
+    .command()
+    .options({ bar: CLI.boolean() })
+    .action(() => Ok(output))
+
+const rpc = CLI
+    .command()
+    .desc("Calls commands with JSON")
+    .commands({ foo })
+
+const root = CLI
+    .command()
+    .commands({
+        // Prints CLI.format.json(output):
+        foo,
+        // Prints { ok, value } as JSON:
+        rpc,
+    })
+```
+
+```ts
+const base = CLI.command().options({ bar: CLI.boolean() })
+const foo = (options: InferOptions<typeof base>) => Ok({ hello: "world" })
+
+const rpc = CLI
+    .command()
+    .desc("Calls commands with JSON")
+    .commands({ foo: base.action(foo) })
+
+const root = CLI
+    .command()
+    .commands({
+        rpc,
+        foo: base.action((options) => {
+            const result = foo(options)
+            if (!result.ok) return result
+            // Do your own formatting, a string is printed as it is:
+            return Ok(`Hello ${result.value.hello}`)
+        }),
+    })
+```
+
+## Utils
+
+`console.*` utilities will send unexpected messages to stdout, if you want to be safe, you can redirect them to stderr (used by default in `CLI.run` for RPC commands):
+
+```ts
+CLI.console.redirect()
+```

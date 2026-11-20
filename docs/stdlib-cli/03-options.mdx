@@ -1,0 +1,55 @@
+---
+title: Options
+---
+
+```ts
+const add = CLI
+    .command()
+    .options({
+        email: CLI.string(),
+        // Becomes --send-invite:
+        sendInvite: CLI.boolean(),
+    })
+    .action(({ email, sendInvite }) => Ok({ email, sendInvite }))
+```
+
+## string
+
+```ts
+// --email jane@miko.dev or --email=jane@miko.dev:
+CLI.string()
+// Shown in help and prompts:
+CLI.string().desc("Who to invite").example("jane@miko.dev")
+// Used when the flag is missing:
+CLI.string().default("1")
+// undefined when the flag is missing:
+CLI.string().optional(true)
+// Masked in prompts, its default hidden in help:
+CLI.string().sensitive(true)
+// Turns the text into a value with a function that returns a Result:
+CLI.string().parse((value) => Number.isInteger(Number(value)) ? Ok(Number(value)) : Err("Must be a whole number"))
+// Or with a Standard Schema, such as zod:
+CLI.string().parse(z.coerce.number().int())
+```
+
+## boolean
+
+```ts
+// --notify, --notify true|yes or --notify false|no, false when missing:
+CLI.boolean()
+// Shown in help and prompts:
+CLI.boolean().desc("Send an email")
+// Used when the flag is missing:
+CLI.boolean().default(true)
+```
+
+## enum
+
+```ts
+// --role admin, one of the keys, each with a description:
+CLI.enum().options({ admin: "Can do everything", viewer: "Can only read" })
+// Shown in help and prompts:
+CLI.enum().options({ admin: "…", viewer: "…" }).desc("What they can do")
+// Used when the flag is missing:
+CLI.enum().options({ admin: "…", viewer: "…" }).default("viewer")
+```

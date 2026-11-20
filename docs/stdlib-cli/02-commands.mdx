@@ -1,0 +1,57 @@
+---
+title: Commands
+---
+
+```ts
+// A command with options and an action:
+const add = CLI
+    .command()
+    .desc("Add a member")
+    .options({ email: CLI.string() })
+    .action(({ email }) => Ok({ email }))
+
+// Subcommands, run as `miko members add --email jane@miko.dev`:
+const members = CLI
+    .command()
+    .desc("Manage members")
+    .commands({ add })
+
+// The program itself:
+const miko = CLI
+    .command()
+    .commands({ members })
+
+await CLI.run(miko, { name: "miko" })
+```
+
+## Descriptions
+
+```ts
+// The first line is shown in the help of `miko members`, all of it in `miko members add --help`:
+CLI.command().desc(`Add a member
+They get an email with a link to sign in.`)
+```
+
+## Actions
+
+```ts
+// Return JSON:
+.action(() => Ok({ email: "jane@miko.dev" }))
+// Fail with a Failure, an Error or a string:
+.action(() => Err("Not a real address"))
+// Return nothing:
+.action(() => {})
+// Async:
+.action(async ({ email }) => Ok(await invite(email)))
+```
+
+## Reusing
+
+Each call returns a new command, so a command can be the base of others:
+
+```ts
+const base = CLI.command().options({ email: CLI.string() })
+
+const add = base.action(({ email }) => Ok({ email }))
+const remove = base.action(({ email }) => Ok(null))
+```

@@ -1,0 +1,59 @@
+---
+title: Prompts
+---
+
+This library ships a collection of prompts:
+
+- Manually ask for text input, confirmation, etc.
+- Prompt for a command to execute when running one that has no action (list of all subcommands with filter input)
+- Prompt for all options when running a command with no flags
+- Prompt for missing or invalid options
+
+Unless you manually ship a prompt (`CLI.prompt.confirm()`), these prompts are only available in specific environments: `stdin` and `stdout` must be TTYs, disabled for agents, CI and RPC.
+
+```ts
+// Disable interactive prompts:
+CLI.run(command, { name: "miko", prompt: false })
+CLI.exec(command, { name: "miko", prompt: false })
+```
+
+```ts
+// Render a filter input and list selection to pick a command:
+const commands = CLI.commands.pickable(command)
+const picked = await CLI.prompt.command(commands)
+```
+
+```ts
+// Prompt for options:
+const options = await CLI.prompt.options({ foo: CLI.boolean() })
+const option = await CLI.prompt.option("foo", CLI.boolean())
+```
+
+```ts
+// Ship your own prompts:
+const ok = await CLI.prompt.confirm({ prefix: () => "Continue? " })
+const name = await CLI.prompt.text({ placeholder: "Your name" })
+const color = await CLI.prompt.select({ choices: ["red", "green"] })
+```
+
+```ts
+// Custom rendering if the default prompts are not enough:
+const name = CLI.term.input()
+
+// Draw lines:
+const stopRender = CLI.term.render((width, done) => [
+    `Name: ${done ? name.$value() : name(width - 6)}`,
+])
+
+// Keybindings:
+const stopKeys = CLI.term.onKey((key) => {
+    if (key.name !== "Enter") name.onKey(key)
+    if (key.name !== "Enter") return
+    stopKeys()
+    stopRender()
+})
+```
+
+:::tip
+`CLI.term.render` uses an [effect](../stdlib/effect) under the hood, so use signals to rerender.
+:::

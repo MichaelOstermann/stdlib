@@ -1,0 +1,70 @@
+---
+title: Formatting
+---
+
+## Output
+
+What `CLI.run` prints for what an action returns:
+
+- `Ok(null)` or nothing: nothing
+- `Ok(string)`: the string as it is
+- `Ok(value)`: `CLI.format.json(value)`
+- `Err(error)`: to stderr, the exit code becomes 1, mistakes in commands and options are underlined with a suggestion when there is one, everything else uses `CLI.format.error(error)`
+- Thrown errors: like `Err(error)`
+- `--help` or a command without an action: `CLI.help.command(command)`
+- RPC commands: `{ ok, value }` as JSON, also when it fails
+
+## Formats
+
+```ts
+// JSON as readable text, like YAML:
+CLI.format.json(value)
+// On one line when it fits, with limits for long arrays, objects and strings:
+CLI.format.json(value, { compact: true, maxItems: 100, maxString: 1000, width: 80 })
+// Anything that went wrong as readable text, takes the same options:
+CLI.format.error(error)
+// What CLI.run prints for an execution:
+CLI.format.exec(await CLI.exec(root, { name: "miko" }))
+```
+
+## Help
+
+```ts
+// The help of a command, with options that every command has:
+CLI.help.command(command, { globalOptions: { help: CLI.boolean() } })
+// With an example of how to run it, when every required option has an example:
+CLI.help.command(command, { path: ["miko", "members", "add"] })
+// The options of a command:
+CLI.help.options({ foo: CLI.boolean() })
+// One option, fit into a width:
+CLI.help.option("foo", CLI.boolean(), 80)
+```
+
+## ANSI
+
+```ts
+CLI.ansi.black(text)
+CLI.ansi.blue(text)
+CLI.ansi.cyan(text)
+CLI.ansi.green(text)
+CLI.ansi.magenta(text)
+CLI.ansi.red(text)
+CLI.ansi.white(text)
+CLI.ansi.yellow(text)
+
+CLI.ansi.bgBlack(text)
+CLI.ansi.bgBlue(text)
+CLI.ansi.bgCyan(text)
+CLI.ansi.bgGreen(text)
+CLI.ansi.bgMagenta(text)
+CLI.ansi.bgRed(text)
+CLI.ansi.bgWhite(text)
+CLI.ansi.bgYellow(text)
+
+CLI.ansi.bold(text)
+CLI.ansi.dim(text)
+CLI.ansi.inverse(text)
+CLI.ansi.italic(text)
+CLI.ansi.strikethrough(text)
+CLI.ansi.underline(text)
+```

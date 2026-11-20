@@ -1,0 +1,53 @@
+---
+title: Usage
+---
+
+## Installation
+
+```package-install
+npm i @monstermann/stdlib @monstermann/stdlib-cli
+```
+
+Set up [`stdlib-transform`](../stdlib-transform/usage) for your bundler, or the preload for `bun run`, which `stdlib-cli` needs for the globals of [`stdlib`](../stdlib/introduction).
+
+## Setup
+
+```ts cli.ts
+#!/usr/bin/env bun
+import { CLI } from "@monstermann/stdlib-cli"
+
+const add = CLI
+    .command()
+    .desc("Add a member")
+    .options({ email: CLI.string().desc("Who to invite") })
+    .action(({ email }) => Ok({ email }))
+
+const members = CLI
+    .command()
+    .commands({ add })
+
+const miko = CLI
+    .command()
+    .commands({ members })
+
+await CLI.run(miko, { name: "miko" })
+```
+
+```sh
+bun cli.ts members add --email jane@miko.dev
+bun cli.ts members add --help
+```
+
+To install it as a command of its own, point `bin` to it:
+
+```json package.json
+{
+    "bin": {
+        "miko": "./cli.ts"
+    }
+}
+```
+
+```sh
+miko members add --email jane@miko.dev
+```

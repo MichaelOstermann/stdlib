@@ -21,6 +21,9 @@ interface Replica {
     name: string
 }
 
+/** Operators that compare a replica as it is, which only the native one is equal to. */
+const comparisons = new Set(["===", "!==", "==", "!="])
+
 /**
  * Syntax that wraps an expression without changing its value: `(Array)`, `Array!`, `Array as any`
  */
@@ -83,7 +86,10 @@ export function transformReplicas(code: string, filePath: string, options: Repli
         return replicas.has(declaration.node) ? declaration.node : undefined
     }
 
-    /** new Set(), x instanceof Set, Set(), Set.groupBy: what the native one can do as well. */
+    /**
+     * new Set(), x instanceof Set, Set(), Set.groupBy, x.constructor === Set: what the native one
+     * can do as well.
+     */
     const isNativeUse = (node: Node): boolean => {
         let child = node
         let parent = parents.get(node)
@@ -94,7 +100,8 @@ export function transformReplicas(code: string, filePath: string, options: Repli
         if (!parent) return false
         if (parent.type === "MemberExpression") return parent.object === child && !parent.computed
         if (parent.type === "NewExpression" || parent.type === "CallExpression") return parent.callee === child
-        if (parent.type === "BinaryExpression") return parent.operator === "instanceof" && parent.right === child
+        if (parent.type === "BinaryExpression" && parent.operator === "instanceof") return parent.right === child
+        if (parent.type === "BinaryExpression") return comparisons.has(parent.operator)
         return false
     }
 

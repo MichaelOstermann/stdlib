@@ -1,11 +1,16 @@
 import Path from "node:path"
 import { stdlibBun } from "../packages/stdlib-transform/src/plugin"
+import { transformReplicas } from "../packages/stdlib-transform/src/replicas"
+import { replicas } from "../packages/stdlib-transform/src/replicas.manifest"
 
 // Runs a benchmark of this folder, every case in a process of its own, and prints a table. benchmarks/bench.sh runs all of them.
 //
-//   bun benchmarks/run.ts match                     # in Bun, without stdlib-transform
+//   bun benchmarks/run.ts match                     # in Bun, calling the functions as they are
 //   bun benchmarks/run.ts match --runtime=node      # in Node
-//   bun benchmarks/run.ts match --transform         # through stdlib-transform
+//   bun benchmarks/run.ts match --transform         # through stdlib-transform, calls compiled where it can
+//
+// Without --transform, `Object.setPath()` still calls `setPath` directly, as it does in a transformed program when the
+// call can not be compiled, instead of going through the replica `Object`.
 //
 // NODE_ENV is production, for the libraries compared against.
 
@@ -18,6 +23,22 @@ const transform = args.includes("--transform")
 
 if (!name) throw new Error("Which benchmark? bun benchmarks/run.ts <name> [--runtime=bun|node] [--transform]")
 if (runtime !== "bun" && runtime !== "node") throw new Error(`--runtime is bun or node, not ${runtime}`)
+
+/** Calls the functions of replicas directly, and compiles nothing. */
+const replicasOnly: Bun.BunPlugin = {
+    name: "stdlib-replicas",
+    setup(build) {
+        build.onLoad({ filter: /[\\/]benchmarks[\\/][^\\/]+\.ts$/ }, async ({ path }) => {
+            const code = await Bun.file(path).text()
+            const replaced = transformReplicas(code, path, {
+                replicas,
+                resolve: (replica, name) => `@monstermann/stdlib/${replica}/${name}`,
+                sources: (replica) => ["@monstermann/stdlib", `@monstermann/stdlib/${replica}/index`],
+            })
+            return { contents: replaced?.toString() ?? code, loader: "ts" }
+        })
+    },
+}
 
 const file = await build(name, transform)
 const cases = (await run("bun", file)).trim().split("\n")
@@ -47,7 +68,7 @@ async function build(name: string, transform: boolean): Promise<string> {
                 },
             },
             // Only the benchmarks themselves: the sources of stdlib are what is being measured, as they are.
-            ...transform ? [stdlibBun({ exclude: /[\\/]packages[\\/]/ })] : [],
+            transform ? stdlibBun({ exclude: /[\\/]packages[\\/]/ }) : replicasOnly,
         ],
     })
     if (!result.success) throw new AggregateError(result.logs, `Failed to build ${name}`)

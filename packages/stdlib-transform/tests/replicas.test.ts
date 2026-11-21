@@ -78,6 +78,8 @@ describe("transformReplicas", () => {
             Map.groupBy(c, d);
             Math.max(e, f);
             values.map(x => x);
+            g.constructor === Array;
+            Map !== h.constructor;
         `)).toBe(dedent(`
             Array.from(a);
             const b = new Map();
@@ -85,6 +87,8 @@ describe("transformReplicas", () => {
             Map.groupBy(c, d);
             Math.max(e, f);
             values.map(x => x);
+            g.constructor === Array;
+            Map !== h.constructor;
         `))
     })
 

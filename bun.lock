@@ -39,6 +39,13 @@
         "@monstermann/stdlib": "workspace:^",
       },
     },
+    "packages/stdlib-embed": {
+      "name": "@monstermann/stdlib-embed",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@monstermann/stdlib-transform": "workspace:*",
+      },
+    },
     "packages/stdlib-i18n": {
       "name": "@monstermann/stdlib-i18n",
       "version": "0.1.0",
@@ -416,6 +423,8 @@
     "@monstermann/stdlib": ["@monstermann/stdlib@workspace:packages/stdlib"],
 
     "@monstermann/stdlib-cli": ["@monstermann/stdlib-cli@workspace:packages/stdlib-cli"],
+
+    "@monstermann/stdlib-embed": ["@monstermann/stdlib-embed@workspace:packages/stdlib-embed"],
 
     "@monstermann/stdlib-i18n": ["@monstermann/stdlib-i18n@workspace:packages/stdlib-i18n"],
 

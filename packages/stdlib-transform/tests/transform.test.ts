@@ -113,6 +113,17 @@ describe("transform", () => {
         `))
     })
 
+    it("should import the members of the namespaces of @monstermann/stdlib-embed directly", () => {
+        expect(run(`
+            import { OEmbed } from "@monstermann/stdlib-embed";
+            const embed: OEmbed | undefined = OEmbed.parse(json);
+        `)).toBe(dedent(`
+            import { parse as _parse } from "@monstermann/stdlib-embed/OEmbed/parse";
+            import type { OEmbed } from "@monstermann/stdlib-embed";
+            const embed: OEmbed | undefined = _parse(json);
+        `))
+    })
+
     it("should import the members of the namespaces of @monstermann/stdlib-syntax-highlight directly", () => {
         expect(run(`
             import { Syntax, type Language } from "@monstermann/stdlib-syntax-highlight";

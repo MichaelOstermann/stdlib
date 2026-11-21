@@ -1,0 +1,43 @@
+{
+    "name": "@monstermann/stdlib-embed",
+    "type": "module",
+    "version": "0.1.0",
+    "description": "Embeds for links: oEmbed, next to @monstermann/stdlib.",
+    "author": "Michael Ostermann <michaelostermann@me.com>",
+    "license": "MIT",
+    "homepage": "https://github.com/MichaelOstermann/stdlib",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/MichaelOstermann/stdlib.git"
+    },
+    "bugs": {
+        "url": "https://github.com/MichaelOstermann/stdlib/issues"
+    },
+    "keywords": [
+        "embed",
+        "oembed",
+        "stdlib",
+        "typescript"
+    ],
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.mts",
+            "import": "./dist/index.mjs"
+        },
+        "./*": {
+            "types": "./dist/*.d.mts",
+            "import": "./dist/*.mjs"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "providers": "bun scripts/providers.ts",
+        "bundle": "bun run tsdown"
+    },
+    "devDependencies": {
+        "@monstermann/stdlib-transform": "workspace:*"
+    }
+}

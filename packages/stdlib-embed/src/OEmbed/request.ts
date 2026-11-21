@@ -1,0 +1,34 @@
+import type { OEmbedProvider } from "."
+
+/**
+ * # request
+ *
+ * ```ts
+ * function OEmbed.request(
+ *     provider: OEmbedProvider,
+ *     url: string,
+ *     options?: { maxHeight?: number, maxWidth?: number },
+ * ): string
+ * ```
+ *
+ * Returns the address to fetch the embed of `url` from, as JSON. With `maxWidth` and `maxHeight`
+ * the provider answers with an embed that fits, when it supports them.
+ *
+ * ## Example
+ *
+ * ```ts
+ * const provider = OEmbed.provider(url);
+ * if (provider) {
+ *     const response = await fetch(OEmbed.request(provider, url, { maxWidth: 800 }));
+ *     OEmbed.parse(await response.json());
+ * }
+ * ```
+ */
+export function request(provider: OEmbedProvider, url: string, options?: { maxHeight?: number, maxWidth?: number }): string {
+    const address = new URL(provider.endpoint)
+    address.searchParams.set("url", url)
+    address.searchParams.set("format", "json")
+    if (options?.maxWidth !== undefined) address.searchParams.set("maxwidth", String(options.maxWidth))
+    if (options?.maxHeight !== undefined) address.searchParams.set("maxheight", String(options.maxHeight))
+    return address.href
+}

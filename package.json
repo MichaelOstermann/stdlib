@@ -8,7 +8,7 @@
         "benchmarks": "sh benchmarks/bench.sh",
         "replicas": "bun scripts/replicas.ts",
         "build": "bun run --filter '*' bundle",
-        "check": "bun run build && dprint check && oxlint && tsc && tsc -p packages/stdlib && tsc -p packages/stdlib-web && tsc -p packages/stdlib-react && tsc -p packages/stdlib-cli && tsc -p packages/stdlib-embed && tsc -p packages/stdlib-syntax-highlight && bun test",
+        "checks": "bun run build && dprint check && oxlint && bun check && bun check -p packages/stdlib && bun check -p packages/stdlib-web && bun check -p packages/stdlib-react && bun check -p packages/stdlib-cli && bun check -p packages/stdlib-embed && bun check -p packages/stdlib-syntax-highlight && bun test",
         "docs:dev": "blume dev",
         "docs:build": "blume build",
         "style": "bun run --filter @monstermann/stdlib-style bundle",

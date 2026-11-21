@@ -1,0 +1,59 @@
+---
+title: Usage
+---
+
+## Installation
+
+```package-install
+npm i @monstermann/stdlib-embed
+```
+
+Set up [`stdlib-transform`](../stdlib-transform/usage) for your bundler, without it the 111 KB of providers end up in every bundle that uses one of the functions of `OEmbed`.
+
+## Fetching
+
+Most providers do not allow fetching from a browser (CORS), so fetch on a server, or with the `fetch` of Tauri:
+
+```ts
+for (const link of String.links(text)) {
+    const provider = OEmbed.provider(link.url)
+    if (!provider) continue
+
+    const response = await fetch(OEmbed.request(provider, link.url, { maxWidth: 800 }))
+    const embed = OEmbed.parse(await response.json())
+    if (!embed) continue
+}
+```
+
+## Rendering
+
+Load the `<iframe>` of an embed instead of rendering its `html`, so it runs on the origin of the provider, not on yours:
+
+```tsx
+function Embed({ embed }: { embed: OEmbed }) {
+    if (embed.type === "link") return null
+
+    const style = {
+        aspectRatio: `${embed.width} / ${embed.height}`,
+        width: "100%",
+    }
+
+    if (embed.type === "photo") {
+        return (
+            <img src={embed.url} style={style} />
+        )
+    }
+
+    const src = OEmbed.iframeSrc(embed)
+    if (!src) return null
+
+    return (
+        <iframe
+            allowFullScreen
+            sandbox="allow-scripts allow-popups allow-top-navigation-by-user-activation allow-forms allow-same-origin allow-storage-access-by-user-activation allow-popups-to-escape-sandbox"
+            src={src}
+            style={style}
+        />
+    )
+}
+```

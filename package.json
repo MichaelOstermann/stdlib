@@ -6,7 +6,7 @@
     ],
     "scripts": {
         "benchmarks": "sh benchmarks/bench.sh",
-        "globals": "bun scripts/globals.ts",
+        "replicas": "bun scripts/replicas.ts",
         "build": "bun run --filter '*' bundle",
         "check": "bun run build && dprint check && oxlint && tsc && tsc -p packages/stdlib && tsc -p packages/stdlib-web && tsc -p packages/stdlib-react && tsc -p packages/stdlib-cli && tsc -p packages/stdlib-embed && tsc -p packages/stdlib-syntax-highlight && bun test",
         "docs:dev": "blume dev",

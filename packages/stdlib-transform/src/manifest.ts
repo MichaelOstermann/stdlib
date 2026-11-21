@@ -19,6 +19,7 @@ export const namespaces: ReadonlySet<string> = new Set([
 export const functions: ReadonlyMap<string, string> = new Map([
     ["_", "_"],
     ["Action", "Action"],
+    ["Array", "Array/index"],
     ["AsyncEmitter", "Emitter"],
     ["batch", "batch"],
     ["Effect", "Effect"],
@@ -26,17 +27,25 @@ export const functions: ReadonlyMap<string, string> = new Map([
     ["Err", "Result"],
     ["ErrAsync", "ResultAsync"],
     ["Failure", "Failure"],
+    ["Function", "Function/index"],
+    ["JSON", "JSON/index"],
+    ["Map", "Map/index"],
     ["match", "match"],
+    ["Math", "Math/index"],
     ["Memo", "Memo"],
+    ["Object", "Object/index"],
     ["Ok", "Result"],
     ["OkAsync", "ResultAsync"],
     ["peek", "peek"],
     ["pipe", "pipe"],
+    ["Promise", "Promise/index"],
     ["Result", "Result"],
     ["ResultAsync", "ResultAsync"],
     ["Semaphore", "Semaphore"],
     ["SemaphoreFullError", "Semaphore"],
+    ["Set", "Set/index"],
     ["Signal", "Signal"],
+    ["String", "String/index"],
 ])
 
 /**
@@ -48,9 +57,3 @@ export const packages: ReadonlyMap<string, Package> = new Map([
     ["@monstermann/stdlib-syntax-highlight", { functions: new Map(), namespaces: new Set(["Syntax"]) }],
     ["@monstermann/stdlib-web", { functions: new Map(), namespaces: new Set(["DOM", "Placement", "Rect", "Shortcut"]) }],
 ])
-
-/** Files that only exist for running the code untransformed. */
-export const guards: readonly string[] = [
-    "globals",
-    "patch",
-]

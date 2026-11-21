@@ -1,8 +1,10 @@
+import type { Result } from "@monstermann/stdlib"
 import type { BooleanOption } from "../boolean"
 import type { EnumOption } from "../enum"
 import type { StringOption } from "../string"
 import type { AnyOption, CLIInvalidOptionError, CLIMissingOptionError, Flag, InferOption } from "../types"
 import type { ResolvedFlag } from "./argv"
+import { Err, Ok, String } from "@monstermann/stdlib"
 import { Parse } from "../../internals/Parse"
 import { prompt } from "../prompt"
 

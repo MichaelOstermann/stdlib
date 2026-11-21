@@ -1,4 +1,6 @@
+import type { Result } from "@monstermann/stdlib"
 import type { StandardSchemaV1 } from "@standard-schema/spec"
+import { Err, Ok } from "@monstermann/stdlib"
 
 /**
  * Turns a typed word into a value: a function that returns a `Result`, or a Standard Schema such as

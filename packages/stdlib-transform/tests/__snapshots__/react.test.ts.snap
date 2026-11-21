@@ -348,7 +348,7 @@ export function Logger({ message }) {
 `;
 
 exports[`react Should leave signals and effects alone outside of top-level statements 1`] = `
-"import { Signal } from "@monstermann/stdlib/Signal";import { Effect } from "@monstermann/stdlib/Effect";const $global = Signal(0)
+"const $global = Signal(0)
 Effect(() => console.log($global()))
 export function Component({ open }) {
     const stop = Effect(() => {})

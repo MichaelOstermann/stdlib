@@ -1,6 +1,7 @@
 // Taken from observeMove of @floating-ui/dom, src/autoUpdate.ts, MIT License, Copyright (c) 2021 Floating UI contributors.
 
 import type { Rect } from "../Rect"
+import { Math } from "@monstermann/stdlib"
 import { roundedAndDeduped } from "../internals/roundedAndDeduped"
 import { fromDOMRect } from "../Rect/fromDOMRect"
 import { isEqual } from "../Rect/isEqual"

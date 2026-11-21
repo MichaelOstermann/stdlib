@@ -1,5 +1,7 @@
+import type { JSON, Result } from "@monstermann/stdlib"
 import type { ResolvedArgv } from "./resolve/argv"
 import type { AnyCommand, CLIError, CLIInternalError, ResolvedCommand } from "./types"
+import { Err, Failure, Ok } from "@monstermann/stdlib"
 import { commands } from "./commands"
 import { redirect } from "./console/redirect"
 import { env } from "./env"
@@ -16,7 +18,7 @@ export type Execution = {
     name: string
     options: Record<string, unknown> | undefined
     program: AnyCommand
-    result: Result<JSONValue, CLIError | Failure>
+    result: Result<JSON, CLIError | Failure>
 }
 
 /**
@@ -55,7 +57,7 @@ export async function exec(root: AnyCommand, input: { argv?: ResolvedArgv, name:
         if (!values.ok) return { ...execution, command, result: Err(values.value) }
 
         if (isRPC) redirect()
-        const returned = (await action(values.value) ?? Ok(null)) as Result<JSONValue, Failure | Error | string>
+        const returned = (await action(values.value) ?? Ok(null)) as Result<JSON, Failure | Error | string>
         if (!returned.ok) return { ...execution, command, options: values.value, result: Err(Failure.from(returned.value)) }
         return { ...execution, command, options: values.value, result: Ok(returned.value) }
     }

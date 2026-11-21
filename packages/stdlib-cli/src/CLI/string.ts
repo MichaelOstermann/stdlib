@@ -1,4 +1,5 @@
 import type { Parse } from "../internals/Parse"
+import { Ok } from "@monstermann/stdlib"
 
 export interface StringOption<T = string, Optional extends boolean = false, Defaulted extends boolean = false> {
     readonly config: StringOptionConfig<T>

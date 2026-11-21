@@ -1,7 +1,6 @@
+import { Object } from "@monstermann/stdlib"
 import { merge } from "remeda"
 import { bench } from "./bench"
-import "@monstermann/stdlib/globals"
-
 // Setting the title and the status of a task: Object.merge, compiled with --transform, against remeda merge.
 
 const task = { createdAt: 0, done: false, id: 1, project: "inbox", tags: ["a", "b"], title: "Task" }

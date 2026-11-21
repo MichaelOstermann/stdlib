@@ -1,4 +1,5 @@
 import type { FormatOptions } from "./json"
+import { Failure } from "@monstermann/stdlib"
 import { ansi } from "../ansi"
 import { json } from "./json"
 

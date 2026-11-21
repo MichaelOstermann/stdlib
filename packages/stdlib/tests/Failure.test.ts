@@ -30,6 +30,41 @@ describe("Failure.from", () => {
         expectTypeOf(Failure.from(failure as typeof failure | string)).toEqualTypeOf<typeof failure | Failure>()
     })
 
+    it("should keep the name of an object as it is written", () => {
+        expectTypeOf(Failure.from({ message: "Bar", name: "Foo" })).toEqualTypeOf<{ message: string, name: "Foo" }>()
+        expectTypeOf(Failure.from(new TypeError("Bar"))).toEqualTypeOf<Failure>()
+        expectTypeOf(Failure.from("Bar" as unknown)).toEqualTypeOf<Failure>()
+    })
+
+    it("should move the other fields that are JSON into meta", () => {
+        const failure = Failure.from({ email: "jane@miko.dev", message: "Bar", meta: { id: 1, retry: false }, name: "TakenError", retry: true, notJSON: () => {} })
+        expect(failure).toEqual({ message: "Bar", meta: { email: "jane@miko.dev", id: 1, retry: true }, name: "TakenError" })
+        expectTypeOf(failure).toEqualTypeOf<{ message: string, meta: { email: string, id: number, retry: boolean }, name: "TakenError" }>()
+        expectTypeOf(Failure.from({ email: "jane@miko.dev", message: "Bar", name: "TakenError" })).toEqualTypeOf<{ message: string, meta: { email: string }, name: "TakenError" }>()
+        expectTypeOf(Failure.from({ message: "Bar", name: "Foo", notJSON: () => {} })).toEqualTypeOf<{ message: string, name: "Foo" }>()
+    })
+
+    it("should leave out the fields that are not JSON all the way down", () => {
+        const failure = Failure.from({ date: new Date(), message: "", name: "Test", nested: { ok: 1, set: new Set() }, set: new Set() })
+        expect(failure).toEqual({ message: "", name: "Test" })
+        expectTypeOf(failure).toEqualTypeOf<{ message: string, name: "Test" }>()
+
+        const shared = { ok: 1 }
+        const cycle: Record<string, unknown> = {}
+        cycle["self"] = cycle
+        expect(Failure.from({ a: shared, b: [shared, shared], cycle, list: [1, "two", null, { three: true }], message: "", name: "Test" })).toEqual({
+            message: "",
+            meta: { a: shared, b: [shared, shared], list: [1, "two", null, { three: true }] },
+            name: "Test",
+        })
+    })
+
+    it("should give back a meta that may be there for fields that may be there", () => {
+        const failure = { message: "", name: "Test" } as { foo?: string, message: string, name: "Test" }
+        expectTypeOf(Failure.from(failure)).toEqualTypeOf<{ message: string, meta?: { foo?: string }, name: "Test" }>()
+        expect(Failure.from({ ...failure, foo: "bar" })).toEqual({ message: "", meta: { foo: "bar" }, name: "Test" })
+    })
+
     it("should turn anything else into the message", () => {
         expect(Failure.from("Not found")).toEqual({ message: "Not found", name: "Error" })
         expect(Failure.from(3)).toEqual({ message: "3", name: "Error" })

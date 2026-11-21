@@ -1,4 +1,4 @@
 preload = ["./tests/preload.ts", "../../preload.ts"]
 
 [test]
-preload = ["./tests/preload.ts", "../../preload.ts"]
+preload = ["./tests/preload.ts"]

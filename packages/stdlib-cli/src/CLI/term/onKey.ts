@@ -1,5 +1,6 @@
 import type { Key as Keypress } from "node:readline"
 import { emitKeypressEvents } from "node:readline"
+import { batch } from "@monstermann/stdlib"
 
 export interface Key {
     alt: boolean

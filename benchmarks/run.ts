@@ -7,7 +7,7 @@ import { stdlibBun } from "../packages/stdlib-transform/src/plugin"
 //   bun benchmarks/run.ts match --runtime=node      # in Node
 //   bun benchmarks/run.ts match --transform         # through stdlib-transform
 //
-// Without the transform, globals come from @monstermann/stdlib/patch. NODE_ENV is production, for the libraries compared against.
+// NODE_ENV is production, for the libraries compared against.
 
 const dir = import.meta.dirname
 const src = Path.resolve(dir, "../packages/stdlib/src")
@@ -33,16 +33,16 @@ async function build(name: string, transform: boolean): Promise<string> {
     const result = await Bun.build({
         define: { "process.env.NODE_ENV": '"production"' },
         entrypoints: [Path.join(dir, `${name}.ts`)],
-        outdir: Path.join(dir, ".dist", transform ? "transformed" : "patched"),
+        outdir: Path.join(dir, ".dist", transform ? "transformed" : "untransformed"),
         target: "node",
         plugins: [
             {
                 name: "stdlib-sources",
                 setup(build) {
-                    // From the sources, to not depend on a build. Without the transform, importing the types of globals makes them available for real.
-                    build.onResolve({ filter: /^@monstermann\/stdlib\// }, ({ path }) => {
-                        const file = path.slice("@monstermann/stdlib/".length).replace(/\.mjs$/, "")
-                        return { path: Path.join(src, `${!transform && file === "globals" ? "patch" : file}.ts`) }
+                    // From the sources, to not depend on a build.
+                    build.onResolve({ filter: /^@monstermann\/stdlib(?:\/|$)/ }, ({ path }) => {
+                        const file = path.slice("@monstermann/stdlib/".length).replace(/\.mjs$/, "") || "index"
+                        return { path: Path.join(src, `${file}.ts`) }
                     })
                 },
             },

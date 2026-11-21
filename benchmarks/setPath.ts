@@ -1,9 +1,8 @@
+import { Object } from "@monstermann/stdlib"
 import { produce } from "immer"
 import { create } from "mutative"
 import { setPath } from "remeda"
 import { bench } from "./bench"
-import "@monstermann/stdlib/globals"
-
 // Setting state.user.settings.theme: Object.setPath, compiled with --transform, against remeda setPath, and immer and mutative assigning the field.
 
 const state = {

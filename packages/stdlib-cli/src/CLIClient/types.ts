@@ -1,4 +1,4 @@
-import type { InferErr, InferOk, Simplify } from "@monstermann/stdlib"
+import type { Failure, InferErr, InferOk, Result, Simplify } from "@monstermann/stdlib"
 import type { BooleanOption } from "../CLI/boolean"
 import type { ActionCommand } from "../CLI/command"
 import type { EnumOption } from "../CLI/enum"

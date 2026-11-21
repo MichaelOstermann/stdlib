@@ -1,6 +1,5 @@
+import { Array, pipe } from "@monstermann/stdlib"
 import { bench } from "./bench"
-import "@monstermann/stdlib/globals"
-
 // pipe, replaced with the calls it makes with --transform, a call of pipe without:
 // with three cheap steps, which engines inline along with pipe, and with steps too big for that, whose functions are created on every call.
 

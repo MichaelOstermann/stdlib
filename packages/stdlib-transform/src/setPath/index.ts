@@ -23,11 +23,11 @@ import { ScopeTracker, walk } from "oxc-walker"
  *
  * A call whose path is not known until the code runs is left as it is.
  */
-export function transformSetPaths(code: string, filePath: string): MagicString {
+export function transformSetPaths(code: string, filePath: string, from: string): MagicString {
     const { program } = parseSync(filePath, code)
     const ms = new MagicString(code, { filename: filePath })
 
-    // Collects all declarations, to tell whether `Object` is the global where it is used.
+    // Collects all declarations, to tell whether `Object` is the native one or its replica where it is used.
     const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
     walk(program, { scopeTracker })
     scopeTracker.freeze()
@@ -46,7 +46,7 @@ export function transformSetPaths(code: string, filePath: string): MagicString {
         scopeTracker,
         enter(node) {
             if (node.type !== "CallExpression" || node.optional || !isObjectCall(node.callee, "setPath")) return
-            if (scopeTracker.getDeclaration("Object")) return
+            if (!isNativeObject(scopeTracker, from)) return
 
             const [target, path, value] = node.arguments
             if (node.arguments.length !== 3 || node.arguments.some((argument) => argument.type === "SpreadElement")) return
@@ -69,6 +69,19 @@ export function transformSetPaths(code: string, filePath: string): MagicString {
     // Declarations are hoisted, so they can go at the end, where every line before stays where it is.
     for (const [path, name] of functions) ms.append(`\n${compile(name, path.split("."))}\n`)
     return ms
+}
+
+/**
+ * Whether `Object` is the native one, or the replica of it: `import { Object } from
+ * "@monstermann/stdlib"`
+ */
+export function isNativeObject(scopeTracker: ScopeTracker, from: string): boolean {
+    const declaration = scopeTracker.getDeclaration("Object")
+    if (!declaration) return true
+    if (declaration.type !== "Import" || declaration.node.type !== "ImportSpecifier") return false
+    const imported = declaration.node.imported
+    const name = imported.type === "Identifier" ? imported.name : imported.value
+    return name === "Object" && [from, `${from}/Object/index`].includes(declaration.importNode.source.value)
 }
 
 /** `Object.setPath`, `Object.merge`, … */

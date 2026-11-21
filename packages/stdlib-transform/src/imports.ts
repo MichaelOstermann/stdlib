@@ -1,7 +1,7 @@
 import MagicString from "magic-string"
 import { parseSync } from "oxc-parser"
-import { importEnd } from "./globals"
 import { packages } from "./manifest"
+import { importEnd } from "./syntax"
 
 /**
  * Rewrites the remaining imports from `@monstermann/stdlib` and `@monstermann/stdlib-web` to the

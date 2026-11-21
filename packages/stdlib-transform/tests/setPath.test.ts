@@ -3,7 +3,7 @@ import { setPath } from "../../stdlib/src/Object/setPath"
 import { transformSetPaths } from "../src/setPath"
 
 function run(code: string): string {
-    return transformSetPaths(code, "source.ts").toString()
+    return transformSetPaths(code, "source.ts", "@monstermann/stdlib").toString()
 }
 
 /** What a call returns once it has been compiled, next to what `Object.setPath` returns. */

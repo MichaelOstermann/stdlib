@@ -1,5 +1,7 @@
+import type { Failure, Result } from "@monstermann/stdlib"
 import type { CLIInternalError, CLIInvalidMessageError, CLIOptionsError, CLIUnknownCommandError } from "../../src"
 import type { CLIClient } from "../../src/client"
+import { Err, Ok } from "@monstermann/stdlib"
 import { describe, expectTypeOf, it } from "bun:test"
 import { CLI } from "../../src"
 

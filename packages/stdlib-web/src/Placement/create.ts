@@ -1,5 +1,6 @@
 import type { PlacementMeasurements, PlacementName, PlacementOptions, PlacementPosition } from "."
 import type { Rect } from "../Rect"
+import { Math } from "@monstermann/stdlib"
 import { roundByDPR } from "../DOM/roundByDPR"
 
 type Side = "down" | "left" | "right" | "up"

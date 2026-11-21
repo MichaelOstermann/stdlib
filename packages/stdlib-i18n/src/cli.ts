@@ -1,4 +1,5 @@
 import type { I18nDiagnostic, I18nResult } from "./types"
+import { Err, Ok } from "@monstermann/stdlib"
 import { CLI } from "@monstermann/stdlib-cli"
 import { compile } from "./compile"
 

@@ -1,7 +1,6 @@
+import { match } from "@monstermann/stdlib"
 import { match as tsPattern } from "ts-pattern"
 import { bench } from "./bench"
-import "@monstermann/stdlib/globals"
-
 // The example of the performance page: compiled into conditions with --transform, a chain of calls without, and ts-pattern.
 
 type Shape =

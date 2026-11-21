@@ -1,9 +1,8 @@
+import { Array } from "@monstermann/stdlib"
 import { produce } from "immer"
 import { create } from "mutative"
 import { map } from "remeda"
 import { bench } from "./bench"
-import "@monstermann/stdlib/globals"
-
 // Array.map against remeda map, and immer and mutative assigning each item.
 
 const unchanged = (value: number): number => value

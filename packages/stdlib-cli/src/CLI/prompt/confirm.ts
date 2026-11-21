@@ -1,3 +1,4 @@
+import { Signal } from "@monstermann/stdlib"
 import { ansi } from "../ansi"
 import { term } from "../term"
 

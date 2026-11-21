@@ -2,24 +2,23 @@ import type { Helpers } from "./match"
 import remapping from "@jridgewell/remapping"
 import { transform as treeshake } from "@monstermann/barrels-treeshake"
 import { SourceMap } from "magic-string"
-import { transformGlobals } from "./globals"
-import { globals, values } from "./globals.manifest"
 import { transformMessages } from "./i18n"
 import { transformImports } from "./imports"
-import { guards, packages } from "./manifest"
+import { packages } from "./manifest"
 import { transformMatches } from "./match"
 import { transformObjects } from "./object"
 import { transformPipes } from "./pipe"
 import { transformReact } from "./react"
+import { transformReplicas } from "./replicas"
+import { replicas } from "./replicas.manifest"
 import { transformSetPaths } from "./setPath"
 
 const from = "@monstermann/stdlib"
 
-const globalsOptions = {
-    globals,
-    guards: guards.map((name) => `${from}/${name}`),
-    values: Object.fromEntries(Object.entries(values).map(([name, file]) => [name, `${from}/${file}`])),
-    resolve: (global: string, name: string): string => `${from}/${global}/${name}`,
+const replicasOptions = {
+    replicas,
+    resolve: (replica: string, name: string): string => `${from}/${replica}/${name}`,
+    sources: (replica: string): string[] => [from, `${from}/${replica}/index`],
 }
 
 export interface StdlibOptions {
@@ -37,6 +36,8 @@ export interface StdlibResult {
  *
  * - `Array.removeAll()` and `Duration.parse()` become direct imports of `removeAll` and `parse`,
  *   and so do `Rect.bottom()` and the others of `@monstermann/stdlib-web`
+ * - `import { Array }` and the other replicas of natives are removed when everything else works
+ *   with the native one: `new Set()`, `x instanceof Set`
  * - `match()` chains are compiled into conditional expressions
  * - `pipe()` calls are replaced with the calls they make
  * - `Object.setPath()` calls with a path that is written out, `Object.merge()` calls with an object
@@ -47,8 +48,6 @@ export interface StdlibResult {
  * - in React components and hooks, reads of signals are wrapped with `useReactive` and their
  *   signals and effects created with `useSignal` and `useSignalEffect`, all from
  *   `@monstermann/stdlib-react`
- *
- * All of it is available as globals, and can be imported from the package as well.
  *
  * Returns `undefined` when nothing changed.
  */
@@ -73,7 +72,7 @@ export function transform(code: string, filePath: string, options: StdlibOptions
     const imported = code.includes(from)
 
     // Chains inside of the callbacks of another chain are compiled by another run.
-    if (imported || code.includes("match")) {
+    if (imported && code.includes("match")) {
         const helpers: Helpers = {}
         for (let matches = transformMatches(code, filePath, from, helpers); matches?.ms.hasChanged(); matches = transformMatches(code, filePath, from, helpers)) {
             for (const name of matches.unused) unused.add(name)
@@ -83,7 +82,7 @@ export function transform(code: string, filePath: string, options: StdlibOptions
     }
 
     // After chains: what they are compiled into is passed along like everything else.
-    if (code.includes("pipe")) {
+    if (imported && code.includes("pipe")) {
         let replaced = false
         for (let pipes = transformPipes(code, filePath, from); ; pipes = transformPipes(code, filePath, from)) {
             if (!pipes.ms.hasChanged()) {
@@ -99,7 +98,7 @@ export function transform(code: string, filePath: string, options: StdlibOptions
 
     // After pipes: calls they had in their steps are written out by now. Before globals: a compiled call needs no import.
     if (code.includes("setPath")) {
-        const paths = transformSetPaths(code, filePath)
+        const paths = transformSetPaths(code, filePath, from)
         if (paths.hasChanged()) {
             code = paths.toString()
             maps.push(paths.generateMap(generateMap))
@@ -108,7 +107,7 @@ export function transform(code: string, filePath: string, options: StdlibOptions
 
     // Like paths: after pipes, before globals.
     if (code.includes("merge") || code.includes("pick")) {
-        const objects = transformObjects(code, filePath)
+        const objects = transformObjects(code, filePath, from)
         if (objects.hasChanged()) {
             code = objects.toString()
             maps.push(objects.generateMap(generateMap))
@@ -117,6 +116,12 @@ export function transform(code: string, filePath: string, options: StdlibOptions
 
     // Nothing has been imported when the package is not mentioned, skip parsing. `@monstermann/stdlib-web` mentions it too.
     if (imported) {
+        const replaced = transformReplicas(code, filePath, replicasOptions)
+        if (replaced) {
+            code = replaced.toString()
+            maps.push(replaced.generateMap(generateMap))
+        }
+
         const shaken = treeshake(code, filePath, {
             debug: options.debug,
             resolve({ importAlias, importName, importPath, propertyName }) {
@@ -134,13 +139,6 @@ export function transform(code: string, filePath: string, options: StdlibOptions
             code = imports.toString()
             maps.push(imports.generateMap(generateMap))
         }
-    }
-
-    // Runs last: only the references to `match` that remain after compiling chains need an import.
-    const replaced = transformGlobals(code, filePath, globalsOptions)
-    if (replaced) {
-        code = replaced.toString()
-        maps.push(replaced.generateMap(generateMap))
     }
 
     if (!maps.length) return

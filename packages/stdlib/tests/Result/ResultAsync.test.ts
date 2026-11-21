@@ -1,3 +1,4 @@
+import type { Result } from "../../src/Result"
 import { describe, expect, expectTypeOf, it } from "bun:test"
 import { Err, Ok } from "../../src/Result"
 import { ErrAsync, OkAsync, ResultAsync } from "../../src/ResultAsync"

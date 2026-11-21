@@ -1,4 +1,6 @@
+import type { Result } from "@monstermann/stdlib"
 import type { CLIClient } from "."
+import { Err, JSON, Ok, String } from "@monstermann/stdlib"
 
 export interface CLIClientTransport {
     /** Sends a request to the program. */

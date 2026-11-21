@@ -2,10 +2,12 @@ import { describe, expect, it } from "bun:test"
 import { transformPipes } from "../src/pipe"
 
 const from = "@monstermann/stdlib"
+const importPipe = `import { pipe } from "${from}";\n`
 
 function run(code: string): string {
+    code = importPipe + code
     for (let pipes = transformPipes(code, "source.ts", from); pipes.ms.hasChanged(); pipes = transformPipes(code, "source.ts", from)) code = pipes.ms.toString()
-    return code
+    return code.slice(importPipe.length)
 }
 
 /** What a call returns as it is written, and what it returns once it has been replaced. */
@@ -78,9 +80,9 @@ describe("transformPipes", () => {
 
     it("should leave what is called the same alone", () => {
         expect(run(`function f(pipe) { return pipe(a, b) }`)).toBe(`function f(pipe) { return pipe(a, b) }`)
-        expect(run(`import { pipe } from "./pipe"; pipe(a, b)`)).toBe(`import { pipe } from "./pipe"; pipe(a, b)`)
+        expect(transformPipes(`import { pipe } from "./pipe"; pipe(a, b)`, "source.ts", from).ms.hasChanged()).toBe(false)
         expect(run(`o.pipe(a, b)`)).toBe(`o.pipe(a, b)`)
-        expect(run(`import { pipe as p } from "${from}"; const a = p(b, c); pipe(b, c)`)).toBe(`import { pipe as p } from "${from}"; const a = c(b); pipe(b, c)`)
+        expect(transformPipes(`import { pipe as p } from "${from}"; const a = p(b, c); pipe(b, c)`, "source.ts", from).ms.toString()).toBe(`import { pipe as p } from "${from}"; const a = c(b); pipe(b, c)`)
     })
 
     it("should replace calls inside of other calls", () => {
@@ -98,8 +100,9 @@ describe("transformPipes", () => {
     it("should tell how often pipe is still used", () => {
         expect(transformPipes(`import { pipe } from "${from}"; pipe(a, b)`, "source.ts", from)).toMatchObject({ imports: 1, references: 0 })
         expect(transformPipes(`import { pipe } from "${from}"; pipe(a, b); call(pipe)`, "source.ts", from)).toMatchObject({ imports: 1, references: 1 })
-        expect(transformPipes(`pipe(a, v => pipe(v, b))`, "source.ts", from)).toMatchObject({ imports: 0, references: 1 })
-        expect(transformPipes(`pipe(a, create())`, "source.ts", from)).toMatchObject({ imports: 0, references: 1 })
+        expect(transformPipes(`import { pipe } from "${from}"; pipe(a, v => pipe(v, b))`, "source.ts", from)).toMatchObject({ imports: 1, references: 1 })
+        expect(transformPipes(`import { pipe } from "${from}"; pipe(a, create())`, "source.ts", from)).toMatchObject({ imports: 1, references: 1 })
+        expect(transformPipes(`pipe(a, b)`, "source.ts", from).ms.hasChanged()).toBe(false)
     })
 
     it("should return the same as the call it replaces", () => {

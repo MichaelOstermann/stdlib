@@ -1,4 +1,4 @@
-import "@monstermann/stdlib/globals"
+import { Array, Duration, match, Ok, pipe } from "@monstermann/stdlib"
 
 export const result = pipe(
     ["1ms", `${Duration.SECOND}ms`],

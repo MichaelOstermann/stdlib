@@ -1,3 +1,4 @@
+import type { JSON } from "@monstermann/stdlib"
 import { ansi } from "../ansi"
 
 export interface FormatOptions {
@@ -16,7 +17,7 @@ export interface FormatOptions {
 
 type Limits = { maxItems: number, maxString: number }
 
-type Group = JSONObject | JSONValue[] | readonly JSONValue[]
+type Group = JSON.Object | JSON[] | readonly JSON[]
 
 /**
  * # json
@@ -36,7 +37,7 @@ type Group = JSONObject | JSONValue[] | readonly JSONValue[]
  * // { email: jane@miko.dev, tags: [admin] }
  * ```
  */
-export function json(value: JSONValue, options: FormatOptions = {}): string {
+export function json(value: JSON, options: FormatOptions = {}): string {
     const limits = { maxItems: options.maxItems ?? 100, maxString: options.maxString ?? 1000 }
     const width = options.width ?? process.stdout.columns ?? 80
     if (typeof value === "string") return value
@@ -51,20 +52,20 @@ function groupLines(group: Group, width: number, limits: Limits): string[] {
     return objectLines(group, width, limits)
 }
 
-function arrayLines(array: readonly JSONValue[], width: number, limits: Limits): string[] {
+function arrayLines(array: readonly JSON[], width: number, limits: Limits): string[] {
     if (!array.length) return [emptyText(array)]
     const lines = array.slice(0, limits.maxItems).flatMap((item) => itemLines(item, width, limits))
     if (array.length > limits.maxItems) lines.push(more(array.length - limits.maxItems))
     return lines
 }
 
-function itemLines(item: JSONValue, width: number, limits: Limits): string[] {
+function itemLines(item: JSON, width: number, limits: Limits): string[] {
     const dash = ansi.dim("- ")
     if (!isGroup(item)) return hang(dash, valueLines(item, width - 2, limits))
     return hang(dash, groupLines(item, width - 2, limits))
 }
 
-function objectLines(object: JSONObject, width: number, limits: Limits): string[] {
+function objectLines(object: JSON.Object, width: number, limits: Limits): string[] {
     const entries = Object.entries(object)
     if (!entries.length) return [emptyText(object)]
     const lines = entries.slice(0, limits.maxItems).flatMap(([key, value]) => entryLines(key, value, width, limits))
@@ -72,7 +73,7 @@ function objectLines(object: JSONObject, width: number, limits: Limits): string[
     return lines
 }
 
-function entryLines(key: string, value: JSONValue, width: number, limits: Limits): string[] {
+function entryLines(key: string, value: JSON, width: number, limits: Limits): string[] {
     const head = `${keyText(key)}: `
     const headWidth = Bun.stringWidth(head)
     if (!isGroup(value)) return hang(head, valueLines(value, Math.max(width - headWidth, 20), limits))
@@ -85,20 +86,20 @@ function valueLines(value: boolean | number | string | null, width: number, limi
     return Bun.wrapAnsi(stringText(value, limits), width, { hard: true }).split("\n")
 }
 
-function inline(value: JSONValue, limits: Limits): string {
+function inline(value: JSON, limits: Limits): string {
     if (typeof value === "string") return stringText(value, limits)
     if (isArray(value)) return inlineArray(value, limits)
     if (isGroup(value)) return inlineObject(value, limits)
     return scalar(value)
 }
 
-function inlineArray(array: readonly JSONValue[], limits: Limits): string {
+function inlineArray(array: readonly JSON[], limits: Limits): string {
     const items = array.slice(0, limits.maxItems).map((item) => inline(item, limits))
     if (array.length > limits.maxItems) items.push(more(array.length - limits.maxItems))
     return `[${items.join(", ")}]`
 }
 
-function inlineObject(object: JSONObject, limits: Limits): string {
+function inlineObject(object: JSON.Object, limits: Limits): string {
     const entries = Object.entries(object)
     if (!entries.length) return "{}"
     const items = entries.slice(0, limits.maxItems).map(([key, value]) => `${keyText(key)}: ${inline(value, limits)}`)
@@ -140,10 +141,10 @@ function emptyText(group: Group): string {
     return "{}"
 }
 
-function isGroup(value: JSONValue): value is Group {
+function isGroup(value: JSON): value is Group {
     return typeof value === "object" && value !== null
 }
 
-function isArray(value: JSONValue): value is readonly JSONValue[] {
+function isArray(value: JSON): value is readonly JSON[] {
     return Array.isArray(value)
 }

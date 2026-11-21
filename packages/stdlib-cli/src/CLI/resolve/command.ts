@@ -1,4 +1,6 @@
+import type { Result } from "@monstermann/stdlib"
 import type { AnyCommand, CLIUnknownCommandError, ResolvedCommand } from "../types"
+import { Err, Ok } from "@monstermann/stdlib"
 import { nearest } from "../commands/nearest"
 
 /**

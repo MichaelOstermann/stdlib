@@ -1,4 +1,5 @@
 import type { Highlighter, Token } from "."
+import { batch, Memo, peek, Set, Signal } from "@monstermann/stdlib"
 import { grammars } from "../grammars"
 import { tokenClasses } from "./internals/tokenClasses"
 

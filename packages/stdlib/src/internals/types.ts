@@ -33,6 +33,3 @@ export type SetValue<T extends AnySet> = T extends ReadonlySet<infer V> ? V : ne
 
 /** Mutable in, mutable out. Readonly in, readonly out. */
 export type UpdatedSet<T extends AnySet, V = SetValue<T>> = T extends Set<any> ? Set<V> : ReadonlySet<V>
-
-/** Shows an intersection as the single object it is. */
-export type Simplify<T> = { [K in keyof T]: T[K] } & {}

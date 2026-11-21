@@ -1,5 +1,7 @@
+import type { Result } from "@monstermann/stdlib"
 import type { CLIOptionError, CLIOptionsError, CLIUnknownOptionError, CommandOptions, InferOptions } from "../types"
 import type { ResolvedFlag } from "./argv"
+import { Err, Ok, String } from "@monstermann/stdlib"
 import { prompt } from "../prompt"
 import { option } from "./option"
 

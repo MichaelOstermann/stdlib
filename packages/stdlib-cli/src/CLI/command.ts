@@ -1,3 +1,4 @@
+import type { Failure, JSON, Result } from "@monstermann/stdlib"
 import type { CommandOptions, Commands, InferOptions } from "./types"
 
 export interface Command<O extends CommandOptions = Record<never, never>, C extends Commands = Record<never, never>> {
@@ -31,7 +32,7 @@ export interface ActionCommandConfig<O extends CommandOptions, C extends Command
 }
 
 /** What an action can return: `Ok` with JSON, `Err` with what went wrong, or nothing. */
-export type ActionReturn = Result<JSONValue, Failure | Error | string> | void
+export type ActionReturn = Result<JSON, Failure | Error | string> | void
 
 /**
  * # command

@@ -4,7 +4,7 @@ import { pick } from "../../stdlib/src/Object/pick"
 import { transformObjects } from "../src/object"
 
 function run(code: string): string {
-    return transformObjects(code, "source.ts").toString()
+    return transformObjects(code, "source.ts", "@monstermann/stdlib").toString()
 }
 
 /** What a call returns once it has been compiled, next to what the function itself returns. */

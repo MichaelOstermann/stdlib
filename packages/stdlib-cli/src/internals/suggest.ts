@@ -1,3 +1,5 @@
+import { String } from "@monstermann/stdlib"
+
 export function suggest(input: string, names: string[]): string[] {
     const typos = Math.max(1, Math.floor(input.length / 3))
     return names

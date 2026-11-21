@@ -1,4 +1,5 @@
 import type { Key } from "./onKey"
+import { batch, peek, Signal } from "@monstermann/stdlib"
 import { CURSOR } from "../../internals/cursor"
 
 export interface Input {

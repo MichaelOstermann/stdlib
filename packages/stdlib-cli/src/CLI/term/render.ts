@@ -1,3 +1,4 @@
+import { Effect, Signal } from "@monstermann/stdlib"
 import { CURSOR } from "../../internals/cursor"
 
 const HIDE_CURSOR = "\x1b[?25l"

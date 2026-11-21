@@ -7,7 +7,7 @@ import { unwrap } from "../match/helpers"
 import { inline, isFunction, isPropertyName } from "../match/transformCallback"
 
 export interface PipeResult {
-    /** How often `pipe` has been imported, not at all when it is the global. */
+    /** How often `pipe` has been imported. */
     imports: number
     ms: MagicString
     /** How often `pipe` is still referred to, calls that have been replaced aside. */
@@ -48,10 +48,10 @@ interface Value {
  */
 export function transformPipes(code: string, filePath: string, from: string): PipeResult {
     const { program } = parseSync(filePath, code)
-    // Without an import, `pipe` is the global, which a declaration of that name in the file is not.
     const pipe = findImport(program.body, from)
-    const local = pipe?.local ?? "pipe"
     const ms = new MagicString(code, { filename: filePath })
+    if (!pipe) return { imports: 0, ms, references: 0 }
+    const local = pipe.local
     let references = 0
 
     // Collects all declarations, including hoisted ones, to tell what a name refers to where it is used.
@@ -86,7 +86,7 @@ export function transformPipes(code: string, filePath: string, from: string): Pi
             if (node.type !== "CallExpression" || node.optional || node.callee.type !== "Identifier" || node.callee.name !== local) return
             // Something else that is called the same: function run(pipe) { pipe(value) }
             const declaration = scopeTracker.getDeclaration(local)
-            if (pipe ? declaration?.type !== "Import" : declaration) return
+            if (declaration?.type !== "Import") return
 
             const [first, ...steps] = node.arguments
             if (!first || node.arguments.some((argument) => argument.type === "SpreadElement")) return
@@ -108,7 +108,7 @@ export function transformPipes(code: string, filePath: string, from: string): Pi
         },
     })
 
-    return { imports: pipe?.count ?? 0, ms, references }
+    return { imports: pipe.count, ms, references }
 }
 
 /**

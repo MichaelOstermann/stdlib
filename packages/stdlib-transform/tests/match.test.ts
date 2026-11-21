@@ -300,8 +300,8 @@ describe("transformMatches", () => {
         const renamed = transformMatches(`import { match as m } from "${from}";\nconst a = 0;\nm(a).case(1, 2).unwrapOr(3);\nmatch(a).case(1, 2).unwrapOr(3);`, "source.ts", from)!
         expect(renamed.ms.toString()).toContain(`((a === (1)) ? (2)`)
         expect(renamed.ms.toString()).toContain(`match(a).case(1, 2).unwrapOr(3);`)
-        expect(transformMatches(`import { match } from "other";\nmatch(a).case(1, 2).unwrapOr(3);`, "source.ts", from)!.ms.hasChanged()).toBe(false)
-        expect(transformMatches(`const a = 0;\nmatch(a).case(1, 2).unwrapOr(3);`, "source.ts", from)!.ms.toString()).toContain(`((a === (1)) ? (2)`)
+        expect(transformMatches(`import { match } from "other";\nmatch(a).case(1, 2).unwrapOr(3);`, "source.ts", from)).toBe(undefined)
+        expect(transformMatches(`const a = 0;\nmatch(a).case(1, 2).unwrapOr(3);`, "source.ts", from)).toBe(undefined)
         expect(run(`function run(match) { return match(1).case(1, 2).unwrapOr(3); } return run(() => ({ case: () => ({ unwrapOr: () => 99 }) }));`).compiled).toBe(99)
     })
 })

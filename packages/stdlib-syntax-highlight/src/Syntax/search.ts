@@ -1,4 +1,5 @@
 import type { Language } from "."
+import { String } from "@monstermann/stdlib"
 import { languages } from "./languages"
 
 // How much a match counts when the language is not popular, so popular ones come first among matches about as good

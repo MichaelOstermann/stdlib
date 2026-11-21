@@ -25,9 +25,9 @@ describe("transform", () => {
         `))
     })
 
-    it("should import what is used of globals directly", () => {
+    it("should import the functions of replicas directly", () => {
         expect(run(`
-            import "@monstermann/stdlib/globals";
+            import { Array, Function } from "@monstermann/stdlib";
             Array.removeAll(a, [1]);
             Function.debounce(b, { wait: 1 });
         `)).toBe(dedent(`
@@ -38,22 +38,16 @@ describe("transform", () => {
         expect(run(`Array.from(a);`)).toBe(undefined)
     })
 
-    it("should work without importing anything", () => {
+    it("should leave what has not been imported alone", () => {
         expect(run(`
-            import "@monstermann/stdlib/globals";
-            export const a = pipe(b, b => Array.map(b, v => match(v).case(1, Duration.SECOND).unwrapOr(c)));
-            export const d = Ok(match);
-        `)).toBe(dedent(`
-            import { map as _map } from "@monstermann/stdlib/Array/map";import { SECOND as _SECOND } from "@monstermann/stdlib/Duration/SECOND";import { Ok } from "@monstermann/stdlib/Result";import { match } from "@monstermann/stdlib/match";
-            export const a = _map(b, v => ((v === (1)) ? (_SECOND)
-            : (c)));
-            export const d = Ok(match);
-        `))
+            export const a = pipe(b, c);
+            export const d = match(e).case(1, Duration.SECOND).unwrapOr(f);
+        `)).toBe(undefined)
     })
 
     it("should keep every line where it is", () => {
         expect(run(`
-            import "@monstermann/stdlib/globals"
+            import { match } from "@monstermann/stdlib"
             match(a).case(1, 2).unwrapOr(3)
             b()
         `)!.split("\n").at(-1)).toBe("b()")
@@ -64,15 +58,16 @@ describe("transform", () => {
         `)!.split("\n").length).toBe(4)
     })
 
-    it("should replace globals next to everything else", () => {
+    it("should replace replicas next to everything else", () => {
         expect(run(`
-            import { match, pipe, Duration } from "@monstermann/stdlib";
+            import { Array, match, pipe, Duration } from "@monstermann/stdlib";
             pipe(a, a => Array.map(a, v => match(v).case(1, Duration.SECOND).unwrapOr(b)));
-        `)).toBe(`\n${dedent(`
-            import { map as _map } from "@monstermann/stdlib/Array/map";import { SECOND as _SECOND } from "@monstermann/stdlib/Duration/SECOND";
+        `)).toBe(dedent(`
+            import { map as _map } from "@monstermann/stdlib/Array/map";
+            import { SECOND as _SECOND } from "@monstermann/stdlib/Duration/SECOND";
             _map(a, v => ((v === (1)) ? (_SECOND)
             : (b)));
-        `)}`)
+        `))
     })
 
     it("should import everything else from the file it lives in", () => {

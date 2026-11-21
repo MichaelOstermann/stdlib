@@ -1,4 +1,5 @@
 import type { AnyOption, CommandOptions } from "../types"
+import { String } from "@monstermann/stdlib"
 import { Layout } from "../../internals/Layout"
 import { option } from "./option"
 

@@ -1,4 +1,4 @@
 preload = ["./preload.ts"]
 
 [test]
-preload = ["./packages/stdlib-react/tests/preload.ts", "./preload.ts"]
+preload = ["./packages/stdlib-react/tests/preload.ts"]

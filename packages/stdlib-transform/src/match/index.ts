@@ -19,10 +19,10 @@ export interface MatchResult {
 }
 
 interface Imported {
-    /** How often it has been imported, not at all when it is the global. */
+    /** How often it has been imported. */
     count: number
     local: string
-    node: ImportDeclaration | undefined
+    node: ImportDeclaration
 }
 
 /**
@@ -52,8 +52,8 @@ interface Imported {
  */
 export function transformMatches(code: string, filePath: string, from: string, helpers: Helpers = {}): MatchResult | undefined {
     const { program } = parseSync(filePath, code)
-    // Without an import, `match` is the global, which a declaration of that name in the file is not.
-    const match = findImport(program.body, from, "match") ?? { count: 0, local: "match", node: undefined }
+    const match = findImport(program.body, from, "match")
+    if (!match) return
     const wildcard = findImport(program.body, from, "_")
 
     let ids: Set<string> | undefined
@@ -141,7 +141,7 @@ export function transformMatches(code: string, filePath: string, from: string, h
             const tag = chain ? undefined : collectTag(node, match.local)
             if (!chain && !tag) return
             // Something else that is called the same: function run(match) { match(value)… }
-            if (match.node ? !ctx.isImport(match.local) : scopeTracker.getDeclaration(match.local)) return
+            if (!ctx.isImport(match.local)) return
 
             const known = added.length
             ctx.used = { _: 0, match: 0 }
@@ -165,12 +165,9 @@ export function transformMatches(code: string, filePath: string, from: string, h
         },
     })
 
-    // Without an import to put them next to, they are added to an existing line, so every line stays where it is.
-    const first = program.body.find((node) => node.type !== "ExpressionStatement" || !node.directive)
     for (const name of added) {
         const helper = `import { ${name} as ${helpers[name]} } from "${from}/internals/match/${name}";`
-        if (match.node) ctx.ms.appendLeft(match.node.end, `\n${helper}`)
-        else ctx.ms.appendLeft(first?.start ?? code.length, helper)
+        ctx.ms.appendLeft(match.node.end, `\n${helper}`)
     }
 
     // Dropping an import by its name would drop the others of that name.

@@ -1,4 +1,4 @@
-import type { Simplify } from "../internals/types"
+import type { Simplify } from "../types"
 import { ownKeys, setOwn } from "../internals/objects"
 
 /**

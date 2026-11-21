@@ -1,3 +1,4 @@
+import type { Failure } from "@monstermann/stdlib"
 import type { BooleanOption } from "./boolean"
 import type { EnumOption } from "./enum"
 import type { StringOption, StringValue } from "./string"

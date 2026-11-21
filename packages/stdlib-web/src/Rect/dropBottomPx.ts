@@ -1,4 +1,5 @@
 import type { Rect } from "."
+import { Math } from "@monstermann/stdlib"
 import { merge } from "./merge"
 
 /**

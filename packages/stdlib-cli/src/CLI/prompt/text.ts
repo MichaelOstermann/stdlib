@@ -1,4 +1,6 @@
+import type { Result } from "@monstermann/stdlib"
 import type { Input } from "../term/input"
+import { Effect, Ok } from "@monstermann/stdlib"
 import { CURSOR } from "../../internals/cursor"
 import { Parse } from "../../internals/Parse"
 import { ansi } from "../ansi"

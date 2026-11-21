@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs"
+import { Memo } from "@monstermann/stdlib"
 import { describe, expect, it } from "bun:test"
 import { grammars } from "../../src/grammars"
 import { Syntax } from "../../src/Syntax"

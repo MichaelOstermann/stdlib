@@ -1,4 +1,5 @@
-import type { JSONObject, JSONValue } from "./JSON/types"
+import type { JSON } from "./JSON"
+import type { Simplify } from "./types"
 import { isPlainObject } from "./Object/isPlainObject"
 import { omit } from "./Object/omit"
 
@@ -16,7 +17,7 @@ export type Failure = {
     cause?: Failure
     errors?: Failure[]
     message: string
-    meta?: JSONObject
+    meta?: JSON.Object
     name: string
     stack?: string
 }
@@ -46,6 +47,7 @@ const FIELDS = new Set(["cause", "errors", "message", "meta", "name", "stack"])
  *
  * ```ts
  * Failure.from("Not found"); // { name: "Error", message: "Not found" }
+ * Failure.from({ name: "TakenError", message: "Already a member" }); // { name: "TakenError", message: string }
  *
  * try {
  *     await save();
@@ -54,10 +56,39 @@ const FIELDS = new Set(["cause", "errors", "message", "meta", "name", "stack"])
  * }
  * ```
  */
-function from<T>(value: T): T extends Failure ? T : Failure
+function from<T extends { name?: N }, N extends string>(value: T): FailureOf<T>
+function from<T>(value: T): FailureOf<T>
 function from(value: unknown): Failure {
     return failureOf(value, new Set())
 }
+
+/**
+ * What `from` gives back for `T`: a `Failure` with the fields of `T`, its other fields that are
+ * JSON moved into `meta`.
+ */
+type FailureOf<T> = T extends Failure
+    ? Exclude<keyof T, keyof Failure> extends never
+        ? T
+        : Simplify<Omit<T, Exclude<keyof T, keyof Failure> | "meta"> & MetaFieldOf<T>>
+    : Failure
+
+/**
+ * `meta` when it has fields for sure, `meta?` when it may have some, and nothing when it has none.
+ */
+type MetaFieldOf<T> = Record<never, never> extends MetaOf<T>
+    ? [keyof MetaOf<T>] extends [never]
+        ? Record<never, never>
+        : { meta?: MetaOf<T> }
+    : { meta: MetaOf<T> }
+
+/** The `meta` of `T`, with its other fields that are JSON added. */
+type MetaOf<T> = Simplify<Omit<T extends { meta?: infer Meta } ? NonNullable<Meta> : Record<never, never>, keyof JSONFieldsOf<Omit<T, keyof Failure>>> & JSONFieldsOf<Omit<T, keyof Failure>>>
+
+/** The fields of `T` that are JSON, and as optional the ones that are JSON when they are there. */
+type JSONFieldsOf<T> = Simplify<
+    & { [K in keyof T as T[K] extends JSON ? K : never]: T[K] }
+    & { [K in keyof T as T[K] extends JSON ? never : T[K] extends JSON | undefined ? K : never]?: Exclude<T[K], undefined> }
+>
 
 function failureOf(value: unknown, seen: Set<unknown>): Failure {
     seen.add(value)
@@ -86,17 +117,23 @@ function objectFailure(object: object, seen: Set<unknown>): Failure {
 }
 
 /** The fields of `object` that are not those of a `Failure`, with the ones that are JSON. */
-function metaOf(object: object): JSONObject {
-    const meta: JSONObject = {}
-    const fields = object as Record<string, unknown>
-    const given = read(() => fields["meta"])
-    if (isPlainObject(given)) Object.assign(meta, jsonOf(given))
-    for (const key of read(() => Object.keys(object)) ?? []) {
-        if (FIELDS.has(key)) continue
-        const value = jsonOf(read(() => fields[key]))
-        if (value !== undefined) meta[key] = value
+function metaOf(object: object): JSON.Object {
+    const given = read(() => (object as Record<string, unknown>)["meta"])
+    const meta = isPlainObject(given) ? jsonFieldsOf(given) : {}
+    for (const [key, value] of Object.entries(jsonFieldsOf(object))) {
+        if (!FIELDS.has(key)) meta[key] = value
     }
     return meta
+}
+
+/** The fields of `object` that are JSON, the others are left out. */
+function jsonFieldsOf(object: object): JSON.Object {
+    const fields: JSON.Object = {}
+    for (const key of read(() => Object.keys(object)) ?? []) {
+        const value = read(() => (object as Record<string, unknown>)[key])
+        if (read(() => isJSON(value, new Set()))) fields[key] = value as JSON
+    }
+    return fields
 }
 
 function textFailure(value: unknown): Failure {
@@ -104,24 +141,23 @@ function textFailure(value: unknown): Failure {
     return { message: read(() => String(value)) ?? "", name: "Error" }
 }
 
-function jsonOf(value: unknown): JSONValue | undefined {
-    try {
-        const text = JSON.stringify(value)
-        if (text === undefined) return undefined
-        return JSON.parse(text) as JSONValue
-    }
-    catch {
-        return undefined
-    }
+/**
+ * Whether `value` is JSON all the way down: no `Set`, `Date`, function or `undefined` in it, and no
+ * cycle.
+ */
+function isJSON(value: unknown, parents: Set<object>): boolean {
+    if (value === null || typeof value === "string" || typeof value === "number" || typeof value === "boolean") return true
+    if (typeof value !== "object" || parents.has(value)) return false
+    if (!Array.isArray(value) && !isPlainObject(value)) return false
+    parents.add(value)
+    const result = Object.values(value).every((item) => isJSON(item, parents))
+    parents.delete(value)
+    return result
 }
 
 function read<T>(get: () => T): T | undefined {
-    try {
-        return get()
-    }
-    catch {
-        return undefined
-    }
+    try { return get() }
+    catch { return undefined }
 }
 
 /**

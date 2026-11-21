@@ -1,8 +1,9 @@
 import type { AnyCommand, CLIInvalidMessageError } from "../CLI/types"
+import { JSON } from "@monstermann/stdlib"
 import { exec } from "../CLI/exec"
 import { resolve } from "../CLI/resolve"
 
-type Message = { argv: string[], id: JSONValue }
+type Message = { argv: string[], id: JSON }
 
 const invalidMessage: CLIInvalidMessageError = {
     message: "Needs to be JSON with an id and argv, a list of strings",
@@ -28,11 +29,11 @@ function isMessage(value: unknown): value is Message {
     return Array.isArray(value.argv) && value.argv.every((word) => typeof word === "string")
 }
 
-function idOf(value: unknown): JSONValue {
-    if (typeof value === "object" && value !== null && "id" in value) return value.id as JSONValue
+function idOf(value: unknown): JSON {
+    if (typeof value === "object" && value !== null && "id" in value) return value.id as JSON
     return null
 }
 
-function write(reply: { id: JSONValue, ok: boolean, value: unknown }): void {
+function write(reply: { id: JSON, ok: boolean, value: unknown }): void {
     process.stdout.write(`${JSON.stringify(reply)}\n`)
 }

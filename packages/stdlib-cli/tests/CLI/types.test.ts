@@ -1,4 +1,5 @@
 import type { InferOptions } from "../../src"
+import { Err, Ok } from "@monstermann/stdlib"
 import { describe, expectTypeOf, it } from "bun:test"
 import { CLI } from "../../src"
 

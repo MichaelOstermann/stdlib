@@ -4,8 +4,8 @@ import Path from "node:path"
 import { describe, expect, it } from "bun:test"
 import { rolldown } from "rolldown"
 import { stdlib, stdlibBun } from "../src"
-import { globals, values } from "../src/globals.manifest"
-import { functions, guards, namespaces, packages } from "../src/manifest"
+import { functions, namespaces, packages } from "../src/manifest"
+import { replicas } from "../src/replicas.manifest"
 
 const entry = Path.join(import.meta.dirname, "__fixtures__/entry.ts")
 const src = Path.resolve(import.meta.dirname, "../../stdlib/src")
@@ -33,8 +33,6 @@ describe("manifest", () => {
     it("should match the files of @monstermann/stdlib", async () => {
         for (const name of namespaces) expect(await Bun.file(Path.join(src, name, "index.ts")).exists()).toBe(true)
         for (const [name, file] of functions) expect(name in await import(Path.join(src, `${file}.ts`))).toBe(true)
-        for (const name of guards) expect(await Bun.file(Path.join(src, `${name}.ts`)).exists()).toBe(true)
-        for (const [name, file] of Object.entries(values)) expect(name in await import(Path.join(src, file))).toBe(true)
     })
 
     it("should list everything @monstermann/stdlib-web exports, each member of a namespace in a file of its own", async () => {
@@ -67,27 +65,18 @@ describe("manifest", () => {
         }
     })
 
-    it("should list everything @monstermann/stdlib makes available on globals", async () => {
-        for (const [global, names] of Object.entries(globals)) {
-            // An object of functions that is a global of its own, like Duration.
-            if (global in values) {
-                expect([...names]).toEqual(Object.keys((await import(Path.join(src, values[global]!)))[global]).sort())
-                continue
-            }
-
-            const files = await Array.fromAsync(new Bun.Glob("*.ts").scan(Path.join(src, global)))
+    it("should list the functions of every replica, each in a file of its own", async () => {
+        for (const [replica, names] of Object.entries(replicas)) {
+            const files = await Array.fromAsync(new Bun.Glob("*.ts").scan(Path.join(src, replica)))
             const functionFiles = files.filter((file) => file !== "index.ts" && file !== "types.ts")
             expect([...names]).toEqual(functionFiles.map((file) => file.slice(0, -3)).sort())
-            // Nothing that exists already. The tests run patched (bunfig.toml), so a name may be there as long as it is ours.
-            for (const name of names) {
-                const existing = (globalThis as unknown as Record<string, Record<string, unknown>>)[global]![name]
-                if (existing !== undefined) expect(existing).toBe((await import(Path.join(src, global, `${name}.ts`)))[name])
-            }
-        }
 
-        for (const [name, file] of Object.entries(values)) {
-            const existing = (globalThis as unknown as Record<string, unknown>)[name]
-            if (existing !== undefined) expect(existing).toBe((await import(Path.join(src, file)))[name])
+            const { [replica]: object } = await import(Path.join(src, replica, "index.ts"))
+            for (const name of names) {
+                expect(object[name]).toBe((await import(Path.join(src, replica, `${name}.ts`)))[name])
+                // A function of the same name as a native one would hide it.
+                expect(name in (globalThis as unknown as Record<string, object>)[replica]!).toBe(false)
+            }
         }
     })
 })
@@ -102,7 +91,7 @@ describe("stdlib", () => {
     })
 
     it("should leave dependencies alone", () => {
-        const code = `Array.removeAll(a, b);`
+        const code = `import { Array } from "@monstermann/stdlib";\nArray.removeAll(a, b);`
         expect(stdlib().transform.handler(code, "/a/b.ts")?.code).toContain("_removeAll(a, b)")
         expect(stdlib().transform.handler(code, "/a/node_modules/b/c.ts")).toBe(undefined)
         expect(stdlib().transform.handler(code, "node_modules/b/c.ts")).toBe(undefined)
@@ -111,7 +100,7 @@ describe("stdlib", () => {
     })
 
     it("should transform every kind of module", () => {
-        const code = `Array.removeAll(a, b);`
+        const code = `import { Array } from "@monstermann/stdlib";\nArray.removeAll(a, b);`
         for (const path of ["/a/b.js", "/a/b.jsx", "/a/b.ts", "/a/b.tsx", "/a/b.mjs", "/a/b.mts", "/a/b.ts?v=1", "/a/b.tsx?react"]) {
             expect(stdlib().transform.handler(code, path)?.code).toContain("_removeAll(a, b)")
         }

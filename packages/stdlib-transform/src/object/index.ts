@@ -2,7 +2,7 @@ import type { Node } from "oxc-parser"
 import MagicString from "magic-string"
 import { parseSync } from "oxc-parser"
 import { ScopeTracker, walk } from "oxc-walker"
-import { access, id, isObjectCall, property } from "../setPath"
+import { access, id, isNativeObject, isObjectCall, property } from "../setPath"
 
 /**
  * Compiles `Object.merge` calls whose source is an object literal, and `Object.pick` calls whose
@@ -35,11 +35,11 @@ import { access, id, isObjectCall, property } from "../setPath"
  *
  * A call whose keys are not known until the code runs is left as it is.
  */
-export function transformObjects(code: string, filePath: string): MagicString {
+export function transformObjects(code: string, filePath: string, from: string): MagicString {
     const { program } = parseSync(filePath, code)
     const ms = new MagicString(code, { filename: filePath })
 
-    // Collects all declarations, to tell whether `Object` is the global where it is used.
+    // Collects all declarations, to tell whether `Object` is the native one or its replica where it is used.
     const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
     walk(program, { scopeTracker })
     scopeTracker.freeze()
@@ -72,7 +72,7 @@ export function transformObjects(code: string, filePath: string): MagicString {
         scopeTracker,
         enter(node) {
             if (node.type !== "CallExpression" || node.optional || !isObjectCall(node.callee, "pick")) return
-            if (scopeTracker.getDeclaration("Object")) return
+            if (!isNativeObject(scopeTracker, from)) return
             if (node.arguments.length !== 2 || node.arguments.some((argument) => argument.type === "SpreadElement")) return
             const [target, keysNode] = node.arguments as [Node, Node]
 
@@ -87,7 +87,7 @@ export function transformObjects(code: string, filePath: string): MagicString {
         scopeTracker,
         enter(node) {
             if (node.type !== "CallExpression" || node.optional || !isObjectCall(node.callee, "merge")) return
-            if (scopeTracker.getDeclaration("Object")) return
+            if (!isNativeObject(scopeTracker, from)) return
             if (node.arguments.length !== 2 || node.arguments.some((argument) => argument.type === "SpreadElement")) return
             const [target, source] = node.arguments as [Node, Node]
 

@@ -8,6 +8,7 @@ export interface Package {
 
 /** The namespaces of @monstermann/stdlib. */
 export const namespaces: ReadonlySet<string> = new Set([
+    "BinaryStream",
     "Bytes",
     "Color",
     "Duration",

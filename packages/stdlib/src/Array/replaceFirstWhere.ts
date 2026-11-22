@@ -5,7 +5,7 @@ import { indexWhere, setAt } from "../internals/arrays"
  * # replaceFirstWhere
  *
  * Replaces the first element that satisfies `predicate` with `replacement`. Returns `target` itself
- * when there is no such element, or when it is `replacement` already.
+ * when there is no such element, or when the element already is `replacement`.
  *
  * ## Example
  *

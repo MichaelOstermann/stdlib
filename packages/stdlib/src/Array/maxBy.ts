@@ -3,8 +3,8 @@ import type { Comparable } from "../internals/arrays"
 /**
  * # maxBy
  *
- * Returns the element that `by` returns the highest value for, compared with `>`: numbers, strings
- * and dates work. The first one of several, and `undefined` when there are no elements.
+ * Returns the element for which `by` returns the highest value, compared with `>`. Numbers, strings
+ * and dates work. On a tie, returns the first element. Returns `undefined` for an empty array.
  *
  * ## Example
  *

@@ -3,7 +3,7 @@ import type { Updated } from "../internals/types"
 /**
  * # mapAt
  *
- * Applies `map` to the element at `index`, a negative `index` counts from the end. Returns `target`
+ * Applies `map` to the element at `index`. A negative `index` counts from the end. Returns `target`
  * itself when `index` is out of range, or when `map` returned the element unchanged.
  *
  * ## Example

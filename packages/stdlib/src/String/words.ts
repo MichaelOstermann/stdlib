@@ -6,8 +6,8 @@ let segmenter: Intl.Segmenter | undefined
  * Returns a generator that yields the words of `target` string, without the whitespace and
  * punctuation in between.
  *
- * What a word is depends on the language, which is left to `Intl.Segmenter`: text without spaces
- * between words is split as well, and an apostrophe or a decimal point does not end a word.
+ * What counts as a word depends on the language, so `Intl.Segmenter` decides. Text without spaces
+ * between words is split too. An apostrophe or a decimal point does not end a word.
  *
  * ## Example
  *

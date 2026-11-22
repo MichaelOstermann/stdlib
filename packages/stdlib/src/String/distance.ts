@@ -1,8 +1,8 @@
 /**
  * # distance
  *
- * How many characters have to be added, removed, replaced, or swapped with the one next to them, to
- * turn `a` into `b`. For finding what was probably meant by a typo.
+ * Returns how many characters have to be added, removed, replaced, or swapped with a neighbor to
+ * turn `a` into `b`. Use it to guess what a typo probably meant.
  *
  * ## Example
  *

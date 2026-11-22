@@ -4,8 +4,8 @@ import { indexOf, setAt } from "../internals/arrays"
 /**
  * # replaceLast
  *
- * Replaces the last occurrence of `value` with `replacement`. Returns `target` itself when it does
- * not occur, or when both are the same.
+ * Replaces the last occurrence of `value` with `replacement`. Returns `target` itself when `value`
+ * does not occur, or when `value` and `replacement` are the same.
  *
  * ## Example
  *

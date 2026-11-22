@@ -9,8 +9,8 @@ const entities: Record<string, string> = {
 /**
  * # escapeHTML
  *
- * Replaces the characters of `target` string that mean something in HTML: `&`, `<`, `>`, `"` and
- * `'`. The result is text, between tags and inside of a quoted attribute.
+ * Escapes the characters of `target` that mean something in HTML: `&`, `<`, `>`, `"` and `'`. The
+ * result is safe as text between tags and inside a quoted attribute.
  *
  * ## Example
  *

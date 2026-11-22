@@ -2,23 +2,25 @@
 // Unicode categories are property escapes instead of uc.micro, which is why every pattern has the u flag.
 // Together with the u flag, the i flag folds ſ into s and the Kelvin sign into k, which linkify-it does not.
 
-/** Compiled on the first call, importing costs nothing. */
+/** Compiled on the first call, so importing costs nothing. */
 let compiled: Patterns | undefined
 
-/** Where a link is found, and its scheme: `""` when it has none. */
+/** Where a link is found, and its scheme. The scheme is `""` when the link has none. */
 type Found = [start: number, end: number, schema: string]
 
 /**
  * # links
  *
- * Returns a generator that yields the links in `target`: with a scheme, `http:`, `https:`, `ftp:`,
- * `mailto:` or `//`, without one when they end in a known top-level domain, and email addresses.
- * `start` and `end` are where `text` is in `target`, `url` is `text` with `https://` or `mailto:`
- * in front when it has no scheme.
+ * Returns a generator that yields the links in `target`:
+ * - links with a scheme: `http:`, `https:`, `ftp:`, `mailto:` or `//`
+ * - links without a scheme that end in a known top-level domain
+ * - email addresses
  *
- * What is a link is decided like [linkify-it](https://github.com/markdown-it/linkify-it) does with
- * its default options: an address in numbers only is no link without a scheme, and neither is
- * `localhost`.
+ * `start` and `end` are the position of `text` in `target`. `url` is `text`, with `https://` or
+ * `mailto:` in front when `text` has no scheme.
+ *
+ * Links are detected like [linkify-it](https://github.com/markdown-it/linkify-it) with its default
+ * options. Without a scheme, an address of only numbers is not a link, and neither is `localhost`.
  *
  * ## Example
  *
@@ -79,7 +81,7 @@ function withSchema(patterns: Patterns, text: string): Found[] {
     return result
 }
 
-/** What `pattern` finds, without the character in front that it needs to see, its first group. */
+/** Returns the matches of `pattern`, without its first group: the character in front of a match. */
 function found(pattern: RegExp, text: string, schema: string): Found[] {
     const result: Found[] = []
     pattern.lastIndex = 0
@@ -89,7 +91,7 @@ function found(pattern: RegExp, text: string, schema: string): Found[] {
     return result
 }
 
-/** The length of the link after `schema`, which ends at `position`, 0 when there is none. */
+/** Returns the length of the link after `schema`, which ends at `position`, or 0 for none. */
 function lengthAfter(patterns: Patterns, text: string, schema: string, position: number): number {
     let pattern = patterns.http
     if (schema === "mailto:") pattern = patterns.mailto

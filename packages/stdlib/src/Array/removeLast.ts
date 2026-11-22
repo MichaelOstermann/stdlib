@@ -4,7 +4,7 @@ import { indexOf, removeAt } from "../internals/arrays"
 /**
  * # removeLast
  *
- * Removes the last occurrence of `value`. Returns `target` itself when it does not occur.
+ * Removes the last occurrence of `value`. Returns `target` itself when `value` does not occur.
  *
  * ## Example
  *

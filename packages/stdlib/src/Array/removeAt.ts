@@ -3,7 +3,7 @@ import type { Updated } from "../internals/types"
 /**
  * # removeAt
  *
- * Removes the element at `index`, a negative `index` counts from the end. Returns `target` itself
+ * Removes the element at `index`. A negative `index` counts from the end. Returns `target` itself
  * when `index` is out of range.
  *
  * ## Example

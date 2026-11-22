@@ -5,12 +5,12 @@ import { sortByKeys } from "../internals/arrays"
 /**
  * # sortBy
  *
- * Sorts by what `by` returns for each element, compared with `<` and `>`: numbers and dates work,
- * strings are in the order of their characters, see `Array.sortByLocale` for text. Descending with
+ * Sorts by what `by` returns for each element, compared with `<` and `>`. Numbers and dates work.
+ * Strings sort by character code. For text, see `Array.sortByLocale`. Descending with
  * `{ order: "desc" }`.
  *
- * Elements of the same value stay in the order they are in. Returns `target` itself when it is
- * sorted already.
+ * Elements with the same value keep their order. Returns `target` itself when `target` is already
+ * sorted.
  *
  * ## Example
  *

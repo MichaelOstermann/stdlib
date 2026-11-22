@@ -3,8 +3,8 @@ import type { Updated } from "../internals/types"
 /**
  * # concat
  *
- * The elements of `target` followed by those of `values`. Returns `target` itself when `values` is
- * empty, and `values` itself when `target` is.
+ * Returns the elements of `target` followed by the elements of `values`. Returns `target` itself
+ * when `values` is empty, and `values` itself when `target` is empty.
  *
  * ## Example
  *

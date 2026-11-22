@@ -3,8 +3,8 @@ import type { Updated } from "../internals/types"
 /**
  * # dropWhile
  *
- * Removes the elements from the start for as long as they satisfy `predicate`. Returns `target`
- * itself when the first one does not.
+ * Removes elements from the start while they satisfy `predicate`. Returns `target` itself when the
+ * first element does not satisfy `predicate`.
  *
  * ## Example
  *

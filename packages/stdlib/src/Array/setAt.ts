@@ -3,8 +3,8 @@ import type { Updated } from "../internals/types"
 /**
  * # setAt
  *
- * Sets the element at `index` to `value`, a negative `index` counts from the end. Returns `target`
- * itself when `index` is out of range, or when the element is `value` already.
+ * Sets the element at `index` to `value`. A negative `index` counts from the end. Returns `target`
+ * itself when `index` is out of range, or when the element already is `value`.
  *
  * ## Example
  *

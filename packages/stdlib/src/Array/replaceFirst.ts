@@ -4,8 +4,8 @@ import { indexOf, setAt } from "../internals/arrays"
 /**
  * # replaceFirst
  *
- * Replaces the first occurrence of `value` with `replacement`. Returns `target` itself when it does
- * not occur, or when both are the same.
+ * Replaces the first occurrence of `value` with `replacement`. Returns `target` itself when `value`
+ * does not occur, or when `value` and `replacement` are the same.
  *
  * ## Example
  *

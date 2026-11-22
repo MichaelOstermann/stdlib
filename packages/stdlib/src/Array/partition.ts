@@ -3,7 +3,7 @@ import type { Excluded, Narrowed } from "../internals/types"
 /**
  * # partition
  *
- * Splits into the elements that satisfy `predicate`, and the ones that do not.
+ * Returns two arrays: the elements that satisfy `predicate`, and the elements that do not.
  *
  * ## Example
  *

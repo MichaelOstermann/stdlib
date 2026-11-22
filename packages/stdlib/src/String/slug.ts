@@ -3,14 +3,14 @@ import { transliterations } from "../internals/transliterations"
 /**
  * # slug
  *
- * Turns `target` into something that can be part of a URL or the name of a file: lowercase letters
- * and digits, in groups separated by a single `-`.
+ * Turns `target` into a string for a URL or a file name: lowercase letters and digits, in groups
+ * separated by a single `-`.
  *
- * Characters that are not Latin are written in Latin where that is known (`ü` as `ue`, `я` as
- * `ya`), accents are removed, everything else separates.
+ * Non-Latin characters are written in Latin where a mapping is known: `ü` as `ue`, `я` as `ya`.
+ * Accents are removed. All other characters act as separators.
  *
- * The result is empty when nothing of `target` can be written that way, and different strings can
- * result in the same slug.
+ * The result is empty when no character of `target` can be kept. Different strings can result in
+ * the same slug.
  *
  * ## Example
  *

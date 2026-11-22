@@ -3,8 +3,8 @@ import type { Updated } from "../internals/types"
 /**
  * # unique
  *
- * Removes what occurs more than once, the first occurrence stays. Returns `target` itself when
- * there are no duplicates.
+ * Removes duplicate elements. The first occurrence stays. Returns `target` itself when there are no
+ * duplicates.
  *
  * ## Example
  *

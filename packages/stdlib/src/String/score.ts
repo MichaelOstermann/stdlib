@@ -45,9 +45,9 @@ let indexesLen = 0
 /**
  * # score
  *
- * Tells how well `needle` is found in `haystack`, for searching while typing: `0` when its
- * characters are not all there in that order, and up to `1` the better they are. Case is ignored,
- * and an empty `needle` is found in everything.
+ * Scores how well `needle` is found in `haystack`, for searching while typing. Returns `0` when the
+ * characters of `needle` are not all there in order. Returns up to `1` the better they match. Case
+ * is ignored, and an empty `needle` is found in everything.
  *
  * ## Example
  *
@@ -91,9 +91,9 @@ export function score(haystack: string, needle: string): number {
 }
 
 /**
- * Whether the characters of every word of `query` are in `haystack` in that order, which a match
- * needs, in one pass that lowercases as it goes: `OTHER` when `haystack` has characters that need
- * more than ASCII to lowercase, or that look like others.
+ * Checks whether the characters of every word of `query` appear in `haystack` in order. A match
+ * needs this. Lowercases in the same pass. Returns `OTHER` when `haystack` has characters that need
+ * more than ASCII to lowercase, or that look like other characters.
  */
 function scan(haystack: string, query: Query): number {
     if (query.hasSpace) {
@@ -118,8 +118,8 @@ function scan(haystack: string, query: Query): number {
 }
 
 /**
- * What `algorithm` scores a single character with, in one pass that finds the first start of a word
- * with the character, without preparing every start of a word: `-1` when `haystack` has characters
+ * Returns the score of `algorithm` for a single character. One pass finds the first word start with
+ * the character, without preparing every word start. Returns `-1` when `haystack` has characters
  * that `scan` would not find plain.
  */
 function scoreCharacter(haystack: string, code: number): number {
@@ -152,7 +152,7 @@ function scoreCharacter(haystack: string, code: number): number {
     return normalizeScore(result - (haystack.length - 1))
 }
 
-/** Like `scan`, for a haystack that is lowercase and mapped already. */
+/** Like `scan`, for a haystack that is already lowercase and mapped. */
 function isFound(lower: string, query: Query): boolean {
     if (query.hasSpace) {
         for (const part of query.parts) if (!isFound(lower, part)) return false
@@ -203,8 +203,8 @@ function prepareTarget(haystack: string, haystackRemapped: string, lower: string
 }
 
 /**
- * Where words start, only once the characters of the needle are found: most haystacks do not have
- * them.
+ * Finds where words start, but only once the characters of the needle are found. Most haystacks do
+ * not contain them.
  */
 function prepareBeginnings(): void {
     if (beginningsReady) return

@@ -1,7 +1,7 @@
 /**
  * # sample
  *
- * Returns a random element, `undefined` when there are none.
+ * Returns a random element, or `undefined` for an empty array.
  *
  * ## Example
  *

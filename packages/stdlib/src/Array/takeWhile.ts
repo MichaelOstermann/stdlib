@@ -3,8 +3,8 @@ import type { Narrowed, Updated } from "../internals/types"
 /**
  * # takeWhile
  *
- * The elements from the start for as long as they satisfy `predicate`. Returns `target` itself when
- * all of them do.
+ * Returns the elements from the start while they satisfy `predicate`. Returns `target` itself when
+ * every element satisfies `predicate`.
  *
  * ## Example
  *

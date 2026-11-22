@@ -2,7 +2,7 @@ import type { Updated } from "../internals/types"
 import { sortByKeys } from "../internals/arrays"
 
 type LocaleOptions = Intl.CollatorOptions & {
-    /** The language whose order is used, the one of the runtime by default. */
+    /** The language that decides the order. Defaults to the language of the runtime. */
     locales?: Intl.LocalesArgument
     order?: "asc" | "desc"
 }
@@ -15,11 +15,11 @@ let collator: Intl.Collator | undefined
  * Sorts by the text that `by` returns for each element, in the order of a language: `ä` next to
  * `a`, uppercase next to lowercase. Descending with `{ order: "desc" }`.
  *
- * `locales` and everything else `Intl.Collator` knows are options: `{ numeric: true }` puts `"2"`
+ * The options take `locales` and every `Intl.Collator` option: `{ numeric: true }` puts `"2"`
  * before `"10"`.
  *
- * Elements of the same text stay in the order they are in. Returns `target` itself when it is
- * sorted already.
+ * Elements with the same text keep their order. Returns `target` itself when `target` is already
+ * sorted.
  *
  * ## Example
  *

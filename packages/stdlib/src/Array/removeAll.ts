@@ -4,7 +4,8 @@ import { matcher, removeWhere } from "../internals/arrays"
 /**
  * # removeAll
  *
- * Removes every occurrence of each of `values`. Returns `target` itself when none of them occurs.
+ * Removes every occurrence of each of `values`. Returns `target` itself when none of `values`
+ * occurs.
  *
  * ## Example
  *

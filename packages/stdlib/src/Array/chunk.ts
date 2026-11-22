@@ -1,7 +1,7 @@
 /**
  * # chunk
  *
- * Splits into arrays of `size` elements, the last one holds the remaining elements.
+ * Splits into arrays of `size` elements. The last array holds the remaining elements.
  *
  * ## Example
  *

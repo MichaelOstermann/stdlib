@@ -3,7 +3,7 @@ import type { Updated } from "../internals/types"
 /**
  * # uniqueBy
  *
- * Removes the elements that `by` returns the same value for as for an earlier one, the first
+ * Removes each element for which `by` returns the same value as for an earlier element. The first
  * occurrence stays. Returns `target` itself when there are no duplicates.
  *
  * ## Example

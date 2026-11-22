@@ -2,8 +2,8 @@ import { ansi } from "../CLI/ansi"
 import { quote } from "./quote"
 
 /**
- * Points at a word of the command line by its `index`. `part` narrows `--email=a@b.c` to the flag or
- * the value. `through` extends the mark to the end of a later word.
+ * Points at a word of the command line by its `index`. `part` narrows `--email=a@b.c` to the flag
+ * or the value. `through` extends the mark to the end of a later word.
  */
 export type Mark = { index: number, part?: "flag" | "value", through?: number }
 

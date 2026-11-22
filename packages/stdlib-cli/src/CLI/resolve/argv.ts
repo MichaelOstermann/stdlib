@@ -9,7 +9,9 @@ export type ResolvedArgv = {
     words: string[]
 }
 
-/** One use of a flag. `index` is the position in `words`. `inline` is `true` for `--email=a@b.c`. */
+/**
+ * One use of a flag. `index` is the position in `words`. `inline` is `true` for `--email=a@b.c`.
+ */
 export type ResolvedFlag = { index: number, inline: boolean, value: Flag }
 
 /**

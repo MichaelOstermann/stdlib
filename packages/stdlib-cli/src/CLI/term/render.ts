@@ -10,9 +10,9 @@ const SYNC_END = "\x1b[?2026l"
 /**
  * # render
  *
- * Draws `lines` below the current content of the terminal. Redraws whenever a signal read by `lines`
- * changes. Returns a function that stops drawing. Stopping draws `lines` one last time with `done`
- * set to `true` and leaves them on screen.
+ * Draws `lines` below the current content of the terminal. Redraws whenever a signal read by
+ * `lines` changes. Returns a function that stops drawing. Stopping draws `lines` one last time with
+ * `done` set to `true` and leaves them on screen.
  *
  * ## Example
  *
@@ -70,7 +70,10 @@ interface Cursor {
     row: number
 }
 
-/** Moves from the end of the last line to `cursor` and shows the cursor. Without `cursor`, does nothing. */
+/**
+ * Moves from the end of the last line to `cursor` and shows the cursor. Without `cursor`, does
+ * nothing.
+ */
 function place(cursor: Cursor | undefined, rows: number): string {
     if (!cursor) return ""
     const up = rows - 1 - cursor.row
@@ -79,8 +82,8 @@ function place(cursor: Cursor | undefined, rows: number): string {
 
 /**
  * Moves to the start of the first written line and erases everything below. The move starts at
- * `cursor`, or at the end of the last line without `cursor`. A terminal that got narrower wraps long
- * lines, so `width` decides how many rows each line takes.
+ * `cursor`, or at the end of the last line without `cursor`. A terminal that got narrower wraps
+ * long lines, so `width` decides how many rows each line takes.
  */
 function erase(widths: number[], cursor: Cursor | undefined, width: number): string {
     if (!widths.length) return ""

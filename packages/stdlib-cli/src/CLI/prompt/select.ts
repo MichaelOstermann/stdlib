@@ -12,7 +12,9 @@ export interface SelectOptions<K extends string> {
     choice?: (key: K, active: boolean) => string
 }
 
-/** Returns the lines to draw. `done` is `true` after `active` was picked and the choices are hidden. */
+/**
+ * Returns the lines to draw. `done` is `true` after `active` was picked and the choices are hidden.
+ */
 export type SelectSlot<K extends string> = (active: K, done: boolean) => string | null | undefined | void
 
 /**

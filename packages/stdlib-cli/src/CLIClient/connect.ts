@@ -5,7 +5,9 @@ import { Err, JSON, Ok, String } from "@monstermann/stdlib"
 export interface CLIClientTransport {
     /** Sends a request to the program. */
     request: (text: string) => void
-    /** Calls `callback` with the text the program prints. The text arrives in pieces of any size. */
+    /**
+     * Calls `callback` with the text the program prints. The text arrives in pieces of any size.
+     */
     response: (callback: (text: string) => void) => void
 }
 

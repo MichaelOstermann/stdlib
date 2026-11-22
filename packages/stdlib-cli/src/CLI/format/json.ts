@@ -7,7 +7,9 @@ export interface FormatOptions {
      * Off by default.
      */
     compact?: boolean
-    /** How many items of an array or object to show. The rest becomes `… 3 more`. 100 by default. */
+    /**
+     * How many items of an array or object to show. The rest becomes `… 3 more`. 100 by default.
+     */
     maxItems?: number
     /**
      * How many characters of a string to show. The rest becomes `… 3 more characters`. 1000 by

@@ -13,7 +13,10 @@ export interface ConfirmOptions {
     answer?: (value: boolean, done: boolean) => string
 }
 
-/** Returns the lines to draw. `done` is `true` after `value` was picked. Returning nothing draws nothing. */
+/**
+ * Returns the lines to draw. `done` is `true` after `value` was picked. Returning nothing draws
+ * nothing.
+ */
 export type ConfirmSlot = (value: boolean, done: boolean) => string | null | undefined | void
 
 /**

@@ -19,7 +19,10 @@ export interface TextOptions {
     suffix?: TextSlot
 }
 
-/** Returns the lines to draw. `done` is `true` after the value was accepted. Returning nothing draws nothing. */
+/**
+ * Returns the lines to draw. `done` is `true` after the value was accepted. Returning nothing draws
+ * nothing.
+ */
 export type TextSlot = (input: Input, done: boolean) => string | null | undefined | void
 
 /**

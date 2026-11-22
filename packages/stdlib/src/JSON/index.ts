@@ -1,3 +1,4 @@
+import type { Failure } from "../Failure"
 import { replica } from "../internals/replica"
 import { safeStringify } from "./safeStringify"
 import { tryParse } from "./tryParse"
@@ -21,6 +22,9 @@ export const JSON = replica(globalThis.JSON, {
 export type JSON = boolean | JSON.Object | JSON[] | number | readonly JSON[] | string | null
 
 export namespace JSON {
+    /** What `JSON.tryParse` and `JSON.tryStringify` fail with, `cause` is what was thrown. */
+    export type Error = { cause?: Failure, message: string, name: "JSONError" }
+
     /** An object whose values are all `JSON`. */
     export type Object = { [key: string]: JSON }
 }

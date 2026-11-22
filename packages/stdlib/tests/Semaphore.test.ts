@@ -1,6 +1,7 @@
 import type { Result } from "../src/Result"
+import type { SemaphoreFullError } from "../src/Semaphore"
 import { describe, expect, it } from "bun:test"
-import { Semaphore, SemaphoreFullError } from "../src/Semaphore"
+import { Semaphore } from "../src/Semaphore"
 
 /** A function that runs until it is told to finish. */
 function task<T>(log: string[], name: string, value: T): { finish: () => void, run: () => Promise<T> } {
@@ -90,7 +91,7 @@ describe("Semaphore", () => {
 
         const typed: Result<number, SemaphoreFullError> = third
         expect(typed.ok).toBe(false)
-        expect(typed.value).toBeInstanceOf(SemaphoreFullError)
+        expect(typed.value).toEqual({ message: "Too many are waiting already", name: "SemaphoreFullError" })
         expect(semaphore.size).toBe(2)
 
         a.finish()

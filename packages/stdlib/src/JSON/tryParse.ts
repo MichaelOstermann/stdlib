@@ -1,28 +1,30 @@
+import type { JSON } from "."
 import type { Result } from "../Result"
+import { Failure } from "../Failure"
 import { Err, Ok } from "../Result"
 
 /**
  * # tryParse
  *
  * ```ts
- * function JSON.tryParse(text: string): Result<unknown, SyntaxError>
+ * function JSON.tryParse(text: string): Result<unknown, JSON.Error>
  * ```
  *
- * Parses `text` like `JSON.parse`, and returns the error it throws as an `Err`.
+ * Parses `text` like `JSON.parse`, and returns what it throws as an `Err`.
  *
  * ## Example
  *
  * ```ts
  * JSON.tryParse(`{"a":1}`); // Ok({ a: 1 })
- * JSON.tryParse("{"); // Err(SyntaxError)
+ * JSON.tryParse("{"); // Err({ name: "JSONError", message: "Failed to parse JSON", cause: { name: "SyntaxError", … } })
  * JSON.tryParse(text).unwrapOr(null);
  * ```
  */
-export function tryParse(text: string): Result<unknown, SyntaxError> {
+export function tryParse(text: string): Result<unknown, JSON.Error> {
     try {
-        return Ok(JSON.parse(text) as unknown)
+        return Ok(globalThis.JSON.parse(text) as unknown)
     }
     catch (error) {
-        return Err(error as SyntaxError)
+        return Err<JSON.Error>({ cause: Failure.from(error), message: "Failed to parse JSON", name: "JSONError" })
     }
 }

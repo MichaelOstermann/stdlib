@@ -1,3 +1,5 @@
+import { Failure } from "./Failure"
+
 /**
  * Success or failure as a value: either an `Ok` with a value, or an `Err` with an error.
  * `result.ok` tells which.
@@ -111,7 +113,7 @@ class ErrResult<E, T = never> implements Err<E, T> {
     }
 
     unwrap(): never {
-        throw this.value
+        throw Failure.toError(this.value)
     }
 
     unwrapOr<U>(fallback: U): U {
@@ -202,7 +204,10 @@ interface IResult<T, E> {
      * `Err("a").orElse(() => Ok(1))` is `Ok(1)`.
      */
     orElse: <R extends Result<unknown, unknown>>(fn: (error: E) => R) => Result<T | InferOk<R>, InferErr<R>>
-    /** Returns the value when this succeeded, and throws the error when it failed. */
+    /**
+     * Returns the value when this succeeded, and throws the error when it failed: as
+     * `Failure.toError(error)`.
+     */
     unwrap: () => T
     /** Returns the value when this succeeded, and `fallback` when it failed. */
     unwrapOr: <U>(fallback: U) => T | U

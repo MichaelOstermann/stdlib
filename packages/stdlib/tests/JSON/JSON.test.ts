@@ -17,7 +17,7 @@ describe("JSON.tryParse", () => {
         for (const text of ["", "{", "undefined", "{'a':1}"]) {
             const result = tryParse(text)
             expect(result.ok).toBe(false)
-            expect(result.value).toBeInstanceOf(SyntaxError)
+            expect(result.value).toMatchObject({ cause: { name: "SyntaxError" }, message: "Failed to parse JSON", name: "JSONError" })
         }
     })
 })
@@ -36,12 +36,15 @@ describe("JSON.tryStringify", () => {
                 throw "no"
             },
         }
-        for (const value of [circular, { a: 1n }, undefined, () => {}, Symbol("a"), thrower]) {
+        for (const value of [circular, { a: 1n }, thrower]) {
             const result = tryStringify(value)
             expect(result.ok).toBe(false)
-            expect(result.value).toBeInstanceOf(Error)
+            expect(result.value).toMatchObject({ message: "Failed to stringify JSON", name: "JSONError" })
         }
-        expect((tryStringify(thrower).value as Error).cause).toBe("no")
+        for (const value of [undefined, () => {}, Symbol("a")]) {
+            expect(tryStringify(value).value).toEqual({ message: `Failed to stringify JSON: ${typeof value} has no JSON form`, name: "JSONError" })
+        }
+        expect(tryStringify(thrower).value).toMatchObject({ cause: { message: "no", name: "Error" } })
     })
 })
 

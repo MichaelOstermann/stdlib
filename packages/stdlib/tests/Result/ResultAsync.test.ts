@@ -53,7 +53,7 @@ describe("ResultAsync", () => {
 
     it("should unwrap", async () => {
         expect(await parse("1").unwrap()).toBe(1)
-        expect(parse("a").unwrap()).rejects.toBe("nan")
+        expect(parse("a").unwrap()).rejects.toThrow("nan")
         expect(await parse("1").unwrapOr(0)).toBe(1)
         expect(await parse("a").unwrapOr(0)).toBe(0)
         expect(await parse("1").unwrapOrElse((error) => error.length)).toBe(1)

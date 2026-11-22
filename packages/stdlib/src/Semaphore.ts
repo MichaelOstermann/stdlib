@@ -2,9 +2,7 @@ import { Err, Ok } from "./Result"
 import { ResultAsync } from "./ResultAsync"
 
 /** What a semaphore with `maxWaiting` fails with when that many are waiting already. */
-export class SemaphoreFullError extends Error {
-    override readonly name = "SemaphoreFullError"
-}
+export type SemaphoreFullError = { message: string, name: "SemaphoreFullError" }
 
 /** What `run` takes besides the function. */
 export interface SemaphoreRunOptions {
@@ -168,7 +166,7 @@ export function Semaphore(options: { concurrency: number, maxWaiting?: number })
 
             return ResultAsync.from(async () => {
                 const result = await run(key, fn, signal, full)
-                return result === full ? Err(new SemaphoreFullError()) : Ok(result)
+                return result === full ? Err({ message: "Too many are waiting already", name: "SemaphoreFullError" }) : Ok(result)
             }) as never
         },
         get size() {

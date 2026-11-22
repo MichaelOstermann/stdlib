@@ -42,7 +42,6 @@ export const functions: ReadonlyMap<string, string> = new Map([
     ["Result", "Result"],
     ["ResultAsync", "ResultAsync"],
     ["Semaphore", "Semaphore"],
-    ["SemaphoreFullError", "Semaphore"],
     ["Set", "Set/index"],
     ["Signal", "Signal"],
     ["String", "String/index"],

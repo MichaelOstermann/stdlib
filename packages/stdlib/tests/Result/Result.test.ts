@@ -67,6 +67,22 @@ describe("Result", () => {
         expectTypeOf(parse("a").unwrapOrElse((error) => error)).toEqualTypeOf<number | "nan">()
     })
 
+    it("should throw an Error as it is, and anything else as Failure.toError", () => {
+        const error = new RangeError("out")
+        expect(() => Err(error).unwrap()).toThrow(error)
+
+        const failure = { message: "Already a member", meta: { email: "a@b.c" }, name: "TakenError" }
+        try {
+            Err(failure).unwrap()
+        }
+        catch (thrown) {
+            expect(thrown).toBeInstanceOf(Error)
+            expect((thrown as Error).name).toBe("TakenError")
+            expect((thrown as Error & { email: string }).email).toBe("a@b.c")
+        }
+        expect.assertions(4)
+    })
+
     describe("all", () => {
         it("should return the values when all succeeded", () => {
             const result = Result.all([Ok(1), Ok("a"), Ok(true)])

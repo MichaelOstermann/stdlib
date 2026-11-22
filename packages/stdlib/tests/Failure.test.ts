@@ -106,3 +106,53 @@ describe("Failure.removeStackTraces", () => {
         expect(failure.cause?.stack).toBeDefined()
     })
 })
+
+describe("Failure.toError", () => {
+    it("should return an Error as it is", () => {
+        const error = new RangeError("out")
+        expect(Failure.toError(error)).toBe(error)
+    })
+
+    it("should turn anything else into a Failure first", () => {
+        const error = Failure.toError("Not found")
+        expect(error).toBeInstanceOf(Error)
+        expect(error.name).toBe("Error")
+        expect(error.message).toBe("Not found")
+        expect(error.stack).toBeString()
+    })
+
+    it("should keep the name, the meta as fields, and turn cause and errors into errors", () => {
+        const failure = {
+            cause: { message: "Duplicate key", name: "SQLiteError" },
+            errors: [{ message: "a", name: "A" }],
+            message: "Already a member",
+            meta: { email: "a@b.c" },
+            name: "TakenError",
+            stack: "TakenError: Already a member\n    at somewhere",
+        }
+        const error = Failure.toError(failure)
+        expect(error).toBeInstanceOf(AggregateError)
+        expect(error.name).toBe("TakenError")
+        expect(error.stack).toBe(failure.stack)
+        expect((error as Error & { email: string }).email).toBe("a@b.c")
+        expect(error.cause).toBeInstanceOf(Error)
+        expect((error.cause as Error).name).toBe("SQLiteError")
+        expect((error as AggregateError).errors[0]).toBeInstanceOf(Error)
+    })
+
+    it("should be undone by Failure.from", () => {
+        const failure = {
+            cause: { message: "Duplicate key", meta: { code: 19 }, name: "SQLiteError" },
+            message: "Already a member",
+            meta: { email: "a@b.c" },
+            name: "TakenError",
+        }
+        expect(Failure.removeStackTraces(Failure.from(Failure.toError(failure)))).toEqual(failure)
+    })
+
+    it("should not let a meta field change the prototype", () => {
+        const error = Failure.toError(JSON.parse(`{"name":"A","message":"b","meta":{"__proto__":{"polluted":true}}}`))
+        expect(error).toBeInstanceOf(Error)
+        expect((error as Error & { polluted?: boolean }).polluted).toBeUndefined()
+    })
+})

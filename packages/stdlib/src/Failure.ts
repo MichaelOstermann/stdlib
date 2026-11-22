@@ -179,7 +179,48 @@ function removeStackTraces<F extends Failure>(failure: F): F {
     return copy
 }
 
+/**
+ * # toError
+ *
+ * ```ts
+ * Failure.toError(value)
+ * ```
+ *
+ * Turns anything into an `Error`, for where something has to be thrown, the reverse of
+ * `Failure.from`:
+ *
+ * - An `Error` comes back as it is
+ * - Anything else goes through `Failure.from` first, then its `name`, `message` and `stack` become
+ *   those of the `Error`, its `meta` becomes fields of the `Error`, its `cause` and `errors` become
+ *   errors too: an `AggregateError` when it has `errors`
+ *
+ * ## Example
+ *
+ * ```ts
+ * throw Failure.toError({ name: "TakenError", message: "Already a member", meta: { email } });
+ * // TakenError: Already a member, with `error.email`
+ * ```
+ */
+function toError(value: unknown): Error {
+    if (value instanceof Error) return value
+    return errorOf(failureOf(value, new Set()))
+}
+
+function errorOf(failure: Failure): Error {
+    const options = failure.cause ? { cause: errorOf(failure.cause) } : undefined
+    const error = failure.errors
+        ? new AggregateError(failure.errors.map(errorOf), failure.message, options)
+        : new Error(failure.message, options)
+    error.name = failure.name
+    if (failure.stack) error.stack = failure.stack
+    for (const [key, value] of Object.entries(failure.meta ?? {})) {
+        if (!FIELDS.has(key)) Object.defineProperty(error, key, { configurable: true, enumerable: true, value, writable: true })
+    }
+    return error
+}
+
 export const Failure = {
     from,
     removeStackTraces,
+    toError,
 }

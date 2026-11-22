@@ -1,5 +1,11 @@
-/** The properties of any one member of `T`, each of them optional. */
-type ShapeOf<T> = T extends unknown ? { [K in keyof T]?: T[K] } : never
+import type { KeysOfUnion } from "../internals/types"
+
+/**
+ * The properties of any one member of `T`, each of them optional, and none of the other members.
+ */
+type ShapeOf<T, Members = T> = T extends unknown
+    ? { [K in keyof T]?: T[K] } & { [K in Exclude<KeysOfUnion<Members>, keyof T>]?: never }
+    : never
 
 /**
  * # matches

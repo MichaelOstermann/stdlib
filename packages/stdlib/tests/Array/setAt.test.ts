@@ -17,7 +17,8 @@ describe("Array.setAt", () => {
         expect(setAt(target, 1, 2)).toBe(target)
         expect(setAt(target, 3, 0)).toBe(target)
         expect(setAt(target, -4, 0)).toBe(target)
-        expect(setAt([], 0, 0)).toEqual([])
+        const empty: number[] = []
+        expect(setAt(empty, 0, 0)).toBe(empty)
     })
 
     it("should not change what it was given", () => {

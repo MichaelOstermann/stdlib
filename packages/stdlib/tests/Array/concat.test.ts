@@ -9,8 +9,9 @@ describe("Array.concat", () => {
     it("should return the other array when one of them is empty", () => {
         const a = [1, 2]
         const b = [3]
-        expect(concat(a, [])).toBe(a)
-        expect(concat([], b)).toBe(b)
+        const empty: number[] = []
+        expect(concat(a, empty)).toBe(a)
+        expect(concat(empty, b)).toBe(b)
     })
 
     it("should not flatten nested arrays", () => {

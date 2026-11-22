@@ -5,8 +5,8 @@ type Input = { type: "click", x: number } | { type: "key", key: string }
 
 describe("Object.prop", () => {
     it("should read the property", () => {
-        const click: Input = { type: "click", x: 1 }
-        const key: Input = { key: "Enter", type: "key" }
+        const click = { type: "click", x: 1 } as Input
+        const key = { key: "Enter", type: "key" } as Input
         expect(prop(click, "x")).toBe(1)
         expect(prop(key, "x")).toBeUndefined()
         expect(prop(key, "type")).toBe("key")

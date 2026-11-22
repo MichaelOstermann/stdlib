@@ -4,7 +4,7 @@ import type { CanMatch } from "./CanMatch"
 import type { ComparedKeys } from "./ComparedKeys"
 import type { Get } from "./Get"
 
-/** What a callback receives after one of the patterns matched. */
+/** The type a callback receives after one of the patterns matched. */
 export type Narrow<T, P> = P extends unknown
     ? T extends unknown
         ? CanMatch<T, P> extends true

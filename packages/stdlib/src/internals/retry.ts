@@ -1,6 +1,6 @@
 /**
- * What `Retry.again` fails with: an error that is worth trying again for, and optionally how long
- * to wait before doing so.
+ * The failure of `Retry.again`: an error worth retrying, and optionally how long to wait before the
+ * next attempt.
  */
 export class RetryAgain<E> {
     constructor(

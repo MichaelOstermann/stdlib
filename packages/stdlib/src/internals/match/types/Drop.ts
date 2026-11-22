@@ -6,7 +6,7 @@ import type { Get } from "./Get"
 import type { IsExact } from "./IsExact"
 import type { IsUnit } from "./IsUnit"
 
-/** What is left of the input after a pattern did not match. */
+/** The input type that remains after a pattern did not match. */
 export type Drop<T, P> = IsUnion<P> extends true
     ? T
     : T extends unknown

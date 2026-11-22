@@ -433,8 +433,8 @@ RawMemo.prototype.get = function<T> (this: RawMemo<T>): T {
 }
 
 /**
- * Runs with the effect as `this`, and returns what cleans up after it: called before the next run,
- * and when the effect is disposed.
+ * Runs with the effect as `this`. Returns a cleanup, which is called before the next run and when
+ * the effect is disposed.
  */
 type EffectFn = (this: RawEffect) => (() => void) | void
 
@@ -543,7 +543,7 @@ function disposeEffect(effect: RawEffect): void {
 }
 
 /**
- * What the outermost batch ends with: runs the effects that have been notified, and the ones they
+ * The last step of the outermost batch. Runs the notified effects, and the effects that they
  * notify.
  */
 function flush(): void {

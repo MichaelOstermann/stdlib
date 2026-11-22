@@ -1,7 +1,7 @@
-/** The keys a path can go on with in `T`: of objects, not of arrays. */
+/** The keys that a path can continue with in `T`: keys of objects, not of arrays. */
 type Key<T> = [T] extends [readonly unknown[]] ? never : [T] extends [object] ? keyof T & string : never
 
-/** `P` when it is a path through `T`, keys separated by dots, the paths it could be otherwise. */
+/** `P` when `P` is a path through `T`, with keys separated by dots. Otherwise, the valid paths. */
 export type PathOf<T, P extends string, Done extends string = ""> =
     P extends `${infer Head}.${infer Rest}`
         ? Head extends Key<T>
@@ -21,14 +21,14 @@ export type ValueAt<T, P extends string> =
             ? T[P]
             : never
 
-/** The value at `keys` in `target`. */
+/** Returns the value at `keys` in `target`. */
 export function readPath(target: any, keys: string[]): unknown {
     let node = target
     for (const key of keys) node = node[key]
     return node
 }
 
-/** A copy of `target` with `value` at `keys`, each object on the way copied. */
+/** Returns a copy of `target` with `value` at `keys`. Each object on the way is copied. */
 export function writePath(target: any, keys: string[], value: unknown, index = 0): any {
     // Not { ...target, [key]: value }, which V8 slows down a lot once it sees more than one shape.
     const result = { ...target }

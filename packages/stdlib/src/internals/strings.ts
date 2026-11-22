@@ -49,7 +49,7 @@ type IsSpecial<T extends string> = IsStringLiteral<T> extends true ? T extends "
 type RemoveApostrophe<T extends string> = ReplaceAll<T, "'">
 
 /**
- * The words of an identifier, `S` being what is left of it, `W` the word so far and `P` the
+ * The words of an identifier. `S` is the rest of the identifier, `W` the word so far, and `P` the
  * previous character.
  */
 type Words<S extends string, W extends string = "", P extends string = ""> = IsStringLiteral<P | S | W> extends true
@@ -89,12 +89,12 @@ const SEPARATOR = 0
 const LOWER = 1
 const UPPER = 2
 const DIGIT = 3
-/** Not ASCII letters, digits or separators: consecutive ones are a word of their own. */
+/** Not ASCII letters, digits or separators. A run of these characters forms its own word. */
 const OTHER = 4
 
 /**
- * The words of an identifier, without apostrophes: `helloWorld`, `hello-world` and `hello_world`
- * are `hello` and `world`
+ * Returns the words of an identifier, without apostrophes. `helloWorld`, `hello-world` and
+ * `hello_world` all give `hello` and `world`.
  */
 export function identifierWords(target: string): string[] {
     const words: string[] = []

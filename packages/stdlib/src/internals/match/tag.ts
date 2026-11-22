@@ -2,8 +2,8 @@ import type { IsLiteral } from "./types/IsLiteral"
 import { throwUnmatched } from "./throwUnmatched"
 
 /**
- * What a tag can be, each is handled by the key it is written as: `"a"`, `1` as `1`, `true` as
- * `true`.
+ * The types a tag can have. Each tag is handled by the key it is written as: `"a"`, `1` as `1`,
+ * `true` as `true`.
  */
 type Tag = boolean | number | string | null | undefined
 
@@ -18,8 +18,9 @@ type Exact<T, K extends keyof T, H> = H & NoInfer<{ [V in keyof H as `${V & (num
 type Returned<H> = H[keyof H] extends infer F ? F extends (...args: never[]) => infer R ? R : never : never
 
 /**
- * A key that is a literal in every member, `never` otherwise: a `string` in one, like the `name` of
- * a plain `Error`, leaves members that no handler can name, see `match(value).shape` for those.
+ * A key that is a literal in every member, `never` otherwise. A `string` in one member, like the
+ * `name` of a plain `Error`, would leave members that no handler can name. Use
+ * `match(value).shape` for those.
  */
 type Discriminant<T, K extends keyof T> = false extends (T[K] extends infer V ? V extends unknown ? IsLiteral<V> : never : never)
     ? never
@@ -29,13 +30,13 @@ export interface MatchTag {
     /**
      * `match.tag(value, key, handlers)`
      *
-     * Matches a union by the property that tells its members apart, returning what the handler of
-     * that member returns for it.
+     * Matches a union by the property that tells its members apart. Returns what the handler of the
+     * matching member returns.
      *
      * - every member needs a handler, named like its tag
-     * - `_` handles the ones that have none, and makes the others optional, the value is not
-     *   narrowed for it
-     * - throws for a tag that the types did not tell about, unless there is a `_`
+     * - `_` handles members without a handler and makes the other handlers optional. `_` gets the
+     *   value without narrowing
+     * - throws for a tag missing from the types, unless there is a `_`
      *
      * ```ts
      * type Shape =

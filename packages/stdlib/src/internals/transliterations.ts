@@ -82,8 +82,8 @@ const data = [
 let table: Map<string, string> | undefined
 
 /**
- * What characters that are not Latin are written as in Latin, by the lowercase character, or the
- * two or three that belong together.
+ * Maps non-Latin characters to Latin. Keyed by the lowercase character, or by two or three
+ * characters that belong together.
  */
 export function transliterations(): Map<string, string> {
     if (table) return table

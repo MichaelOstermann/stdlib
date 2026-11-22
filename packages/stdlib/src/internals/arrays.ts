@@ -1,19 +1,19 @@
 type Predicate = (value: any, index: number, target: any) => boolean
 type Mapper = (value: any, index: number, target: any) => unknown
 
-/** The position of the first element that satisfies `predicate`, or of the last one. */
+/** Returns the index of the first element that satisfies `predicate`. With `last`, of the last. */
 export function indexWhere(target: unknown[], predicate: Predicate, last: boolean): number {
     return last ? target.findLastIndex(predicate) : target.findIndex(predicate)
 }
 
-/** The position of the first occurrence of `value`, or of the last one. */
+/** Returns the index of the first occurrence of `value`. With `last`, of the last occurrence. */
 export function indexOf(target: unknown[], value: unknown, last: boolean): number {
     return last ? target.lastIndexOf(value) : target.indexOf(value)
 }
 
 /**
- * Tells whether something is one of `values`, `NaN` included, as in a `Set`. Returns nothing when
- * there are no values.
+ * Returns a test for whether a value is one of `values`, `NaN` included, like a `Set`. Returns
+ * `undefined` when `values` is empty.
  */
 export function matcher(values: Iterable<unknown>): ((value: unknown) => boolean) | undefined {
     const set = new Set(values)
@@ -31,7 +31,7 @@ export function removeAt(target: unknown[], index: number): unknown[] {
     return target.toSpliced(index, 1)
 }
 
-/** Replaces every element that satisfies `predicate` with what `map` returns for it. */
+/** Replaces every element that satisfies `predicate` with the result of `map`. */
 export function mapWhere(target: unknown[], predicate: Predicate | undefined, map: Mapper): unknown[] {
     let result: unknown[] | undefined
     for (let i = 0; i < target.length; i++) {
@@ -62,12 +62,12 @@ export function removeWhere(target: unknown[], predicate: Predicate): unknown[] 
     return result
 }
 
-/** What can be put in order with `<` and `>`. */
+/** Values that `<` and `>` can order. */
 export type Comparable = bigint | boolean | Date | number | string
 
 /**
- * Sorts by a key of each element, which is only asked for once. Elements of the same key stay in
- * the order they are in, in both directions. Returns `target` itself when it is in order already.
+ * Sorts by a key of each element. The key is computed once per element. Elements with the same key
+ * keep their order, in both directions. Returns `target` itself when `target` is already sorted.
  */
 export function sortByKeys<K>(target: unknown[], keys: K[], compare: (a: K, b: K) => number, options: { order?: "asc" | "desc" } | undefined): unknown[] {
     const direction = options?.order === "desc" ? -1 : 1

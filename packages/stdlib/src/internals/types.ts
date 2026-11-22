@@ -1,23 +1,23 @@
 /**
- * Mutable in, mutable out. Readonly in, readonly out. Without `U` the elements stay what they are,
- * for each member of a union of arrays on its own.
+ * Mutable in, mutable out. Readonly in, readonly out. Without `U`, the elements keep their type.
+ * Each member of a union of arrays is handled on its own.
  */
 export type Updated<T extends readonly unknown[], U = never> = T extends unknown[]
     ? ([U] extends [never] ? T[number] : U)[]
     : readonly ([U] extends [never] ? T[number] : U)[]
 
 /**
- * Several values. A string is rejected: it is iterable, but passing one is never meant as a list of
+ * Several values. A string is rejected: a string is iterable, but never meant as a list of
  * characters.
  */
 export type Values<T extends readonly unknown[], V extends Iterable<T[number]>> = V extends string ? never : V
 
-/** What a predicate narrows to when it is a type guard, `T` otherwise. */
+/** The type a type guard narrows to. `T` for a plain predicate. */
 export type Narrowed<P, T> = P extends (value: any, ...args: any[]) => value is infer U ? U : T
 
 /**
- * The element type of the second list of a partition: `T` without the type a type guard narrows to,
- * `T` otherwise.
+ * The element type of the second list of a partition. For a type guard, `T` without the narrowed
+ * type. Otherwise `T`.
  */
 export type Excluded<P, T> = P extends (value: any, ...args: any[]) => value is infer U ? Exclude<T, U> : T
 
@@ -34,5 +34,5 @@ export type SetValue<T extends AnySet> = T extends ReadonlySet<infer V> ? V : ne
 /** Mutable in, mutable out. Readonly in, readonly out. */
 export type UpdatedSet<T extends AnySet, V = SetValue<T>> = T extends Set<any> ? Set<V> : ReadonlySet<V>
 
-/** The keys of every member of `T`, where `keyof T` only has the keys all of them share. */
+/** The keys of every member of `T`. `keyof T` only has the keys that all members share. */
 export type KeysOfUnion<T> = T extends unknown ? keyof T : never

@@ -4,8 +4,7 @@ import { clamp } from "../Math/clamp"
 // The conversion between sRGB and OKLab is taken from https://bottosson.github.io/posts/oklab/
 
 /**
- * Chroma below this is gray: what parses from a gray hex has float noise in it, with a hue of no
- * meaning.
+ * Chroma below this counts as gray. A parsed gray hex has float noise, and its hue means nothing.
  */
 const GRAY = 1e-4
 
@@ -21,7 +20,7 @@ function fromLinear(v: number): number {
     return v <= 0.0031308 ? v * 12.92 : 1.055 * v ** (1 / 2.4) - 0.055
 }
 
-/** From sRGB channels between 0 and 1. */
+/** Converts from sRGB channels between 0 and 1. */
 export function fromRgb(r: number, g: number, b: number, alpha: number): Color {
     r = toLinear(r)
     g = toLinear(g)
@@ -40,7 +39,7 @@ export function fromRgb(r: number, g: number, b: number, alpha: number): Color {
     }
 }
 
-/** To sRGB channels between 0 and 1, what lies outside of sRGB is clipped. */
+/** Converts to sRGB channels between 0 and 1. Values outside sRGB are clipped. */
 export function toRgb(color: Color): [r: number, g: number, b: number] {
     const h = color.h * Math.PI / 180
     const A = color.c * Math.cos(h)

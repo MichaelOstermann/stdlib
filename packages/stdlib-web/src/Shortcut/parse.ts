@@ -5,7 +5,7 @@ import { keystrokeOf, normalize } from "./internals/normalize"
 /**
  * # parse
  *
- * The keystrokes of a shortcut, one per press.
+ * Returns the keystrokes of a shortcut, one per press.
  *
  * - Keys: `a`, `Enter`, `Escape`, `?`, and their aliases, in any case: `esc`, `up`, `space`
  * - Modifiers: `meta` (`cmd`, `command`), `ctrl` (`control`), `alt` (`opt`, `option`), `shift`, and
@@ -15,8 +15,8 @@ import { keystrokeOf, normalize } from "./internals/normalize"
  * - An uppercase letter is that letter with shift: `K` is `shift+k`
  * - Names that are not listed are compared with what the event reports: `ContextMenu`,
  *   `MediaPlayPause`
- * - Never throws: a press with two keys or an empty part (`a+b`, `ctrl+`) is a key of that name,
- *   which never comes
+ * - Never throws. A press with two keys or an empty part (`a+b`, `ctrl+`) becomes a key of that
+ *   name, which never comes
  *
  * ## Example
  *

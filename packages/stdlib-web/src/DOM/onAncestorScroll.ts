@@ -1,8 +1,8 @@
 /**
  * # onAncestorScroll
  *
- * Calls `listener` when an element that `element` is inside of scrolls, which moves `element` on
- * screen. Returns what stops listening. The ancestors that can scroll are looked up once, by their
+ * Calls `listener` when an ancestor of `element` scrolls, which moves `element` on screen. Returns
+ * a function that stops listening. The scrollable ancestors are looked up once, by their
  * `overflow`.
  *
  * ## Example

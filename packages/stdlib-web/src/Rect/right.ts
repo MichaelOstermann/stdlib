@@ -3,7 +3,7 @@ import type { Rect } from "."
 /**
  * # right
  *
- * The x-coordinate of the right edge: `left + width`.
+ * Returns the x-coordinate of the right edge: `left + width`.
  *
  * ## Example
  *

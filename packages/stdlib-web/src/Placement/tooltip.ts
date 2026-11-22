@@ -4,7 +4,7 @@ import { create } from "./create"
 /**
  * # tooltip
  *
- * Centered below the anchor, and above when it does not fit below.
+ * Places the tooltip centered below the anchor, or above when it does not fit below.
  *
  * ## Example
  *

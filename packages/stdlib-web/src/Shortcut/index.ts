@@ -5,8 +5,8 @@ import { parse } from "./parse"
 import { serialize } from "./serialize"
 
 /**
- * One press of a shortcut: a key, and the modifiers held with it. What `Shortcut.parse` returns,
- * eg. to render `<kbd>` from.
+ * One press of a shortcut: a key, and the modifiers held with it. `Shortcut.parse` returns these,
+ * for example to render `<kbd>`.
  */
 export interface Keystroke {
     alt: boolean
@@ -17,7 +17,7 @@ export interface Keystroke {
 }
 
 /**
- * A shortcut and what it runs. Apps add what they need by declaring it again, see
+ * A shortcut and what it runs. Apps add their own fields by declaring `ShortcutBinding` again, see
  * `Shortcut.bindings`.
  */
 export interface ShortcutBinding {

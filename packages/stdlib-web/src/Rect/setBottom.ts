@@ -4,7 +4,7 @@ import { setHeight } from "./setHeight"
 /**
  * # setBottom
  *
- * Moves the bottom edge to `bottom`, the top edge stays. A `bottom` above the top edge gives a
+ * Moves the bottom edge to `bottom`. The top edge stays. A `bottom` above the top edge gives a
  * height of `0`.
  *
  * ## Example

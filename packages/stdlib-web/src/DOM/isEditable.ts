@@ -1,8 +1,8 @@
 /**
  * # isEditable
  *
- * Whether `target` takes what is typed: an `<input>`, a `<textarea>`, a `<select>`, or what is
- * `contenteditable`. For an event whose keys belong to the field and not to the page.
+ * Whether `target` accepts typing: an `<input>`, a `<textarea>`, a `<select>`, or a
+ * `contenteditable` element. Use it to leave the keys of such an event to the field, not the page.
  *
  * ## Example
  *

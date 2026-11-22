@@ -5,7 +5,8 @@ import { right } from "./right"
 /**
  * # distance
  *
- * The shortest distance between the edges of `a` and `b`, `0` when they touch or overlap.
+ * Returns the shortest distance between the edges of `a` and `b`. Returns `0` when they touch or
+ * overlap.
  *
  * ## Example
  *

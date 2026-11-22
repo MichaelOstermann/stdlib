@@ -4,7 +4,7 @@ import { merge } from "./merge"
 /**
  * # setHeight
  *
- * Sets the height, the top edge stays. A negative height counts as `0`.
+ * Sets the height. The top edge stays. A negative height counts as `0`.
  *
  * ## Example
  *

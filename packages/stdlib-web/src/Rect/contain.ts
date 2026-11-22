@@ -4,8 +4,8 @@ import { merge } from "./merge"
 /**
  * # contain
  *
- * Scales `target` to the largest size that fits inside `source`, keeping its aspect ratio, and
- * centers it in `source`. Like `object-fit: contain`.
+ * Scales `target` to the largest size that fits inside `source`, keeping the aspect ratio. Then
+ * centers `target` in `source`. Like `object-fit: contain`.
  *
  * ## Example
  *

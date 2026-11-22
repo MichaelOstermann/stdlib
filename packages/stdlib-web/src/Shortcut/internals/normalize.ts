@@ -2,11 +2,12 @@ import type { Keystroke } from ".."
 import { modifierOf, nameOf } from "./keys"
 
 /**
- * The one form of a keystroke that everything compares: names as events report them (`esc` →
- * `Escape`), a modifier as the key becomes the modifier (`Control` → `ctrl`), a single character in
- * lowercase with an uppercase one meaning shift (`A` → `shift+a`).
+ * Returns the single form of a keystroke that all comparisons use:
+ * - names as events report them: `esc` → `Escape`
+ * - a modifier used as the key becomes a modifier: `Control` → `ctrl`
+ * - a single character in lowercase, with uppercase meaning shift: `A` → `shift+a`
  *
- * Anything else stays as written: `ContextMenu` is compared by name, `mdo+k` is a key that never
+ * Anything else stays as written. `ContextMenu` is compared by name. `mdo+k` is a key that never
  * comes.
  */
 export function normalize({ alt, ctrl, key, meta, shift }: Keystroke): Keystroke {
@@ -21,7 +22,7 @@ export function normalize({ alt, ctrl, key, meta, shift }: Keystroke): Keystroke
     return { alt, ctrl, key: lower, meta, shift: shift || lower !== key }
 }
 
-/** A keystroke of only `key`, without modifiers. */
+/** Creates a keystroke of only `key`, without modifiers. */
 export function keystrokeOf(key: string): Keystroke {
     return { alt: false, ctrl: false, key, meta: false, shift: false }
 }

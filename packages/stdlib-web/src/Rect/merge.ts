@@ -6,9 +6,9 @@ const keys = ["top", "left", "width", "height"] as const
 /**
  * # merge
  *
- * Replaces the properties of `target` with the ones in `source`, and normalizes the result. Returns
- * `target` itself when `source` changes nothing, or when a value in `source` is not finite: `NaN`
- * or `Infinity`.
+ * Replaces the properties of `target` with the properties in `source`, and normalizes the result.
+ * Returns `target` itself when `source` changes nothing. Also returns `target` when a value in
+ * `source` is not finite: `NaN` or `Infinity`.
  *
  * ## Example
  *

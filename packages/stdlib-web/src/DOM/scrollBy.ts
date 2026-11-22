@@ -1,14 +1,15 @@
 /**
  * # scrollBy
  *
- * Scrolls `element` by `x` and `y` pixels over `duration` milliseconds. Returns what cancels it,
- * after which `onDone` is not called. Unlike `element.scrollBy({ behavior: "smooth" })`, which
- * picks its own duration and curve, it can run alongside a CSS transition, and says when it is
- * done.
+ * Scrolls `element` by `x` and `y` pixels over `duration` milliseconds. Returns a function that
+ * cancels the scroll. After a cancel, `onDone` is not called.
  *
- * - `easing` maps the progress from `0` to `1` to how far it scrolled, like CSS's `ease` by default
- * - the distance is clamped to what `element` can scroll, and `onDone` is called right away when
- *   there is none
+ * `element.scrollBy({ behavior: "smooth" })` picks its own duration and curve. `DOM.scrollBy` can
+ * match a CSS transition, and reports when it is done.
+ *
+ * - `easing` maps the progress from `0` to `1` to the scrolled fraction. Defaults to CSS's `ease`
+ * - the distance is clamped to what `element` can scroll. When there is nothing to scroll,
+ *   `onDone` is called right away
  * - a `duration` of `0` scrolls right away
  *
  * ## Example

@@ -4,8 +4,8 @@ import { merge } from "./merge"
 /**
  * # cover
  *
- * Scales `target` to the smallest size that covers `source`, keeping its aspect ratio, and centers
- * it on `source`. Like `object-fit: cover`.
+ * Scales `target` to the smallest size that covers `source`, keeping the aspect ratio. Then centers
+ * `target` on `source`. Like `object-fit: cover`.
  *
  * ## Example
  *

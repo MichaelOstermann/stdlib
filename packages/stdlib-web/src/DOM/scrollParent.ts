@@ -1,9 +1,9 @@
 /**
  * # scrollParent
  *
- * The closest element that `element` is inside of and that the user can scroll on `axis`: its
- * `overflow` on that axis is `auto`, `scroll` or `overlay`. `null` when there is none and only the
- * page scrolls, which is `document.scrollingElement`, and whose `scroll` events go to `window`.
+ * Returns the closest ancestor of `element` that the user can scroll on `axis`. Its `overflow` on
+ * that axis is `auto`, `scroll` or `overlay`. Returns `null` when only the page scrolls. The page
+ * is `document.scrollingElement`, and its `scroll` events go to `window`.
  *
  * ## Example
  *

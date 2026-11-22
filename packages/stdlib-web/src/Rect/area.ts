@@ -3,7 +3,7 @@ import type { Rect } from "."
 /**
  * # area
  *
- * The width times the height.
+ * Returns the width times the height.
  *
  * ## Example
  *

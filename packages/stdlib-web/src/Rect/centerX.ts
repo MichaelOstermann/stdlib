@@ -3,7 +3,7 @@ import type { Rect } from "."
 /**
  * # centerX
  *
- * The x-coordinate of the center.
+ * Returns the x-coordinate of the center.
  *
  * ## Example
  *

@@ -4,7 +4,7 @@ import { fromDOMRect } from "./fromDOMRect"
 /**
  * # fromElement
  *
- * The rect of an element in viewport coordinates, from `getBoundingClientRect`.
+ * Returns the rect of an element in viewport coordinates, from `getBoundingClientRect`.
  *
  * ## Example
  *

@@ -3,7 +3,7 @@ import type { Rect } from "."
 /**
  * # bottom
  *
- * The y-coordinate of the bottom edge: `top + height`.
+ * Returns the y-coordinate of the bottom edge: `top + height`.
  *
  * ## Example
  *

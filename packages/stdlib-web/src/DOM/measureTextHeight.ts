@@ -3,12 +3,12 @@ let context: OffscreenCanvasRenderingContext2D | undefined
 /**
  * # measureTextHeight
  *
- * The height of inline text in `font`, a CSS `font` such as `"500 16px Inter"`, from its ascent and
- * descent: what its background or a selection paints, which `line-height` does not change. Measured
- * with a canvas, without the DOM or a layout.
+ * Returns the height of inline text in `font`, a CSS `font` such as `"500 16px Inter"`. The height
+ * is the ascent plus the descent: the area that a background or a selection paints. `line-height`
+ * does not change it. The measurement uses a canvas, without the DOM or a layout.
  *
- * - a font that has not loaded yet is measured as its fallback, `document.fonts.load(font)` waits
- *   for it
+ * - a font that has not loaded yet is measured as its fallback. `document.fonts.load(font)` waits
+ *   for the font
  *
  * ## Example
  *

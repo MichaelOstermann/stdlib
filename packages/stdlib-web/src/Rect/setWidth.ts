@@ -4,7 +4,7 @@ import { merge } from "./merge"
 /**
  * # setWidth
  *
- * Sets the width, the left edge stays. A negative width counts as `0`.
+ * Sets the width. The left edge stays. A negative width counts as `0`.
  *
  * ## Example
  *

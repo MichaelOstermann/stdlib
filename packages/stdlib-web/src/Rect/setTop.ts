@@ -5,7 +5,7 @@ import { merge } from "./merge"
 /**
  * # setTop
  *
- * Moves the top edge to `top`, the bottom edge stays. A `top` below the bottom edge gives a height
+ * Moves the top edge to `top`. The bottom edge stays. A `top` below the bottom edge gives a height
  * of `0`.
  *
  * ## Example

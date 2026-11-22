@@ -3,12 +3,12 @@ import type { ShortcutBinding } from "."
 /**
  * # bindings
  *
- * The bindings of the app, in the order they were added. Nothing listens to the keyboard on its
- * own: the app does, and runs what matches, see `Shortcut.matches`. Taking the newest binding that
- * matches lets the one of a menu that opened win over the one of the page.
+ * The bindings of the app, in the order they were added. Nothing listens to the keyboard by itself.
+ * The app listens and runs the binding that matches, see `Shortcut.matches`. The app should take
+ * the newest matching binding, so a menu that opened wins over the page.
  *
- * A binding is a shortcut and what it runs. What else an app needs goes into `ShortcutBinding`,
- * which it declares again:
+ * A binding is a shortcut and what it runs. Apps add their own fields by declaring
+ * `ShortcutBinding` again:
  *
  * ```ts
  * declare module "@monstermann/stdlib-web" {

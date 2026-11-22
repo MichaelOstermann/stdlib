@@ -3,8 +3,8 @@ import type { Rect } from "."
 /**
  * # fromDOMRect
  *
- * Copies the position and size of a `DOMRect`, the result of `getBoundingClientRect` for example,
- * into a plain object.
+ * Copies the position and size of a `DOMRect` into a plain object. `getBoundingClientRect` returns
+ * a `DOMRect`, for example.
  *
  * ## Example
  *

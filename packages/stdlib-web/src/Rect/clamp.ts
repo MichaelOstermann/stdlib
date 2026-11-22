@@ -6,7 +6,7 @@ import { right } from "./right"
 /**
  * # clamp
  *
- * Moves `target` inside `source`, and shrinks it where it is larger than `source`.
+ * Moves `target` inside `source`. Shrinks `target` where `target` is larger than `source`.
  *
  * ## Example
  *

@@ -4,7 +4,7 @@ import { setWidth } from "./setWidth"
 /**
  * # setRight
  *
- * Moves the right edge to `right`, the left edge stays. A `right` before the left edge gives a
+ * Moves the right edge to `right`. The left edge stays. A `right` before the left edge gives a
  * width of `0`.
  *
  * ## Example

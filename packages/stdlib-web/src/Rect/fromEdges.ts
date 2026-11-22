@@ -10,7 +10,7 @@ type RectEdges = {
 /**
  * # fromEdges
  *
- * A rect from the coordinates of its four edges. Edges in the wrong order are swapped.
+ * Creates a rect from the coordinates of its four edges. Edges in the wrong order are swapped.
  *
  * ## Example
  *

@@ -7,7 +7,7 @@ import { right } from "./right"
 /**
  * # union
  *
- * The smallest rect that contains both `a` and `b`.
+ * Returns the smallest rect that contains both `a` and `b`.
  *
  * ## Example
  *

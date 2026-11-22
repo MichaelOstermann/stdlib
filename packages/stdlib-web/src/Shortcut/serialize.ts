@@ -4,8 +4,9 @@ import { normalize } from "./internals/normalize"
 /**
  * # serialize
  *
- * The shortcut of keystrokes, the same string for the same keystrokes: modifiers in the order
- * `meta`, `ctrl`, `alt`, `shift`, keys by the name events report. `Shortcut.parse` reads it back.
+ * Returns the shortcut string of keystrokes. The same keystrokes always give the same string:
+ * modifiers in the order `meta`, `ctrl`, `alt`, `shift`, and keys by the name events report.
+ * `Shortcut.parse` reads the string back.
  *
  * ## Example
  *

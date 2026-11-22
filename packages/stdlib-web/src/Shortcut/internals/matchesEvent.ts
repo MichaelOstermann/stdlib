@@ -4,13 +4,13 @@ import { physicalKey } from "./physicalKey"
 
 const asciiLetterOrDigit = /^[a-z\d]$/i
 
-/** What the event reports as its key, by the name of `Shortcut.parse`: `" "` → `Space`. */
+/** Returns the key of the event, named like `Shortcut.parse` names it: `" "` → `Space`. */
 export function keyOf(event: ShortcutEvent): string {
     const key = event.key || "Unidentified"
     return nameOf(key) ?? key
 }
 
-/** Whether the event only presses a modifier, on the way to a keystroke: ctrl, then ctrl+k. */
+/** Whether the event only presses a modifier on the way to a keystroke: ctrl, then ctrl+k. */
 export function isModifierPress(event: ShortcutEvent): boolean {
     return event.key === "AltGraph" || modifierOf(event.key) !== undefined
 }

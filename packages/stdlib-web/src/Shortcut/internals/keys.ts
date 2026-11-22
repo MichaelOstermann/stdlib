@@ -76,8 +76,8 @@ export function mod(): "ctrl" | "meta" {
 }
 
 /**
- * The modifier a name stands for, as written in a shortcut (`cmd`, `Control`) or reported by an
- * event (`Meta`).
+ * Returns the modifier that a name stands for. The name comes from a shortcut (`cmd`, `Control`) or
+ * from an event (`Meta`).
  */
 export function modifierOf(name: string): Modifier | undefined {
     const lower = name.toLowerCase()
@@ -85,8 +85,7 @@ export function modifierOf(name: string): Modifier | undefined {
 }
 
 /**
- * The name of a key as events report it, for one written in any case or as an alias: `esc` →
- * `Escape`.
+ * Returns the name of a key as events report it. Accepts any case and aliases: `esc` → `Escape`.
  */
 export function nameOf(key: string): string | undefined {
     const lower = key.toLowerCase()

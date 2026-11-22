@@ -10,7 +10,7 @@ import { right } from "./right"
 /**
  * # intersection
  *
- * The area where `a` and `b` overlap, or `Rect.origin` when they do not.
+ * Returns the area where `a` and `b` overlap, or `Rect.origin` when they do not overlap.
  *
  * ## Example
  *

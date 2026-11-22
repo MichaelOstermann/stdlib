@@ -5,8 +5,8 @@ import { fromElement } from "../Rect/fromElement"
 /**
  * # nearest
  *
- * The element closest to `target`, by the distance between their edges. An element that `target`
- * touches or overlaps is at `0`, and the first of those wins.
+ * Returns the element closest to `target`, by the distance between their edges. An element that
+ * touches or overlaps `target` has a distance of `0`. Among those, the first element wins.
  *
  * ## Example
  *

@@ -5,7 +5,7 @@ import { right } from "./right"
 /**
  * # setLeft
  *
- * Moves the left edge to `left`, the right edge stays. A `left` past the right edge gives a width
+ * Moves the left edge to `left`. The right edge stays. A `left` past the right edge gives a width
  * of `0`.
  *
  * ## Example

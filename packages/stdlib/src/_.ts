@@ -1,8 +1,8 @@
 /**
  * `_`
  *
- * Stands for anything, where something has to be written: a position of a tuple that `match` is not
- * asked to compare.
+ * Stands for any value. Use it in a tuple pattern of `match` for a position that should not be
+ * compared.
  *
  * ```ts
  * import { _, match } from "@monstermann/stdlib";

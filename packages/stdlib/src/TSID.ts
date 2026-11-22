@@ -4,15 +4,15 @@ import { Err, Ok } from "./Result"
 declare const brand: unique symbol
 
 /**
- * A time-sorted ID: 13 characters that sort in the order they were created, such as
- * `"0ARYZ1J9QW5KD"`. Made by `TSID.create`, or checked by `TSID.parse`.
+ * A time-sorted ID: 13 characters that sort in creation order, such as `"0ARYZ1J9QW5KD"`.
+ * `TSID.create` makes one, and `TSID.parse` checks one.
  *
  * Has the format of `tsid-ts`: 42 bits for the milliseconds since 2020, 10 bits for the process and
  * 12 for a counter, in Crockford's base 32.
  */
 export type TSID = string & { readonly [brand]: "TSID" }
 
-/** What `TSID.parse` fails with. */
+/** The failure of `TSID.parse`. */
 export type TSIDError = { message: string, name: "TSIDError" }
 
 const EPOCH = Date.UTC(2020, 0, 1)
@@ -29,7 +29,7 @@ let counter = 0
 /**
  * # create
  *
- * A new `TSID`, after every one this process created before it.
+ * Creates a new `TSID`. It sorts after every `TSID` this process created before.
  *
  * ## Example
  *
@@ -56,7 +56,7 @@ function create(): TSID {
 /**
  * # parse
  *
- * `value` as a `TSID`, or a `TSIDError` when it is none.
+ * Returns `value` as a `TSID`, or a `TSIDError` when `value` is not a `TSID`.
  *
  * ## Example
  *
@@ -73,7 +73,7 @@ function parse(value: string): Result<TSID, TSIDError> {
 /**
  * # timestamp
  *
- * When `id` was created, in milliseconds since 1970 like `Date.now()`.
+ * Returns when `id` was created, in milliseconds since 1970 like `Date.now()`.
  *
  * ## Example
  *

@@ -1,13 +1,13 @@
 import { RawSignal } from "./internals/system"
 
-/** A value that changes over time: call it to read, and with a value or a function to write. */
+/** A value that changes over time. Call it to read. Call it with a value or a function to write. */
 export interface Signal<T = any> {
-    /** Sets the value to what `transform` returns for the current one. */
+    /** Sets the value to the result of `transform` for the current value. */
     (transform: (value: T) => T): void
-    /** Sets the value. Nothing is updated when it is the value already. */
+    /** Sets the value. Nothing updates when the value is unchanged. */
     (value: T): void
     /**
-     * Returns the value. Inside of a memo or an effect, that one runs again when the value changes.
+     * Returns the value. A memo or an effect that reads the value runs again when it changes.
      */
     (): T
     readonly kind: "Signal"
@@ -16,7 +16,7 @@ export interface Signal<T = any> {
 /** A signal that can only be read. */
 export interface ReadonlySignal<T = any> {
     /**
-     * Returns the value. Inside of a memo or an effect, that one runs again when the value changes.
+     * Returns the value. A memo or an effect that reads the value runs again when it changes.
      */
     (): T
     readonly kind: "Signal"
@@ -24,8 +24,8 @@ export interface ReadonlySignal<T = any> {
 
 export interface SignalOptions<T> {
     /**
-     * Whether two values are the same, for a write to be skipped. Only asked when they are not
-     * `===`.
+     * Whether two values count as the same, so a write is skipped. Only asked when the values are
+     * not `===`.
      */
     equals?: (before: T, after: T) => boolean
 }
@@ -33,12 +33,12 @@ export interface SignalOptions<T> {
 /**
  * `Signal(value, options?)`
  *
- * Creates a value that changes over time. The argument decides what a call does: no argument reads
- * the value, a function computes the next value from the current one, anything else replaces the
- * value. A function can therefore not be a value, unless a function returns it: `$fn(() => fn)`.
+ * Creates a value that changes over time. The argument decides what a call does. No argument reads
+ * the value. A function computes the next value from the current value. Anything else replaces the
+ * value. So a function can only be stored by returning it from a function: `$fn(() => fn)`.
  *
- * - memos and effects that read a signal run again when it changes
- * - writing the current value updates nothing, `equals` extends what counts as the same
+ * - memos and effects that read a signal run again when the signal changes
+ * - writing the current value updates nothing. `equals` widens what counts as the same
  *
  * ```ts
  * const $count = Signal(0);

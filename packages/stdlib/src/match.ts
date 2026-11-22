@@ -8,18 +8,18 @@ export interface Match {
     /**
      * `match(value)`
      *
-     * Matches a value, returning the result of the first branch that applies.
+     * Matches a value. Returns the result of the first branch that applies.
      *
      * - `.case(...values, result)` compares with `===`, and returns `result`
      * - `.shape(...patterns, result)` compares objects field by field, and tuples position by
-     *   position, `_` standing for any value
-     * - `.cond(predicate, result)` asks a function
+     *   position. `_` stands for any value
+     * - `.cond(predicate, result)` tests with a function
      * - `.onCase(...values, fn)`, `.onShape(...patterns, fn)` and `.onCond(predicate, fn)` return
      *   what `fn` returns for the value
-     * - `.unwrap()` ends a chain that covers every case, and throws for a value that the types did
-     *   not tell about
+     * - `.unwrap()` ends a chain that covers every case. It throws for a value missing from the
+     *   types
      * - `.unwrapOr(result)` and `.unwrapOrElse(fn)` end a chain with a fallback
-     * - `.returnType<T>()` asks every result to be a `T`
+     * - `.returnType<T>()` requires every result to be a `T`
      *
      * ```ts
      * import { _, match } from "@monstermann/stdlib";

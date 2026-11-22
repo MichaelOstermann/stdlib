@@ -4,10 +4,10 @@ import { isPlainObject } from "./Object/isPlainObject"
 import { omit } from "./Object/omit"
 
 /**
- * What went wrong, as plain data that survives `JSON.stringify`, unlike an `Error`: a `name` to
- * tell failures apart, a `message` for people, and `meta` for the rest. `cause` is the failure that
- * led to this one, `errors` the ones it is made of. A type of its own is a `Failure` when it has
- * these fields.
+ * What went wrong, as plain data. Unlike an `Error`, a `Failure` survives `JSON.stringify`. `name`
+ * tells failures apart, `message` is for people, and `meta` holds the rest. `cause` is the failure
+ * that led to this one. `errors` are the failures this one is made of. Any type with these fields
+ * is a `Failure`.
  *
  * ```ts
  * type TakenError = { name: "TakenError", message: string, meta: { email: string } }
@@ -22,7 +22,7 @@ export type Failure = {
     stack?: string
 }
 
-/** The fields of a `Failure` itself, the others of an object go into its `meta`. */
+/** The fields of a `Failure`. Other fields of an object go into `meta`. */
 const FIELDS = new Set(["cause", "errors", "message", "meta", "name", "stack"])
 
 /**
@@ -31,13 +31,12 @@ const FIELDS = new Set(["cause", "errors", "message", "meta", "name", "stack"])
  * Turns anything that was thrown, or that something failed with, into a `Failure`:
  *
  * - A `Failure` comes back with the same fields
- * - An `Error` keeps its `name`, `message` and `stack`, its other fields that are JSON go into
- *   `meta`
- * - A plain object takes its `name` and `message`, its other fields that are JSON go into `meta`
+ * - An `Error` keeps its `name`, `message` and `stack`. Its other JSON fields go into `meta`
+ * - A plain object keeps its `name` and `message`. Its other JSON fields go into `meta`
  * - Anything else becomes the `message`
  *
- * The `cause` and the `errors` of an `AggregateError` are turned into failures the same way. Never
- * changes `value`, and never throws.
+ * The `cause` and the `errors` of an `AggregateError` become failures the same way. `value` is
+ * never changed, and `from` never throws.
  *
  * ## Example
  *
@@ -59,8 +58,8 @@ function from(value: unknown): Failure {
 }
 
 /**
- * What `from` gives back for `T`: a `Failure` with the fields of `T`, its other fields that are
- * JSON moved into `meta`.
+ * The return type of `from` for `T`: a `Failure` with the fields of `T`. The other JSON fields of
+ * `T` move into `meta`.
  */
 type FailureOf<T> = T extends Failure
     ? Exclude<keyof T, keyof Failure> extends never
@@ -69,7 +68,7 @@ type FailureOf<T> = T extends Failure
     : Failure
 
 /**
- * `meta` when it has fields for sure, `meta?` when it may have some, and nothing when it has none.
+ * `meta` when it surely has fields, `meta?` when it may have some, and nothing when it has none.
  */
 type MetaFieldOf<T> = Record<never, never> extends MetaOf<T>
     ? [keyof MetaOf<T>] extends [never]
@@ -77,10 +76,10 @@ type MetaFieldOf<T> = Record<never, never> extends MetaOf<T>
         : { meta?: MetaOf<T> }
     : { meta: MetaOf<T> }
 
-/** The `meta` of `T`, with its other fields that are JSON added. */
+/** The `meta` of `T`, plus the other JSON fields of `T`. */
 type MetaOf<T> = Simplify<Omit<T extends { meta?: infer Meta } ? NonNullable<Meta> : Record<never, never>, keyof JSONFieldsOf<Omit<T, keyof Failure>>> & JSONFieldsOf<Omit<T, keyof Failure>>>
 
-/** The fields of `T` that are JSON, and as optional the ones that are JSON when they are there. */
+/** The JSON fields of `T`. Fields that are only sometimes JSON become optional. */
 type JSONFieldsOf<T> = Simplify<
     & { [K in keyof T as T[K] extends JSON ? K : never]: T[K] }
     & { [K in keyof T as T[K] extends JSON ? never : T[K] extends JSON | undefined ? K : never]?: Exclude<T[K], undefined> }
@@ -112,7 +111,7 @@ function objectFailure(object: object, seen: Set<unknown>): Failure {
     return failure
 }
 
-/** The fields of `object` that are not those of a `Failure`, with the ones that are JSON. */
+/** Returns the JSON fields of `object` that a `Failure` does not have. */
 function metaOf(object: object): JSON.Object {
     const given = read(() => (object as Record<string, unknown>)["meta"])
     const meta = isPlainObject(given) ? jsonFieldsOf(given) : {}
@@ -122,7 +121,7 @@ function metaOf(object: object): JSON.Object {
     return meta
 }
 
-/** The fields of `object` that are JSON, the others are left out. */
+/** Returns the JSON fields of `object`. Other fields are left out. */
 function jsonFieldsOf(object: object): JSON.Object {
     const fields: JSON.Object = {}
     for (const key of read(() => Object.keys(object)) ?? []) {
@@ -138,8 +137,7 @@ function textFailure(value: unknown): Failure {
 }
 
 /**
- * Whether `value` is JSON all the way down: no `Set`, `Date`, function or `undefined` in it, and no
- * cycle.
+ * Whether `value` is JSON all the way down: no `Set`, `Date`, function, `undefined`, or cycle.
  */
 function isJSON(value: unknown, parents: Set<object>): boolean {
     if (value === null || typeof value === "string" || typeof value === "number" || typeof value === "boolean") return true
@@ -159,8 +157,8 @@ function read<T>(get: () => T): T | undefined {
 /**
  * # removeStackTraces
  *
- * A copy of `failure` without the stacks, also of its `cause` and `errors`: for failures that leave
- * the program, like in an HTTP response, where a stack tells where the code is.
+ * Returns a copy of `failure` without stacks, including the stacks of `cause` and `errors`. Use it
+ * for failures that leave the program, like in an HTTP response, where a stack reveals the code.
  */
 function removeStackTraces<F extends Failure>(failure: F): F {
     const removed = omit(failure, ["stack"]) as F
@@ -174,13 +172,12 @@ function removeStackTraces<F extends Failure>(failure: F): F {
 /**
  * # toError
  *
- * Turns anything into an `Error`, for where something has to be thrown, the reverse of
- * `Failure.from`:
+ * Turns anything into an `Error`, for code that has to throw. The reverse of `Failure.from`:
  *
  * - An `Error` comes back as it is
- * - Anything else goes through `Failure.from` first, then its `name`, `message` and `stack` become
- *   those of the `Error`, its `meta` becomes fields of the `Error`, its `cause` and `errors` become
- *   errors too: an `AggregateError` when it has `errors`
+ * - Anything else goes through `Failure.from` first. The `name`, `message` and `stack` carry over
+ *   to the `Error`. The `meta` becomes fields of the `Error`. The `cause` and `errors` become
+ *   errors too. With `errors`, the result is an `AggregateError`
  *
  * ## Example
  *

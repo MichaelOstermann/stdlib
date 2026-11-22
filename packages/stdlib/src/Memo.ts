@@ -3,8 +3,8 @@ import { RawMemo } from "./internals/system"
 
 export interface MemoOptions<T> {
     /**
-     * Whether two values are the same, for what reads the memo to not run again. Only asked when
-     * they are not `===`.
+     * Whether two values count as the same, so readers of the memo do not run again. Only asked
+     * when the values are not `===`.
      */
     equals?: (before: T, after: T) => boolean
 }
@@ -12,13 +12,13 @@ export interface MemoOptions<T> {
 /** A memo of a map, and of each of its entries. */
 export interface MemoIndex<K, V> extends ReadonlySignal<ReadonlyMap<K, V>> {
     /**
-     * Returns a memo of the entry of `key`, which only changes when that entry does. They are
-     * created when asked for, and held weakly.
+     * Returns a memo of the entry of `key`. The memo only changes when that entry changes. Entry
+     * memos are created on demand and held weakly.
      */
     for: (key: K) => ReadonlySignal<V | undefined>
     /**
-     * Returns the entry of `key`. Inside of a memo or an effect, that one only runs again when that
-     * entry changes.
+     * Returns the entry of `key`. A memo or an effect that reads the entry only runs again when
+     * that entry changes.
      */
     get: (key: K) => V | undefined
 }
@@ -26,13 +26,13 @@ export interface MemoIndex<K, V> extends ReadonlySignal<ReadonlyMap<K, V>> {
 /**
  * `Memo(computation, options?)`
  *
- * Creates a value that is computed from signals and other memos, and kept until one of them
+ * Creates a value computed from signals and other memos. The value is kept until one of them
  * changes.
  *
- * - it is lazy: nothing is computed until it is read, or until an effect depends on it
- * - what reads it does not run again when it computes the value it had already, `equals` extends
- *   what counts as the same
- * - what `computation` throws is thrown by what reads the memo
+ * - a memo is lazy. Nothing is computed until the memo is read, or until an effect depends on it
+ * - readers do not run again when the memo computes the same value. `equals` widens what counts as
+ *   the same
+ * - an error in `computation` is thrown by the code that reads the memo
  *
  * ```ts
  * const $count = Signal(1);
@@ -53,8 +53,8 @@ export interface MemoIndex<K, V> extends ReadonlySignal<ReadonlyMap<K, V>> {
 export const Memo: {
     <T>(computation: () => T, options?: MemoOptions<NoInfer<T>>): ReadonlySignal<T>
     /**
-     * Creates a memo of a map from a list, `by` returns the key and the value of an element. The
-     * map stays the same when none of its entries changed, `equals` compares the values of an
+     * Creates a memo of a map from a list. `by` returns the key and the value of an element. The
+     * map stays the same when none of its entries changed. `equals` compares the values of an
      * entry.
      *
      * `for(key)` and `get(key)` depend on a single entry instead of the whole list.

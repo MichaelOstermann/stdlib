@@ -7,13 +7,12 @@ export type InferAsyncOk<R> = InferOk<Awaited<R>>
 export type InferAsyncErr<R> = InferErr<Awaited<R>>
 
 /**
- * A `Result` that is not there yet. It can be awaited, and continued with the same methods without
+ * A `Result` that is not there yet. Await it, or chain the same methods as on a `Result` without
  * awaiting in between.
  */
 export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     /**
-     * The promise of the result, it never rejects unless something that was passed in did
-     * unexpectedly.
+     * The promise of the result. It only rejects when something passed in rejected unexpectedly.
      */
     readonly promise: Promise<Result<T, E>>
 
@@ -22,8 +21,8 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     }
 
     /**
-     * Waits for all of `results`, and returns their values as an `Ok` when all of them succeeded,
-     * in the same order, or the first one of them that failed.
+     * Waits for all of `results`. Returns their values in order as an `Ok` when all succeeded.
+     * Otherwise returns the first failure.
      */
     static all<const T extends readonly (PromiseLike<Result<unknown, unknown>> | Result<unknown, unknown>)[]>(
         results: T,
@@ -49,7 +48,7 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     }
 
     /**
-     * Turns a promise into a `ResultAsync`: what it resolves to as an `Ok`, what it rejects with as
+     * Turns a promise into a `ResultAsync`. A resolved value becomes an `Ok`. A rejection becomes
      * an `Err`, passed through `onError` when given.
      */
     static promise<T, E>(promise: Promise<T>, onError: (error: unknown) => E): ResultAsync<Awaited<T>, E>
@@ -62,8 +61,8 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     }
 
     /**
-     * Calls `fn` and awaits what it returns as an `Ok`, what it throws or rejects with as an `Err`,
-     * passed through `onError` when given.
+     * Calls `fn` and awaits the result as an `Ok`. A throw or rejection becomes an `Err`, passed
+     * through `onError` when given.
      */
     static try<T, E>(fn: () => Promise<T> | T, onError: (error: unknown) => E): ResultAsync<Awaited<T>, E>
     static try<T>(fn: () => Promise<T> | T): ResultAsync<Awaited<T>, unknown>
@@ -81,7 +80,7 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
         })())
     }
 
-    /** Continues with another result when this one succeeded, a failure is passed along. */
+    /** Continues with another result when this one succeeded. A failure is passed along. */
     andThen<R extends PromiseLike<Result<unknown, unknown>> | Result<unknown, unknown>>(
         fn: (value: T) => R,
     ): ResultAsync<InferAsyncOk<R>, E | InferAsyncErr<R>> {
@@ -92,7 +91,7 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     }
 
     /**
-     * Calls `fn` with the value when this succeeded and waits for it, the result stays unchanged.
+     * Calls `fn` with the value when this succeeded, and waits for `fn`. The result stays the same.
      */
     inspect(fn: (value: T) => Promise<void> | void): ResultAsync<T, E> {
         return new ResultAsync(this.promise.then(async (result) => {
@@ -101,7 +100,7 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
         }))
     }
 
-    /** Calls `fn` with the error when this failed and waits for it, the result stays unchanged. */
+    /** Calls `fn` with the error when this failed, and waits for `fn`. The result stays as is. */
     inspectErr(fn: (error: E) => Promise<void> | void): ResultAsync<T, E> {
         return new ResultAsync(this.promise.then(async (result) => {
             if (!result.ok) await fn(result.value)
@@ -110,7 +109,7 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     }
 
     /**
-     * Changes the value when this succeeded, a failure is passed along. A promise that `fn` returns
+     * Changes the value when this succeeded. A failure is passed along. A promise that `fn` returns
      * is awaited.
      */
     map<U>(fn: (value: T) => U): ResultAsync<Awaited<U>, E> {
@@ -121,7 +120,7 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     }
 
     /**
-     * Changes the error when this failed, a success is passed along. A promise that `fn` returns is
+     * Changes the error when this failed. A success is passed along. A promise that `fn` returns is
      * awaited.
      */
     mapErr<F>(fn: (error: E) => F): ResultAsync<T, Awaited<F>> {
@@ -142,7 +141,7 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
         }) as Promise<Awaited<A> | Awaited<B>>
     }
 
-    /** Continues with another result when this one failed, a success is passed along. */
+    /** Continues with another result when this one failed. A success is passed along. */
     orElse<R extends PromiseLike<Result<unknown, unknown>> | Result<unknown, unknown>>(
         fn: (error: E) => R,
     ): ResultAsync<T | InferAsyncOk<R>, InferAsyncErr<R>> {
@@ -160,19 +159,18 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
         return this.promise.then(onfulfilled, onrejected)
     }
 
-    /** Resolves to the value when this succeeded, and rejects with the error when it failed. */
+    /** Resolves to the value on success. Rejects with the error on failure. */
     unwrap(): Promise<T> {
         return this.promise.then((result) => result.unwrap())
     }
 
-    /** Resolves to the value when this succeeded, and to `fallback` when it failed. */
+    /** Resolves to the value on success, or to `fallback` on failure. */
     unwrapOr<U>(fallback: U): Promise<T | U> {
         return this.promise.then((result) => result.unwrapOr(fallback))
     }
 
     /**
-     * Resolves to the value when this succeeded, and to what `fn` returns for the error when it
-     * failed.
+     * Resolves to the value on success, or to `fn(error)` on failure.
      */
     unwrapOrElse<U>(fn: (error: E) => U): Promise<Awaited<U> | T> {
         return this.promise.then((result) => result.unwrapOrElse(fn)) as Promise<Awaited<U> | T>

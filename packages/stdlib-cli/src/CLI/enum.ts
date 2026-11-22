@@ -15,7 +15,7 @@ export interface EnumOptionConfig<K extends string> {
 /**
  * # enum
  *
- * One of a fixed set of values, each with a description.
+ * Creates an option that takes one of a fixed set of values. Each value has a description.
  *
  * ## Example
  *

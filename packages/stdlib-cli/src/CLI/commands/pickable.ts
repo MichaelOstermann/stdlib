@@ -3,8 +3,8 @@ import type { AnyCommand, ResolvedCommand } from "../types"
 /**
  * # pickable
  *
- * The commands below `resolved` that have an action. `filter` leaves out a command and everything
- * below it.
+ * Returns every command below `resolved` that has an action. When `filter` returns `false` for a
+ * command, that command and everything below it are left out.
  *
  * ## Example
  *

@@ -13,7 +13,7 @@ import { text } from "./text"
 /**
  * # option
  *
- * Asks for the value of `option`, starting at its default.
+ * Asks for the value of `option`. The prompt starts with the default of `option`.
  *
  * ## Example
  *

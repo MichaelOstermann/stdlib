@@ -1,8 +1,8 @@
 /**
  * # redirect
  *
- * Sends `console.log`, `console.info` and `console.debug` to stderr, to keep stdout for another
- * program. Commands under `rpc` do this on their own.
+ * Sends `console.log`, `console.info` and `console.debug` to stderr. This keeps stdout free for
+ * another program. Commands under `rpc` already do this.
  *
  * ## Example
  *

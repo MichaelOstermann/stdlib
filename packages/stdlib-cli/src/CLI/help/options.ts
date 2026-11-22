@@ -6,7 +6,7 @@ import { option } from "./option"
 /**
  * # options
  *
- * The `Options:` section of the help, the required ones first.
+ * Returns the `Options:` section of the help. Required options come first.
  *
  * ## Example
  *

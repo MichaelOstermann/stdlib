@@ -1,6 +1,6 @@
 import type { Flag } from "../types"
 
-/** What the command line asks for: see `CLI.resolve.argv`. */
+/** The result of `CLI.resolve.argv`. */
 export type ResolvedArgv = {
     flags: Record<string, ResolvedFlag[]>
     hasFlags: boolean
@@ -9,14 +9,14 @@ export type ResolvedArgv = {
     words: string[]
 }
 
-/** One use of a flag, `index` being where it is in `words`, `inline` for `--email=a@b.c`. */
+/** One use of a flag. `index` is the position in `words`. `inline` is `true` for `--email=a@b.c`. */
 export type ResolvedFlag = { index: number, inline: boolean, value: Flag }
 
 /**
  * # argv
  *
- * Splits the command line into the `path` of the command and its `flags`. `isHelp` is for `--help`
- * or `-h` anywhere.
+ * Splits the command line into the `path` of the command and its `flags`. `isHelp` is `true` when
+ * `--help` or `-h` appears anywhere.
  *
  * ## Example
  *

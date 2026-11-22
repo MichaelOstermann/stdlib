@@ -8,8 +8,8 @@ import { option } from "./option"
 /**
  * # options
  *
- * The values of `options` from `flags`, or every problem at once. With `prompt`, a person is asked
- * for what is missing or invalid.
+ * Reads the values of `options` from `flags`. On failure, returns every problem at once. With
+ * `prompt`, asks a person for missing or invalid values.
  *
  * ## Example
  *

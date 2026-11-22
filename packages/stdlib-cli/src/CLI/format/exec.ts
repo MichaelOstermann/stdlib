@@ -18,7 +18,7 @@ import { json } from "./json"
 /**
  * # exec
  *
- * The text `CLI.run` prints for what `CLI.exec` returned.
+ * Returns the text that `CLI.run` prints for an `Execution`.
  *
  * ## Example
  *
@@ -37,9 +37,9 @@ export function exec(execution: Execution): string {
 }
 
 type Problem = {
-    /** The words of the command line it is about. */
+    /** The words of the command line that the problem is about. */
     marks: Mark[]
-    /** The option it suggests when there is only one. */
+    /** The option to suggest. Only set when there is exactly one suggestion. */
     suggests?: string
     text: string
 }
@@ -168,7 +168,7 @@ function helpHint({ name }: Execution, command: ResolvedCommand): string {
     return `${ansi.dim("See")} ${ansi.blue([name, ...command.path].join(" "))} ${ansi.cyan("--help")} ${ansi.dim("for more")}`
 }
 
-/** The words that belong to no flag, in runs of words that follow each other. */
+/** Returns the indexes of words that belong to no flag. Neighboring words form one run. */
 function looseRuns(argv: ResolvedArgv, unknown: string[]): number[][] {
     const indexes = unknown
         .filter((flag) => !flag.startsWith("-"))
@@ -183,7 +183,7 @@ function looseRuns(argv: ResolvedArgv, unknown: string[]): number[][] {
     return runs
 }
 
-/** The flag whose value is the word right before `index`. */
+/** Returns the flag whose value is the word right before `index`. */
 function valueBefore(argv: ResolvedArgv, index: number): (ResolvedFlag & { flag: string, value: string }) | undefined {
     for (const [flag, given] of Object.entries(argv.flags)) {
         for (const item of given) {

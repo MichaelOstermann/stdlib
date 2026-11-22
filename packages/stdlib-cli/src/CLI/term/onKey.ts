@@ -5,10 +5,13 @@ import { batch } from "@monstermann/stdlib"
 export interface Key {
     alt: boolean
     ctrl: boolean
-    /** The name a browser gives it, `"a"`, `"A"`, `" "`, `"Enter"`, `"ArrowLeft"`, or `"Paste"`. */
+    /**
+     * The name of the key, as a browser names it: `"a"`, `"A"`, `" "`, `"Enter"`, `"ArrowLeft"`, or
+     * `"Paste"`.
+     */
     name: string
     shift: boolean
-    /** What it types: the character, everything pasted, or `""`. */
+    /** The text the key types: a character, the pasted text, or `""`. */
     text: string
 }
 
@@ -36,8 +39,8 @@ const PASTE_OFF = "\x1b[?2004l"
 /**
  * # onKey
  *
- * Calls `callback` with each key pressed, and returns what stops it. Ctrl+C no longer exits while
- * it runs.
+ * Calls `callback` for each key press. Returns a function that stops listening. While listening,
+ * Ctrl+C does not exit.
  *
  * ## Example
  *

@@ -8,7 +8,7 @@ import { env } from "./env"
 import { prompt } from "./prompt"
 import { resolve } from "./resolve"
 
-/** What `CLI.exec` did. */
+/** The result of `CLI.exec`. */
 export type Execution = {
     argv: ResolvedArgv
     command: ResolvedCommand | undefined
@@ -24,7 +24,7 @@ export type Execution = {
 /**
  * # exec
  *
- * Does what `CLI.run` does without printing, and returns what happened.
+ * Runs like `CLI.run`, but prints nothing. Returns what happened instead.
  *
  * ## Example
  *

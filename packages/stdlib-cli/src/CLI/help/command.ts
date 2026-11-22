@@ -8,8 +8,10 @@ import { options } from "./options"
 /**
  * # command
  *
- * The help of `command`, with `globalOptions` after its own. With `path`, the words that run it, an
- * example shows how, when every required option has an example.
+ * Returns the help text of `command`. The `globalOptions` come after the options of `command`.
+ *
+ * `path` holds the words that run `command`. With `path`, the help shows an example command line.
+ * The example needs an example value for every required option.
  *
  * ## Example
  *
@@ -30,7 +32,7 @@ export function command(command: AnyCommand, input: { globalOptions?: CommandOpt
     ])
 }
 
-/** The command line with every required option, when each of them has an example. */
+/** Returns a command line with every required option filled in. Needs an example for each one. */
 function exampleOf(options: CommandOptions, path: string[]): string | undefined {
     const required = Object.entries(options).filter(([, option]) => isRequired(option))
     const values = required.map(([, option]) => exampleValue(option))

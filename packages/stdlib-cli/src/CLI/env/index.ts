@@ -8,8 +8,8 @@ export const env = {
     agent: agent(),
     /** Whether CI runs the program. */
     ci: ci(),
-    /** Whether output gets colors. Set it to turn them on or off. */
+    /** Whether output has colors. Set `color` to turn colors on or off. */
     color: color(),
-    /** Whether a person is at a terminal, who can be asked for what is missing. */
+    /** Whether a person sits at a terminal. Only a person can be asked for missing values. */
     human: human(),
 }

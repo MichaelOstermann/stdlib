@@ -6,7 +6,8 @@ import { json } from "./json"
 /**
  * # error
  *
- * Turns anything that went wrong into readable text, with its `meta`, `cause` and `errors`.
+ * Turns an error into readable text. The text includes the `meta`, `cause` and `errors` of the
+ * error.
  *
  * ## Example
  *

@@ -5,15 +5,15 @@ import { term } from "../term"
 export interface ConfirmOptions {
     footer?: ConfirmSlot
     header?: ConfirmSlot
-    /** The answer it starts on, `false` when not given. */
+    /** The answer selected at the start. Defaults to `false`. */
     initial?: boolean
     prefix?: ConfirmSlot
     suffix?: ConfirmSlot
-    /** The answers between `prefix` and `suffix`, `value` for the one Enter picks. */
+    /** Draws the answers between `prefix` and `suffix`. `value` is the answer that Enter picks. */
     answer?: (value: boolean, done: boolean) => string
 }
 
-/** Lines to draw, with `done` set once `value` was picked. Nothing draws nothing. */
+/** Returns the lines to draw. `done` is `true` after `value` was picked. Returning nothing draws nothing. */
 export type ConfirmSlot = (value: boolean, done: boolean) => string | null | undefined | void
 
 /**

@@ -13,7 +13,8 @@ export interface BooleanOptionConfig {
 /**
  * # boolean
  *
- * On or off, off unless given: `--force` or `--force=false`.
+ * Creates an option that is on or off: `--force` or `--force=false`. The option is off when not
+ * given.
  *
  * ## Example
  *

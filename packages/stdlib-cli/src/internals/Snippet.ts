@@ -2,13 +2,13 @@ import { ansi } from "../CLI/ansi"
 import { quote } from "./quote"
 
 /**
- * A word of the command line, or only the flag or value of `--email=a@b.c`, up to the end of the
- * word at `through`.
+ * Points at a word of the command line by its `index`. `part` narrows `--email=a@b.c` to the flag or
+ * the value. `through` extends the mark to the end of a later word.
  */
 export type Mark = { index: number, part?: "flag" | "value", through?: number }
 
 export const Snippet = {
-    /** The command line, and a line below that underlines what `marks` point at. */
+    /** Returns the command line, plus a second line that underlines the `marks`. */
     marked(words: string[], marks: Mark[]): string[] {
         const shown = words.map(typed)
         const line = shown.join(" ")

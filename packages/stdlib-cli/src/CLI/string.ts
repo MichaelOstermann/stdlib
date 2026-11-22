@@ -33,10 +33,10 @@ export type StringValue<T, Optional, Defaulted> = Defaulted extends true
 /**
  * # string
  *
- * Text: `--name Jane` or `--name=Jane`.
+ * Creates an option that takes text: `--name Jane` or `--name=Jane`.
  *
- * `.default(undefined)` changes nothing, for environment variables that may not be set.
- * `.sensitive(true)` masks the value while it is typed, and hides the default in the help.
+ * `.default(undefined)` changes nothing. This helps with environment variables that may not be set.
+ * `.sensitive(true)` masks the value while typing. The help then hides the default.
  *
  * ## Example
  *

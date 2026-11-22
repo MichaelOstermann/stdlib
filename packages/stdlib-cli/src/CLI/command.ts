@@ -31,16 +31,16 @@ export interface ActionCommandConfig<O extends CommandOptions, C extends Command
     action: (options: InferOptions<O>) => R | Promise<R>
 }
 
-/** What an action can return: `Ok` with JSON, `Err` with what went wrong, or nothing. */
+/** An action returns `Ok` with JSON, `Err` with the problem, or nothing. */
 export type ActionReturn = Result<JSON, Failure | Error | string> | void
 
 /**
  * # command
  *
- * A command with options, subcommands and an action. Its name is its key in `.commands()` of its
- * parent.
+ * Creates a command with options, subcommands and an action. The name of the command is its key in
+ * the `.commands()` of the parent.
  *
- * The action gets the values of the options and returns `Ok` with JSON, `Err` with what went wrong,
+ * The action receives the option values. The action returns `Ok` with JSON, `Err` with the problem,
  * or nothing.
  *
  * ## Example

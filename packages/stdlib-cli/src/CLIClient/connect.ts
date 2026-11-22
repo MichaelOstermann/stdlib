@@ -5,7 +5,7 @@ import { Err, JSON, Ok, String } from "@monstermann/stdlib"
 export interface CLIClientTransport {
     /** Sends a request to the program. */
     request: (text: string) => void
-    /** Calls `callback` with the text the program prints, in pieces of any size. */
+    /** Calls `callback` with the text the program prints. The text arrives in pieces of any size. */
     response: (callback: (text: string) => void) => void
 }
 
@@ -14,8 +14,8 @@ type Reply = { id: number, ok: boolean, value: unknown }
 /**
  * # connect
  *
- * Calls the commands of a program that runs as `rpc`, each as a function that resolves with `Ok` or
- * `Err`. Calls can overlap.
+ * Connects to a program that runs as `rpc`. Each command becomes a function that resolves with `Ok`
+ * or `Err`. Calls can overlap.
  *
  * ## Example
  *

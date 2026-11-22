@@ -5,7 +5,7 @@ import { CURSOR } from "../../internals/cursor"
 export interface Input {
     (width: number): string
     $cursor: Signal<number>
-    /** What is wrong with the value, set by whoever checks it. */
+    /** The problem with the value. The code that checks the value sets this. */
     $error: Signal<string | undefined>
     $value: Signal<string>
     clear: () => void
@@ -29,8 +29,8 @@ const words = new Intl.Segmenter(undefined, { granularity: "word" })
 /**
  * # input
  *
- * A line of text that can be edited, with a cursor. Call its methods from `CLI.term.onKey` and draw
- * it in `CLI.term.render`. A `mask` hides what is typed.
+ * Creates an editable line of text with a cursor. Call the methods of the input from
+ * `CLI.term.onKey`. Draw the input in `CLI.term.render`. A `mask` hides the typed characters.
  *
  * ## Example
  *

@@ -3,7 +3,8 @@ import type { AnyCommand, ResolvedCommand } from "../types"
 /**
  * # nearest
  *
- * The command `path` leads to, or the last one found on the way.
+ * Returns the command that `path` leads to. When a word of `path` is unknown, returns the last
+ * command found before that word.
  *
  * ## Example
  *

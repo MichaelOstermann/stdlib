@@ -7,7 +7,7 @@ import { ansi } from "../ansi"
 /**
  * # option
  *
- * The line of one option in the help, its flag padded to `width`.
+ * Returns the help line of one option. The flag is padded to `width`.
  *
  * ## Example
  *

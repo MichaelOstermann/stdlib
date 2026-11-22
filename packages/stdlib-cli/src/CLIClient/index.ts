@@ -3,7 +3,7 @@ import { connect } from "./connect"
 
 export type { CLIClientTransport } from "./connect"
 
-/** The commands of `X` that have an action, each as a function that calls it. */
+/** Has a function for each command of `X` that has an action. The function calls that command. */
 export type CLIClient<X> = InferClient<X>
 
 export const CLIClient = { connect }

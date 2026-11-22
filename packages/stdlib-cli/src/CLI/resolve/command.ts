@@ -6,7 +6,7 @@ import { nearest } from "../commands/nearest"
 /**
  * # command
  *
- * The command `path` leads to, or `CLIUnknownCommandError`.
+ * Returns the command that `path` leads to, or `CLIUnknownCommandError`.
  *
  * ## Example
  *

@@ -6,15 +6,13 @@ export interface SelectOptions<K extends string> {
     choices: readonly K[]
     footer?: SelectSlot<K>
     header?: SelectSlot<K>
-    /** The choice it starts on. */
+    /** The choice selected at the start. */
     initial?: K
-    /** One line for each choice, `active` for the one Enter picks. */
+    /** Draws the line of one choice. `active` is `true` for the choice that Enter picks. */
     choice?: (key: K, active: boolean) => string
 }
 
-/**
- * Lines to draw, with `done` set once `active` was picked, when the choices are no longer shown.
- */
+/** Returns the lines to draw. `done` is `true` after `active` was picked and the choices are hidden. */
 export type SelectSlot<K extends string> = (active: K, done: boolean) => string | null | undefined | void
 
 /**

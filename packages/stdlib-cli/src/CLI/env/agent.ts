@@ -1,9 +1,9 @@
 // Taken from detectAgent of std-env@4.3.0, src/agents.ts, MIT License, Copyright (c) Pooya Parsa.
 
-/** Set by the agent itself, the convention for any agent: `AI_AGENT=claude-code_2-1-310_agent`. */
+/** Any agent can set this variable to name itself: `AI_AGENT=claude-code_2-1-310_agent`. */
 const CONVENTION = "AI_AGENT"
 
-/** Set by one agent each, for the ones that don't set `AI_AGENT`. */
+/** Variables of agents that don't set `AI_AGENT`. Each variable belongs to one agent. */
 const VARIABLES = [
     "AUGMENT_AGENT", // Auggie
     "CLAUDECODE", // Claude Code

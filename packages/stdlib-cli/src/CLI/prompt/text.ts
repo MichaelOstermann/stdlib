@@ -9,9 +9,9 @@ import { term } from "../term"
 export interface TextOptions {
     footer?: TextSlot
     header?: TextSlot
-    /** The value it starts with. */
+    /** The value at the start. */
     initial?: string
-    /** Drawn for each character instead of it, like `*` for a password. */
+    /** Drawn in place of each character, like `*` for a password. */
     mask?: string
     /** Shown dimmed while there is no value. */
     placeholder?: string
@@ -19,13 +19,14 @@ export interface TextOptions {
     suffix?: TextSlot
 }
 
-/** Lines to draw, with `done` set once the value was accepted. Nothing draws nothing. */
+/** Returns the lines to draw. `done` is `true` after the value was accepted. Returning nothing draws nothing. */
 export type TextSlot = (input: Input, done: boolean) => string | null | undefined | void
 
 /**
  * # text
  *
- * Asks for a line of text. `parse` checks it on Enter, and what it rejects is in `input.$error()`.
+ * Asks for a line of text. `parse` checks the text on Enter. When `parse` rejects the text, the
+ * message is in `input.$error()`.
  *
  * ## Example
  *

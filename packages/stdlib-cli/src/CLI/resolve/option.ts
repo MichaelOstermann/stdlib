@@ -13,8 +13,8 @@ type OptionError = CLIInvalidOptionError | CLIMissingOptionError
 /**
  * # option
  *
- * The value of `option` from `flags`. With `prompt`, a person is asked when it is missing or
- * invalid.
+ * Reads the value of `option` from `flags`. With `prompt`, asks a person when the value is missing
+ * or invalid.
  *
  * ## Example
  *

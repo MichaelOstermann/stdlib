@@ -3,15 +3,18 @@ import { ansi } from "../ansi"
 
 export interface FormatOptions {
     /**
-     * One line like `{ email: jane@miko.dev, seats: 1 }` when everything fits into `width`, off by
-     * default.
+     * Prints one line like `{ email: jane@miko.dev, seats: 1 }` when the value fits into `width`.
+     * Off by default.
      */
     compact?: boolean
-    /** Items of an array or object shown before `… 3 more`, 100 by default. */
+    /** How many items of an array or object to show. The rest becomes `… 3 more`. 100 by default. */
     maxItems?: number
-    /** Characters of a string shown before `… 3 more characters`, 1000 by default. */
+    /**
+     * How many characters of a string to show. The rest becomes `… 3 more characters`. 1000 by
+     * default.
+     */
     maxString?: number
-    /** The columns to fit into, the terminal by default. */
+    /** How many columns the text may use. Defaults to the width of the terminal. */
     width?: number
 }
 
@@ -22,7 +25,8 @@ type Group = JSON.Object | JSON[] | readonly JSON[]
 /**
  * # json
  *
- * Turns JSON into readable text, like YAML. With `compact`, on one line when it fits.
+ * Turns JSON into readable text that looks like YAML. With `compact`, the text goes on one line
+ * when it fits.
  *
  * ## Example
  *
@@ -121,7 +125,7 @@ function keyText(key: string): string {
     return Bun.YAML.stringify(key)
 }
 
-/** Every line after the first lined up below where `head` ends. */
+/** Puts `head` before the first line. Indents the other lines to start below the end of `head`. */
 function hang(head: string, lines: string[]): string[] {
     const padding = " ".repeat(Bun.stringWidth(head))
     return lines.map((line, index) => index === 0 ? head + line : padding + line)

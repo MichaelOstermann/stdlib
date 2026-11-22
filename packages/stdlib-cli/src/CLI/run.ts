@@ -8,14 +8,14 @@ import { format } from "./format"
 /**
  * # run
  *
- * Runs the command the command line asks for and prints what it returns. What went wrong goes to
- * stderr, and the exit code becomes 1.
+ * Runs the command that the command line asks for and prints the result. Errors go to stderr and
+ * set the exit code to 1.
  *
- * With `rpc`, `miko rpc …` prints JSON for other programs, and `miko rpc` on its own keeps running
- * for `CLIClient.connect`.
+ * With `rpc`, `miko rpc …` prints JSON for other programs. `miko rpc` without a command keeps
+ * running for `CLIClient.connect`.
  *
- * At a terminal, a person is asked for missing options, and to pick a command when there is no
- * action. `prompt: false` turns that off.
+ * At a terminal, a person is asked for missing options. When the command has no action, the person
+ * picks a command. `prompt: false` turns off both questions.
  *
  * ## Example
  *

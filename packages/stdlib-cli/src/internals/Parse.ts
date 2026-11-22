@@ -3,15 +3,15 @@ import type { StandardSchemaV1 } from "@standard-schema/spec"
 import { Err, Ok } from "@monstermann/stdlib"
 
 /**
- * Turns a typed word into a value: a function that returns a `Result`, or a Standard Schema such as
- * zod.
+ * Turns a typed word into a value. A `Parse` is a function that returns a `Result`, or a Standard
+ * Schema such as zod.
  */
 export type Parse<T> =
     | ((value: string) => Result<T, string> | Promise<Result<T, string>>)
     | StandardSchemaV1<unknown, T>
 
 export const Parse = {
-    /** The value, or one message per problem. */
+    /** Parses `value` with `parse`. Returns the result, or one message per problem. */
     async value<T>(parse: Parse<T>, value: string): Promise<Result<T, string[]>> {
         if (typeof parse === "function") return (await parse(value)).mapErr((error) => [error])
         const result = await parse["~standard"].validate(value)

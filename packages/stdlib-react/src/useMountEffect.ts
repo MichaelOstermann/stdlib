@@ -4,10 +4,10 @@ import { useEffect } from "react"
 /**
  * `useMountEffect(effect)`
  *
- * Runs `effect` once the component mounted, and what it returns once it unmounted: `useEffect`
- * without dependencies to forget.
+ * Runs `effect` when the component mounts. Runs the cleanup that `effect` returns when the
+ * component unmounts. Works like `useEffect` without dependencies to forget.
  *
- * - `<StrictMode>` runs both twice in development, like for any effect
+ * - `<StrictMode>` runs `effect` and the cleanup twice in development, like any effect
  */
 export function useMountEffect(effect: EffectCallback): void {
     useEffect(effect, [])

@@ -14,24 +14,24 @@ export interface VirtualItem {
 export interface UseVirtualizerOptions {
     count: number
     /**
-     * Room for an item dragged over the list: `size` pixels before the item at `index`, which moves
-     * the items from there down.
+     * Makes room for an item dragged over the list. Adds `size` pixels before the item at `index`,
+     * which moves that item and the items below it down.
      */
     gap?: { index: number, size: number } | null
-    /** How many items are rendered above and below the ones in view. `2` by default. */
+    /** How many extra items to render above and below the visible items. `2` by default. */
     overscan?: number
-    /** The height of every item, or of the item at an index. */
+    /** The height of every item, or a function that returns the height of the item at an index. */
     size: number | ((index: number) => number)
 }
 
 export interface Virtualizer {
-    /** The height of all items: the height of the element that holds them. */
+    /** The height of all items. Use it as the height of the element that holds the items. */
     height: number
     /** The items to render, each positioned at its `start`. */
     items: VirtualItem[]
     /**
-     * Scrolls as little as needed for the item at `index` to be in view. `topOffset` is what covers
-     * the top of the element, a sticky header.
+     * Scrolls as little as needed to bring the item at `index` into view. `topOffset` is the height
+     * of what covers the top of the element, such as a sticky header.
      */
     scrollToIndex: (index: number, topOffset?: number) => void
 }
@@ -51,14 +51,14 @@ interface Range {
 /**
  * `useVirtualizer(scrollElement, options)`
  *
- * Renders only the items of a long list that are in view of `scrollElement`, which scrolls
+ * Renders only the visible items of a long list. `scrollElement` is the element that scrolls
  * vertically.
  *
  * - the component renders again when other items come into view, not for each scroll event
- * - the items are in view before the browser paints: on mount, when the element resizes, and when
- *   `count`, `size` or `gap` change
- * - with a `size` number, all items have that height; a function is called for each item whenever
- *   `count`, `gap` or the function change
+ * - the visible items are ready before the browser paints: on mount, on resize, and when `count`,
+ *   `size` or `gap` change
+ * - a number `size` gives all items that height
+ * - a function `size` is called for each item whenever `count`, `gap` or the function change
  */
 export function useVirtualizer(scrollElement: HTMLElement | null, options: UseVirtualizerOptions): Virtualizer {
     const { count, gap, overscan = 2, size } = options
@@ -133,7 +133,7 @@ export function useVirtualizer(scrollElement: HTMLElement | null, options: UseVi
     return { height, items, scrollToIndex }
 }
 
-/** The items in view, and `overscan` more on both sides. */
+/** Returns the visible items, plus `overscan` more on both sides. */
 function visibleRange({ count, ends, overscan, starts }: Layout, view: { height: number, top: number }): Range {
     const bottom = view.top + view.height
     const start = Math.max(0, firstIndex(count, (i) => ends[i]! > view.top) - overscan)
@@ -142,8 +142,8 @@ function visibleRange({ count, ends, overscan, starts }: Layout, view: { height:
 }
 
 /**
- * The first index below `count` for which `test` is true, or `count` for none: a binary search,
- * `test` is false up to some index and true from there.
+ * Returns the first index below `count` for which `test` is true, or `count` if there is none. Uses
+ * a binary search, so `test` must be false up to some index and true from there on.
  */
 function firstIndex(count: number, test: (index: number) => boolean): number {
     let low = 0

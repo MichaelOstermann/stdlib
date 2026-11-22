@@ -8,22 +8,23 @@ import { useSignal } from "./useSignal"
 export interface Scrollbar {
     /** Whether the pointer is over the element that scrolls. */
     readonly $hovered: ReadonlySignal<boolean>
-    /** Whether the content is taller than the element, and there is something to scroll. */
+    /** Whether the content is taller than the element, so there is something to scroll. */
     readonly $overflows: ReadonlySignal<boolean>
     /**
-     * How far the element is scrolled, from `0` at the top to `1` at the bottom: where the thumb is
-     * on the track.
+     * How far the element is scrolled, from `0` at the top to `1` at the bottom. This is where the
+     * thumb sits on the track.
      */
     readonly $progress: ReadonlySignal<number>
     /**
-     * How much of the content is in view, from `0` to `1`: how much of the track the thumb covers.
+     * How much of the content is in view, from `0` to `1`. This is how much of the track the thumb
+     * covers.
      */
     readonly $ratio: ReadonlySignal<number>
     /** Whether the element scrolled within the last 500 milliseconds. */
     readonly $scrolling: ReadonlySignal<boolean>
     /**
-     * Scrolls to `progress`, from `0` at the top to `1` at the bottom: where the thumb is dragged
-     * to.
+     * Scrolls to `progress`, from `0` at the top to `1` at the bottom. Pass the position the thumb
+     * is dragged to.
      */
     readonly scrollTo: (progress: number) => void
 }
@@ -31,14 +32,15 @@ export interface Scrollbar {
 /**
  * `useScrollbar(scrollElement, contentElement)`
  *
- * What a scrollbar of its own needs to know about an element that scrolls vertically, for one drawn
- * over the content instead of the one of the browser, which is hidden with `scrollbar-width: none`.
+ * Returns what a custom scrollbar needs to know about an element that scrolls vertically. The
+ * custom scrollbar is drawn over the content. Hide the browser scrollbar with
+ * `scrollbar-width: none`.
  *
- * - `contentElement` is the element inside of `scrollElement` that has the height of the content:
- *   the scroll height changes with it
- * - signals only: the component calling the hook does not render again when the element scrolls,
- *   the scrollbar that reads them does
- * - the listeners are there while both elements are, and move with them
+ * - `contentElement` is the element inside `scrollElement` that has the height of the content. The
+ *   scroll height changes with `contentElement`
+ * - returns only signals. The component calling the hook does not render again on scroll. Only the
+ *   scrollbar that reads the signals does
+ * - the listeners exist while both elements exist, and move when the elements change
  */
 export function useScrollbar(scrollElement: HTMLElement | null, contentElement: HTMLElement | null): Scrollbar {
     const $clientHeight = useSignal(0)

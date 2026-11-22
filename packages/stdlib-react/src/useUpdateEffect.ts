@@ -4,10 +4,10 @@ import { useEffect, useRef } from "react"
 /**
  * `useUpdateEffect(effect, deps)`
  *
- * `useEffect` that skips the mount: runs `effect` when `deps` change, for what follows a change and
- * not the value it starts with.
+ * Works like `useEffect`, but skips the mount. Runs `effect` only when `deps` change, not for the
+ * initial values.
  *
- * - `<StrictMode>` mounting the component again in development is skipped too
+ * - the second mount by `<StrictMode>` in development is skipped too
  */
 export function useUpdateEffect(effect: EffectCallback, deps: DependencyList): void {
     const mounted = useRef(false)

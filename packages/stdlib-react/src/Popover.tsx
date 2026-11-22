@@ -16,18 +16,19 @@ export interface PopoverProps extends Omit<ComponentProps<"div">, "popover" | "r
  *
  * Renders a popover from `usePopover` into `document.body`, next to its trigger.
  *
- * - render it behind `mounted &&`: without that, the children are created and diffed on every
- *   render of the owner, and the element is there while closed
- * - the element has the classes `modal popover`, and `data-status` with `closed`, `opening`,
+ * - render `<Popover>` behind `mounted &&`. Otherwise the children are created and diffed on every
+ *   render of the owner, and the element stays in the DOM while closed
+ * - the element has the classes `modal popover` and a `data-status` of `closed`, `opening`,
  *   `opened` or `closing`
- * - it is hidden until it has been measured and placed; it renders again when it moves and on each
- *   status, the owner does not
- * - `max-height` is the room on the side it opens to. For the content to scroll inside of it, the
- *   element is a flex column and what scrolls has `min-height: 0` and `overflow-y: auto`:
+ * - the element stays hidden until it is measured and placed
+ * - `<Popover>` renders again when it moves and when the status changes. The owner does not render
+ *   again
+ * - `max-height` is the room on the side the popover opens to. To scroll the content inside, make
+ *   the element a flex column and give the scrolling part `min-height: 0` and `overflow-y: auto`:
  *   `className="flex flex-col"` and `<div className="min-h-0 overflow-y-auto">`. A header next to
- *   it stays where it is
- * - clicks, context menus and pointer downs inside of it do not reach the React parents of the
- *   popover, which React would otherwise pass them to through the portal
+ *   the scrolling part stays in place
+ * - clicks, context menus and pointer downs inside the popover do not reach its React parents.
+ *   React would otherwise pass these events through the portal
  *
  * ```tsx
  * const [mounted, triggerRef, popover] = usePopover();

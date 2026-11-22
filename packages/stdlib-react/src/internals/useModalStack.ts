@@ -3,8 +3,8 @@ import { Modals } from "../Modals"
 import { useSignalEffect } from "../useSignalEffect"
 
 /**
- * On the stack while open and rendered. The cleanup takes the modal off when it closes, when the
- * floating element unmounts, or when the component unmounts.
+ * Keeps a modal on the stack while the modal is open and rendered. The modal leaves the stack when
+ * the modal closes, the floating element unmounts, or the component unmounts.
  */
 export function useModalStack(modal: Modal): void {
     useSignalEffect(() => {

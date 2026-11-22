@@ -5,11 +5,10 @@ import { useState } from "react"
 /**
  * `useSignal(value)`
  *
- * Creates a signal once per component, `useState` as a signal.
+ * Creates a signal once per component. Works like `useState`, but returns a signal.
  *
- * - `value` is the initial value: when it changes later, the signal keeps its own, and so do
- *   `options`
- * - `@monstermann/stdlib-transform` writes it for you, wherever a component or a hook calls
+ * - `value` is only the initial value. Later changes of `value` or `options` are ignored
+ * - `@monstermann/stdlib-transform` inserts `useSignal` wherever a component or a hook calls
  *   `Signal`
  */
 export function useSignal<T>(value: T, options?: SignalOptions<NoInfer<T>>): Signal<T> {

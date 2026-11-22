@@ -6,15 +6,14 @@ import { createPortal } from "react-dom"
 import { useReactive } from "./useReactive"
 
 /**
- * A dialog opened with `Dialogs.open`, passed to its component as `dialog`: `meta` is what
- * `Dialogs.open` was given, `done` what it resolves with.
+ * A dialog opened with `Dialogs.open`. The component receives the dialog as its `dialog` prop.
  */
 export interface Dialog<T = void, R = void> extends Modal {
     readonly $status: ReadonlySignal<TransitionStatus>
     readonly kind: "dialog"
-    /** What `Dialogs.open` was given after the component. */
+    /** The `meta` argument of `Dialogs.open`. */
     readonly meta: T
-    /** Closes the dialog, `Dialogs.open` resolves with `value`. */
+    /** Closes the dialog. `Dialogs.open` resolves with `value`. */
     readonly done: (value: R) => void
 }
 
@@ -38,10 +37,11 @@ const backdropStyle: CSSProperties = {
  * Renders a dialog opened with `Dialogs.open` into `document.body`, over a backdrop that covers the
  * page.
  *
- * - the backdrop has the classes `modal dialog`, a click on it closes the dialog
- * - `className`, `style` and the other props go on the dialog, not on the backdrop:
- *   `className="self-start mt-40"` puts it near the top instead of the center
- * - both have `data-status` with `closed`, `opening`, `opened` or `closing`
+ * - the backdrop has the classes `modal dialog`
+ * - a click on the backdrop closes the dialog
+ * - `className`, `style` and the other props go on the dialog, not on the backdrop.
+ *   `className="self-start mt-40"` moves the dialog from the center to near the top
+ * - the dialog and the backdrop both have `data-status`: `closed`, `opening`, `opened` or `closing`
  */
 export function Dialog({ children, dialog, ...rest }: DialogProps): ReactNode {
     // Destructured: React Compiler skips a component that passes `dialog.$floating` as `ref`.

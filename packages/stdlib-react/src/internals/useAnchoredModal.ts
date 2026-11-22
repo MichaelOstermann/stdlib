@@ -17,7 +17,7 @@ export interface AnchoredModal<K extends "popover" | "tooltip"> extends Modal {
 }
 
 export interface AnchoredModalOptions extends PlacementOptions {
-    /** The trigger of another tooltip or popover, for one element with both. */
+    /** The trigger of a tooltip or popover on the same element. Lets one element have both. */
     $trigger?: Signal<Element | null>
     closeDuration: number
     name?: string
@@ -26,8 +26,8 @@ export interface AnchoredModalOptions extends PlacementOptions {
 }
 
 /**
- * What `useTooltip` and `usePopover` share: the transition, the elements, the position, and the
- * place on the stack while open and rendered.
+ * The shared part of `useTooltip` and `usePopover`: the transition, the elements and the position.
+ * Keeps the modal on the stack while the modal is open and rendered.
  */
 export function useAnchoredModal<K extends "popover" | "tooltip">(kind: K, options: AnchoredModalOptions): [mounted: boolean, modal: AnchoredModal<K>] {
     const { anchorGap, boundaryGap, closeDuration, name, openDuration, placement } = options

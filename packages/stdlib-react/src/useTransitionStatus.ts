@@ -12,7 +12,7 @@ export interface UseTransitionStatusOptions {
 }
 
 export interface Transition {
-    /** Opens with `$open(true)`, closes with `$open(false)`. `$status` follows it. */
+    /** Opens with `$open(true)` and closes with `$open(false)`. `$status` follows `$open`. */
     readonly $open: Signal<boolean>
     readonly $status: ReadonlySignal<TransitionStatus>
 }
@@ -22,19 +22,19 @@ export type UseTransitionStatus = [mounted: boolean, transition: Transition]
 /**
  * `useTransitionStatus(options)`
  *
- * The status of something that opens and closes over time: `closed`, `opening`, `opened`,
+ * Tracks the status of something that opens and closes over time: `closed`, `opening`, `opened` or
  * `closing`.
  *
- * - `$open(true)` sets `mounted` right away and `opening` two frames later, so the element is
- *   painted closed first and the browser has a style to animate from
- * - `$open(false)` sets `closing` right away, `closed` and `mounted: false` once `closeDuration`
- *   has passed
+ * - `$open(true)` sets `mounted` right away and `opening` two frames later. The browser first
+ *   paints the element closed, so the animation has a style to start from
+ * - `$open(false)` sets `closing` right away. After `closeDuration`, it sets `closed` and
+ *   `mounted: false`
  * - closing during `opening` switches to `closing`, and opening during `closing` switches back to
  *   `opening`
- * - `mounted` is the only React state: the component calling the hook renders when it changes,
- *   `$status` is read by what animates
- * - the transition follows `$open` while the component is mounted, and a new duration restarts the
- *   timer of the current step
+ * - `mounted` is the only React state. The component calling the hook renders when `mounted`
+ *   changes. The animated element reads `$status`
+ * - the transition follows `$open` while the component is mounted
+ * - a new duration restarts the timer of the current step
  */
 export function useTransitionStatus({ closeDuration, openDuration }: UseTransitionStatusOptions): UseTransitionStatus {
     const $open = useSignal(false)

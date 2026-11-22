@@ -13,7 +13,7 @@ import { useUnmountEffect } from "./useUnmountEffect"
 export interface DialogOptions {
     /** `200` by default. */
     closeDuration?: number
-    /** For `Modals.onOpen` and `Modals.onClose`, or telemetry. Need not be unique. */
+    /** A name for `Modals.onOpen`, `Modals.onClose` or telemetry. Need not be unique. */
     name?: string
     /** `250` by default. */
     openDuration?: number
@@ -29,7 +29,7 @@ interface Entry {
     readonly id: number
     readonly meta: unknown
     readonly options: DialogOptions
-    /** Called from several places: only the first call settles the promise. */
+    /** Can be called from several places. Only the first call settles the promise. */
     readonly resolve: (value: unknown) => void
 }
 
@@ -39,11 +39,11 @@ let nextId = 0
 /**
  * `<Dialogs />`
  *
- * Renders the dialogs opened with `Dialogs.open`. Mounted once, inside the providers of the app,
- * for the dialogs to have their context.
+ * Renders the dialogs opened with `Dialogs.open`. Mount `<Dialogs />` once, inside the providers of
+ * the app, so the dialogs get their context.
  *
- * - dialogs opened while it is not mounted show once it is
- * - unmounting it closes the open dialogs, which resolve with `undefined`
+ * - dialogs opened before `<Dialogs />` mounts show up once it mounts
+ * - unmounting `<Dialogs />` closes the open dialogs, and they resolve with `undefined`
  *
  * ```tsx
  * createRoot(root).render(
@@ -62,13 +62,14 @@ export function Dialogs(): ReactNode {
 /**
  * # open
  *
- * Opens a dialog that renders `Component` with `dialog`, and resolves with what it passes to
- * `dialog.done`. `meta` is `dialog.meta`.
+ * Opens a dialog that renders `Component` with a `dialog` prop. Resolves with the value that
+ * `Component` passes to `dialog.done`. `meta` becomes `dialog.meta`.
  *
  * - `meta` can be left out for a `Dialog<void, R>`
- * - a click outside of the dialog and Esc close it, and it resolves with `undefined`
- * - resolves once it starts closing, and unmounts once `closeDuration` has passed
- * - opening a component that is open already opens it a second time
+ * - a click outside of the dialog or Esc closes the dialog and resolves with `undefined`
+ * - the promise resolves when the dialog starts closing
+ * - the dialog unmounts after `closeDuration`
+ * - opening a component that is already open opens a second dialog
  *
  * ```tsx
  * const name = await Dialogs.open(Rename, { name: task.name }, { name: "rename" });

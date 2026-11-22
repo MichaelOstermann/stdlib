@@ -3,14 +3,16 @@ import type { Ref } from "react"
 /**
  * `mergeRefs(...refs)`
  *
- * One ref for several: each of `refs` gets the value once attached, and is cleaned up once
- * detached.
+ * Combines several refs into one. Each of `refs` gets the element on attach and is cleaned up on
+ * detach.
  *
- * - a callback ref that returns a cleanup has that cleanup called, the others are called with
- *   `null`, an object ref is set to `null`
- * - `undefined` and `null` are skipped, a single ref is returned as is
- * - a plain function, not a hook: React Compiler keeps the merged ref the same while `refs` are
- * - a `useState` setter and a signal are callback refs: `mergeRefs(setElement, $element)`
+ * - a callback ref that returns a cleanup gets that cleanup called on detach. Other callback refs
+ *   are called with `null`. An object ref is set to `null`
+ * - `undefined` and `null` are skipped
+ * - a single ref is returned as is
+ * - `mergeRefs` is a plain function, not a hook. React Compiler keeps the merged ref stable while
+ *   `refs` stay the same
+ * - a `useState` setter and a signal work as callback refs: `mergeRefs(setElement, $element)`
  */
 export function mergeRefs<T>(...refs: (Ref<T> | undefined)[]): Ref<T> {
     const defined = refs.filter((ref) => ref != null)

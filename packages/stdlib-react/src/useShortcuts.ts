@@ -3,8 +3,8 @@ import { Shortcut } from "@monstermann/stdlib-web"
 import { useLayoutEffect, useRef, useState } from "react"
 
 /**
- * The place of a component in `Shortcut.bindings`: the order it first rendered in, which is a
- * parent before its children and a sibling before the next one. Effects run the other way around,
+ * The place of a component in `Shortcut.bindings`. The place is the order of the first render: a
+ * parent before its children, a sibling before the next sibling. Effects run in the opposite order,
  * from the inside out.
  */
 let rendered = 0
@@ -14,18 +14,18 @@ const ranks = new WeakMap<ShortcutBinding, number>()
 /**
  * `useShortcuts(shortcuts, enabled?)`
  *
- * Adds a binding to `Shortcut.bindings` for each of `shortcuts` while the component is mounted and
- * `enabled`, `true` by default. Each one runs a function, or is a binding without its shortcut, for
- * what an app adds to `ShortcutBinding`.
+ * Adds a binding to `Shortcut.bindings` for each of `shortcuts`. The bindings stay while the
+ * component is mounted and `enabled` is `true`, the default. Each shortcut maps to a function, or
+ * to a binding without its shortcut for fields that an app adds to `ShortcutBinding`.
  *
- * - bindings are in the order their components rendered first: a child after its parent, a later
- *   sibling after an earlier one, what mounted later after everything before. Taking the newest
- *   that matches takes the innermost
- * - `enabled` turning `true` after mounting puts them after everything else, as a menu that opened
- *   over the page
- * - each render updates them in place to what was passed: a new function does not move them
- * - a shortcut that is passed for the first time is added at the place of its component, one that
- *   is no longer passed is removed
+ * - bindings follow the order of the first render: a child after its parent, a later sibling after
+ *   an earlier one, a later mount after everything before. The newest matching binding is the
+ *   innermost one
+ * - when `enabled` turns `true` after mounting, the bindings go after everything else, like a menu
+ *   that opened over the page
+ * - each render updates the bindings in place. A new function does not move its binding
+ * - a new shortcut is added at the place of its component
+ * - a shortcut that is no longer passed is removed
  */
 export function useShortcuts(shortcuts: Record<string, ShortcutBinding["run"] | Omit<ShortcutBinding, "shortcut">>, enabled = true): void {
     const [rank] = useState(nextRank)

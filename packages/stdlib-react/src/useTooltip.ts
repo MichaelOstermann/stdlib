@@ -6,44 +6,45 @@ import { useAnchoredModal } from "./internals/useAnchoredModal"
 import { useSignalEffect } from "./useSignalEffect"
 
 export interface UseTooltipOptions extends PlacementOptions {
-    /** The trigger of a popover on the same element, `triggerRef` of `usePopover`. */
+    /** The trigger of a popover on the same element: the `triggerRef` of `usePopover`. */
     $trigger?: Signal<Element | null>
     /** `200` by default. */
     closeDuration?: number
-    /** Milliseconds the pointer rests on the trigger before the tooltip opens, `600` by default. */
+    /** Milliseconds the pointer rests on the trigger before the tooltip opens. `600` by default. */
     delay?: number
-    /** For `Modals.onOpen` and `Modals.onClose`, or telemetry. Need not be unique. */
+    /** A name for `Modals.onOpen`, `Modals.onClose` or telemetry. Need not be unique. */
     name?: string
     /** `200` by default. */
     openDuration?: number
-    /** `Placement.tooltip` by default: below, above when it does not fit. */
+    /** `Placement.tooltip` by default: below, or above when below does not fit. */
     placement?: Placement
 }
 
 /**
- * - `mounted`: from opening until closed again, whether to render `<Tooltip>`. The component
- *   calling the hook renders again when this changes.
- * - `triggerRef`: `tooltip.$trigger`, as its own binding: React Compiler skips a component that
+ * - `mounted`: whether to render `<Tooltip>`. True from opening until fully closed. The component
+ *   calling the hook renders again when `mounted` changes.
+ * - `triggerRef`: `tooltip.$trigger` in its own variable. React Compiler skips a component that
  *   passes `tooltip.$trigger` as `ref`.
- * - `tooltip`: a new one only when the trigger, the placement or the name changes.
+ * - `tooltip`: changes only when the trigger, the placement or the name changes.
  */
 export type UseTooltip = [mounted: boolean, triggerRef: Signal<Element | null>, tooltip: Tooltip]
 
 /**
  * `useTooltip(options?)`
  *
- * A short text next to an element, after the pointer rests on it. Rendered by `<Tooltip>`.
+ * Creates a tooltip: a short text next to an element. The tooltip opens after the pointer rests on
+ * the element. `<Tooltip>` renders it.
  *
- * - opens once the pointer rests on the trigger for `delay`, or on focus, and closes when the
- *   pointer leaves or on blur
+ * - opens when the pointer rests on the trigger for `delay`, or on focus
+ * - closes when the pointer leaves, or on blur
  * - a click on the trigger closes the tooltip until the pointer leaves
- * - closes when something around the trigger scrolls, or when any other modal opens; clicks and Esc
- *   go past it
- * - the trigger is only a ref: the listeners are added to the element, there are no props to merge;
- *   an element with a popover too passes `$trigger`
- * - `mounted` is the only React state: the component calling the hook renders when the tooltip
+ * - closes when something around the trigger scrolls, or when any other modal opens
+ * - clicks and Esc ignore the tooltip
+ * - the trigger is only a ref. The listeners go on the element, so there are no props to merge
+ * - an element that also has a popover passes `$trigger`
+ * - `mounted` is the only React state. The component calling the hook renders when the tooltip
  *   mounts and unmounts
- * - the listeners and effects are there while the component is mounted, and follow changes of the
+ * - the listeners and effects live while the component is mounted. They follow changes of the
  *   options
  */
 export function useTooltip(options: UseTooltipOptions = {}): UseTooltip {

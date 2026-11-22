@@ -3,10 +3,6 @@ import type { Rect } from "."
 /**
  * # right
  *
- * ```ts
- * function Rect.right(rect: Rect): number
- * ```
- *
  * The x-coordinate of the right edge: `left + width`.
  *
  * ## Example

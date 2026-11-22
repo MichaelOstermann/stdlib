@@ -4,10 +4,6 @@ import { merge } from "./merge"
 /**
  * # expandY
  *
- * ```ts
- * function Rect.expandY(rect: Rect, amount: number): Rect
- * ```
- *
  * Moves the top and bottom edges outward by `amount`. A negative `amount` changes nothing.
  *
  * ## Example

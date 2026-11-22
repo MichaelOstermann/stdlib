@@ -22,10 +22,6 @@ const units: Record<string, number> = {
 /**
  * # parse
  *
- * ```ts
- * function Bytes.parse(target: string): number | undefined
- * ```
- *
  * Returns the bytes of a size that is written as a number and a unit, in any case: `B`, `kB`, `MB`,
  * `GB` and `TB` count in thousands, `KiB`, `MiB`, `GiB` and `TiB` in 1024s. Returns `undefined` for
  * everything else.

@@ -5,10 +5,6 @@ import { right } from "./right"
 /**
  * # setLeft
  *
- * ```ts
- * function Rect.setLeft(rect: Rect, left: number): Rect
- * ```
- *
  * Moves the left edge to `left`, the right edge stays. A `left` past the right edge gives a width
  * of `0`.
  *

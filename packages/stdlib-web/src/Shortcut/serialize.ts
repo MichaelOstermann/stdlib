@@ -4,10 +4,6 @@ import { normalize } from "./internals/normalize"
 /**
  * # serialize
  *
- * ```ts
- * function Shortcut.serialize(keystrokes: Keystroke[]): string
- * ```
- *
  * The shortcut of keystrokes, the same string for the same keystrokes: modifiers in the order
  * `meta`, `ctrl`, `alt`, `shift`, keys by the name events report. `Shortcut.parse` reads it back.
  *

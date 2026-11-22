@@ -1,10 +1,6 @@
 /**
  * # mapProp
  *
- * ```ts
- * Object.mapProp(target, key, map)
- * ```
- *
  * Sets the property `key` of a copy of `target` to what `map` returns for its value. Returns
  * `target` itself when `map` returned the value unchanged.
  *

@@ -5,10 +5,6 @@ import { right } from "./right"
 /**
  * # contains
  *
- * ```ts
- * function Rect.contains(a: Rect, b: Rect): boolean
- * ```
- *
  * Whether `b` lies entirely inside `a`. Shared edges count as inside.
  *
  * ## Example

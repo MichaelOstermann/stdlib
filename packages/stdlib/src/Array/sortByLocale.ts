@@ -12,10 +12,6 @@ let collator: Intl.Collator | undefined
 /**
  * # sortByLocale
  *
- * ```ts
- * Array.sortByLocale(target, by, options?)
- * ```
- *
  * Sorts by the text that `by` returns for each element, in the order of a language: `ä` next to
  * `a`, uppercase next to lowercase. Descending with `{ order: "desc" }`.
  *

@@ -6,10 +6,6 @@ import { right } from "./right"
 /**
  * # clamp
  *
- * ```ts
- * function Rect.clamp(target: Rect, source: Rect): Rect
- * ```
- *
  * Moves `target` inside `source`, and shrinks it where it is larger than `source`.
  *
  * ## Example

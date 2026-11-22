@@ -1,10 +1,6 @@
 /**
  * # onAncestorScroll
  *
- * ```ts
- * function DOM.onAncestorScroll(element: Element, listener: () => void): () => void
- * ```
- *
  * Calls `listener` when an element that `element` is inside of scrolls, which moves `element` on
  * screen. Returns what stops listening. The ancestors that can scroll are looked up once, by their
  * `overflow`.

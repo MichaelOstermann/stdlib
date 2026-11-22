@@ -3,10 +3,6 @@ import type { AnySet, SetValue, UpdatedSet } from "../internals/types"
 /**
  * # union
  *
- * ```ts
- * Set.union(target, values)
- * ```
- *
  * Adds every one of `values` to a copy of `target`. Returns `target` itself when it has all of them
  * already. `values` can be any iterable, such as an array or another set.
  *

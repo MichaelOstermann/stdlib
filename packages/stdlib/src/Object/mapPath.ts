@@ -4,10 +4,6 @@ import { readPath, writePath } from "../internals/paths"
 /**
  * # mapPath
  *
- * ```ts
- * Object.mapPath(target, path, map)
- * ```
- *
  * Sets the property at `path`, keys separated by dots, of a copy of `target` to what `map` returns
  * for its value, copying each object on the way. Returns `target` itself when `map` returned the
  * value unchanged.

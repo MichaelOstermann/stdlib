@@ -4,10 +4,6 @@ import { indexOf, removeAt } from "../internals/arrays"
 /**
  * # removeFirst
  *
- * ```ts
- * Array.removeFirst(target, value)
- * ```
- *
  * Removes the first occurrence of `value`. Returns `target` itself when it does not occur.
  *
  * ## Example

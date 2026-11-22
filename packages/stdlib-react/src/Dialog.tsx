@@ -42,19 +42,6 @@ const backdropStyle: CSSProperties = {
  * - `className`, `style` and the other props go on the dialog, not on the backdrop:
  *   `className="self-start mt-40"` puts it near the top instead of the center
  * - both have `data-status` with `closed`, `opening`, `opened` or `closing`
- *
- * ```tsx
- * function Rename({ dialog }: { dialog: Dialog<{ name: string }, string> }) {
- *     const [value, setValue] = useState(dialog.meta.name);
- *
- *     return (
- *         <Dialog className="w-120" dialog={dialog}>
- *             <input onChange={event => setValue(event.target.value)} value={value} />
- *             <button onClick={() => dialog.done(value)}>Rename</button>
- *         </Dialog>
- *     );
- * }
- * ```
  */
 export function Dialog({ children, dialog, ...rest }: DialogProps): ReactNode {
     // Destructured: React Compiler skips a component that passes `dialog.$floating` as `ref`.

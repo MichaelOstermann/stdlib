@@ -1,10 +1,6 @@
 /**
  * # setProp
  *
- * ```ts
- * Object.setProp(target, key, value)
- * ```
- *
  * Sets the property `key` of a copy of `target` to `value`. Returns `target` itself when it has
  * that value already.
  *

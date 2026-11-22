@@ -29,10 +29,6 @@ let counter = 0
 /**
  * # create
  *
- * ```ts
- * TSID.create()
- * ```
- *
  * A new `TSID`, after every one this process created before it.
  *
  * ## Example
@@ -60,10 +56,6 @@ function create(): TSID {
 /**
  * # parse
  *
- * ```ts
- * TSID.parse(value)
- * ```
- *
  * `value` as a `TSID`, or a `TSIDError` when it is none.
  *
  * ## Example
@@ -80,10 +72,6 @@ function parse(value: string): Result<TSID, TSIDError> {
 
 /**
  * # timestamp
- *
- * ```ts
- * TSID.timestamp(id)
- * ```
  *
  * When `id` was created, in milliseconds since 1970 like `Date.now()`.
  *

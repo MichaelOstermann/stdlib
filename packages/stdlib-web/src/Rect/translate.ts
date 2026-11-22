@@ -4,10 +4,6 @@ import { merge } from "./merge"
 /**
  * # translate
  *
- * ```ts
- * function Rect.translate(rect: Rect, amount: number): Rect
- * ```
- *
  * Moves the rect right and down by `amount`.
  *
  * ## Example

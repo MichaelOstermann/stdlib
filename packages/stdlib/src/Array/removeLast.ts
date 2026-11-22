@@ -4,10 +4,6 @@ import { indexOf, removeAt } from "../internals/arrays"
 /**
  * # removeLast
  *
- * ```ts
- * Array.removeLast(target, value)
- * ```
- *
  * Removes the last occurrence of `value`. Returns `target` itself when it does not occur.
  *
  * ## Example

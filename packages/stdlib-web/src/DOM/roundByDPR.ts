@@ -1,10 +1,6 @@
 /**
  * # roundByDPR
  *
- * ```ts
- * function DOM.roundByDPR(value: number): number
- * ```
- *
  * Rounds CSS pixels to the nearest device pixel. An element positioned between device pixels is
  * blurry.
  *

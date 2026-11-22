@@ -6,10 +6,6 @@ type PropOf<T, K extends PropertyKey> = T extends unknown ? K extends keyof T ? 
 /**
  * # prop
  *
- * ```ts
- * Object.prop(target, key)
- * ```
- *
  * Reads the property `key` of `target`. Where `target` is a union, `key` may be one of any of its
  * members, and the value is `undefined` for those that do not have it: unlike `key in target`, a
  * misspelled `key` is an error.

@@ -4,10 +4,6 @@ import { create } from "./create"
 /**
  * # tooltip
  *
- * ```ts
- * function Placement.tooltip(measurements: PlacementMeasurements, options?: PlacementOptions): PlacementPosition
- * ```
- *
  * Centered below the anchor, and above when it does not fit below.
  *
  * ## Example

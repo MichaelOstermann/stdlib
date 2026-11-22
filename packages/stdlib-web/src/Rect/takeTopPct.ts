@@ -4,10 +4,6 @@ import { takeTopPx } from "./takeTopPx"
 /**
  * # takeTopPct
  *
- * ```ts
- * function Rect.takeTopPct(rect: Rect, amount: number): Rect
- * ```
- *
  * Keeps the top `amount` of the height, as a fraction from `0` to `1`.
  *
  * ## Example

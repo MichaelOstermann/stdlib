@@ -3,10 +3,6 @@ let segmenter: Intl.Segmenter | undefined
 /**
  * # graphemes
  *
- * ```ts
- * function String.graphemes(target: string): Generator<string>
- * ```
- *
  * Returns a generator that yields individual grapheme clusters from `target` string.
  *
  * A grapheme cluster represents a single user-perceived character, which may consist of multiple

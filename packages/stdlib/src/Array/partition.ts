@@ -3,10 +3,6 @@ import type { Excluded, Narrowed } from "../internals/types"
 /**
  * # partition
  *
- * ```ts
- * Array.partition(target, predicate)
- * ```
- *
  * Splits into the elements that satisfy `predicate`, and the ones that do not.
  *
  * ## Example

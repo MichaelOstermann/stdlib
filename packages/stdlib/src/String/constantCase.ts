@@ -4,12 +4,6 @@ import { identifierWords } from "../internals/strings"
 /**
  * # constantCase
  *
- * ```ts
- * function String.constantCase<T extends string>(
- *     target: T,
- * ): ConstantCase<T>
- * ```
- *
  * Converts `target` string to CONSTANT_CASE format.
  *
  * ## Example

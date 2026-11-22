@@ -10,10 +10,6 @@ type RectEdges = {
 /**
  * # fromEdges
  *
- * ```ts
- * function Rect.fromEdges(edges: { bottom: number, left: number, right: number, top: number }): Rect
- * ```
- *
  * A rect from the coordinates of its four edges. Edges in the wrong order are swapped.
  *
  * ## Example

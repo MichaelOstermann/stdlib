@@ -39,38 +39,6 @@ export interface Scrollbar {
  * - signals only: the component calling the hook does not render again when the element scrolls,
  *   the scrollbar that reads them does
  * - the listeners are there while both elements are, and move with them
- *
- * ```tsx
- * function List() {
- *     const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
- *     const [contentElement, setContentElement] = useState<HTMLElement | null>(null);
- *     const scrollbar = useScrollbar(scrollElement, contentElement);
- *
- *     return (
- *         <div className="relative">
- *             <div className="overflow-y-auto" ref={setScrollElement} style={{ scrollbarWidth: "none" }}>
- *                 <div ref={setContentElement}>{children}</div>
- *             </div>
- *             <Thumb scrollbar={scrollbar} />
- *         </div>
- *     );
- * }
- *
- * function Thumb({ scrollbar }: { scrollbar: Scrollbar }) {
- *     if (!scrollbar.$overflows()) return null;
- *     const height = scrollbar.$ratio() * 100;
- *     return (
- *         <div
- *             className="absolute top-0 right-0 w-1 transition-opacity"
- *             style={{
- *                 height: `${height}%`,
- *                 top: `${scrollbar.$progress() * (100 - height)}%`,
- *                 opacity: scrollbar.$scrolling() || scrollbar.$hovered() ? 0.2 : 0,
- *             }}
- *         />
- *     );
- * }
- * ```
  */
 export function useScrollbar(scrollElement: HTMLElement | null, contentElement: HTMLElement | null): Scrollbar {
     const $clientHeight = useSignal(0)

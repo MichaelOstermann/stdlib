@@ -7,13 +7,6 @@ import { serializeKeystroke } from "./serialize"
 /**
  * # matches
  *
- * ```ts
- * function Shortcut.matches(
- *     shortcut: string | Keystroke[],
- *     input: string | Keystroke[] | KeyboardEvent | KeyboardEvent[],
- * ): boolean | "partial"
- * ```
- *
  * Whether `input` is `shortcut`: `true` when it is all of it, `"partial"` when it is the beginning
  * of it and more has to come, `false` otherwise.
  *

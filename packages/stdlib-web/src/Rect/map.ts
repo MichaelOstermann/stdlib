@@ -4,10 +4,6 @@ import { merge } from "./merge"
 /**
  * # map
  *
- * ```ts
- * function Rect.map(rect: Rect, transform: (rect: Rect) => Partial<Rect>): Rect
- * ```
- *
  * Merges the properties that `transform` returns into `rect`, like `Rect.merge`.
  *
  * ## Example

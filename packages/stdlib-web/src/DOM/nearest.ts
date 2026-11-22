@@ -5,10 +5,6 @@ import { fromElement } from "../Rect/fromElement"
 /**
  * # nearest
  *
- * ```ts
- * function DOM.nearest<T extends HTMLElement>(elements: Iterable<T>, target: Rect): T | undefined
- * ```
- *
  * The element closest to `target`, by the distance between their edges. An element that `target`
  * touches or overlaps is at `0`, and the first of those wins.
  *

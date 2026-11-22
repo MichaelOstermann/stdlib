@@ -10,10 +10,6 @@ import { right } from "./right"
 /**
  * # intersection
  *
- * ```ts
- * function Rect.intersection(a: Rect, b: Rect): Rect
- * ```
- *
  * The area where `a` and `b` overlap, or `Rect.origin` when they do not.
  *
  * ## Example

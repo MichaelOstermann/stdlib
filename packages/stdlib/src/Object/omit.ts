@@ -3,10 +3,6 @@ import type { DistributedOmit, KeysOfUnion } from "type-fest"
 /**
  * # omit
  *
- * ```ts
- * Object.omit(target, keys)
- * ```
- *
  * Returns a copy of `target` without the properties `keys`. Returns `target` itself when it has
  * none of them.
  *

@@ -8,14 +8,6 @@ let formatter: Intl.DurationFormat | undefined
 /**
  * # format
  *
- * ```ts
- * function Duration.format(
- *     duration: number,
- *     locales?: Intl.LocalesArgument,
- *     options?: Intl.DurationFormatOptions,
- * ): string
- * ```
- *
  * Writes the milliseconds of `duration` out as days, hours, minutes, seconds and milliseconds,
  * leaving out the ones that are zero.
  *

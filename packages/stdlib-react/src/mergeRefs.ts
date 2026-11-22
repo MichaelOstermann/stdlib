@@ -11,13 +11,6 @@ import type { Ref } from "react"
  * - `undefined` and `null` are skipped, a single ref is returned as is
  * - a plain function, not a hook: React Compiler keeps the merged ref the same while `refs` are
  * - a `useState` setter and a signal are callback refs: `mergeRefs(setElement, $element)`
- *
- * ```tsx
- * function Input({ ref }: { ref?: Ref<HTMLInputElement> }) {
- *     const [element, setElement] = useState<HTMLInputElement | null>(null);
- *     return <input ref={mergeRefs(ref, setElement)} />;
- * }
- * ```
  */
 export function mergeRefs<T>(...refs: (Ref<T> | undefined)[]): Ref<T> {
     const defined = refs.filter((ref) => ref != null)

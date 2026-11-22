@@ -3,10 +3,6 @@ import { transliterations } from "../internals/transliterations"
 /**
  * # slug
  *
- * ```ts
- * function String.slug(target: string): string
- * ```
- *
  * Turns `target` into something that can be part of a URL or the name of a file: lowercase letters
  * and digits, in groups separated by a single `-`.
  *

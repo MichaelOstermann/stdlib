@@ -44,23 +44,6 @@ export type UsePopover = [mounted: boolean, triggerRef: Signal<Element | null>, 
  *   mounts and unmounts, `useReactive(popover.$open)` is whether it is open
  * - the listeners and effects are there while the component is mounted, and follow changes of the
  *   options
- *
- * ```tsx
- * function DueDate() {
- *     const [mounted, triggerRef, popover] = usePopover();
- *
- *     return (
- *         <>
- *             <button ref={triggerRef}>Due date</button>
- *             {mounted && <Popover popover={popover}><Calendar /></Popover>}
- *         </>
- *     );
- * }
- *
- * // With a tooltip on the same button:
- * const [tooltipMounted, triggerRef, tooltip] = useTooltip();
- * const [popoverMounted, , popover] = usePopover({ $trigger: triggerRef });
- * ```
  */
 export function usePopover(options: UsePopoverOptions = {}): UsePopover {
     const { closeDuration = 200, openDuration = 250, placement = Placement.popover, ...rest } = options

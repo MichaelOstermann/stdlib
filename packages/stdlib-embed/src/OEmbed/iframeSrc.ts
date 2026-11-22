@@ -3,10 +3,6 @@ import type { OEmbed } from "."
 /**
  * # iframeSrc
  *
- * ```ts
- * function OEmbed.iframeSrc(embed: OEmbed): string | undefined
- * ```
- *
  * Returns the address of the `<iframe>` in the `html` of a video or rich embed, `undefined` when it
  * has none, or one that is not `http:` or `https:`. Load it in an `<iframe>` of your own instead of
  * rendering `html`: the embed then runs on the provider's origin, not on yours.

@@ -4,10 +4,6 @@ import { setHeight } from "./setHeight"
 /**
  * # setBottom
  *
- * ```ts
- * function Rect.setBottom(rect: Rect, bottom: number): Rect
- * ```
- *
  * Moves the bottom edge to `bottom`, the top edge stays. A `bottom` above the top edge gives a
  * height of `0`.
  *

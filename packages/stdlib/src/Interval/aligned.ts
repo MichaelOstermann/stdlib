@@ -17,10 +17,6 @@ const clocks = new Map<number, Clock>()
 /**
  * # aligned
  *
- * ```ts
- * function Interval.aligned(every: number, fn: (now: number) => void): () => void
- * ```
- *
  * Calls `fn` with `Date.now()` on every multiple of `every` since the epoch: `Duration.MINUTE` on
  * the minute, `Duration.HOUR` on the hour. Returns what stops it. For what is shown relative to
  * now: "5 minutes ago", "today".

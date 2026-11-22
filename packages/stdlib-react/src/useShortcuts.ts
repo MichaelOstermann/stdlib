@@ -26,16 +26,6 @@ const ranks = new WeakMap<ShortcutBinding, number>()
  * - each render updates them in place to what was passed: a new function does not move them
  * - a shortcut that is passed for the first time is added at the place of its component, one that
  *   is no longer passed is removed
- *
- * ```tsx
- * function Menu({ menu, open }: { menu: Menu, open: boolean }) {
- *     useShortcuts({
- *         down: menu.selectNext,
- *         up: menu.selectPrev,
- *         enter: { run: menu.select, whileTyping: true },
- *     }, open);
- * }
- * ```
  */
 export function useShortcuts(shortcuts: Record<string, ShortcutBinding["run"] | Omit<ShortcutBinding, "shortcut">>, enabled = true): void {
     const [rank] = useState(nextRank)

@@ -62,14 +62,6 @@ export function Dialogs(): ReactNode {
 /**
  * # open
  *
- * ```ts
- * function Dialogs.open<T, R>(
- *     Component: ComponentType<{ dialog: Dialog<T, R> }>,
- *     meta?: T,
- *     options?: DialogOptions,
- * ): Promise<R | undefined>
- * ```
- *
  * Opens a dialog that renders `Component` with `dialog`, and resolves with what it passes to
  * `dialog.done`. `meta` is `dialog.meta`.
  *

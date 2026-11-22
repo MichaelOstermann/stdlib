@@ -5,10 +5,6 @@ import { parse } from "./parse"
 /**
  * # alpha
  *
- * ```ts
- * Color.alpha(color, value)
- * ```
- *
  * Returns `color` with its alpha set to `value`, between 0 and 1, as an `oklch()` color. A `color`
  * that does not parse is returned as it is.
  *

@@ -4,12 +4,6 @@ import { identifierWords, pascalCaseWords } from "../internals/strings"
 /**
  * # pascalCase
  *
- * ```ts
- * function String.pascalCase<T extends string>(
- *     target: T,
- * ): PascalCase<T>
- * ```
- *
  * Converts `target` string to PascalCase format.
  *
  * ## Example

@@ -35,27 +35,6 @@ export type UseTransitionStatus = [mounted: boolean, transition: Transition]
  *   `$status` is read by what animates
  * - the transition follows `$open` while the component is mounted, and a new duration restarts the
  *   timer of the current step
- *
- * ```tsx
- * function Fade({ children }: { children: ReactNode }) {
- *     const [mounted, transition] = useTransitionStatus({ openDuration: 250, closeDuration: 200 });
- *
- *     return (
- *         <>
- *             <button onClick={() => transition.$open(open => !open)}>Toggle</button>
- *             {mounted && <FadeElement $status={transition.$status}>{children}</FadeElement>}
- *         </>
- *     );
- * }
- *
- * function FadeElement({ $status, children }: { $status: ReadonlySignal<TransitionStatus>, children: ReactNode }) {
- *     return (
- *         <div data-status={$status()} className="opacity-0 transition-opacity duration-200 data-[status^=open]:opacity-100 data-[status^=open]:duration-250">
- *             {children}
- *         </div>
- *     );
- * }
- * ```
  */
 export function useTransitionStatus({ closeDuration, openDuration }: UseTransitionStatusOptions): UseTransitionStatus {
     const $open = useSignal(false)

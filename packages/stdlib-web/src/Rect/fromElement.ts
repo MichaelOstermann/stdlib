@@ -4,10 +4,6 @@ import { fromDOMRect } from "./fromDOMRect"
 /**
  * # fromElement
  *
- * ```ts
- * function Rect.fromElement(element: HTMLElement): Rect
- * ```
- *
  * The rect of an element in viewport coordinates, from `getBoundingClientRect`.
  *
  * ## Example

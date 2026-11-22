@@ -1,10 +1,6 @@
 /**
  * # DAY
  *
- * ```ts
- * const Duration.DAY: number
- * ```
- *
  * A day in milliseconds.
  *
  * ## Example

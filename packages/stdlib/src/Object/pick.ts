@@ -1,10 +1,6 @@
 /**
  * # pick
  *
- * ```ts
- * Object.pick(target, keys)
- * ```
- *
  * Returns a copy of `target` with only the properties `keys`, in the order of `keys`.
  *
  * ## Example

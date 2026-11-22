@@ -9,10 +9,6 @@ import { isEqual } from "../Rect/isEqual"
 /**
  * # observePosition
  *
- * ```ts
- * function DOM.observePosition(element: Element, onChange: (rect: Rect) => void): () => void
- * ```
- *
  * Calls `onChange` with where an element is right away, and again whenever it moves or resizes: its
  * rect in viewport coordinates, like `getBoundingClientRect` reports it. Returns what stops
  * observing. The size of that rect is the one after transforms such as `scale`, unlike the one of

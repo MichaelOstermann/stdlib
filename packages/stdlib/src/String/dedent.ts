@@ -1,11 +1,6 @@
 /**
  * # dedent
  *
- * ```ts
- * function String.dedent(target: string): string
- * function String.dedent(strings: TemplateStringsArray, ...values: unknown[]): string
- * ```
- *
  * Removes the indentation that all lines of `target` string have in common, together with a first
  * and a last line that are blank. Blank lines in between do not count.
  *

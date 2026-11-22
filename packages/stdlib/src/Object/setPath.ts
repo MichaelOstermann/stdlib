@@ -4,10 +4,6 @@ import { readPath, writePath } from "../internals/paths"
 /**
  * # setPath
  *
- * ```ts
- * Object.setPath(target, path, value)
- * ```
- *
  * Sets the property at `path`, keys separated by dots, of a copy of `target` to `value`, copying
  * each object on the way. Returns `target` itself when it has that value already.
  *

@@ -4,10 +4,6 @@ import { indexWhere, setAt } from "../internals/arrays"
 /**
  * # mapLastWhere
  *
- * ```ts
- * Array.mapLastWhere(target, predicate, map)
- * ```
- *
  * Applies `map` to the last element that satisfies `predicate`. Returns `target` itself when there
  * is no such element, or when `map` returned the element unchanged.
  *

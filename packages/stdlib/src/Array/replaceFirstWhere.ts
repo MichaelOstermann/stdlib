@@ -4,10 +4,6 @@ import { indexWhere, setAt } from "../internals/arrays"
 /**
  * # replaceFirstWhere
  *
- * ```ts
- * Array.replaceFirstWhere(target, predicate, replacement)
- * ```
- *
  * Replaces the first element that satisfies `predicate` with `replacement`. Returns `target` itself
  * when there is no such element, or when it is `replacement` already.
  *

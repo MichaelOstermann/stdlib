@@ -1,10 +1,6 @@
 /**
  * # backoff
  *
- * ```ts
- * function Duration.backoff(attempt: number, min: number, max: number): number
- * ```
- *
  * Returns how long to wait before trying again: `min` after the first `attempt`, which is `0`,
  * twice as long after each one that follows, and never longer than `max`.
  *

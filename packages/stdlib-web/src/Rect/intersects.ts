@@ -5,10 +5,6 @@ import { right } from "./right"
 /**
  * # intersects
  *
- * ```ts
- * function Rect.intersects(a: Rect, b: Rect): boolean
- * ```
- *
  * Whether `a` and `b` overlap. Rects that only share an edge do not.
  *
  * ## Example

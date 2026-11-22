@@ -1,10 +1,6 @@
 /**
  * # chunk
  *
- * ```ts
- * Array.chunk(target, size)
- * ```
- *
  * Splits into arrays of `size` elements, the last one holds the remaining elements.
  *
  * ## Example

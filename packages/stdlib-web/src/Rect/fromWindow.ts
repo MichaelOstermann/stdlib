@@ -3,10 +3,6 @@ import type { Rect } from "."
 /**
  * # fromWindow
  *
- * ```ts
- * function Rect.fromWindow(): Rect
- * ```
- *
  * The rect of the viewport: at `0, 0`, with the size of `innerWidth` and `innerHeight`.
  *
  * ## Example

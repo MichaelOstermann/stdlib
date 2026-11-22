@@ -3,10 +3,6 @@ let segmenter: Intl.Segmenter | undefined
 /**
  * # words
  *
- * ```ts
- * function String.words(target: string): Generator<string>
- * ```
- *
  * Returns a generator that yields the words of `target` string, without the whitespace and
  * punctuation in between.
  *

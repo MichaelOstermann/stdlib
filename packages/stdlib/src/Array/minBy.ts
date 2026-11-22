@@ -3,10 +3,6 @@ import type { Comparable } from "../internals/arrays"
 /**
  * # minBy
  *
- * ```ts
- * Array.minBy(target, by)
- * ```
- *
  * Returns the element that `by` returns the lowest value for, compared with `<`: numbers, strings
  * and dates work. The first one of several, and `undefined` when there are no elements.
  *

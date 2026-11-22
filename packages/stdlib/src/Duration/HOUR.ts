@@ -1,10 +1,6 @@
 /**
  * # HOUR
  *
- * ```ts
- * const Duration.HOUR: number
- * ```
- *
  * An hour in milliseconds.
  *
  * ## Example

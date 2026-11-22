@@ -1,10 +1,6 @@
 /**
  * # sample
  *
- * ```ts
- * Array.sample(target)
- * ```
- *
  * Returns a random element, `undefined` when there are none.
  *
  * ## Example

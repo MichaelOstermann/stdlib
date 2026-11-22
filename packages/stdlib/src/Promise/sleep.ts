@@ -1,10 +1,6 @@
 /**
  * # sleep
  *
- * ```ts
- * function Promise.sleep(duration: number, signal?: AbortSignal): Promise<void>
- * ```
- *
  * Returns a promise that resolves after the milliseconds of `duration`. It rejects with the reason
  * of `signal` once that is aborted, right away when it is already.
  *

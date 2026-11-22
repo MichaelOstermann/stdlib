@@ -3,10 +3,6 @@ import type { Updated } from "../internals/types"
 /**
  * # concat
  *
- * ```ts
- * Array.concat(target, values)
- * ```
- *
  * The elements of `target` followed by those of `values`. Returns `target` itself when `values` is
  * empty, and `values` itself when `target` is.
  *

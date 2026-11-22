@@ -1,12 +1,6 @@
 /**
  * # uncapitalize
  *
- * ```ts
- * function String.uncapitalize<T extends string>(
- *     target: T,
- * ): Uncapitalize<T>
- * ```
- *
  * Uncapitalizes the first letter of `target` string.
  *
  * ## Example

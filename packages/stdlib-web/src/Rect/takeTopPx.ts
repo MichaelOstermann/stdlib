@@ -4,10 +4,6 @@ import { dropBottomPx } from "./dropBottomPx"
 /**
  * # takeTopPx
  *
- * ```ts
- * function Rect.takeTopPx(rect: Rect, amount: number): Rect
- * ```
- *
  * Keeps the top `amount` pixels, at most the height.
  *
  * ## Example

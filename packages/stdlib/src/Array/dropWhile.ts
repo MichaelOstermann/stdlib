@@ -3,10 +3,6 @@ import type { Updated } from "../internals/types"
 /**
  * # dropWhile
  *
- * ```ts
- * Array.dropWhile(target, predicate)
- * ```
- *
  * Removes the elements from the start for as long as they satisfy `predicate`. Returns `target`
  * itself when the first one does not.
  *

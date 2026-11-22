@@ -4,12 +4,6 @@ import { identifierWords, pascalCaseWords } from "../internals/strings"
 /**
  * # titleCase
  *
- * ```ts
- * function String.titleCase<T extends string>(
- *     target: T,
- * ): TitleCase<T>
- * ```
- *
  * Converts `target` string to Title Case format.
  *
  * ## Example

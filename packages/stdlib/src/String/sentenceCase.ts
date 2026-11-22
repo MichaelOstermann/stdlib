@@ -4,12 +4,6 @@ import { identifierWords } from "../internals/strings"
 /**
  * # sentenceCase
  *
- * ```ts
- * function String.sentenceCase<T extends string>(
- *     target: T,
- * ): SentenceCase<T>
- * ```
- *
  * Converts `target` string to Sentence case format.
  *
  * ## Example

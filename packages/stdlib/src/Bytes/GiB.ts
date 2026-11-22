@@ -1,10 +1,6 @@
 /**
  * # GiB
  *
- * ```ts
- * const Bytes.GiB: number
- * ```
- *
  * A gibibyte (GiB) in bytes, 1024 mebibytes.
  *
  * ## Example

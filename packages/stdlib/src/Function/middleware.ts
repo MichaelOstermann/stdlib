@@ -14,12 +14,6 @@ export interface WithMiddleware<T extends unknown[], U> {
 /**
  * # middleware
  *
- * ```ts
- * function Function.middleware<T extends unknown[], U>(
- *     fn: (...args: T) => U,
- * ): WithMiddleware<T, U>
- * ```
- *
  * Returns a function that calls `fn`, and that others can get in between of: a middleware is called
  * with `next` and the arguments, and decides what to pass on and what to return.
  *

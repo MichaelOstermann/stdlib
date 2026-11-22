@@ -4,10 +4,6 @@ import { indexOf, setAt } from "../internals/arrays"
 /**
  * # replaceLast
  *
- * ```ts
- * Array.replaceLast(target, value, replacement)
- * ```
- *
  * Replaces the last occurrence of `value` with `replacement`. Returns `target` itself when it does
  * not occur, or when both are the same.
  *

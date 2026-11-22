@@ -4,10 +4,6 @@ import { removeWhere } from "../internals/arrays"
 /**
  * # filter
  *
- * ```ts
- * Array.filter(target, predicate)
- * ```
- *
  * Keeps the elements that satisfy `predicate`. Returns `target` itself when every element does.
  *
  * ## Example

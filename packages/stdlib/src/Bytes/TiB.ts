@@ -1,10 +1,6 @@
 /**
  * # TiB
  *
- * ```ts
- * const Bytes.TiB: number
- * ```
- *
  * A tebibyte (TiB) in bytes, 1024 gibibytes.
  *
  * ## Example

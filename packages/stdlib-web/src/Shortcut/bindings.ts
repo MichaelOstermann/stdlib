@@ -3,10 +3,6 @@ import type { ShortcutBinding } from "."
 /**
  * # bindings
  *
- * ```ts
- * const Shortcut.bindings: Set<ShortcutBinding>
- * ```
- *
  * The bindings of the app, in the order they were added. Nothing listens to the keyboard on its
  * own: the app does, and runs what matches, see `Shortcut.matches`. Taking the newest binding that
  * matches lets the one of a menu that opened win over the one of the page.

@@ -10,10 +10,6 @@ type ShapeOf<T, Members = T> = T extends unknown
 /**
  * # matches
  *
- * ```ts
- * Object.matches(target, shape)
- * ```
- *
  * Whether each property of `shape` has the same value in `target`, compared with `Object.is`.
  * Narrows `target` to the members of a union that fit `shape`.
  *

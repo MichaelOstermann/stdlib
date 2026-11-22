@@ -1,10 +1,6 @@
 /**
  * # jitter
  *
- * ```ts
- * function Duration.jitter(duration: number, factor?: number): number
- * ```
- *
  * Returns `duration` made longer by a random part of it, up to `factor` of it, which is `0.2` by
  * default. Never shorter, so what something asked to wait for is waited for.
  *

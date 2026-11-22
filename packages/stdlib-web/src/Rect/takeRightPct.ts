@@ -4,10 +4,6 @@ import { takeRightPx } from "./takeRightPx"
 /**
  * # takeRightPct
  *
- * ```ts
- * function Rect.takeRightPct(rect: Rect, amount: number): Rect
- * ```
- *
  * Keeps the right `amount` of the width, as a fraction from `0` to `1`.
  *
  * ## Example

@@ -6,10 +6,6 @@ import { merge } from "./merge"
 /**
  * # scale
  *
- * ```ts
- * function Rect.scale(rect: Rect, factor: number): Rect
- * ```
- *
  * Multiplies the width and the height by `factor`, around the center. A negative `factor` counts as
  * `0`.
  *

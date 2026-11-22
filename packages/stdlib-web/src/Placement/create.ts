@@ -9,14 +9,6 @@ type Shift = "center" | "down" | "left" | "right" | "up"
 /**
  * # create
  *
- * ```ts
- * function Placement.create(
- *     name: PlacementName,
- *     measurements: PlacementMeasurements,
- *     options?: PlacementOptions,
- * ): PlacementPosition
- * ```
- *
  * Places the floating rect on one side of the anchor and keeps it inside the boundary. The name is
  * the side first, then the way the floating rect is moved along it: `down-left` is below the anchor
  * and moved to the left, which lines up the right edges.

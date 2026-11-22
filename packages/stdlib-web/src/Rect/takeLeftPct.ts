@@ -4,10 +4,6 @@ import { takeLeftPx } from "./takeLeftPx"
 /**
  * # takeLeftPct
  *
- * ```ts
- * function Rect.takeLeftPct(rect: Rect, amount: number): Rect
- * ```
- *
  * Keeps the left `amount` of the width, as a fraction from `0` to `1`.
  *
  * ## Example

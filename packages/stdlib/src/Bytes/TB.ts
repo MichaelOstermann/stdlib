@@ -1,10 +1,6 @@
 /**
  * # TB
  *
- * ```ts
- * const Bytes.TB: number
- * ```
- *
  * A terabyte (TB) in bytes, a thousand gigabytes. See `Bytes.TiB` for 1024⁴.
  *
  * ## Example

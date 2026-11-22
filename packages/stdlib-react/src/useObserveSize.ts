@@ -13,20 +13,6 @@ import { useLatest } from "./internals/useLatest"
  * - observes again when `target` changes, and nothing while it is `null`; a new `onChange` does not
  *   observe again
  * - `onChange` can be a signal: `useObserveSize(element, $size)`
- *
- * ```tsx
- * function Slide({ onHeight }: { onHeight: (height: number) => void }) {
- *     const [element, setElement] = useState<HTMLElement | null>(null);
- *     useObserveSize(element, size => onHeight(size.height));
- *     return <div ref={setElement} />;
- * }
- *
- * function Menu() {
- *     const [element, setElement] = useState<HTMLElement | null>(null);
- *     const [size, setSize] = useState(Rect.origin);
- *     useObserveSize(element, setSize);
- * }
- * ```
  */
 export function useObserveSize(target: Element | Window | null | undefined, onChange: (size: Rect) => void): void {
     const latest = useLatest(onChange)

@@ -3,14 +3,6 @@ import type { OEmbedProvider } from "."
 /**
  * # request
  *
- * ```ts
- * function OEmbed.request(
- *     provider: OEmbedProvider,
- *     url: string,
- *     options?: { maxHeight?: number, maxWidth?: number },
- * ): string
- * ```
- *
  * Returns the address to fetch the embed of `url` from, as JSON. With `maxWidth` and `maxHeight`
  * the provider answers with an embed that fits, when it supports them.
  *

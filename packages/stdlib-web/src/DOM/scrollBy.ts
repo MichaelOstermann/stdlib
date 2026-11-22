@@ -1,16 +1,6 @@
 /**
  * # scrollBy
  *
- * ```ts
- * function DOM.scrollBy(element: Element, options: {
- *     x?: number;
- *     y?: number;
- *     duration: number;
- *     easing?: (progress: number) => number;
- *     onDone?: () => void;
- * }): () => void
- * ```
- *
  * Scrolls `element` by `x` and `y` pixels over `duration` milliseconds. Returns what cancels it,
  * after which `onDone` is not called. Unlike `element.scrollBy({ behavior: "smooth" })`, which
  * picks its own duration and curve, it can run alongside a CSS transition, and says when it is

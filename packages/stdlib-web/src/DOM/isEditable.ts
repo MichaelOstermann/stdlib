@@ -1,10 +1,6 @@
 /**
  * # isEditable
  *
- * ```ts
- * function DOM.isEditable(target: EventTarget | null): boolean
- * ```
- *
  * Whether `target` takes what is typed: an `<input>`, a `<textarea>`, a `<select>`, or what is
  * `contenteditable`. For an event whose keys belong to the field and not to the page.
  *

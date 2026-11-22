@@ -47,10 +47,6 @@ const onClose: ReadonlyEmitter<Modal> = closed
 /**
  * # open
  *
- * ```ts
- * function Modals.open(modal: Modal): void
- * ```
- *
  * Puts a modal that opened on the stack. It only tracks the modal, opening it is `$open(true)`.
  * Done by `useTooltip` and the other hooks, not by the code that uses them.
  *
@@ -89,10 +85,6 @@ function open(modal: Modal): void {
 
 /**
  * # close
- *
- * ```ts
- * function Modals.close(modal: Modal): void
- * ```
  *
  * Takes a modal off the stack, when it closes or is gone. It only tracks the modal, closing it is
  * `$open(false)`.

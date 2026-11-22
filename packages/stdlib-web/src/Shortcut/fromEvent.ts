@@ -8,10 +8,6 @@ const asciiLetterOrDigit = /^[a-z\d]$/i
 /**
  * # fromEvent
  *
- * ```ts
- * function Shortcut.fromEvent(event: KeyboardEvent): Keystroke
- * ```
- *
  * The keystroke of an event, the one that `Shortcut.matches` takes the same event for, eg. to
  * record a shortcut that the user picks.
  *

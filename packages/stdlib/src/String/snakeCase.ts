@@ -4,12 +4,6 @@ import { identifierWords } from "../internals/strings"
 /**
  * # snakeCase
  *
- * ```ts
- * function String.snakeCase<T extends string>(
- *     target: T,
- * ): SnakeCase<T>
- * ```
- *
  * Converts `target` string to snake_case format.
  *
  * ## Example

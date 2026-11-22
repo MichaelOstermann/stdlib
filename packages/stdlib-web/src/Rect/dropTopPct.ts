@@ -4,10 +4,6 @@ import { dropTopPx } from "./dropTopPx"
 /**
  * # dropTopPct
  *
- * ```ts
- * function Rect.dropTopPct(rect: Rect, amount: number): Rect
- * ```
- *
  * Removes `amount` of the height from the top, as a fraction from `0` to `1`. The bottom edge
  * stays.
  *

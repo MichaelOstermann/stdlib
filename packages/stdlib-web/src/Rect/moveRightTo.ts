@@ -4,10 +4,6 @@ import { merge } from "./merge"
 /**
  * # moveRightTo
  *
- * ```ts
- * function Rect.moveRightTo(rect: Rect, right: number): Rect
- * ```
- *
  * Moves the rect so its right edge is at `right`. The size stays.
  *
  * ## Example

@@ -4,10 +4,6 @@ import { dropLeftPx } from "./dropLeftPx"
 /**
  * # dropLeftPct
  *
- * ```ts
- * function Rect.dropLeftPct(rect: Rect, amount: number): Rect
- * ```
- *
  * Removes `amount` of the width from the left, as a fraction from `0` to `1`. The right edge stays.
  *
  * ## Example

@@ -4,10 +4,6 @@ import { merge } from "./merge"
 /**
  * # moveTopTo
  *
- * ```ts
- * function Rect.moveTopTo(rect: Rect, top: number): Rect
- * ```
- *
  * Moves the rect so its top edge is at `top`. The size stays.
  *
  * ## Example

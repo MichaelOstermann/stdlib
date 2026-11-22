@@ -10,10 +10,6 @@ let observed = 0
 /**
  * # observeSize
  *
- * ```ts
- * function DOM.observeSize(target: Element | Window, onChange: (size: Rect) => void): () => void
- * ```
- *
  * Calls `onChange` with the size of an element right away, and again whenever it changes: a rect at
  * `0, 0` with the width and height of its border box. Returns what stops observing. The size is the
  * one of its layout, which transforms such as `scale` do not change, like `ResizeObserver` reports

@@ -11,10 +11,6 @@ type Found = [start: number, end: number, schema: string]
 /**
  * # links
  *
- * ```ts
- * function String.links(target: string): Generator<{ start: number, end: number, text: string, url: string }>
- * ```
- *
  * Returns a generator that yields the links in `target`: with a scheme, `http:`, `https:`, `ftp:`,
  * `mailto:` or `//`, without one when they end in a known top-level domain, and email addresses.
  * `start` and `end` are where `text` is in `target`, `url` is `text` with `https://` or `mailto:`

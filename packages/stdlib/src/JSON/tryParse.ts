@@ -6,10 +6,6 @@ import { Err, Ok } from "../Result"
 /**
  * # tryParse
  *
- * ```ts
- * function JSON.tryParse(text: string): Result<unknown, JSON.Error>
- * ```
- *
  * Parses `text` like `JSON.parse`, and returns what it throws as an `Err`.
  *
  * ## Example

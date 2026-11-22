@@ -20,10 +20,6 @@ type ThrottleOptions = {
 /**
  * # throttle
  *
- * ```ts
- * function Function.throttle(...args: T): void
- * ```
- *
  * Creates a throttled function that limits how often `fn` can be invoked based on `options.wait`
  * milliseconds.
  *

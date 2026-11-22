@@ -4,10 +4,6 @@ import { parse } from "./parse"
 /**
  * # saturate
  *
- * ```ts
- * Color.saturate(color, amount)
- * ```
- *
  * Returns `color` with `amount` added to its chroma, as an `oklch()` color. A `color` that does not
  * parse is returned as it is.
  *

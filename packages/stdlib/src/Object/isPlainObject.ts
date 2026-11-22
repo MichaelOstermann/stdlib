@@ -1,10 +1,6 @@
 /**
  * # isPlainObject
  *
- * ```ts
- * Object.isPlainObject(value)
- * ```
- *
  * Whether `value` is an object written as `{ … }`, or made with `Object.create(null)`. Arrays,
  * class instances, `Date`, `Map` and errors are not.
  *

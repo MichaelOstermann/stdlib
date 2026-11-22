@@ -45,19 +45,6 @@ export type UseTooltip = [mounted: boolean, triggerRef: Signal<Element | null>, 
  *   mounts and unmounts
  * - the listeners and effects are there while the component is mounted, and follow changes of the
  *   options
- *
- * ```tsx
- * function SearchButton() {
- *     const [mounted, triggerRef, tooltip] = useTooltip();
- *
- *     return (
- *         <>
- *             <button ref={triggerRef}>Search</button>
- *             {mounted && <Tooltip tooltip={tooltip}>Search tasks</Tooltip>}
- *         </>
- *     );
- * }
- * ```
  */
 export function useTooltip(options: UseTooltipOptions = {}): UseTooltip {
     const { closeDuration = 200, delay = 600, openDuration = 200, placement = Placement.tooltip, ...rest } = options

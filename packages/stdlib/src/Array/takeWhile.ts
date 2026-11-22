@@ -3,10 +3,6 @@ import type { Narrowed, Updated } from "../internals/types"
 /**
  * # takeWhile
  *
- * ```ts
- * Array.takeWhile(target, predicate)
- * ```
- *
  * The elements from the start for as long as they satisfy `predicate`. Returns `target` itself when
  * all of them do.
  *

@@ -3,10 +3,6 @@ import type { Rect } from "."
 /**
  * # bottom
  *
- * ```ts
- * function Rect.bottom(rect: Rect): number
- * ```
- *
  * The y-coordinate of the bottom edge: `top + height`.
  *
  * ## Example

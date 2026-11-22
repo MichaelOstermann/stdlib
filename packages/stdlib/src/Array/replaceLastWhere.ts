@@ -4,10 +4,6 @@ import { indexWhere, setAt } from "../internals/arrays"
 /**
  * # replaceLastWhere
  *
- * ```ts
- * Array.replaceLastWhere(target, predicate, replacement)
- * ```
- *
  * Replaces the last element that satisfies `predicate` with `replacement`. Returns `target` itself
  * when there is no such element, or when it is `replacement` already.
  *

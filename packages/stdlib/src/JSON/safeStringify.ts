@@ -1,10 +1,6 @@
 /**
  * # safeStringify
  *
- * ```ts
- * function JSON.safeStringify(value: unknown): string
- * ```
- *
  * Turns `value` into JSON like `JSON.stringify`, and never throws: what can not be written as JSON
  * is left out, as much as needed and nothing more.
  *

@@ -17,10 +17,6 @@ type Wasm = {
 /**
  * # highlighter
  *
- * ```ts
- * function Syntax.highlighter(wasm: ArrayBuffer | Response | Promise<Response>): Highlighter
- * ```
- *
  * Starts a highlighter from the bytes of `@monstermann/stdlib-syntax-highlight/highlight.wasm`,
  * once per page or worker. From an `ArrayBuffer` it is ready at once, from a `Response` once the
  * bytes are in.

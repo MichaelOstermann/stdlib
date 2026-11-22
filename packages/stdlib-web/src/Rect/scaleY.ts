@@ -5,10 +5,6 @@ import { merge } from "./merge"
 /**
  * # scaleY
  *
- * ```ts
- * function Rect.scaleY(rect: Rect, factor: number): Rect
- * ```
- *
  * Multiplies the height by `factor`, around the vertical center. A negative `factor` counts as `0`.
  *
  * ## Example

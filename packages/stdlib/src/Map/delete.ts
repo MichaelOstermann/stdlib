@@ -3,10 +3,6 @@ import type { AnyMap, MapKey, UpdatedMap } from "../internals/types"
 /**
  * # delete
  *
- * ```ts
- * Map.delete(target, key)
- * ```
- *
  * Removes the entry of `key`, from a copy of `target`. Returns `target` itself when there is no
  * such entry.
  *

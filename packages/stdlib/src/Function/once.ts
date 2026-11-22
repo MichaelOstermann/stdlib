@@ -1,10 +1,6 @@
 /**
  * # once
  *
- * ```ts
- * function Function.once<T>(fn: () => T): () => T
- * ```
- *
  * Returns a function that calls `fn` the first time it is called, and returns the result of that
  * first call from then on.
  *

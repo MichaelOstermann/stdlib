@@ -3,10 +3,6 @@ import type { Rect } from "."
 /**
  * # centerX
  *
- * ```ts
- * function Rect.centerX(rect: Rect): number
- * ```
- *
  * The x-coordinate of the center.
  *
  * ## Example

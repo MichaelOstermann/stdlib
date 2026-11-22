@@ -1,10 +1,6 @@
 /**
  * # isShallowEqual
  *
- * ```ts
- * Map.isShallowEqual(a, b)
- * ```
- *
  * Whether `a` and `b` have the same entries. Values are compared by identity, not by their
  * contents.
  *

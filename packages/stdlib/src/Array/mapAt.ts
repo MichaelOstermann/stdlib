@@ -3,10 +3,6 @@ import type { Updated } from "../internals/types"
 /**
  * # mapAt
  *
- * ```ts
- * Array.mapAt(target, index, map)
- * ```
- *
  * Applies `map` to the element at `index`, a negative `index` counts from the end. Returns `target`
  * itself when `index` is out of range, or when `map` returned the element unchanged.
  *

@@ -1,10 +1,6 @@
 /**
  * # MiB
  *
- * ```ts
- * const Bytes.MiB: number
- * ```
- *
  * A mebibyte (MiB) in bytes, 1024 kibibytes.
  *
  * ## Example

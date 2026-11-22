@@ -4,10 +4,6 @@ import { merge } from "./merge"
 /**
  * # setWidth
  *
- * ```ts
- * function Rect.setWidth(rect: Rect, width: number): Rect
- * ```
- *
  * Sets the width, the left edge stays. A negative width counts as `0`.
  *
  * ## Example

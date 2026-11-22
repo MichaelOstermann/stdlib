@@ -4,10 +4,6 @@ import { indexWhere, removeAt } from "../internals/arrays"
 /**
  * # removeLastWhere
  *
- * ```ts
- * Array.removeLastWhere(target, predicate)
- * ```
- *
  * Removes the last element that satisfies `predicate`. Returns `target` itself when there is no
  * such element.
  *

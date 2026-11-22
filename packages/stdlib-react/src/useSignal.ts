@@ -11,13 +11,6 @@ import { useState } from "react"
  *   `options`
  * - `@monstermann/stdlib-transform` writes it for you, wherever a component or a hook calls
  *   `Signal`
- *
- * ```tsx
- * function Counter() {
- *     const $count = useSignal(0);
- *     return <button onClick={() => $count($count() + 1)}>{useReactive($count)}</button>;
- * }
- * ```
  */
 export function useSignal<T>(value: T, options?: SignalOptions<NoInfer<T>>): Signal<T> {
     return useState(() => Signal(value, options))[0]

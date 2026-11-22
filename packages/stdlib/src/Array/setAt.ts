@@ -3,10 +3,6 @@ import type { Updated } from "../internals/types"
 /**
  * # setAt
  *
- * ```ts
- * Array.setAt(target, index, value)
- * ```
- *
  * Sets the element at `index` to `value`, a negative `index` counts from the end. Returns `target`
  * itself when `index` is out of range, or when the element is `value` already.
  *

@@ -6,10 +6,6 @@ import { Err, Ok } from "../Result"
 /**
  * # tryStringify
  *
- * ```ts
- * function JSON.tryStringify(value: unknown): Result<string, JSON.Error>
- * ```
- *
  * Turns `value` into JSON like `JSON.stringify`, and returns what it throws as an `Err`: for a
  * value that refers to itself, or contains a `bigint`.
  *

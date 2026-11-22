@@ -5,10 +5,6 @@ import { sortByKeys } from "../internals/arrays"
 /**
  * # sortBy
  *
- * ```ts
- * Array.sortBy(target, by, options?)
- * ```
- *
  * Sorts by what `by` returns for each element, compared with `<` and `>`: numbers and dates work,
  * strings are in the order of their characters, see `Array.sortByLocale` for text. Descending with
  * `{ order: "desc" }`.

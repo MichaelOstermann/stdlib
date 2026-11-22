@@ -15,18 +15,6 @@ import { useLatest } from "./internals/useLatest"
  *   `Object.is`: a string or a number, not a new object
  * - the components with the same `every` share a timer and render together, the timer stops once
  *   the last one unmounted
- *
- * ```tsx
- * function TimeAgo({ at }: { at: number }) {
- *     const now = useAlignedInterval(Duration.MINUTE);
- *     return `${Math.floor((now - at) / Duration.MINUTE)} minutes ago`;
- * }
- *
- * // Checks every second, renders when the label changes: every second for "5 seconds ago", every hour for "3 hours ago".
- * function TimeAgo({ at }: { at: number }) {
- *     return useAlignedInterval(Duration.SECOND, now => formatAgo(now - at));
- * }
- * ```
  */
 export function useAlignedInterval(every: number): number
 export function useAlignedInterval<T>(every: number, select: (now: number) => T): T

@@ -3,10 +3,6 @@ let context: OffscreenCanvasRenderingContext2D | undefined
 /**
  * # measureTextHeight
  *
- * ```ts
- * function DOM.measureTextHeight(font: string): number
- * ```
- *
  * The height of inline text in `font`, a CSS `font` such as `"500 16px Inter"`, from its ascent and
  * descent: what its background or a selection paints, which `line-height` does not change. Measured
  * with a canvas, without the DOM or a layout.

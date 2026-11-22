@@ -4,10 +4,6 @@ import { mapWhere } from "../internals/arrays"
 /**
  * # map
  *
- * ```ts
- * Array.map(target, map)
- * ```
- *
  * Applies `map` to every element. Returns `target` itself when no element changed.
  *
  * ## Example

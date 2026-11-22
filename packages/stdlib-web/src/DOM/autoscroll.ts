@@ -6,14 +6,6 @@ import { right } from "../Rect/right"
 /**
  * # autoscroll
  *
- * ```ts
- * function DOM.autoscroll(containers: () => Iterable<HTMLElement>, options?: {
- *     edge?: number;
- *     speed?: number;
- *     onScroll?: () => void;
- * }): () => void
- * ```
- *
  * Scrolls the containers that the pointer is near an edge of, every frame until stopped, as
  * dragging something to the edge of a list does. Returns what stops it.
  *
@@ -27,15 +19,6 @@ import { right } from "../Rect/right"
  * - the pointer is followed through `pointermove`, so nothing scrolls before it first moved
  *
  * ## Example
- *
- * ```ts
- * function onDragStart() {
- *     const stop = DOM.autoscroll(() => document.querySelectorAll<HTMLElement>(".list"), {
- *         onScroll: updateDropTarget,
- *     });
- *     document.addEventListener("pointerup", stop, { once: true });
- * }
- * ```
  */
 export function autoscroll(containers: () => Iterable<HTMLElement>, { edge = 100, onScroll, speed = 20 }: {
     edge?: number

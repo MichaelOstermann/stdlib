@@ -4,10 +4,6 @@ import { takeBottomPx } from "./takeBottomPx"
 /**
  * # takeBottomPct
  *
- * ```ts
- * function Rect.takeBottomPct(rect: Rect, amount: number): Rect
- * ```
- *
  * Keeps the bottom `amount` of the height, as a fraction from `0` to `1`.
  *
  * ## Example

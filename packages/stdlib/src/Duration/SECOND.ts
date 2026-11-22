@@ -1,10 +1,6 @@
 /**
  * # SECOND
  *
- * ```ts
- * const Duration.SECOND: number
- * ```
- *
  * A second in milliseconds.
  *
  * ## Example

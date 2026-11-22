@@ -5,10 +5,6 @@ import { room } from "./room"
 /**
  * # popover
  *
- * ```ts
- * function Placement.popover(measurements: PlacementMeasurements, options?: PlacementOptions): PlacementPosition
- * ```
- *
  * Centered above or below the anchor, on the side with more room. The side does not depend on the
  * size of the popover, so a popover that grows or shrinks stays where it is.
  *

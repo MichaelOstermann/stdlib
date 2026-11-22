@@ -4,10 +4,6 @@ import { roundTo } from "../Math/roundTo"
 /**
  * # oklch
  *
- * ```ts
- * Color.oklch(color)
- * ```
- *
  * Writes `color`, as `Color.parse` returns it, as a CSS `oklch()` color, with the alpha only when
  * there is some transparency.
  *

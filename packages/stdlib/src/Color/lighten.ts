@@ -5,10 +5,6 @@ import { parse } from "./parse"
 /**
  * # lighten
  *
- * ```ts
- * Color.lighten(color, amount)
- * ```
- *
  * Returns `color` with `amount` added to its lightness, up to 1, as an `oklch()` color. A `color`
  * that does not parse is returned as it is.
  *

@@ -4,10 +4,6 @@ import { dropLeftPx } from "./dropLeftPx"
 /**
  * # takeRightPx
  *
- * ```ts
- * function Rect.takeRightPx(rect: Rect, amount: number): Rect
- * ```
- *
  * Keeps the right `amount` pixels, at most the width.
  *
  * ## Example

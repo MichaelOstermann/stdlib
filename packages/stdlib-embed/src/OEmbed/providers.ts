@@ -4,10 +4,6 @@ import type { OEmbedProvider } from "."
 /**
  * # providers
  *
- * ```ts
- * const OEmbed.providers: OEmbedProvider[]
- * ```
- *
  * The providers listed on [oembed.com](https://oembed.com), by name.
  */
 export const providers: OEmbedProvider[] = [

@@ -3,10 +3,6 @@ import type { Rect } from "."
 /**
  * # area
  *
- * ```ts
- * function Rect.area(rect: Rect): number
- * ```
- *
  * The width times the height.
  *
  * ## Example

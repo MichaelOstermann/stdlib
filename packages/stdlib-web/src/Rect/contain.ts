@@ -4,10 +4,6 @@ import { merge } from "./merge"
 /**
  * # contain
  *
- * ```ts
- * function Rect.contain(target: Rect, source: Rect): Rect
- * ```
- *
  * Scales `target` to the largest size that fits inside `source`, keeping its aspect ratio, and
  * centers it in `source`. Like `object-fit: contain`.
  *

@@ -7,10 +7,6 @@ import { right } from "./right"
 /**
  * # union
  *
- * ```ts
- * function Rect.union(a: Rect, b: Rect): Rect
- * ```
- *
  * The smallest rect that contains both `a` and `b`.
  *
  * ## Example

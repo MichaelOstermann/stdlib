@@ -45,10 +45,6 @@ let indexesLen = 0
 /**
  * # score
  *
- * ```ts
- * function String.score(haystack: string, needle: string): number
- * ```
- *
  * Tells how well `needle` is found in `haystack`, for searching while typing: `0` when its
  * characters are not all there in that order, and up to `1` the better they are. Case is ignored,
  * and an empty `needle` is found in everything.

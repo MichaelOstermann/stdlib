@@ -4,12 +4,6 @@ import { identifierWords } from "../internals/strings"
 /**
  * # kebabCase
  *
- * ```ts
- * function String.kebabCase<T extends string>(
- *     target: T,
- * ): KebabCase<T>
- * ```
- *
  * Converts `target` string to kebab-case format.
  *
  * ## Example

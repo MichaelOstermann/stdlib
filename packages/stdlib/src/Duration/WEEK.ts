@@ -1,10 +1,6 @@
 /**
  * # WEEK
  *
- * ```ts
- * const Duration.WEEK: number
- * ```
- *
  * A week in milliseconds.
  *
  * ## Example

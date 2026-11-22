@@ -4,10 +4,6 @@ import { ownKeys, setOwn } from "../internals/objects"
 /**
  * # defaults
  *
- * ```ts
- * Object.defaults(target, defaults)
- * ```
- *
  * Copies the properties of `defaults` onto a copy of `target`, the ones that are missing or
  * `undefined` there. `null` is a value, and stays. Returns `target` itself when nothing is missing.
  *

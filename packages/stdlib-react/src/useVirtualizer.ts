@@ -59,26 +59,6 @@ interface Range {
  *   `count`, `size` or `gap` change
  * - with a `size` number, all items have that height; a function is called for each item whenever
  *   `count`, `gap` or the function change
- *
- * ```tsx
- * function Tasks({ tasks }: { tasks: Task[] }) {
- *     const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
- *     const { height, items } = useVirtualizer(scrollElement, {
- *         count: tasks.length,
- *         size: index => tasks[index].dueDate ? 64 : 48,
- *     });
- *
- *     return (
- *         <div className="overflow-y-auto" ref={setScrollElement}>
- *             <div className="relative" style={{ height }}>
- *                 {items.map(item => (
- *                     <Task key={tasks[item.index].id} task={tasks[item.index]} style={{ position: "absolute", top: item.start, height: item.size }} />
- *                 ))}
- *             </div>
- *         </div>
- *     );
- * }
- * ```
  */
 export function useVirtualizer(scrollElement: HTMLElement | null, options: UseVirtualizerOptions): Virtualizer {
     const { count, gap, overscan = 2, size } = options

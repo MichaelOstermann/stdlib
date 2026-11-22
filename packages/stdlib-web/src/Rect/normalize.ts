@@ -4,10 +4,6 @@ import { isEqual } from "./isEqual"
 /**
  * # normalize
  *
- * ```ts
- * function Rect.normalize(rect: Rect): Rect
- * ```
- *
  * Turns a negative width or height positive, and moves `left` or `top` so the rect covers the same
  * area.
  *

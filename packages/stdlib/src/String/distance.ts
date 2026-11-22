@@ -1,10 +1,6 @@
 /**
  * # distance
  *
- * ```ts
- * function String.distance(a: string, b: string): number
- * ```
- *
  * How many characters have to be added, removed, replaced, or swapped with the one next to them, to
  * turn `a` into `b`. For finding what was probably meant by a typo.
  *

@@ -3,10 +3,6 @@ import type { Language } from "."
 /**
  * # languages
  *
- * ```ts
- * const Syntax.languages: Language[]
- * ```
- *
  * Every language there is a grammar for, by title. The language picker shows the `popular` ones
  * until something is typed to search all of them.
  *

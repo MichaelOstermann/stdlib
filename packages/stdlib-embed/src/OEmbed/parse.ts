@@ -3,10 +3,6 @@ import type { OEmbed } from "."
 /**
  * # parse
  *
- * ```ts
- * function OEmbed.parse(json: unknown): OEmbed | undefined
- * ```
- *
  * Reads what an oEmbed endpoint answers. Returns `undefined` when it is no oEmbed: an unknown
  * `type`, a photo without `url`, a video or rich embed without `html`. Fields of the wrong type are
  * left out, a number in a string is read as a number: providers stray from the spec, Spotify

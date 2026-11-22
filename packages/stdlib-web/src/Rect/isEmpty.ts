@@ -3,10 +3,6 @@ import type { Rect } from "."
 /**
  * # isEmpty
  *
- * ```ts
- * function Rect.isEmpty(rect: Rect): boolean
- * ```
- *
  * Whether the width or the height is `0`.
  *
  * ## Example

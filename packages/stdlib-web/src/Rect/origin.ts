@@ -3,10 +3,6 @@ import type { Rect } from "."
 /**
  * # origin
  *
- * ```ts
- * const Rect.origin: Rect
- * ```
- *
  * A rect at `0, 0` with no width and no height.
  *
  * ## Example

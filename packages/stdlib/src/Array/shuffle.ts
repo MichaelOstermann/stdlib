@@ -3,10 +3,6 @@ import type { Updated } from "../internals/types"
 /**
  * # shuffle
  *
- * ```ts
- * Array.shuffle(target)
- * ```
- *
  * Puts the elements in a random order.
  *
  * ## Example

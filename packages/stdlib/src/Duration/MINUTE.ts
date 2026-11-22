@@ -1,10 +1,6 @@
 /**
  * # MINUTE
  *
- * ```ts
- * const Duration.MINUTE: number
- * ```
- *
  * A minute in milliseconds.
  *
  * ## Example

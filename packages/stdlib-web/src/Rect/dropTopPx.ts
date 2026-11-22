@@ -5,10 +5,6 @@ import { merge } from "./merge"
 /**
  * # dropTopPx
  *
- * ```ts
- * function Rect.dropTopPx(rect: Rect, amount: number): Rect
- * ```
- *
  * Removes `amount` pixels from the top, at most the height. The bottom edge stays.
  *
  * ## Example

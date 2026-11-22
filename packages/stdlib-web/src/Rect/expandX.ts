@@ -4,10 +4,6 @@ import { merge } from "./merge"
 /**
  * # expandX
  *
- * ```ts
- * function Rect.expandX(rect: Rect, amount: number): Rect
- * ```
- *
  * Moves the left and right edges outward by `amount`. A negative `amount` changes nothing.
  *
  * ## Example

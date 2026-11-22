@@ -4,10 +4,6 @@ import { merge } from "./merge"
 /**
  * # moveLeftTo
  *
- * ```ts
- * function Rect.moveLeftTo(rect: Rect, left: number): Rect
- * ```
- *
  * Moves the rect so its left edge is at `left`. The size stays.
  *
  * ## Example

@@ -13,20 +13,6 @@ type RetryErr<E> = E extends RetryAgain<infer U> ? U : E
 /**
  * # run
  *
- * ```ts
- * function Retry.run(
- *     fn: (attempt: number) => Result<T, E> | PromiseLike<Result<T, E>>,
- *     options?: {
- *         maxAttempts?: number
- *         minDelay?: number
- *         maxDelay?: number
- *         jitter?: number
- *         signal?: AbortSignal
- *         sleep?: (delay: number, attempt: number) => Promise<void>
- *     },
- * ): ResultAsync<T, E>
- * ```
- *
  * Calls `fn` until it returns something other than `Retry.again`, waiting in between: a second at
  * first, twice as long after every attempt, 5 minutes at most.
  *

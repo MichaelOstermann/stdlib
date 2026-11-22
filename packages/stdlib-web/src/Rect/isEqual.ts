@@ -3,10 +3,6 @@ import type { Rect } from "."
 /**
  * # isEqual
  *
- * ```ts
- * function Rect.isEqual(a: Rect, b: Rect): boolean
- * ```
- *
  * Whether `a` and `b` have the same position and size.
  *
  * ## Example

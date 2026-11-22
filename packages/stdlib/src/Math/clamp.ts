@@ -1,10 +1,6 @@
 /**
  * # clamp
  *
- * ```ts
- * Math.clamp(value, min, max)
- * ```
- *
  * Constrains `value` to be between `min` and `max` (inclusive).
  *
  * ## Example

@@ -5,10 +5,6 @@ import { keystrokeOf, normalize } from "./internals/normalize"
 /**
  * # parse
  *
- * ```ts
- * function Shortcut.parse(shortcut: string): Keystroke[]
- * ```
- *
  * The keystrokes of a shortcut, one per press.
  *
  * - Keys: `a`, `Enter`, `Escape`, `?`, and their aliases, in any case: `esc`, `up`, `space`

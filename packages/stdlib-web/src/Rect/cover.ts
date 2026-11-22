@@ -4,10 +4,6 @@ import { merge } from "./merge"
 /**
  * # cover
  *
- * ```ts
- * function Rect.cover(target: Rect, source: Rect): Rect
- * ```
- *
  * Scales `target` to the smallest size that covers `source`, keeping its aspect ratio, and centers
  * it on `source`. Like `object-fit: cover`.
  *

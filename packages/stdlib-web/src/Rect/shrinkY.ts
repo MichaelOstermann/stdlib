@@ -5,10 +5,6 @@ import { merge } from "./merge"
 /**
  * # shrinkY
  *
- * ```ts
- * function Rect.shrinkY(rect: Rect, amount: number): Rect
- * ```
- *
  * Moves the top and bottom edges inward by `amount`, at most to the center.
  *
  * ## Example

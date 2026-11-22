@@ -8,10 +8,6 @@ const unpopular = 0.8
 /**
  * # search
  *
- * ```ts
- * function Syntax.search(query: string): Language[]
- * ```
- *
  * The languages for a language picker. Without a query, the popular ones by title. With one, every
  * language whose title, names or extensions it matches, best first, popular ones ahead of others
  * that match about as well.

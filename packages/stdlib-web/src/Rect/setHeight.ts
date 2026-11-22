@@ -4,10 +4,6 @@ import { merge } from "./merge"
 /**
  * # setHeight
  *
- * ```ts
- * function Rect.setHeight(rect: Rect, height: number): Rect
- * ```
- *
  * Sets the height, the top edge stays. A negative height counts as `0`.
  *
  * ## Example

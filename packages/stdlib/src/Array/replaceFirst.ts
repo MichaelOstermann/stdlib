@@ -4,10 +4,6 @@ import { indexOf, setAt } from "../internals/arrays"
 /**
  * # replaceFirst
  *
- * ```ts
- * Array.replaceFirst(target, value, replacement)
- * ```
- *
  * Replaces the first occurrence of `value` with `replacement`. Returns `target` itself when it does
  * not occur, or when both are the same.
  *

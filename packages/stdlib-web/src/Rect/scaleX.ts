@@ -5,10 +5,6 @@ import { merge } from "./merge"
 /**
  * # scaleX
  *
- * ```ts
- * function Rect.scaleX(rect: Rect, factor: number): Rect
- * ```
- *
  * Multiplies the width by `factor`, around the horizontal center. A negative `factor` counts as
  * `0`.
  *

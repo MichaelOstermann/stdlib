@@ -5,10 +5,6 @@ import { merge } from "./merge"
 /**
  * # dropLeftPx
  *
- * ```ts
- * function Rect.dropLeftPx(rect: Rect, amount: number): Rect
- * ```
- *
  * Removes `amount` pixels from the left, at most the width. The right edge stays.
  *
  * ## Example

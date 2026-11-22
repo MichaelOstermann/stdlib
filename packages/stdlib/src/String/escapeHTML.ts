@@ -9,10 +9,6 @@ const entities: Record<string, string> = {
 /**
  * # escapeHTML
  *
- * ```ts
- * function String.escapeHTML(target: string): string
- * ```
- *
  * Replaces the characters of `target` string that mean something in HTML: `&`, `<`, `>`, `"` and
  * `'`. The result is text, between tags and inside of a quoted attribute.
  *

@@ -5,10 +5,6 @@ import { merge } from "./merge"
 /**
  * # setCenterY
  *
- * ```ts
- * function Rect.setCenterY(rect: Rect, y: number): Rect
- * ```
- *
  * Moves the rect so its vertical center is at `y`. The size stays.
  *
  * ## Example

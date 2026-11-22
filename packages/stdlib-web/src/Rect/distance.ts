@@ -5,10 +5,6 @@ import { right } from "./right"
 /**
  * # distance
  *
- * ```ts
- * function Rect.distance(a: Rect, b: Rect): number
- * ```
- *
  * The shortest distance between the edges of `a` and `b`, `0` when they touch or overlap.
  *
  * ## Example

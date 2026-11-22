@@ -1,10 +1,6 @@
 /**
  * # isShallowEqual
  *
- * ```ts
- * Array.isShallowEqual(a, b)
- * ```
- *
  * Whether `a` and `b` have the same elements, in the same order. Elements are compared by identity,
  * not by their contents.
  *

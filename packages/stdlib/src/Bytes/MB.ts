@@ -1,10 +1,6 @@
 /**
  * # MB
  *
- * ```ts
- * const Bytes.MB: number
- * ```
- *
  * A megabyte (MB) in bytes, a thousand kilobytes. See `Bytes.MiB` for 1024².
  *
  * ## Example

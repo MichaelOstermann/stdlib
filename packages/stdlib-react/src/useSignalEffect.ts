@@ -11,15 +11,6 @@ import { useEffect } from "react"
  *
  * - `@monstermann/stdlib-transform` writes it for you, wherever a component or a hook calls
  *   `Effect`
- *
- * ```tsx
- * function Title({ suffix }: { suffix: string }) {
- *     useSignalEffect(() => {
- *         document.title = `${$title()} ${suffix}`;
- *     });
- *     return null;
- * }
- * ```
  */
 export function useSignalEffect(callback: (this: EffectContext) => (() => void) | void): void {
     useEffect(() => Effect(callback), [callback])

@@ -18,17 +18,6 @@ type FormatOptions = {
 /**
  * # format
  *
- * ```ts
- * function Bytes.format(
- *     bytes: number,
- *     options?: {
- *         binary?: boolean
- *         locales?: Intl.LocalesArgument
- *         maximumFractionDigits?: number
- *     },
- * ): string
- * ```
- *
  * Writes `bytes` out in the largest unit that it is at least one of: `kB`, `MB`, … counting in
  * thousands, or `KiB`, `MiB`, … counting in 1024s with `binary`.
  *

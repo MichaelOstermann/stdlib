@@ -3,10 +3,6 @@ import { setOwn } from "../internals/objects"
 /**
  * # merge
  *
- * ```ts
- * Object.merge(target, source)
- * ```
- *
  * Copies the properties of `source` onto a copy of `target`. Returns `target` itself when every
  * property has that value already.
  *

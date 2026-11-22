@@ -4,10 +4,6 @@ import { matcher, removeWhere } from "../internals/arrays"
 /**
  * # removeAll
  *
- * ```ts
- * Array.removeAll(target, values)
- * ```
- *
  * Removes every occurrence of each of `values`. Returns `target` itself when none of them occurs.
  *
  * ## Example

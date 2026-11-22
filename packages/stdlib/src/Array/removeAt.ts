@@ -3,10 +3,6 @@ import type { Updated } from "../internals/types"
 /**
  * # removeAt
  *
- * ```ts
- * Array.removeAt(target, index)
- * ```
- *
  * Removes the element at `index`, a negative `index` counts from the end. Returns `target` itself
  * when `index` is out of range.
  *

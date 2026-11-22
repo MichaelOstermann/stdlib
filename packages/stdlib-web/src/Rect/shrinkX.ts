@@ -5,10 +5,6 @@ import { merge } from "./merge"
 /**
  * # shrinkX
  *
- * ```ts
- * function Rect.shrinkX(rect: Rect, amount: number): Rect
- * ```
- *
  * Moves the left and right edges inward by `amount`, at most to the center.
  *
  * ## Example

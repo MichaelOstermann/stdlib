@@ -3,10 +3,6 @@ import { setOwn } from "../internals/objects"
 /**
  * # indexBy
  *
- * ```ts
- * Object.indexBy(items, key)
- * ```
- *
  * Creates an object of `items` by what `key` returns for each, like `Object.groupBy` for keys that
  * occur once. When a key occurs more than once, the last item wins.
  *

@@ -4,10 +4,6 @@ import { merge } from "./merge"
 /**
  * # moveBottomTo
  *
- * ```ts
- * function Rect.moveBottomTo(rect: Rect, bottom: number): Rect
- * ```
- *
  * Moves the rect so its bottom edge is at `bottom`. The size stays.
  *
  * ## Example

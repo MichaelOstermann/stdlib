@@ -4,10 +4,6 @@ import { mapWhere as update } from "../internals/arrays"
 /**
  * # mapWhere
  *
- * ```ts
- * Array.mapWhere(target, predicate, map)
- * ```
- *
  * Applies `map` to every element that satisfies `predicate`. Returns `target` itself when there is
  * no such element, or when `map` returned every element unchanged.
  *

@@ -5,10 +5,6 @@ import { merge } from "./merge"
 /**
  * # setTop
  *
- * ```ts
- * function Rect.setTop(rect: Rect, top: number): Rect
- * ```
- *
  * Moves the top edge to `top`, the bottom edge stays. A `top` below the bottom edge gives a height
  * of `0`.
  *

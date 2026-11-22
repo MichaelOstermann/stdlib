@@ -28,10 +28,6 @@ const FIELDS = new Set(["cause", "errors", "message", "meta", "name", "stack"])
 /**
  * # from
  *
- * ```ts
- * Failure.from(value)
- * ```
- *
  * Turns anything that was thrown, or that something failed with, into a `Failure`:
  *
  * - A `Failure` comes back with the same fields
@@ -163,10 +159,6 @@ function read<T>(get: () => T): T | undefined {
 /**
  * # removeStackTraces
  *
- * ```ts
- * Failure.removeStackTraces(failure)
- * ```
- *
  * A copy of `failure` without the stacks, also of its `cause` and `errors`: for failures that leave
  * the program, like in an HTTP response, where a stack tells where the code is.
  */
@@ -181,10 +173,6 @@ function removeStackTraces<F extends Failure>(failure: F): F {
 
 /**
  * # toError
- *
- * ```ts
- * Failure.toError(value)
- * ```
  *
  * Turns anything into an `Error`, for where something has to be thrown, the reverse of
  * `Failure.from`:

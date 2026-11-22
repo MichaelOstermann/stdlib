@@ -107,7 +107,7 @@ function valueOf(subject: Subject): string {
     return subject.kind === "tuple" ? `[${subject.names.join(", ")}]` : subject.name
 }
 
-/** Whether a chain awaits or yields, other than inside of its callbacks. */
+/** Whether a chain awaits or yields outside of its callbacks. */
 export function hasAwaitOrYield(root: Node): boolean {
     let result = false
     walk(root, {

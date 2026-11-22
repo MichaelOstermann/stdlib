@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises"
 import { transform } from "./transform"
 
 export interface StdlibPluginOptions extends Omit<StdlibOptions, "debug"> {
-    /** Prints what is being replaced, optionally only for files whose path matches. */
+    /** Prints what is being replaced. Optionally only for files whose path matches. */
     debug?: boolean | RegExp
     enforce?: "post" | "pre"
     /** Skip files whose path matches one of these. Dependencies are always skipped. */
@@ -27,7 +27,7 @@ export interface StdlibPlugin {
 /** Dependencies are skipped: how a package in `node_modules` uses globals is its own business. */
 const dependencies = /(?:^|[\\/])node_modules[\\/]/
 
-/** Modules, with what a bundler may add to their path: `a.ts`, `a.mts`, `a.tsx?v=1` */
+/** Module paths, including what a bundler may add: `a.ts`, `a.mts`, `a.tsx?v=1` */
 const modules = /\.m?[jt]sx?(?:\?.*)?$/
 
 /** A plugin for Vite, Rolldown and tsdown. */
@@ -54,7 +54,7 @@ export function stdlib({ debug, enforce, exclude = [], include = modules }: Stdl
 
 export interface StdlibBunPlugin {
     name: string
-    /** Typed by its shape, to not depend on the types of Bun. */
+    /** Typed by shape, so the package does not depend on the types of Bun. */
     setup: <Loader>(build: {
         onLoad: (
             constraints: { filter: RegExp },
@@ -64,7 +64,7 @@ export interface StdlibBunPlugin {
 }
 
 /**
- * A plugin for Bun, for `Bun.build` and for a preload that makes `bun test` and `bun run` go
+ * A plugin for Bun. Works with `Bun.build`, and with a preload that sends `bun test` and `bun run`
  * through the transform:
  *
  * ```ts
@@ -74,8 +74,8 @@ export interface StdlibBunPlugin {
  * plugin(stdlibBun());
  * ```
  *
- * Bun only uses the first `onLoad` that returns something, call `transform` from your own when
- * there are others.
+ * Bun only uses the first `onLoad` that returns something. When there are other `onLoad` plugins,
+ * call `transform` from your own.
  */
 export function stdlibBun({ debug, exclude = [], include = modules }: Omit<StdlibPluginOptions, "enforce"> = {}): StdlibBunPlugin {
     const excluded = [exclude].flat()

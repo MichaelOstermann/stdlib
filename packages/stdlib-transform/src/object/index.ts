@@ -5,8 +5,9 @@ import { ScopeTracker, walk } from "oxc-walker"
 import { access, id, isNativeObject, isObjectCall, property } from "../path"
 
 /**
- * Compiles `Object.merge` calls whose source is an object literal, and `Object.pick` calls whose
- * keys are an array of strings, into a function of their own, one per set of keys and module:
+ * Compiles calls into a function of their own, one per set of keys and module. This covers
+ * `Object.merge` calls whose source is an object literal, and `Object.pick` calls whose keys are an
+ * array of strings:
  *
  * ```ts
  * Object.merge(task, { title: "New", done })
@@ -51,7 +52,7 @@ export function transformObjects(code: string, filePath: string, from: string): 
         },
     })
 
-    /** The name of the function of each set of keys. */
+    /** The name of the function for each set of keys. */
     const merges = new Map<string, { keys: string[], name: string }>()
     const mergeOf = (keys: string[]): string => {
         const key = JSON.stringify(keys)
@@ -111,9 +112,9 @@ export function transformObjects(code: string, filePath: string, from: string): 
 }
 
 /**
- * The keys and values of `{ a: 1, "b": 2, c }`. Nothing for anything else: a spread, a computed
- * key, a method or accessor, a key that occurs twice, and `__proto__`, which sets the prototype
- * instead of a property.
+ * Returns the keys and values of `{ a: 1, "b": 2, c }`. Returns `undefined` for a spread, a
+ * computed key, a method or accessor, a repeated key, or `__proto__`. `__proto__` sets the
+ * prototype instead of a property.
  */
 function entriesOf(node: Node): [string, Node][] | undefined {
     if (node.type !== "ObjectExpression" || !node.properties.length) return
@@ -127,7 +128,7 @@ function entriesOf(node: Node): [string, Node][] | undefined {
     return entries
 }
 
-/** A function that compares each property, and copies `t` once one differs. */
+/** Builds a function that compares each property and copies `t` once a property differs. */
 function compileMerge(name: string, keys: string[]): string {
     const values = keys.map((_, index) => `v${index}`)
     // Object.is, as everywhere else: V8 compares objects with === several times slower.
@@ -142,8 +143,9 @@ function compileMerge(name: string, keys: string[]): string {
 }
 
 /**
- * The strings of `["a", "b"]`. Nothing for anything else: a spread, a hole, a value that is not a
- * string, and `__proto__`, which sets the prototype in an object literal instead of a property.
+ * Returns the strings of `["a", "b"]`. Returns `undefined` for a spread, a hole, a value that is
+ * not a string, or `__proto__`. In an object literal, `__proto__` sets the prototype instead of a
+ * property.
  */
 function keysOf(node: Node): string[] | undefined {
     if (node.type !== "ArrayExpression" || !node.elements.length) return
@@ -155,7 +157,7 @@ function keysOf(node: Node): string[] | undefined {
     return keys
 }
 
-/** A function that returns an object of the keys. */
+/** Builds a function that returns an object with the keys. */
 function compilePick(name: string, keys: string[]): string {
     const copy = keys.map((key) => `${property(key)}: t${access(key)}`).join(", ")
     return [

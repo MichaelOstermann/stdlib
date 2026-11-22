@@ -6,11 +6,11 @@ import { expressions, importEnd } from "./syntax"
 
 export interface ReplicasOptions {
     /**
-     * The functions on each replica: `{ Array: ["removeAll"] }` makes `Array.removeAll` something
-     * to replace.
+     * The functions on each replica. `{ Array: ["removeAll"] }` marks `Array.removeAll` for
+     * replacement.
      */
     replicas: Readonly<Record<string, readonly string[]>>
-    /** Where a function is imported from, it is exported there under its own name. */
+    /** Where a function is imported from. The module exports the function under its own name. */
     resolve: (replica: string, name: string) => string
     /** Where a replica is imported from: `import { Set } from "@monstermann/stdlib"` */
     sources: (replica: string) => readonly string[]
@@ -21,7 +21,7 @@ interface Replica {
     name: string
 }
 
-/** Operators that compare a replica as it is, which only the native one is equal to. */
+/** Operators that compare identity. Values are only ever equal to the native, not the replica. */
 const comparisons = new Set(["===", "!==", "==", "!="])
 
 /**
@@ -36,7 +36,7 @@ const wrappers = new Set([
 ])
 
 /**
- * Replaces the functions of replicas, the natives with functions added, with direct imports:
+ * Replaces calls on replicas with direct imports. A replica is a native with functions added:
  *
  * ```ts
  * import { Array } from "@monstermann/stdlib";
@@ -48,7 +48,7 @@ const wrappers = new Set([
  * _removeAll(values, [1, 2]);
  * ```
  *
- * The import of a replica is removed when every use that remains works with the native one as well:
+ * The import of a replica is removed when every remaining use also works with the native:
  * `new Set()`, `x instanceof Set`, `Set.groupBy()`. Every other use keeps it: `call(Set)`,
  * `Set["union"]`. Imports are added to an existing line, so every line stays where it is.
  *
@@ -87,8 +87,8 @@ export function transformReplicas(code: string, filePath: string, options: Repli
     }
 
     /**
-     * new Set(), x instanceof Set, Set(), Set.groupBy, x.constructor === Set: what the native one
-     * can do as well.
+     * new Set(), x instanceof Set, Set(), Set.groupBy, x.constructor === Set: uses that also work
+     * with the native.
      */
     const isNativeUse = (node: Node): boolean => {
         let child = node
@@ -188,7 +188,7 @@ function findReplicas(statements: Node[], options: ReplicasOptions): Map<ImportS
 }
 
 /**
- * The name a key stands for, when that is known without running the code: `a.name`, `a["name"]`,
+ * Returns the name of a key when the name is known without running the code: `a.name`, `a["name"]`,
  * ``a[`name`]``
  */
 function keyOf(key: Node, computed: boolean): string | undefined {
@@ -199,8 +199,8 @@ function keyOf(key: Node, computed: boolean): string | undefined {
 }
 
 /**
- * Whether an identifier is the name of something, instead of referring to something: `a.name`,
- * `{ name: a }`, `name: for (…)`
+ * Whether an identifier is only a name and does not refer to a value: `a.name`, `{ name: a }`,
+ * `name: for (…)`
  */
 function isName(node: Node, parent: Node | null): boolean {
     if (!parent) return false
@@ -215,7 +215,7 @@ function isName(node: Node, parent: Node | null): boolean {
     return false
 }
 
-/** Removes the imports of `replicas`, and an import that has nothing left as a whole. */
+/** Removes the imports of `replicas`. Removes an import statement once it is empty. */
 function removeSpecifiers(ms: MagicString, code: string, replicas: [ImportSpecifier, Replica][]): void {
     const declarations = new Map<ImportDeclaration, ImportSpecifier[]>()
     for (const [specifier, { declaration }] of replicas) declarations.set(declaration, [...declarations.get(declaration) ?? [], specifier])

@@ -17,26 +17,26 @@ export interface Context {
     ms: MagicString
     /** How many references to each import have been compiled away, by exported name. */
     used: { _: number, match: number }
-    /** The name `_` has been imported as, when it has been. */
+    /** The name `_` has been imported as, if `_` has been imported. */
     wildcard: string | undefined
     /** The name a helper is imported as. */
     helper: (name: keyof Helpers) => string
     id: (base: string) => string
     /**
-     * Whether a name refers to the import at the place it is used, and is not shadowed by a local
-     * of the same name.
+     * Whether a name refers to the import where the name is used. A local of the same name shadows
+     * the import.
      */
     isImport: (name: string) => boolean
     /**
-     * Whether a name always refers to the same value: a `const`, or something that nothing in the
-     * file assigns to.
+     * Whether a name always refers to the same value: a `const`, or a name that nothing in the file
+     * assigns to.
      */
     isStable: (name: string) => boolean
 }
 
 /**
- * The matched subject: one value, or the values of `match([a, b])`, which are matched one by one
- * without building the array.
+ * The matched subject: one value, or the values of `match([a, b])`. The values are matched one by
+ * one without building the array.
  */
 export type Subject =
     | { kind: "tuple", names: string[] }

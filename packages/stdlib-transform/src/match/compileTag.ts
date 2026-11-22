@@ -11,7 +11,7 @@ export interface Tag {
 }
 
 /**
- * Collects the arguments of `match.tag(value, key, handlers)`, `local` being the name `match` is
+ * Collects the arguments of `match.tag(value, key, handlers)`. `local` is the name that `match` is
  * imported as.
  */
 export function collectTag(node: Node, local: string): Tag | undefined {
@@ -98,7 +98,7 @@ function stringOf(node: Node): string | undefined {
     return undefined
 }
 
-/** What other than a string is handled by the key it is written as: `true`, `null`, `1` */
+/** Values that are not strings but match a handler key of the same text: `true`, `null`, `1` */
 function literalOf(name: string): string | undefined {
     if (name === "true" || name === "false" || name === "null") return name
     if (name === "undefined") return "void 0"

@@ -2,7 +2,7 @@ import type { Node, ObjectExpression } from "oxc-parser"
 import type { Context, Subject } from "./types"
 import { unwrap } from "./helpers"
 
-/** Whether the value has the shape of a pattern, the same way `matches` tells. */
+/** Tests whether the value has the shape of a pattern, the same way `matches` does. */
 export function compileShape(subject: Subject, pattern: Node, ctx: Context): string {
     const src = (node: Node): string => ctx.code.slice(node.start, node.end)
     const node = unwrap(pattern)
@@ -50,7 +50,7 @@ function compileFields(value: string, pattern: ObjectExpression, ctx: Context): 
     return fields
 }
 
-/** `_` and `match._`, as what they have been imported as. */
+/** `_` and `match._`, under their local import names. */
 function isWildcard(node: Node, ctx: Context): boolean {
     if (node.type === "Identifier") {
         if (node.name !== ctx.wildcard || !ctx.isImport(node.name)) return false

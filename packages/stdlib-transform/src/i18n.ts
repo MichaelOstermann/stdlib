@@ -7,8 +7,8 @@ import { expressions, importEnd } from "./syntax"
 type ImportDeclaration = Extract<Node, { type: "ImportDeclaration" }>
 
 /**
- * Replaces the messages and groups of `m` from `@monstermann/stdlib-i18n` with direct imports of
- * them, so only the messages that are used end up in a bundle:
+ * Replaces the messages and groups of `m` from `@monstermann/stdlib-i18n` with direct imports. Only
+ * the used messages end up in the bundle:
  *
  * ```ts
  * import { m } from "#app/i18n";
@@ -20,9 +20,9 @@ type ImportDeclaration = Extract<Node, { type: "ImportDeclaration" }>
  * t(_authSignIn);
  * ```
  *
- * `m` is imported from the folder stdlib-i18n generates, or from its `index`. Anything else done
- * with `m`, such as `m[key]`, would bundle every message, and throws. So does a group such as
- * `m.auth`, when bundling: there is no `_auth` to import.
+ * `m` must be imported from the folder that stdlib-i18n generates, or from its `index`. Any other
+ * use of `m`, such as `m[key]`, would bundle every message, so the transform throws. A group such
+ * as `m.auth` also throws when bundling, because there is no `_auth` to import.
  *
  * Returns `undefined` when there is nothing to replace.
  */
@@ -126,8 +126,8 @@ export function transformMessages(code: string, filePath: string): MagicString |
 }
 
 /**
- * Where the messages of a folder that stdlib-i18n generated are: `#app/i18n`, `./i18n/index.ts`.
- * Nothing for a file, such as Paraglide's `./paraglide/messages.js`.
+ * Returns where the messages live when `path` is a folder that stdlib-i18n generated: `#app/i18n`,
+ * `./i18n/index.ts`. Returns `undefined` for a file, such as Paraglide's `./paraglide/messages.js`.
  */
 function messagesOf(path: string): string | undefined {
     const trimmed = path.replace(/\/$/, "")
@@ -137,7 +137,7 @@ function messagesOf(path: string): string | undefined {
     return `${trimmed}/_messages`
 }
 
-/** `_authSignIn` for `auth.signIn`, the way stdlib-i18n names its exports. */
+/** Returns `_authSignIn` for `auth.signIn`, the way stdlib-i18n names its exports. */
 function nameOf(path: string[]): string {
     return `_${path.map((segment, i) => i ? segment.charAt(0).toUpperCase() + segment.slice(1) : segment).join("")}`
 }

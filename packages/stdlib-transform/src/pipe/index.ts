@@ -10,7 +10,7 @@ export interface PipeResult {
     /** How often `pipe` has been imported. */
     imports: number
     ms: MagicString
-    /** How often `pipe` is still referred to, calls that have been replaced aside. */
+    /** How often `pipe` is still referenced, not counting replaced calls. */
     references: number
 }
 
@@ -20,8 +20,7 @@ interface Value {
     /** Can be placed anywhere without parentheses: `a`, `a.b`, `a(b)`, `1` */
     isAtom: boolean
     /**
-     * Can be written any number of times, anywhere: a literal, or a name that always refers to the
-     * same value.
+     * Can be repeated anywhere: a literal, or a name that always refers to the same value.
      */
     isSimple: boolean
 }
@@ -37,14 +36,14 @@ interface Value {
  * format(Array.removeAll(tasks, done).length)
  * ```
  *
- * A callback is replaced with its body when its parameter is used once, as the first thing the body
- * evaluates, or when the value is a literal or a name that is never assigned to. Every other
+ * A callback is replaced with its body in two cases. The parameter is used once, as the first thing
+ * the body evaluates. Or the value is a literal or a name that is never assigned to. Every other
  * callback is called directly: `(v => v + v)(value)`.
  *
- * A call is kept when one of its steps is neither a function nor the name of one
- * (`pipe(a, create())`): it would be created after the value instead of before.
+ * A call is kept when a step is neither a function nor the name of a function: `pipe(a, create())`.
+ * Inlining would create that step after the value instead of before.
  *
- * Calls inside of the steps of another call are left for another run.
+ * Calls inside the steps of another call are left for a later run.
  */
 export function transformPipes(code: string, filePath: string, from: string): PipeResult {
     const { program } = parseSync(filePath, code)
@@ -112,8 +111,7 @@ export function transformPipes(code: string, filePath: string, from: string): Pi
 }
 
 /**
- * What can be called after the value has been evaluated instead of before, without that being
- * noticed.
+ * Whether a step can be evaluated after the value instead of before, without a visible difference.
  */
 function isStep(node: Node): boolean {
     node = unwrap(node)
@@ -144,7 +142,7 @@ function isAtom(node: Node): boolean {
 }
 
 /**
- * Passes a value to a step, by replacing the parameter of the step with it where that is possible.
+ * Passes a value to a step. Replaces the parameter of the step with the value where possible.
  */
 function apply(value: Value, step: Node, code: string): Value {
     const source = code.slice(step.start, step.end)
@@ -193,7 +191,7 @@ function apply(value: Value, step: Node, code: string): Value {
 }
 
 interface Lead {
-    /** v(), which would be called as a method of what it has been taken off: a.b() */
+    /** v(), when v would be called as a method of the object it came from: a.b() */
     isCallee: boolean
     /** new v(), new v.a() */
     isConstructed: boolean
@@ -202,16 +200,16 @@ interface Lead {
 }
 
 /**
- * Finds where a parameter is used, when it is the first thing that happens, and always happens:
- * only names, properties and literals are read before it.
+ * Finds the use of a parameter when that use always happens and happens first. Only names,
+ * properties and literals may be read before the use.
  */
 function findLead(body: Node, param: string): Lead | undefined {
     let lead: Lead | undefined
     let isConstructed = false
 
     /**
-     * Whether `node` has been dealt with: the parameter was found in there, or there is nothing in
-     * there that could be noticed.
+     * Whether `node` is done: the parameter was found inside, or nothing inside could make a
+     * visible difference.
      */
     const visit = (node: Node | null, parent?: Node): "found" | "pure" | undefined => {
         if (!node) return "pure"
@@ -292,7 +290,7 @@ function findLead(body: Node, param: string): Lead | undefined {
         }
     }
 
-    /** One after the other, as long as nothing happens. */
+    /** Visits `nodes` in order while each one is pure. Stops at the first node that is not. */
     function all(nodes: (Node | null)[], parent: Node): "found" | "pure" | undefined {
         for (const node of nodes) {
             const result = visit(node, parent)
@@ -316,8 +314,8 @@ function isOptional(node: Node): boolean {
 }
 
 /**
- * `import { pipe as foo } from "from"` → `"foo"`, calls of the first one are replaced when there
- * are several.
+ * Returns `"foo"` for `import { pipe as foo } from "from"`. When there are several imports, only
+ * calls of the first one are replaced.
  */
 function findImport(statements: Node[], from: string): { count: number, local: string, node: ImportDeclaration } | undefined {
     let result: { count: number, local: string, node: ImportDeclaration } | undefined

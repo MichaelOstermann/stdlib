@@ -1,6 +1,6 @@
 import type { ImportDeclaration } from "oxc-parser"
 
-/** Nodes of TypeScript that contain code, every other one is about types. */
+/** TypeScript nodes that contain code. All other nodes are about types. */
 export const expressions = new Set([
     "TSAsExpression",
     "TSEnumBody",
@@ -17,8 +17,8 @@ export const expressions = new Set([
 ])
 
 /**
- * Where an import ends. Without a semicolon it is taken to reach up to one that starts a later
- * line, removing that would move the lines in between.
+ * Returns where an import ends. Without a semicolon, the parser may let the import reach a
+ * semicolon on a later line. Removing the import up to there would move the lines in between.
  */
 export function importEnd(node: ImportDeclaration, code: string): number {
     if (node.attributes.length) return node.end

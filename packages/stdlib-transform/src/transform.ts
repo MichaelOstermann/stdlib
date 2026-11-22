@@ -36,8 +36,8 @@ export interface StdlibResult {
  *
  * - `Array.removeAll()` and `Duration.parse()` become direct imports of `removeAll` and `parse`,
  *   and so do `Rect.bottom()` and the others of `@monstermann/stdlib-web`
- * - `import { Array }` and the other replicas of natives are removed when everything else works
- *   with the native one: `new Set()`, `x instanceof Set`
+ * - `import { Array }` and the other replicas of natives are removed when every remaining use also
+ *   works with the native: `new Set()`, `x instanceof Set`
  * - `match()` chains are compiled into conditional expressions
  * - `pipe()` calls are replaced with the calls they make
  * - `Object.setPath()` and `Object.mapPath()` calls with a path that is written out,
@@ -45,9 +45,8 @@ export interface StdlibResult {
  *   strings are compiled into a function of their own
  * - everything else (`pipe`, `Result`, …) is imported from the file it lives in
  * - `m.auth.signIn` of `@monstermann/stdlib-i18n` becomes a direct import of `_authSignIn`
- * - in React components and hooks, reads of signals are wrapped with `useReactive` and their
- *   signals and effects created with `useSignal` and `useSignalEffect`, all from
- *   `@monstermann/stdlib-react`
+ * - in React components and hooks, signal reads are wrapped with `useReactive`. `Signal()` and
+ *   `Effect()` become `useSignal()` and `useSignalEffect()` from `@monstermann/stdlib-react`
  *
  * Returns `undefined` when nothing changed.
  */

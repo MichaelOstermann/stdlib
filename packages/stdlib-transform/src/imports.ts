@@ -5,7 +5,7 @@ import { importEnd } from "./syntax"
 
 /**
  * Rewrites the remaining imports from `@monstermann/stdlib` and `@monstermann/stdlib-web` to the
- * files that export them, so the entry of a package, which imports everything, is never loaded:
+ * files that export them. The entry of a package imports everything, so the entry is never loaded:
  *
  * ```ts
  * import { pipe, Arr, type Result } from "@monstermann/stdlib";

@@ -4,7 +4,7 @@ import { parseSync } from "oxc-parser"
 import { ScopeTracker, walk } from "oxc-walker"
 
 /**
- * Compiles `Object.setPath` and `Object.mapPath` calls whose path is written out into a function of
+ * Compiles `Object.setPath` and `Object.mapPath` calls with a written-out path into a function of
  * their own, one per path and module:
  *
  * ```ts
@@ -48,7 +48,7 @@ export function transformPaths(code: string, filePath: string, from: string): Ma
         },
     })
 
-    /** The function of each kind and path, by `setPath:a.b`. */
+    /** The function for each kind and path, keyed like `setPath:a.b`. */
     const functions = new Map<string, { keys: string[], kind: PathKind, name: string }>()
 
     walk(program, {
@@ -81,7 +81,7 @@ export function transformPaths(code: string, filePath: string, from: string): Ma
 }
 
 /**
- * Whether `Object` is the native one, or the replica of it: `import { Object } from
+ * Whether `Object` is the native `Object` or its replica: `import { Object } from
  * "@monstermann/stdlib"`
  */
 export function isNativeObject(scopeTracker: ScopeTracker, from: string): boolean {
@@ -112,7 +112,7 @@ export function isObjectCall(node: Node, name: string): boolean {
         && node.property.name === name
 }
 
-/** The string of `"a.b"` or `` `a.b` ``. */
+/** Returns the string of `"a.b"` or `` `a.b` ``. */
 function stringOf(node: Node): string | undefined {
     if (node.type === "Literal" && typeof node.value === "string") return node.value
     if (node.type === "TemplateLiteral" && !node.expressions.length) return node.quasis[0]!.value.cooked ?? undefined
@@ -127,8 +127,8 @@ export function id(ids: Set<string>, base: string): string {
 }
 
 /**
- * A function that reads down to the value, and copies each level on the way when it differs. Takes
- * the value for `setPath`, and the function that maps it for `mapPath`.
+ * Builds a function that reads down to the value and copies each level that differs. The function
+ * takes the new value for `setPath`, and a function that maps the value for `mapPath`.
  */
 function compile(name: string, kind: PathKind, keys: string[]): string {
     const last = keys.length - 1

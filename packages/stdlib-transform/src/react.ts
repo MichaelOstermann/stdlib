@@ -24,8 +24,8 @@ const hooks: Hook[] = ["useReactive", "useSignal", "useSignalEffect"]
 
 /**
  * Wraps reads of signals in components and hooks with `useReactive`. Signals are recognized by
- * their `$` prefix: `$count()`, `state.$count()`. `Signal()` and `Effect()` in their top-level
- * statements become `useSignal()` and `useSignalEffect()`.
+ * their `$` prefix: `$count()`, `state.$count()`. `Signal()` and `Effect()` in the top-level
+ * statements of a component or hook become `useSignal()` and `useSignalEffect()`.
  */
 export function transformReact(code: string, id: string): MagicString | undefined {
     // Nothing to do without a `$`, a signal or an effect, skip parsing.

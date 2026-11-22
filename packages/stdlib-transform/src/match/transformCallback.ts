@@ -46,7 +46,7 @@ export function isFunction(node: Node): boolean {
 }
 
 /**
- * Replaces the parameter with the value, unless that is not possible without changing the meaning.
+ * Replaces the parameter with the value, if that does not change the meaning.
  */
 export function inline(value: string, param: string, body: Expression, ctx: Pick<Context, "code">): string | undefined {
     // Collects all declarations first, including the ones that are hoisted above where they are written.

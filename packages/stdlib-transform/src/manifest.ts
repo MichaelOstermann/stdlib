@@ -1,6 +1,6 @@
-/** What a package exports, for importing each of it from the file it lives in. */
+/** What a package exports, so each export can be imported from its own file. */
 export interface Package {
-    /** Everything that is not a namespace, and the file it lives in: `pipe` → `pipe`. */
+    /** Maps each export that is not a namespace to its file: `pipe` → `pipe`. */
     functions: ReadonlyMap<string, string>
     /** Each member is a file of the same name: `Duration.parse` → `Duration/parse`. */
     namespaces: ReadonlySet<string>
@@ -50,7 +50,7 @@ export const functions: ReadonlyMap<string, string> = new Map([
 ])
 
 /**
- * The packages whose imports are pointed at the files they live in, by what they are imported from.
+ * The packages whose imports get rewritten to the files of the exports, by import path.
  */
 export const packages: ReadonlyMap<string, Package> = new Map([
     ["@monstermann/stdlib", { functions, namespaces }],

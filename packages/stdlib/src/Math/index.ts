@@ -1,6 +1,5 @@
 import { replica } from "../internals/replica"
 import { clamp } from "./clamp"
-import { mod } from "./mod"
 import { roundTo } from "./roundTo"
 
 /**
@@ -10,6 +9,5 @@ import { roundTo } from "./roundTo"
  */
 export const Math = replica(globalThis.Math, {
     clamp,
-    mod,
     roundTo,
 })

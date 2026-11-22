@@ -45,6 +45,7 @@ export const functions: ReadonlyMap<string, string> = new Map([
     ["Set", "Set/index"],
     ["Signal", "Signal"],
     ["String", "String/index"],
+    ["TSID", "TSID"],
 ])
 
 /**

@@ -1,10 +1,16 @@
 import { describe, expectTypeOf, it } from "bun:test"
+import { concat } from "../../src/Array/concat"
+import { dropWhile } from "../../src/Array/dropWhile"
 import { filter } from "../../src/Array/filter"
 import { map } from "../../src/Array/map"
+import { mapAt } from "../../src/Array/mapAt"
 import { mapFirstWhere } from "../../src/Array/mapFirstWhere"
 import { removeAll } from "../../src/Array/removeAll"
+import { removeAt } from "../../src/Array/removeAt"
 import { removeFirst } from "../../src/Array/removeFirst"
 import { replaceFirst } from "../../src/Array/replaceFirst"
+import { setAt } from "../../src/Array/setAt"
+import { takeWhile } from "../../src/Array/takeWhile"
 import { unique } from "../../src/Array/unique"
 
 interface Task {
@@ -21,23 +27,37 @@ describe("Array", () => {
         expectTypeOf(removeAll(mutable, [])).toEqualTypeOf<Task[]>()
         expectTypeOf(map(mutable, (task) => task.id)).toEqualTypeOf<string[]>()
         expectTypeOf(removeFirst([1, 2, 3], 1)).toEqualTypeOf<number[]>()
+        expectTypeOf(setAt(mutable, -1, mutable[0]!)).toEqualTypeOf<Task[]>()
+        expectTypeOf(mapAt(mutable, 0, (task) => task)).toEqualTypeOf<Task[]>()
+        expectTypeOf(removeAt(mutable, 0)).toEqualTypeOf<Task[]>()
+        expectTypeOf(dropWhile(mutable, () => true)).toEqualTypeOf<Task[]>()
+        expectTypeOf(concat(mutable, mutable)).toEqualTypeOf<Task[]>()
     })
 
     it("should return something readonly for something readonly", () => {
         expectTypeOf(removeAll(readonly, [])).toEqualTypeOf<readonly Task[]>()
         expectTypeOf(map(readonly, (task) => task.id)).toEqualTypeOf<readonly string[]>()
         expectTypeOf(removeFirst([1, 2, 3] as const, 1)).toEqualTypeOf<readonly (1 | 2 | 3)[]>()
+        expectTypeOf(setAt(readonly, 0, readonly[0]!)).toEqualTypeOf<readonly Task[]>()
+        expectTypeOf(removeAt(readonly, 0)).toEqualTypeOf<readonly Task[]>()
+        expectTypeOf(concat(readonly, mutable)).toEqualTypeOf<readonly Task[]>()
     })
 
     it("should narrow with type guards", () => {
         expectTypeOf(filter(mixed, (value) => typeof value === "string")).toEqualTypeOf<string[]>()
         expectTypeOf(filter(mixed, (value) => value !== "a")).toEqualTypeOf<(Task | string)[]>()
         expectTypeOf(mapFirstWhere(mixed, (value) => typeof value === "string", (value) => value.toUpperCase())).toEqualTypeOf<(Task | string)[]>()
+        expectTypeOf(takeWhile(mixed, (value) => typeof value === "string")).toEqualTypeOf<string[]>()
+        expectTypeOf(takeWhile(mixed, (value) => value !== "a")).toEqualTypeOf<(Task | string)[]>()
     })
 
     it("should reject what does not fit", () => {
         // @ts-expect-error not a task
         removeAll(readonly, ["a"])
+        // @ts-expect-error a readonly array would come back as a mutable one
+        concat(mutable, readonly)
+        // @ts-expect-error not a task
+        setAt(mutable, 0, "a")
         // @ts-expect-error not a task
         replaceFirst(readonly, readonly[0]!, "a")
         // @ts-expect-error a task has to be returned

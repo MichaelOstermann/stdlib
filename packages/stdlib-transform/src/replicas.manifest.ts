@@ -2,7 +2,7 @@
 
 /** The functions on each replica, each is a file of the same name: `Array.map` → `Array/map`. */
 export const replicas: Readonly<Record<string, readonly string[]>> = {
-    Array: ["chunk", "filter", "isShallowEqual", "map", "mapFirstWhere", "mapLastWhere", "mapWhere", "maxBy", "minBy", "partition", "removeAll", "removeFirst", "removeFirstWhere", "removeLast", "removeLastWhere", "removeWhere", "replaceFirst", "replaceFirstWhere", "replaceLast", "replaceLastWhere", "sample", "shuffle", "sortBy", "sortByLocale", "unique", "uniqueBy"],
+    Array: ["chunk", "concat", "dropWhile", "filter", "isShallowEqual", "map", "mapAt", "mapFirstWhere", "mapLastWhere", "mapWhere", "maxBy", "minBy", "partition", "removeAll", "removeAt", "removeFirst", "removeFirstWhere", "removeLast", "removeLastWhere", "removeWhere", "replaceFirst", "replaceFirstWhere", "replaceLast", "replaceLastWhere", "sample", "setAt", "shuffle", "sortBy", "sortByLocale", "takeWhile", "unique", "uniqueBy"],
     Function: ["debounce", "middleware", "noop", "once", "throttle"],
     JSON: ["safeStringify", "tryParse", "tryStringify"],
     Map: ["delete", "isShallowEqual", "set"],

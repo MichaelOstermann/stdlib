@@ -26,8 +26,7 @@ type DebounceOptions = {
  *
  * Implementation details:
  *
- * - Only one `fn` can run at any given time, asynchronous functions can not conflict with each
- *   other
+ * - Only one `fn` can run at any given time. Asynchronous functions cannot conflict with each other
  * - Pending calls are not accumulated in an internal array and asynchronously resolved
  *
  * ## Example

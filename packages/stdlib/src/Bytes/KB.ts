@@ -1,7 +1,7 @@
 /**
  * # KB
  *
- * A kilobyte (kB) in bytes, a thousand of them. See `Bytes.KiB` for 1024.
+ * A kilobyte (kB) in bytes: a thousand bytes. See `Bytes.KiB` for 1024.
  *
  * ## Example
  *

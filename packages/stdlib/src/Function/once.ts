@@ -1,10 +1,10 @@
 /**
  * # once
  *
- * Returns a function that calls `fn` the first time it is called, and returns the result of that
- * first call from then on.
+ * Returns a function that calls `fn` on the first call. Later calls return the result of the first
+ * call.
  *
- * A call that throws does not count, the next one tries again.
+ * A call that throws does not count. The next call tries again.
  *
  * ## Example
  *

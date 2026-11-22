@@ -5,9 +5,9 @@ import { parse } from "./parse"
 /**
  * # mix
  *
- * Returns the color `ratio` of the way from `from` to `to`, mixed in OKLCH, as an `oklch()` color:
- * 0 is `from`, 1 is `to`. The hue takes the shorter way around, and where one side is gray it takes
- * the hue of the other. When either side does not parse, `from` is returned as it is.
+ * Mixes `from` and `to` in OKLCH and returns an `oklch()` color. `ratio` 0 gives `from`, 1 gives
+ * `to`. The hue takes the shorter way around. When one side is gray, the hue of the other side is
+ * used. When either side does not parse, returns `from` unchanged.
  *
  * ## Example
  *

@@ -1,7 +1,7 @@
 /**
  * # MiB
  *
- * A mebibyte (MiB) in bytes, 1024 kibibytes.
+ * A mebibyte (MiB) in bytes: 1024 kibibytes.
  *
  * ## Example
  *

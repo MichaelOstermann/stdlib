@@ -5,8 +5,8 @@ const SPANNED_SIZE = 64 * 1024
 /**
  * `BinaryStream.reader(source)`
  *
- * Creates a reader that reads from `source`. A stream is read from as the bytes are needed, so the
- * one who reads decides how fast it flows.
+ * Creates a reader that reads from `source`. A stream is only read when bytes are needed, so the
+ * reader controls the pace.
  *
  * ```ts
  * const reader = BinaryStream.reader(request.body);

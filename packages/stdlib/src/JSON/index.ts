@@ -16,13 +16,13 @@ export const JSON = replica(globalThis.JSON, {
 })
 
 /**
- * Anything `JSON.stringify` turns into the same value `JSON.parse` gives back. Objects have to be
- * declared with `type`, an `interface` is not accepted.
+ * Any value that survives `JSON.stringify` and `JSON.parse` unchanged. Objects have to be declared
+ * with `type`. An `interface` is not accepted.
  */
 export type JSON = boolean | JSON.Object | JSON[] | number | readonly JSON[] | string | null
 
 export namespace JSON {
-    /** What `JSON.tryParse` and `JSON.tryStringify` fail with, `cause` is what was thrown. */
+    /** The error of `JSON.tryParse` and `JSON.tryStringify`. `cause` is what was thrown. */
     export type Error = { cause?: Failure, message: string, name: "JSONError" }
 
     /** An object whose values are all `JSON`. */

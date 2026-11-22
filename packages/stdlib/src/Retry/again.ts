@@ -4,8 +4,8 @@ import { Err } from "../Result"
 /**
  * # again
  *
- * A failure that `Retry.run` tries again for. `error` is the error the result fails with once
- * `Retry.run` stops retrying, `delay` overrides the milliseconds it waits before the next attempt.
+ * A failure that makes `Retry.run` try again. `error` is the final error when `Retry.run` stops
+ * retrying. `delay` overrides the milliseconds before the next attempt.
  *
  * ## Example
  *

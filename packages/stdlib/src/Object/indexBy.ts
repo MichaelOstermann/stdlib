@@ -3,8 +3,8 @@ import { setOwn } from "../internals/objects"
 /**
  * # indexBy
  *
- * Creates an object of `items` by what `key` returns for each, like `Object.groupBy` for keys that
- * occur once. When a key occurs more than once, the last item wins.
+ * Creates an object of `items`, keyed by what `key` returns for each item. Works like
+ * `Object.groupBy` for unique keys. When a key repeats, the last item wins.
  *
  * ## Example
  *

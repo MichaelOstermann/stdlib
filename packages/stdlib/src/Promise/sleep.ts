@@ -1,8 +1,8 @@
 /**
  * # sleep
  *
- * Returns a promise that resolves after the milliseconds of `duration`. It rejects with the reason
- * of `signal` once that is aborted, right away when it is already.
+ * Returns a promise that resolves after `duration` milliseconds. When `signal` aborts, the promise
+ * rejects with the reason of `signal`. An already aborted `signal` rejects right away.
  *
  * ## Example
  *

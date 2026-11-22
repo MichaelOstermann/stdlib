@@ -1,8 +1,8 @@
 /**
  * # backoff
  *
- * Returns how long to wait before trying again: `min` after the first `attempt`, which is `0`,
- * twice as long after each one that follows, and never longer than `max`.
+ * Returns how long to wait before trying again. The first `attempt` is `0` and waits `min`. Each
+ * following attempt waits twice as long, but never longer than `max`.
  *
  * ## Example
  *

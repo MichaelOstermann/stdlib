@@ -1,7 +1,7 @@
 /**
  * # GiB
  *
- * A gibibyte (GiB) in bytes, 1024 mebibytes.
+ * A gibibyte (GiB) in bytes: 1024 mebibytes.
  *
  * ## Example
  *

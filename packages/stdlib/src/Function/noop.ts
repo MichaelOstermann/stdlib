@@ -1,8 +1,8 @@
 /**
  * # noop
  *
- * Does nothing. Always the same function, unlike a `() => {}` that is written where it is needed,
- * which is a new one every time.
+ * Does nothing. `noop` is always the same function. An inline `() => {}` is a new function every
+ * time.
  *
  * ## Example
  *

@@ -8,11 +8,11 @@ let formatter: Intl.DurationFormat | undefined
 /**
  * # format
  *
- * Writes the milliseconds of `duration` out as days, hours, minutes, seconds and milliseconds,
- * leaving out the ones that are zero.
+ * Formats the milliseconds of `duration` as days, hours, minutes, seconds and milliseconds. Units
+ * that are zero are left out.
  *
- * `locales` and `options` are the ones of `Intl.DurationFormat`, which does the writing. The
- * `style` is `"narrow"` unless another one is asked for.
+ * `locales` and `options` go to `Intl.DurationFormat`, which does the formatting. The `style` is
+ * `"narrow"` unless `options` sets another style.
  *
  * ## Example
  *

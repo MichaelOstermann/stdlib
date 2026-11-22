@@ -1,5 +1,5 @@
 export interface Timer {
-    /** When the callback is due, a restart only moves it instead of setting a timeout again. */
+    /** When the callback is due. A restart moves this time instead of setting a new timeout. */
     due: number
     tid: ReturnType<typeof setTimeout> | undefined
     timeout: number

@@ -1,15 +1,15 @@
 /**
  * # safeStringify
  *
- * Turns `value` into JSON like `JSON.stringify`, and never throws: what can not be written as JSON
- * is left out, as much as needed and nothing more.
+ * Turns `value` into JSON like `JSON.stringify`, but never throws. Parts that cannot be written as
+ * JSON are left out, and nothing more.
  *
  * - a `bigint` becomes a string of its digits
- * - an object inside of itself is left out
- * - a property that throws when it is read is left out, the same for a `toJSON` that throws
- * - `"null"` when nothing is left, or `value` is nothing that can be written as JSON
+ * - an object inside itself is left out
+ * - a property that throws when read is left out, and so is a `toJSON` that throws
+ * - returns `"null"` when nothing is left, or when `value` cannot be written as JSON
  *
- * For logs and reports, where something incomplete is better than nothing.
+ * Use it for logs and reports, where something incomplete is better than nothing.
  *
  * ## Example
  *
@@ -41,8 +41,8 @@ export function safeStringify(value: unknown): string {
 }
 
 /**
- * A copy of `value` without what can not be written as JSON. `ancestors` are the objects it is
- * inside of.
+ * Returns a copy of `value` without the parts that cannot be written as JSON. `ancestors` are the
+ * objects that contain `value`.
  */
 function sanitize(value: unknown, ancestors: Set<object>): unknown {
     if (typeof value === "bigint") return value.toString()

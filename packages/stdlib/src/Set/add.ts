@@ -3,7 +3,7 @@ import type { AnySet, SetValue, UpdatedSet } from "../internals/types"
 /**
  * # add
  *
- * Adds `value` to a copy of `target`. Returns `target` itself when it has that value already.
+ * Adds `value` to a copy of `target`. Returns `target` itself when `target` already has `value`.
  *
  * ## Example
  *

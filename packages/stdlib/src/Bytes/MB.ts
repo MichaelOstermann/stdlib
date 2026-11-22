@@ -1,7 +1,7 @@
 /**
  * # MB
  *
- * A megabyte (MB) in bytes, a thousand kilobytes. See `Bytes.MiB` for 1024².
+ * A megabyte (MB) in bytes: a thousand kilobytes. See `Bytes.MiB` for 1024².
  *
  * ## Example
  *

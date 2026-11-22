@@ -1,7 +1,7 @@
 /**
  * # TiB
  *
- * A tebibyte (TiB) in bytes, 1024 gibibytes.
+ * A tebibyte (TiB) in bytes: 1024 gibibytes.
  *
  * ## Example
  *

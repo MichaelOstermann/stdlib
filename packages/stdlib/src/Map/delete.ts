@@ -3,8 +3,8 @@ import type { AnyMap, MapKey, UpdatedMap } from "../internals/types"
 /**
  * # delete
  *
- * Removes the entry of `key`, from a copy of `target`. Returns `target` itself when there is no
- * such entry.
+ * Removes the entry of `key` from a copy of `target`. Returns `target` itself when there is no such
+ * entry.
  *
  * ## Example
  *

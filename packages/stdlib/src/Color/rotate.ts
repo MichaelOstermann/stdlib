@@ -6,7 +6,7 @@ import { parse } from "./parse"
  * # rotate
  *
  * Returns `color` with its hue turned by `degrees`, as an `oklch()` color. To set the hue instead,
- * see `Color.hue`. A `color` that does not parse is returned as it is.
+ * see `Color.hue`. Returns a `color` that does not parse unchanged.
  *
  * ## Example
  *

@@ -3,8 +3,8 @@ import type { AnyMap, MapKey, MapValue, UpdatedMap } from "../internals/types"
 /**
  * # set
  *
- * Sets the entry of `key` to `value`, in a copy of `target`. Returns `target` itself when it has
- * that entry already.
+ * Sets the entry of `key` to `value` in a copy of `target`. Returns `target` itself when `target`
+ * already has that entry.
  *
  * ## Example
  *

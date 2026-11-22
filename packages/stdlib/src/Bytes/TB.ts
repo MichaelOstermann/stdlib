@@ -1,7 +1,7 @@
 /**
  * # TB
  *
- * A terabyte (TB) in bytes, a thousand gigabytes. See `Bytes.TiB` for 1024⁴.
+ * A terabyte (TB) in bytes: a thousand gigabytes. See `Bytes.TiB` for 1024⁴.
  *
  * ## Example
  *

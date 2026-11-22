@@ -1,14 +1,14 @@
 import type { KeysOfUnion } from "../internals/types"
 
-/** The value of `K` in each member of `T` that has it, `undefined` for the others. */
+/** The value of `K` in each member of `T` that has `K`. `undefined` for the other members. */
 type PropOf<T, K extends PropertyKey> = T extends unknown ? K extends keyof T ? T[K] : undefined : never
 
 /**
  * # prop
  *
- * Reads the property `key` of `target`. Where `target` is a union, `key` may be one of any of its
- * members, and the value is `undefined` for those that do not have it: unlike `key in target`, a
- * misspelled `key` is an error.
+ * Reads the property `key` of `target`. When `target` is a union, `key` may come from any member.
+ * The value is `undefined` for members without `key`. Unlike `key in target`, a misspelled `key` is
+ * an error.
  *
  * ## Example
  *

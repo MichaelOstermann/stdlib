@@ -1,7 +1,7 @@
 /**
  * # roundTo
  *
- * Rounds `value` to `digits` decimal places the way `Math.round` rounds to an integer, half up.
+ * Rounds `value` to `digits` decimal places, half up, like `Math.round` rounds to an integer.
  * Negative `digits` round to tens, hundreds, ….
  *
  * ## Example

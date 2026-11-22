@@ -1,8 +1,8 @@
 import { Emitter } from "../Emitter"
 
 /**
- * The longest delay of `setTimeout`, about 24.8 days: a longer one fires right away, and the clock
- * would tick without end.
+ * The longest delay of `setTimeout`, about 24.8 days. A longer delay fires right away, and the
+ * clock would tick without end.
  */
 const MAX_INTERVAL = 2_147_483_647
 
@@ -18,18 +18,18 @@ const clocks = new Map<number, Clock>()
  * # aligned
  *
  * Calls `fn` with `Date.now()` on every multiple of `every` since the epoch: `Duration.MINUTE` on
- * the minute, `Duration.HOUR` on the hour. Returns what stops it. For what is shown relative to
- * now: "5 minutes ago", "today".
+ * the minute, `Duration.HOUR` on the hour. Returns a function that stops the calls. Use it for text
+ * relative to now: "5 minutes ago", "today".
  *
  * - `every` is at most `2_147_483_647`, about 24.8 days, the longest delay of `setTimeout`
- * - the multiples are in UTC: `Duration.DAY` is not at local midnight, `Duration.HOUR` not on the
- *   hour where the offset is in half hours
- * - every function with the same `every` shares a timer and is called in the same batch, the timer
- *   stops once the last one stopped
- * - a function that throws does not stop the others or the timer, what it threw is thrown once all
- *   were called
- * - the time is read again for every multiple, so the clock stays on them across drift, sleep and
- *   the clock being set
+ * - the multiples are in UTC. `Duration.DAY` is not at local midnight. `Duration.HOUR` is not on
+ *   the hour where the offset is in half hours
+ * - functions with the same `every` share a timer and are called in the same batch. The timer stops
+ *   when the last function stops
+ * - a function that throws does not stop the others or the timer. The error is thrown after all
+ *   functions were called
+ * - the time is read again for every multiple, so the clock stays aligned across drift, sleep and
+ *   clock changes
  *
  * ## Example
  *
@@ -85,7 +85,7 @@ function start(every: number): Clock {
     }
 }
 
-/** The first multiple of `every` after `now`. */
+/** Returns the first multiple of `every` after `now`. */
 function boundary(now: number, every: number): number {
     return (Math.floor(now / every) + 1) * every
 }

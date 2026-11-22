@@ -1,11 +1,11 @@
 /**
  * # setProp
  *
- * Sets the property `key` of a copy of `target` to `value`. Returns `target` itself when it has
- * that value already.
+ * Sets the property `key` of a copy of `target` to `value`. Returns `target` itself when `target`
+ * already has that value.
  *
- * Unlike `Object.merge(target, { [key]: value })`, a `key` that is not known until the code runs is
- * checked.
+ * Unlike `Object.merge(target, { [key]: value })`, `setProp` type-checks a `key` that is only known
+ * at runtime.
  *
  * ## Example
  *

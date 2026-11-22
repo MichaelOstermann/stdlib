@@ -1,8 +1,8 @@
 /**
  * # KiB
  *
- * A kibibyte (KiB) in bytes, 1024 of them: what memory, buffers and most limits of a runtime are
- * counted in.
+ * A kibibyte (KiB) in bytes: 1024 bytes. Memory, buffers and most runtime limits count in
+ * kibibytes.
  *
  * ## Example
  *

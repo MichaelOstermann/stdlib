@@ -9,8 +9,8 @@ const units: Record<string, number> = { d: DAY, h: HOUR, m: MINUTE, ms: 1, s: SE
 /**
  * # parse
  *
- * Returns the milliseconds of a duration that is written as a number and a unit: `ms`, `s`, `m`,
- * `h`, `d` or `w`, in any case. Returns `undefined` for everything else.
+ * Returns the milliseconds of a duration written as a number and a unit: `ms`, `s`, `m`, `h`, `d`
+ * or `w`, in any case. Returns `undefined` for everything else.
  *
  * ## Example
  *

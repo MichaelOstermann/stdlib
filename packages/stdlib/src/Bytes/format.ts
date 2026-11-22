@@ -5,11 +5,11 @@ let formatter: Intl.NumberFormat | undefined
 
 type FormatOptions = {
     /**
-     * Counts in 1024s and writes `KiB`, `MiB`, … instead of counting in thousands and writing `kB`,
-     * `MB`, …
+     * Counts in 1024s and writes `KiB`, `MiB`, …. Without `binary`, counts in thousands and writes
+     * `kB`, `MB`, …
      */
     binary?: boolean
-    /** The language the number is written in, the one of the runtime by default. */
+    /** The language of the number. Defaults to the language of the runtime. */
     locales?: Intl.LocalesArgument
     /** `1` by default. */
     maximumFractionDigits?: number
@@ -18,8 +18,8 @@ type FormatOptions = {
 /**
  * # format
  *
- * Writes `bytes` out in the largest unit that it is at least one of: `kB`, `MB`, … counting in
- * thousands, or `KiB`, `MiB`, … counting in 1024s with `binary`.
+ * Formats `bytes` in the largest unit that fits at least once. By default, counts in thousands:
+ * `kB`, `MB`, …. With `binary`, counts in 1024s: `KiB`, `MiB`, ….
  *
  * ## Example
  *

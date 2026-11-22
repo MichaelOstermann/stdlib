@@ -6,7 +6,7 @@ import { Err, Ok } from "../Result"
 /**
  * # tryParse
  *
- * Parses `text` like `JSON.parse`, and returns what it throws as an `Err`.
+ * Parses `text` like `JSON.parse`. Returns an `Err` instead of throwing.
  *
  * ## Example
  *

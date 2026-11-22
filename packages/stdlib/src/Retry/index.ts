@@ -5,28 +5,28 @@ export type { RetryAgain } from "../internals/retry"
 
 export interface RetryOptions {
     /**
-     * How much longer than asked for a wait can randomly become, as a part of it. `0.2` by default,
-     * see `Duration.jitter`.
+     * How much a wait can randomly grow, as a fraction of the wait. `0.2` by default, see
+     * `Duration.jitter`.
      */
     jitter?: number
     /**
-     * How often `fn` is called at most. Without it, it is called until it stops asking to be called
-     * again.
+     * The maximum number of calls of `fn`. Without `maxAttempts`, `fn` is called until it stops
+     * returning `Retry.again`.
      */
     maxAttempts?: number
-    /** The longest wait between two attempts, 5 minutes by default. */
+    /** The longest wait between two attempts. 5 minutes by default. */
     maxDelay?: number
     /**
-     * The wait after the first attempt, a second by default. It doubles with every attempt, see
-     * `Duration.backoff`.
+     * The wait after the first attempt. A second by default. The wait doubles with every attempt,
+     * see `Duration.backoff`.
      */
     minDelay?: number
     /**
-     * Stops trying again once aborted, also in the middle of a wait. An attempt that is running is
-     * not interrupted.
+     * Stops retrying once aborted, even in the middle of a wait. A running attempt is not
+     * interrupted.
      */
     signal?: AbortSignal
-    /** Waits between two attempts, in place of a timer. */
+    /** Waits between two attempts. Replaces the timer. */
     sleep?: (delay: number, attempt: number) => Promise<void>
 }
 

@@ -4,7 +4,7 @@ import { setOwn } from "../internals/objects"
  * # merge
  *
  * Copies the properties of `source` onto a copy of `target`. Returns `target` itself when every
- * property has that value already.
+ * property already has that value.
  *
  * ## Example
  *
@@ -13,8 +13,8 @@ import { setOwn } from "../internals/objects"
  * Object.merge(task, { title: task.title }); // task
  * ```
  *
- * With `stdlib-transform`, an object literal is compiled into a function of its own, which compares
- * and copies each property directly, without creating the object.
+ * With `stdlib-transform`, an object literal is compiled into a function of its own. That function
+ * compares and copies each property directly, without creating the object.
  */
 export function merge<T extends object>(target: T, source: Partial<NoInfer<T>>): T
 export function merge(target: Record<PropertyKey, unknown>, source: Record<PropertyKey, unknown>): Record<PropertyKey, unknown> {

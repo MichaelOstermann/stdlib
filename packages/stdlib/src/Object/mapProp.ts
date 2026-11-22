@@ -1,8 +1,8 @@
 /**
  * # mapProp
  *
- * Sets the property `key` of a copy of `target` to what `map` returns for its value. Returns
- * `target` itself when `map` returned the value unchanged.
+ * Maps the property `key` in a copy of `target`. `map` gets the current value and returns the new
+ * value. Returns `target` itself when `map` returns the value unchanged.
  *
  * ## Example
  *

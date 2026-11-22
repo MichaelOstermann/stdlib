@@ -3,8 +3,8 @@ import type { AnySet, SetValue, UpdatedSet } from "../internals/types"
 /**
  * # union
  *
- * Adds every one of `values` to a copy of `target`. Returns `target` itself when it has all of them
- * already. `values` can be any iterable, such as an array or another set.
+ * Adds all `values` to a copy of `target`. Returns `target` itself when `target` already has all of
+ * them. `values` can be any iterable, such as an array or another set.
  *
  * ## Example
  *

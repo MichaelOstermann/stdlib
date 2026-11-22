@@ -3,9 +3,9 @@ const CHUNK_SIZE = 64 * 1024
 /**
  * `BinaryStream.writer(chunks)`
  *
- * Creates a `ReadableStream` of `chunks`, joined into chunks of 64 KiB: many small ones are slow to
- * send. `chunks` is iterated as the stream is read, so the one who reads decides how fast it flows.
- * Chunks are copied, they can be reused once the next one is asked for.
+ * Creates a `ReadableStream` of `chunks`, joined into chunks of 64 KiB, because many small chunks
+ * are slow to send. `chunks` is only iterated while the stream is read, so the reader controls the
+ * pace. Chunks are copied, so a chunk can be reused once the next one is requested.
  *
  * ```ts
  * async function* frames() {

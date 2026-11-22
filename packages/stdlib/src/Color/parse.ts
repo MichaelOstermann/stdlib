@@ -4,8 +4,8 @@ import { fromRgb, normalizeHue } from "../internals/colors"
 /**
  * # parse
  *
- * Reads a CSS color written as hex, `rgb()`, `rgba()`, `hsl()`, `hsla()` or `oklch()`, in the
- * modern and the comma syntax. Returns `undefined` for everything else, named colors too.
+ * Parses a CSS color written as hex, `rgb()`, `rgba()`, `hsl()`, `hsla()` or `oklch()`. Accepts the
+ * modern and the comma syntax. Returns `undefined` for everything else, including named colors.
  *
  * ## Example
  *
@@ -56,7 +56,7 @@ function parseFunction(value: string): Color | undefined {
     return fromRgb(f(0), f(8), f(4), opacity)
 }
 
-/** A number, where a percentage is of `full`. */
+/** Parses a number. A percentage is relative to `full`. */
 function number(token: string, full: number): number {
     if (token === "none") return 0
     if (token.endsWith("%")) return Number(token.slice(0, -1)) / 100 * full

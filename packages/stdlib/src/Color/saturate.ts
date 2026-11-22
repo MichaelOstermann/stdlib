@@ -4,8 +4,8 @@ import { parse } from "./parse"
 /**
  * # saturate
  *
- * Returns `color` with `amount` added to its chroma, as an `oklch()` color. A `color` that does not
- * parse is returned as it is.
+ * Returns `color` with `amount` added to its chroma, as an `oklch()` color. Returns a `color` that
+ * does not parse unchanged.
  *
  * ## Example
  *

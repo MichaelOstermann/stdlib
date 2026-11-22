@@ -3,8 +3,8 @@ import type { AnySet, SetValue, UpdatedSet } from "../internals/types"
 /**
  * # delete
  *
- * Removes `value` from a copy of `target`. Returns `target` itself when it does not have that
- * value.
+ * Removes `value` from a copy of `target`. Returns `target` itself when `target` does not have
+ * `value`.
  *
  * ## Example
  *

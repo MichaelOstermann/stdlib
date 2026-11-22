@@ -22,11 +22,11 @@ const units: Record<string, number> = {
 /**
  * # parse
  *
- * Returns the bytes of a size that is written as a number and a unit, in any case: `B`, `kB`, `MB`,
- * `GB` and `TB` count in thousands, `KiB`, `MiB`, `GiB` and `TiB` in 1024s. Returns `undefined` for
- * everything else.
+ * Returns the bytes of a size written as a number and a unit, in any case. `B`, `kB`, `MB`, `GB`
+ * and `TB` count in thousands. `KiB`, `MiB`, `GiB` and `TiB` count in 1024s. Returns `undefined`
+ * for everything else.
  *
- * There are no bits, `Mb` is a megabyte.
+ * There are no bits: `Mb` is a megabyte.
  *
  * ## Example
  *

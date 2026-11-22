@@ -1,22 +1,5 @@
-type Key<T> = [T] extends [readonly unknown[]] ? never : [T] extends [object] ? keyof T & string : never
-
-type PathOf<T, P extends string, Done extends string = ""> =
-    P extends `${infer Head}.${infer Rest}`
-        ? Head extends Key<T>
-            ? PathOf<T[Head], Rest, `${Done}${Head}.`>
-            : `${Done}${Key<T>}`
-        : P extends Key<T>
-            ? `${Done}${P}`
-            : `${Done}${Key<T>}`
-
-type ValueAt<T, P extends string> =
-    P extends `${infer Head}.${infer Rest}`
-        ? Head extends Key<T>
-            ? ValueAt<T[Head], Rest>
-            : never
-        : P extends Key<T>
-            ? T[P]
-            : never
+import type { PathOf, ValueAt } from "../internals/paths"
+import { readPath, writePath } from "../internals/paths"
 
 /**
  * # setPath
@@ -42,19 +25,7 @@ type ValueAt<T, P extends string> =
  */
 export function setPath<T extends object, P extends string>(target: T, path: PathOf<T, P>, value: NoInfer<ValueAt<T, P>>): T {
     const keys = path.split(".")
-    const last = keys.length - 1
     // Reads down to the value first, and only copies once it differs: most calls change nothing.
-    let node: any = target
-    for (let i = 0; i < last; i++) node = node[keys[i]!]
-    const key = keys[last]!
-    if (Object.is(node[key], value)) return target
-    return copy(target, keys, value, 0)
-}
-
-function copy(target: any, keys: string[], value: unknown, index: number): any {
-    // Not { ...target, [key]: value }, which V8 slows down a lot once it sees more than one shape.
-    const result = { ...target }
-    const key = keys[index]!
-    result[key] = index === keys.length - 1 ? value : copy(target[key], keys, value, index + 1)
-    return result
+    if (Object.is(readPath(target, keys), value)) return target
+    return writePath(target, keys, value)
 }

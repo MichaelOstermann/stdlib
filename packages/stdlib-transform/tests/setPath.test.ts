@@ -1,9 +1,9 @@
 import { describe, expect, it } from "bun:test"
 import { setPath } from "../../stdlib/src/Object/setPath"
-import { transformSetPaths } from "../src/setPath"
+import { transformPaths } from "../src/path"
 
 function run(code: string): string {
-    return transformSetPaths(code, "source.ts", "@monstermann/stdlib").toString()
+    return transformPaths(code, "source.ts", "@monstermann/stdlib").toString()
 }
 
 /** What a call returns once it has been compiled, next to what `Object.setPath` returns. */
@@ -13,7 +13,7 @@ function both(path: string, target: object, value: unknown): [unknown, unknown] 
     return [new Function("target", "value", compiled)(target, value), setPath(target as any, path as never, value as never)]
 }
 
-describe("transformSetPaths", () => {
+describe("transformPaths, setPath", () => {
     it("should compile a path into a function of its own", () => {
         expect(run(`const a = Object.setPath(state, "user.settings.theme", "dark")`)).toBe(`const a = setPath0(state, "dark")
 function setPath0(t, v) {

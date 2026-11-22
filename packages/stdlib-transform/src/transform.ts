@@ -7,11 +7,11 @@ import { transformImports } from "./imports"
 import { packages } from "./manifest"
 import { transformMatches } from "./match"
 import { transformObjects } from "./object"
+import { transformPaths } from "./path"
 import { transformPipes } from "./pipe"
 import { transformReact } from "./react"
 import { transformReplicas } from "./replicas"
 import { replicas } from "./replicas.manifest"
-import { transformSetPaths } from "./setPath"
 
 const from = "@monstermann/stdlib"
 
@@ -40,9 +40,9 @@ export interface StdlibResult {
  *   with the native one: `new Set()`, `x instanceof Set`
  * - `match()` chains are compiled into conditional expressions
  * - `pipe()` calls are replaced with the calls they make
- * - `Object.setPath()` calls with a path that is written out, `Object.merge()` calls with an object
- *   literal and `Object.pick()` calls with an array of strings are compiled into a function of
- *   their own
+ * - `Object.setPath()` and `Object.mapPath()` calls with a path that is written out,
+ *   `Object.merge()` calls with an object literal and `Object.pick()` calls with an array of
+ *   strings are compiled into a function of their own
  * - everything else (`pipe`, `Result`, …) is imported from the file it lives in
  * - `m.auth.signIn` of `@monstermann/stdlib-i18n` becomes a direct import of `_authSignIn`
  * - in React components and hooks, reads of signals are wrapped with `useReactive` and their
@@ -97,8 +97,8 @@ export function transform(code: string, filePath: string, options: StdlibOptions
     }
 
     // After pipes: calls they had in their steps are written out by now. Before globals: a compiled call needs no import.
-    if (code.includes("setPath")) {
-        const paths = transformSetPaths(code, filePath, from)
+    if (code.includes("setPath") || code.includes("mapPath")) {
+        const paths = transformPaths(code, filePath, from)
         if (paths.hasChanged()) {
             code = paths.toString()
             maps.push(paths.generateMap(generateMap))

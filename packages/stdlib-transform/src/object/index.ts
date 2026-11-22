@@ -2,7 +2,7 @@ import type { Node } from "oxc-parser"
 import MagicString from "magic-string"
 import { parseSync } from "oxc-parser"
 import { ScopeTracker, walk } from "oxc-walker"
-import { access, id, isNativeObject, isObjectCall, property } from "../setPath"
+import { access, id, isNativeObject, isObjectCall, property } from "../path"
 
 /**
  * Compiles `Object.merge` calls whose source is an object literal, and `Object.pick` calls whose

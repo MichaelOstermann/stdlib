@@ -3,6 +3,7 @@ import { defaults } from "./defaults"
 import { indexBy } from "./indexBy"
 import { isPlainObject } from "./isPlainObject"
 import { isShallowEqual } from "./isShallowEqual"
+import { mapPath } from "./mapPath"
 import { mapProp } from "./mapProp"
 import { matches } from "./matches"
 import { merge } from "./merge"
@@ -22,6 +23,7 @@ export const Object = replica(globalThis.Object, {
     indexBy,
     isPlainObject,
     isShallowEqual,
+    mapPath,
     mapProp,
     matches,
     merge,

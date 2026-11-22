@@ -4,18 +4,27 @@ import { parseSync } from "oxc-parser"
 import { ScopeTracker, walk } from "oxc-walker"
 
 /**
- * Compiles `Object.setPath` calls whose path is written out into a function of their own, one per
- * path and module:
+ * Compiles `Object.setPath` and `Object.mapPath` calls whose path is written out into a function of
+ * their own, one per path and module:
  *
  * ```ts
  * Object.setPath(state, "user.settings.theme", "dark")
+ * Object.mapPath(state, "user.settings.theme", toggle)
  * ```
  *
  * ```ts
  * setPath0(state, "dark")
+ * mapPath0(state, toggle)
  *
  * function setPath0(t, v) {
  *     const t0 = t.user, t1 = t0.settings, t2 = t1.theme
+ *     if (Object.is(t2, v)) return t
+ *     return { ...t, user: { ...t0, settings: { ...t1, theme: v } } }
+ * }
+ *
+ * function mapPath0(t, f) {
+ *     const t0 = t.user, t1 = t0.settings, t2 = t1.theme
+ *     const v = f(t2)
  *     if (Object.is(t2, v)) return t
  *     return { ...t, user: { ...t0, settings: { ...t1, theme: v } } }
  * }
@@ -23,7 +32,7 @@ import { ScopeTracker, walk } from "oxc-walker"
  *
  * A call whose path is not known until the code runs is left as it is.
  */
-export function transformSetPaths(code: string, filePath: string, from: string): MagicString {
+export function transformPaths(code: string, filePath: string, from: string): MagicString {
     const { program } = parseSync(filePath, code)
     const ms = new MagicString(code, { filename: filePath })
 
@@ -39,13 +48,15 @@ export function transformSetPaths(code: string, filePath: string, from: string):
         },
     })
 
-    /** The name of the function of each path. */
-    const functions = new Map<string, string>()
+    /** The function of each kind and path, by `setPath:a.b`. */
+    const functions = new Map<string, { keys: string[], kind: PathKind, name: string }>()
 
     walk(program, {
         scopeTracker,
         enter(node) {
-            if (node.type !== "CallExpression" || node.optional || !isObjectCall(node.callee, "setPath")) return
+            if (node.type !== "CallExpression" || node.optional) return
+            const kind = pathKindOf(node.callee)
+            if (!kind) return
             if (!isNativeObject(scopeTracker, from)) return
 
             const [target, path, value] = node.arguments
@@ -54,11 +65,9 @@ export function transformSetPaths(code: string, filePath: string, from: string):
             // `__proto__` in an object literal sets the prototype instead of a property.
             if (!keys || keys.some((key) => !key || key === "__proto__")) return
 
-            let name = functions.get(keys.join("."))
-            if (!name) {
-                name = id(ids, "setPath")
-                functions.set(keys.join("."), name)
-            }
+            const kindAndPath = `${kind}:${keys.join(".")}`
+            if (!functions.has(kindAndPath)) functions.set(kindAndPath, { keys, kind, name: id(ids, kind) })
+            const { name } = functions.get(kindAndPath)!
 
             // Only the callee and the path are replaced: calls inside of the target or the value are compiled as well.
             ms.overwrite(node.callee.start, node.callee.end, name)
@@ -67,7 +76,7 @@ export function transformSetPaths(code: string, filePath: string, from: string):
     })
 
     // Declarations are hoisted, so they can go at the end, where every line before stays where it is.
-    for (const [path, name] of functions) ms.append(`\n${compile(name, path.split("."))}\n`)
+    for (const { keys, kind, name } of functions.values()) ms.append(`\n${compile(name, kind, keys)}\n`)
     return ms
 }
 
@@ -82,6 +91,14 @@ export function isNativeObject(scopeTracker: ScopeTracker, from: string): boolea
     const imported = declaration.node.imported
     const name = imported.type === "Identifier" ? imported.name : imported.value
     return name === "Object" && [from, `${from}/Object/index`].includes(declaration.importNode.source.value)
+}
+
+type PathKind = "mapPath" | "setPath"
+
+function pathKindOf(callee: Node): PathKind | undefined {
+    if (isObjectCall(callee, "setPath")) return "setPath"
+    if (isObjectCall(callee, "mapPath")) return "mapPath"
+    return undefined
 }
 
 /** `Object.setPath`, `Object.merge`, … */
@@ -109,8 +126,11 @@ export function id(ids: Set<string>, base: string): string {
     return `${base}${count}`
 }
 
-/** A function that reads down to the value, and copies each level on the way when it differs. */
-function compile(name: string, keys: string[]): string {
+/**
+ * A function that reads down to the value, and copies each level on the way when it differs. Takes
+ * the value for `setPath`, and the function that maps it for `mapPath`.
+ */
+function compile(name: string, kind: PathKind, keys: string[]): string {
     const last = keys.length - 1
     // t0 is the first level, the value itself is the last one read.
     const levels = keys.map((_, index) => `t${index}`)
@@ -121,6 +141,16 @@ function compile(name: string, keys: string[]): string {
     for (let index = last; index >= 0; index--) copy = `{ ...${parent(index)}, ${property(keys[index]!)}: ${copy} }`
 
     const current = levels[last]!
+    if (kind === "mapPath") {
+        return [
+            `function ${name}(t, f) {`,
+            `    const ${reads}`,
+            `    const v = f(${current})`,
+            `    if (Object.is(${current}, v)) return t`,
+            `    return ${copy}`,
+            `}`,
+        ].join("\n")
+    }
     return [
         `function ${name}(t, v) {`,
         `    const ${reads}`,

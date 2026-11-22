@@ -17,15 +17,17 @@ type Wasm = {
 /**
  * # highlighter
  *
- * Starts a highlighter from the bytes of `@monstermann/stdlib-syntax-highlight/highlight.wasm`,
- * once per page or worker. From an `ArrayBuffer` it is ready at once, from a `Response` once the
- * bytes are in.
+ * Starts a highlighter from the bytes of `@monstermann/stdlib-syntax-highlight/highlight.wasm`.
+ * Start one per page or worker. An `ArrayBuffer` makes the highlighter ready at once. A `Response`
+ * makes the highlighter ready once the bytes have arrived.
  *
- * `load` fetches the grammars of the `scope` of one of `Syntax.languages`, once, however often it
- * is called, and resolves once they are loaded. `highlight` then tokenizes code synchronously, and
- * gives no tokens until its scope is loaded. The tokens cover the code from start to end, line
- * breaks included, and `class` is what the token is, to color it with. Highlighting the same scope
- * again after an edit only tokenizes the lines that changed.
+ * `load` fetches the grammars for the `scope` of a language from `Syntax.languages`. Repeated calls
+ * fetch only once. The promise resolves when the grammars are loaded.
+ *
+ * `highlight` tokenizes code synchronously. Before its scope is loaded, `highlight` returns no
+ * tokens. The tokens cover the whole code, line breaks included. The `class` of a token says what
+ * the token is, so the app can color it. After an edit, highlighting the same scope again only
+ * tokenizes the changed lines.
  *
  * - `$ready`: whether the wasm is started
  * - `$loading`: the scopes whose grammars are being loaded

@@ -3,8 +3,8 @@ import type { OEmbedProvider } from "."
 /**
  * # request
  *
- * Returns the address to fetch the embed of `url` from, as JSON. With `maxWidth` and `maxHeight`
- * the provider answers with an embed that fits, when it supports them.
+ * Returns the address to fetch the embed of `url` from. The answer is JSON. With `maxWidth` and
+ * `maxHeight`, the provider answers with an embed that fits, if the provider supports them.
  *
  * ## Example
  *

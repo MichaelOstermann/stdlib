@@ -8,9 +8,10 @@ const unpopular = 0.8
 /**
  * # search
  *
- * The languages for a language picker. Without a query, the popular ones by title. With one, every
- * language whose title, names or extensions it matches, best first, popular ones ahead of others
- * that match about as well.
+ * Returns the languages for a language picker. An empty `query` returns the popular languages,
+ * sorted by title. Otherwise, returns every language whose title, names or extensions match
+ * `query`. The best match comes first. Popular languages go ahead of others that match about as
+ * well.
  *
  * ## Example
  *

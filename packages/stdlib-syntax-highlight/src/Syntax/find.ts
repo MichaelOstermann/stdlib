@@ -6,9 +6,9 @@ import { search } from "./search"
 /**
  * # find
  *
- * The language a code fence names, such as the `ts` of ` ```ts `. An extension or a name that
- * matches exactly wins, preferring popular languages, then the first language `Syntax.search` finds
- * for it. Case is ignored, and words such as `text` give `undefined`.
+ * Returns the language that a code fence names, such as the `ts` of ` ```ts `. An exact match of an
+ * extension or a name wins, popular languages first. Otherwise, returns the first language that
+ * `Syntax.search` finds. Case is ignored. Words such as `text` return `undefined`.
  *
  * ## Example
  *

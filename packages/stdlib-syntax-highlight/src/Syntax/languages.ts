@@ -3,8 +3,8 @@ import type { Language } from "."
 /**
  * # languages
  *
- * Every language there is a grammar for, by title. The language picker shows the `popular` ones
- * until something is typed to search all of them.
+ * Every language that has a grammar, sorted by title. A language picker shows the `popular`
+ * languages first. Typing searches all languages.
  *
  * ## Example
  *

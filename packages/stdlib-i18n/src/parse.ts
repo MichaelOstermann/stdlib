@@ -1,4 +1,4 @@
-/** A message in ICU MessageFormat, as much of it as the compiler supports. */
+/** A part of a message in ICU MessageFormat. Only covers what the compiler supports. */
 export type Part =
     | { type: "argument", name: string }
     | { type: "date" | "time", name: string, style: Style | undefined }
@@ -29,7 +29,7 @@ export class ParseError extends Error {
 }
 
 /**
- * The parts of `source`, or a `ParseError` with the offset of the mistake, such as
+ * Returns the parts of `source`. Throws a `ParseError` with the offset of the mistake, such as
  * `expected "}" after "Assigned to {name"`.
  */
 export function parse(source: string): Part[] {

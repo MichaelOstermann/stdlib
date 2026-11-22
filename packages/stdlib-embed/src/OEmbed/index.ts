@@ -5,7 +5,8 @@ import { providers } from "./providers"
 import { request } from "./request"
 
 /**
- * A site that answers oEmbed requests at `endpoint` for the links that match one of its `schemes`.
+ * A site that answers oEmbed requests at `endpoint`. The site embeds links that match one of its
+ * `schemes`.
  */
 export type OEmbedProvider = {
     endpoint: string
@@ -15,8 +16,8 @@ export type OEmbedProvider = {
 }
 
 /**
- * What an oEmbed endpoint answers, by `type`: an image at `url`, or a player or widget in `html`,
- * or only facts about the link.
+ * The answer of an oEmbed endpoint. `type` decides the content: an image at `url`, a player or
+ * widget in `html`, or only facts about the link.
  */
 export type OEmbed =
     | OEmbed.Photo

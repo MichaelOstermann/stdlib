@@ -6,9 +6,8 @@ let compiled: { pattern: RegExp, provider: OEmbedProvider }[] | undefined
 /**
  * # provider
  *
- * Returns the provider of [oembed.com](https://oembed.com) that embeds `url`, `undefined` when
- * there is none. `http:` and `https:` count as the same, and so do addresses with and without
- * `www.`.
+ * Returns the [oembed.com](https://oembed.com) provider that embeds `url`, or `undefined`. The
+ * match treats `http:` and `https:` as the same. The match also ignores a leading `www.`.
  *
  * ## Example
  *

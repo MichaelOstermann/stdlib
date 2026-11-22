@@ -3,10 +3,12 @@ import type { OEmbed } from "."
 /**
  * # parse
  *
- * Reads what an oEmbed endpoint answers. Returns `undefined` when it is no oEmbed: an unknown
- * `type`, a photo without `url`, a video or rich embed without `html`. Fields of the wrong type are
- * left out, a number in a string is read as a number: providers stray from the spec, Spotify
- * answers `"width": "100%"`, X answers `"height": null`.
+ * Reads the answer of an oEmbed endpoint. Returns `undefined` when the answer is not an oEmbed: an
+ * unknown `type`, a photo without `url`, or a video or rich embed without `html`.
+ *
+ * Providers stray from the spec, so parsing is lenient. Fields of the wrong type are left out. A
+ * number in a string is read as a number. Spotify answers `"width": "100%"`, and X answers
+ * `"height": null`.
  *
  * ## Example
  *

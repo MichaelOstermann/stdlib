@@ -14,10 +14,13 @@ type Message = {
     path: string
 }
 
-/** The messages of one `messages` glob, and every language any of them has. */
+/** The messages of one `messages` glob. `langs` lists every language used by any message. */
 type MessageSet = { langs: string[], messages: Map<string, Message> }
 
-/** The keys below a group by their last part: `{ auth: { signIn: "auth.signIn" } }` */
+/**
+ * Nests keys by their parts. Each leaf maps the last part to the key: `{ auth: { signIn:
+ * "auth.signIn" } }`
+ */
 type Tree = Map<string, string | Tree>
 
 type PropType = "date" | "number" | "string" | "text"
@@ -34,8 +37,9 @@ const identifierName = /^[\p{ID_Start}$_][\p{ID_Continue}$\u200C\u200D]*$/u
 const keyLine = /^(?<indent>\s*)(?:"(?<double>[^"]*)"\s*|'(?<single>[^']*)'\s*|(?<plain>[^\s#"'-][^:#]*)):(?:\s|$)/
 
 /**
- * The functions of a generated file that create `Intl` formatters, each one once and only when it
- * is first used, which spares the languages nobody is using. A file gets the ones it calls.
+ * Functions that a generated file uses to create `Intl` formatters. Each formatter is created once,
+ * on first use, so unused languages cost nothing. A generated file only includes the helpers it
+ * calls.
  */
 const helpers = {
     dateFormat: `const dateFormats = new Map<string, Intl.DateTimeFormat>()
@@ -78,7 +82,7 @@ export async function compile(options: I18nOptions, root: string): Promise<I18nR
     return { ...report, output: { messages: messageSet.messages.size, path: output, written: written.some(Boolean) } }
 }
 
-/** Tracked files and those that are new, without the ignored ones. */
+/** Returns the tracked files plus new files. Ignored files are left out. */
 async function findFiles(root: string): Promise<string[]> {
     const files = await $`git ls-files --cached --others --exclude-standard`.cwd(root).text()
     return files.split("\n").filter(Boolean)
@@ -88,7 +92,7 @@ function byLocation(a: I18nDiagnostic, b: I18nDiagnostic): number {
     return a.path.localeCompare(b.path) || (a.line ?? 0) - (b.line ?? 0) || (a.column ?? 0) - (b.column ?? 0)
 }
 
-/** Leaves the file alone when nothing changed, so watchers do not fire. */
+/** Writes `contents` to `path` only when the contents changed. This keeps watchers from firing. */
 async function writeChanged(path: string, contents: string): Promise<boolean> {
     const file = Bun.file(path)
     const existing = await file.exists() ? await file.text() : undefined
@@ -124,8 +128,9 @@ async function readMessages(root: string, paths: string[], report: Report): Prom
 }
 
 /**
- * Keys become names in the generated code: each part between dots is an identifier, a key is not
- * also the group of another one, and no two keys end up with the same name.
+ * Checks that keys can become names in the generated code. Each part between dots must be an
+ * identifier. A key must not also be the group of another key. No two keys may end up with the same
+ * name.
  */
 function checkNames(messages: Map<string, Message>, report: Report): void {
     const error = (message: Message, text: string): void => {
@@ -167,7 +172,7 @@ function checkNames(messages: Map<string, Message>, report: Report): void {
     }
 }
 
-/** `auth.sign-in: { en: Sign in, de: Anmelden }`, one after another. */
+/** Parses a YAML file of messages like `auth.sign-in: { en: Sign in, de: Anmelden }`. */
 function parseMessages(path: string, text: string, report: Report): Message[] {
     const yaml = parseYaml(path, text, report)
     if (!yaml) return []
@@ -198,7 +203,7 @@ function parseMessages(path: string, text: string, report: Report): Message[] {
     })
 }
 
-/** The messages of a YAML file, nothing when it has none. */
+/** Returns the messages of a YAML file, or `undefined` when there are none. */
 function parseYaml(path: string, text: string, report: Report): Record<string, unknown> | undefined {
     let yaml: unknown
     try {
@@ -217,7 +222,9 @@ function parseYaml(path: string, text: string, report: Report): Record<string, u
     return yaml
 }
 
-/** `{ en: "Sign in", de: "Anmelden" }` as entries, nothing for anything else. */
+/**
+ * Turns `{ en: "Sign in", de: "Anmelden" }` into entries. Returns `undefined` for any other value.
+ */
 function translationsOf(value: unknown): [string, string][] | undefined {
     if (!isRecord(value)) return
     const entries = Object.entries(value)
@@ -233,8 +240,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * The line of each key, and of each language below it. Keys start at the beginning of a line, which
- * is all this has to know about YAML.
+ * Returns the line of each key and of each language below the key. Keys start at the beginning of a
+ * line. That is all `locate` needs to know about YAML.
  */
 function locate(text: string): Map<string, Pick<Message, "langLines" | "line">> {
     const keys = new Map<string, Pick<Message, "langLines" | "line">>()
@@ -255,9 +262,9 @@ function locate(text: string): Map<string, Pick<Message, "langLines" | "line">> 
 }
 
 /**
- * `index.ts` with the types and `m`, and `_messages.ts` with a function per message, named after
- * its key: `_authSignIn`. Files starting with `_` are left out of auto-imports by the editor, and
- * `m.auth.signIn` is rewritten to `_authSignIn` by stdlib-transform.
+ * Returns two files. `index.ts` holds the types and `m`. `_messages.ts` holds one function per
+ * message, named after the key: `_authSignIn`. The editor leaves files starting with `_` out of
+ * auto-imports. stdlib-transform rewrites `m.auth.signIn` to `_authSignIn`.
  */
 function compileFiles({ langs, messages }: MessageSet): Record<"_messages.ts" | "index.ts", string> {
     const used = new Set<Helper>()
@@ -326,7 +333,10 @@ function compileFiles({ langs, messages }: MessageSet): Record<"_messages.ts" | 
     }
 }
 
-/** `_authSignIn` for `auth.signIn`, the `_` keeps reserved words such as `from` apart. */
+/**
+ * Returns `_authSignIn` for `auth.signIn`. The `_` keeps names apart from reserved words such as
+ * `from`.
+ */
 function nameOf(key: string): string {
     const segments = key.split(".").map((segment, i) => i ? segment.charAt(0).toUpperCase() + segment.slice(1) : segment)
     return `_${segments.join("")}`
@@ -346,8 +356,9 @@ function escapeTemplate(value: string): string {
 }
 
 /**
- * A function that returns the message in `ctx.lang`, one `if` per language. The first language of
- * the message comes last, which a language that has not been translated yet falls through to.
+ * Returns a function that returns the message in `ctx.lang`, with one `if` per language. The first
+ * language of the message comes last. Languages without a translation fall through to that first
+ * language.
  */
 function compileMessage(name: string, message: Message, langs: string[], include: (helper: Helper) => Helper): string {
     const props = new Map<string, PropType>()

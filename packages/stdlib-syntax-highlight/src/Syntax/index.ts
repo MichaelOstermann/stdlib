@@ -5,7 +5,7 @@ import { highlighter } from "./highlighter"
 import { languages } from "./languages"
 import { search } from "./search"
 
-/** A language there is a grammar for, found by its `title`, `names` or `extensions`. */
+/** A language that has a grammar. Search finds the language by `title`, `names` or `extensions`. */
 export interface Language {
     extensions: string[]
     names: string[]
@@ -14,16 +14,16 @@ export interface Language {
     title: string
 }
 
-/** What a token is, for the app to color: a `Record<TokenClass, string>` covers every one. */
+/** What a token is, so the app can color it. A `Record<TokenClass, string>` covers every class. */
 export type TokenClass = (typeof tokenClasses)[number]
 
-/** A piece of highlighted code, `length` in UTF-16 code units like the length of a string. */
+/** A piece of highlighted code. `length` counts UTF-16 code units, like the length of a string. */
 export interface Token {
     class: TokenClass | undefined
     length: number
 }
 
-/** What `Syntax.highlighter` starts. */
+/** The result of `Syntax.highlighter`. */
 export interface Highlighter {
     $loaded: ReadonlySignal<ReadonlySet<string>>
     $loading: ReadonlySignal<ReadonlySet<string>>

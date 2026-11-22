@@ -8,7 +8,7 @@ export interface I18nOptions {
 
 export interface I18nDiagnostic {
     column?: number
-    /** From 1, missing when the mistake is in the file as a whole. */
+    /** Starts at 1. Missing when the mistake is about the whole file. */
     line?: number
     message: string
     /** Relative to the folder `compile` runs in. */
@@ -16,9 +16,9 @@ export interface I18nDiagnostic {
 }
 
 export interface I18nResult {
-    /** Mistakes that would break the output, which is not written when there are any. */
+    /** Mistakes that would break the output. Any error stops the output from being written. */
     errors: I18nDiagnostic[]
-    /** The `output` folder with its number of messages, missing when there are errors. */
+    /** The `output` folder and its number of messages. Missing when there are errors. */
     output?: { messages: number, path: string, written: boolean }
     /** Mistakes the output works with, such as a message that is not translated yet. */
     warnings: I18nDiagnostic[]

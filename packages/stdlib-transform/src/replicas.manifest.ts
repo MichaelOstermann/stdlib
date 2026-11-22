@@ -7,7 +7,7 @@ export const replicas: Readonly<Record<string, readonly string[]>> = {
     JSON: ["safeStringify", "tryParse", "tryStringify"],
     Map: ["delete", "isShallowEqual", "set"],
     Math: ["clamp", "mod", "roundTo"],
-    Object: ["defaults", "indexBy", "isPlainObject", "isShallowEqual", "merge", "omit", "pick", "set", "setPath"],
+    Object: ["defaults", "indexBy", "isPlainObject", "isShallowEqual", "mapProp", "matches", "merge", "omit", "pick", "prop", "setPath", "setProp"],
     Promise: ["sleep"],
     Set: ["add", "delete", "difference", "isShallowEqual", "union"],
     String: ["camelCase", "capitalize", "constantCase", "dedent", "distance", "escapeHTML", "graphemes", "kebabCase", "links", "pascalCase", "score", "sentenceCase", "slug", "snakeCase", "titleCase", "uncapitalize", "words"],

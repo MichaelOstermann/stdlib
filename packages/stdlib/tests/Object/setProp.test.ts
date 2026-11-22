@@ -1,35 +1,35 @@
 import { describe, expect, it } from "bun:test"
-import { set } from "../../src/Object/set"
+import { setProp } from "../../src/Object/setProp"
 
-describe("Object.set", () => {
+describe("Object.setProp", () => {
     it("should set into a copy", () => {
         const target = { a: 1, b: 2 }
-        expect(set(target, "b", 3)).toEqual({ a: 1, b: 3 })
+        expect(setProp(target, "b", 3)).toEqual({ a: 1, b: 3 })
         expect(target).toEqual({ a: 1, b: 2 })
     })
 
     it("should return the same object when nothing changed", () => {
         const target = { a: 1, b: 2 }
-        expect(set(target, "b", 2)).toBe(target)
+        expect(setProp(target, "b", 2)).toBe(target)
     })
 
     it("should check keys that are not known until the code runs", () => {
         const target = { a: 1, b: "b" }
         const key = "a" as "a" | "b"
         // @ts-expect-error not a value for every key
-        set(target, key, true)
-        expect(set(target, "a" as const, 2)).toEqual({ a: 2, b: "b" })
+        setProp(target, key, true)
+        expect(setProp(target, "a" as const, 2)).toEqual({ a: 2, b: "b" })
     })
 
     it("should not take NaN for a change", () => {
         const target = { a: Number.NaN }
-        expect(set(target, "a", Number.NaN)).toBe(target)
+        expect(setProp(target, "a", Number.NaN)).toBe(target)
     })
 
     it("should add a key that is set to undefined", () => {
         const target: { a: number, b?: number } = { a: 1 }
-        const result = set(target, "b", undefined)
+        const result = setProp(target, "b", undefined)
         expect("b" in result).toBe(true)
-        expect(set(result, "b", undefined)).toBe(result)
+        expect(setProp(result, "b", undefined)).toBe(result)
     })
 })

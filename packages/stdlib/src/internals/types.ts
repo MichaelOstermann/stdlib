@@ -33,3 +33,6 @@ export type SetValue<T extends AnySet> = T extends ReadonlySet<infer V> ? V : ne
 
 /** Mutable in, mutable out. Readonly in, readonly out. */
 export type UpdatedSet<T extends AnySet, V = SetValue<T>> = T extends Set<any> ? Set<V> : ReadonlySet<V>
+
+/** The keys of every member of `T`, where `keyof T` only has the keys all of them share. */
+export type KeysOfUnion<T> = T extends unknown ? keyof T : never

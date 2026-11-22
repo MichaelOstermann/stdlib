@@ -3,11 +3,14 @@ import { defaults } from "./defaults"
 import { indexBy } from "./indexBy"
 import { isPlainObject } from "./isPlainObject"
 import { isShallowEqual } from "./isShallowEqual"
+import { mapProp } from "./mapProp"
+import { matches } from "./matches"
 import { merge } from "./merge"
 import { omit } from "./omit"
 import { pick } from "./pick"
-import { set } from "./set"
+import { prop } from "./prop"
 import { setPath } from "./setPath"
+import { setProp } from "./setProp"
 
 /**
  * The native `Object`, with the functions of `@monstermann/stdlib` added: `Object.merge`, …
@@ -19,9 +22,12 @@ export const Object = replica(globalThis.Object, {
     indexBy,
     isPlainObject,
     isShallowEqual,
+    mapProp,
+    matches,
     merge,
     omit,
     pick,
-    set,
+    prop,
     setPath,
+    setProp,
 })

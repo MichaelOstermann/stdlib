@@ -1,8 +1,8 @@
 /**
- * # set
+ * # setProp
  *
  * ```ts
- * Object.set(target, key, value)
+ * Object.setProp(target, key, value)
  * ```
  *
  * Sets the property `key` of a copy of `target` to `value`. Returns `target` itself when it has
@@ -14,11 +14,11 @@
  * ## Example
  *
  * ```ts
- * Object.set(task, "title", "New"); // { ...task, title: "New" }
- * Object.set(task, key, value);
+ * Object.setProp(task, "title", "New"); // { ...task, title: "New" }
+ * Object.setProp(task, key, value);
  * ```
  */
-export function set<T extends object, K extends keyof T>(target: T, key: K, value: T[K]): T {
+export function setProp<T extends object, K extends keyof T>(target: T, key: K, value: T[K]): T {
     if (Object.is(target[key], value) && key in target) return target
     // V8 slows `{ ...target, [key]: value }` down a lot once it sees more than one shape, a plain spread copes with up to four:
     const copy = { ...target }

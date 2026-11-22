@@ -12,7 +12,7 @@ import { endBatch, pauseTracking, resumeTracking, startBatch } from "./internals
  *
  * ```ts
  * const moveTask = Action((id: string, sectionId: string) => {
- *     $tasks(tasks => Object.set(tasks, id, { ...tasks[id], sectionId }));
+ *     $tasks(tasks => Object.mapProp(tasks, id, task => ({ ...task, sectionId })));
  *     $selected(id);
  * });
  *

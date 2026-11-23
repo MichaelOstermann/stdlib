@@ -1,8 +1,9 @@
-import type { Primitive, Simplify } from "type-fest"
+import type { Simplify } from "../../../types"
 import type { AnyArray } from "./AnyArray"
 import type { CanMatch } from "./CanMatch"
 import type { ComparedKeys } from "./ComparedKeys"
 import type { Get } from "./Get"
+import type { Primitive } from "./Primitive"
 
 /** The type a callback receives after one of the patterns matched. */
 export type Narrow<T, P> = P extends unknown

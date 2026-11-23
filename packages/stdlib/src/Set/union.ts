@@ -1,4 +1,4 @@
-import type { AnySet, SetValue, UpdatedSet } from "../internals/types"
+import type { AnySet, SetValue, UpdatedSet } from "./internals"
 
 /**
  * # union

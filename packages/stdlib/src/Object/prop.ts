@@ -1,4 +1,4 @@
-import type { KeysOfUnion } from "../internals/types"
+import type { KeysOfUnion } from "./internals"
 
 /** The value of `K` in each member of `T` that has `K`. `undefined` for the other members. */
 type PropOf<T, K extends PropertyKey> = T extends unknown ? K extends keyof T ? T[K] : undefined : never

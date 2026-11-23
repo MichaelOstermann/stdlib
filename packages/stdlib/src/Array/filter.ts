@@ -1,5 +1,5 @@
-import type { Narrowed, Updated } from "../internals/types"
-import { removeWhere } from "../internals/arrays"
+import type { Narrowed, Updated } from "./internals"
+import { removeWhere } from "./internals"
 
 /**
  * # filter

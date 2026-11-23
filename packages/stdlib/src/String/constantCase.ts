@@ -1,5 +1,5 @@
-import type { ConstantCase } from "../internals/strings"
-import { identifierWords } from "../internals/strings"
+import type { ConstantCase } from "./internals/words"
+import { identifierWords } from "./internals/words"
 
 /**
  * # constantCase

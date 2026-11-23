@@ -1,4 +1,4 @@
-import { fromRgb, toRgb } from "../internals/colors"
+import { fromRgb, toRgb } from "./internals"
 import { oklch } from "./oklch"
 import { parse } from "./parse"
 

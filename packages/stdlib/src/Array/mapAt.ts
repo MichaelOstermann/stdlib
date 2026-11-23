@@ -1,4 +1,4 @@
-import type { Updated } from "../internals/types"
+import type { Updated } from "./internals"
 
 /**
  * # mapAt

@@ -1,5 +1,5 @@
-import type { Updated } from "../internals/types"
-import { sortByKeys } from "../internals/arrays"
+import type { Updated } from "./internals"
+import { sortByKeys } from "./internals"
 
 type LocaleOptions = Intl.CollatorOptions & {
     /** The language that decides the order. Defaults to the language of the runtime. */

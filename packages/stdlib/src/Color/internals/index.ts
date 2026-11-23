@@ -1,7 +1,6 @@
-import type { Color } from "../Color"
-import { clamp } from "../Math/clamp"
-
 // The conversion between sRGB and OKLab is taken from https://bottosson.github.io/posts/oklab/
+import type { Color } from ".."
+import { clamp } from "../../Math/clamp"
 
 /**
  * Chroma below this counts as gray. A parsed gray hex has float noise, and its hue means nothing.

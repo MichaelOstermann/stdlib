@@ -21,9 +21,6 @@
     "packages/stdlib": {
       "name": "@monstermann/stdlib",
       "version": "0.1.0",
-      "dependencies": {
-        "type-fest": "^5.0.0",
-      },
     },
     "packages/stdlib-cli": {
       "name": "@monstermann/stdlib-cli",

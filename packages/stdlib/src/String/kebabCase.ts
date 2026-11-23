@@ -1,5 +1,5 @@
-import type { KebabCase } from "../internals/strings"
-import { identifierWords } from "../internals/strings"
+import type { KebabCase } from "./internals/words"
+import { identifierWords } from "./internals/words"
 
 /**
  * # kebabCase

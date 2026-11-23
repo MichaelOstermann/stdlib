@@ -4,8 +4,8 @@ import { roundTo } from "../Math/roundTo"
 /**
  * # oklch
  *
- * Formats a `color` from `Color.parse` as a CSS `oklch()` color. The alpha is only written when
- * the color is transparent.
+ * Formats a `color` from `Color.parse` as a CSS `oklch()` color. The alpha is only written when the
+ * color is transparent.
  *
  * ## Example
  *

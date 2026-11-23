@@ -1,5 +1,5 @@
-import { RetryAgain } from "../internals/retry"
 import { Err } from "../Result"
+import { RetryAgain } from "./internals"
 
 /**
  * # again

@@ -1,5 +1,5 @@
-import type { Updated, Values } from "../internals/types"
-import { matcher, removeWhere } from "../internals/arrays"
+import type { Updated, Values } from "./internals"
+import { matcher, removeWhere } from "./internals"
 
 /**
  * # removeAll

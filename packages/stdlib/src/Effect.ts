@@ -31,8 +31,7 @@ export interface WatchOptions<T> {
  * effect. Stopping also calls the cleanup of the last run. A second stop does nothing.
  *
  * - the effect runs right away, and again after each batch that changed something it read
- * - the function that `computation` returns is called before the next run and when the effect
- *   stops
+ * - the function that `computation` returns is called before the next run and when the effect stops
  * - `this.dispose()` stops the effect from the inside, even during the first run. For this,
  *   `computation` must be a `function`, not an arrow function
  * - an error in `computation` is thrown by the code that created the effect, or by the code that

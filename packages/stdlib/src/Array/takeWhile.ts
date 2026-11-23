@@ -1,4 +1,4 @@
-import type { Narrowed, Updated } from "../internals/types"
+import type { Narrowed, Updated } from "./internals"
 
 /**
  * # takeWhile

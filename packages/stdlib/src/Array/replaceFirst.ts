@@ -1,5 +1,5 @@
-import type { Updated } from "../internals/types"
-import { indexOf, setAt } from "../internals/arrays"
+import type { Updated } from "./internals"
+import { indexOf, setAt } from "./internals"
 
 /**
  * # replaceFirst

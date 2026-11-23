@@ -1,5 +1,5 @@
-import type { SnakeCase } from "../internals/strings"
-import { identifierWords } from "../internals/strings"
+import type { SnakeCase } from "./internals/words"
+import { identifierWords } from "./internals/words"
 
 /**
  * # snakeCase

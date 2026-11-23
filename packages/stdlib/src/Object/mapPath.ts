@@ -1,5 +1,5 @@
-import type { PathOf, ValueAt } from "../internals/paths"
-import { readPath, writePath } from "../internals/paths"
+import type { PathOf, ValueAt } from "./internals"
+import { readPath, writePath } from "./internals"
 
 /**
  * # mapPath

@@ -76,7 +76,7 @@ describe("transform", () => {
             call(pipe, m, Duration.parse);
         `)).toBe(dedent(`
             import { pipe } from "@monstermann/stdlib/pipe";
-            import { match as m } from "@monstermann/stdlib/match";
+            import { match as m } from "@monstermann/stdlib/match/index";
             import { parse as _parse } from "@monstermann/stdlib/Duration/parse";
             call(pipe, m, _parse);
         `))
@@ -172,8 +172,8 @@ describe("transform", () => {
             const a = (value, other, pattern) => match(value).onCase(1, v => match(other).case(v, "same").shape(pattern, [_, v], "alike").unwrap()).unwrapOrElse(() => match(other).case(2, "other").unwrapOr("none"));
         `)).toBe(dedent(`
 
-            import { matches as matches0 } from "@monstermann/stdlib/internals/match/matches";
-            import { throwUnmatched as throwUnmatched0 } from "@monstermann/stdlib/internals/match/throwUnmatched";
+            import { matches as matches0 } from "@monstermann/stdlib/match/internals/matches";
+            import { throwUnmatched as throwUnmatched0 } from "@monstermann/stdlib/match/internals/throwUnmatched";
             const a = (value, other, pattern) => ((value === (1)) ? (((other === (value)) ? ("same")
             : (matches0(other, pattern) || (Array.isArray(other) && other.length === 2 && other[1] === (value))) ? ("alike")
             : throwUnmatched0(other)))
@@ -198,7 +198,7 @@ describe("transform", () => {
             import { match } from "@monstermann/stdlib";
             const a = match(value).case(1, "one").unwrapOr("other");
             const b = match;
-        `)).toStartWith(`import { match } from "@monstermann/stdlib/match";`)
+        `)).toStartWith(`import { match } from "@monstermann/stdlib/match/index";`)
     })
 
     it("should leave unknown exports, other packages and namespace imports alone", () => {

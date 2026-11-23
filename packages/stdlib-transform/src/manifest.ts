@@ -31,7 +31,7 @@ export const functions: ReadonlyMap<string, string> = new Map([
     ["Function", "Function/index"],
     ["JSON", "JSON/index"],
     ["Map", "Map/index"],
-    ["match", "match"],
+    ["match", "match/index"],
     ["Math", "Math/index"],
     ["Memo", "Memo"],
     ["Object", "Object/index"],

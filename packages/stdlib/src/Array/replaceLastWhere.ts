@@ -1,5 +1,5 @@
-import type { Updated } from "../internals/types"
-import { indexWhere, setAt } from "../internals/arrays"
+import type { Updated } from "./internals"
+import { indexWhere, setAt } from "./internals"
 
 /**
  * # replaceLastWhere

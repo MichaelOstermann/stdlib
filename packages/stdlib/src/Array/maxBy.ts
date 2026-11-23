@@ -1,4 +1,4 @@
-import type { Comparable } from "../internals/arrays"
+import type { Comparable } from "./internals"
 
 /**
  * # maxBy

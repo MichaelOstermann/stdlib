@@ -1,5 +1,4 @@
 import type { Result } from "../src/Result"
-import type { SemaphoreFullError } from "../src/Semaphore"
 import { describe, expect, it } from "bun:test"
 import { Semaphore } from "../src/Semaphore"
 
@@ -89,7 +88,7 @@ describe("Semaphore", () => {
         const second = semaphore.run(b.run)
         const third = await semaphore.run(() => 3)
 
-        const typed: Result<number, SemaphoreFullError> = third
+        const typed: Result<number, Semaphore.FullError> = third
         expect(typed.ok).toBe(false)
         expect(typed.value).toEqual({ message: "Too many are waiting already", name: "SemaphoreFullError" })
         expect(semaphore.size).toBe(2)

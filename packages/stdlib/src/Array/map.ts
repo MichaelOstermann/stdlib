@@ -1,5 +1,5 @@
-import type { Updated } from "../internals/types"
-import { mapWhere } from "../internals/arrays"
+import type { Updated } from "./internals"
+import { mapWhere } from "./internals"
 
 /**
  * # map

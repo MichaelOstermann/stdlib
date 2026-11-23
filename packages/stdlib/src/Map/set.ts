@@ -1,4 +1,4 @@
-import type { AnyMap, MapKey, MapValue, UpdatedMap } from "../internals/types"
+import type { AnyMap, MapKey, MapValue, UpdatedMap } from "./internals"
 
 /**
  * # set

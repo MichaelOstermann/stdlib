@@ -1,7 +1,7 @@
 import { again } from "./again"
 import { run } from "./run"
 
-export type { RetryAgain } from "../internals/retry"
+export type { RetryAgain } from "./internals"
 
 export interface RetryOptions {
     /**

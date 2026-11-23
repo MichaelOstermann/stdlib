@@ -1,4 +1,4 @@
-import type { KeysOfUnion } from "../internals/types"
+import type { KeysOfUnion } from "./internals"
 
 /**
  * The properties of one member of `T`, each optional. Properties of other members are not allowed.

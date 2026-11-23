@@ -166,7 +166,7 @@ export function transformMatches(code: string, filePath: string, from: string, h
     })
 
     for (const name of added) {
-        const helper = `import { ${name} as ${helpers[name]} } from "${from}/internals/match/${name}";`
+        const helper = `import { ${name} as ${helpers[name]} } from "${from}/match/internals/${name}";`
         ctx.ms.appendLeft(match.node.end, `\n${helper}`)
     }
 

@@ -1,5 +1,5 @@
 import type { Simplify } from "../types"
-import { ownKeys, setOwn } from "../internals/objects"
+import { ownKeys, setOwn } from "./internals"
 
 /**
  * # defaults

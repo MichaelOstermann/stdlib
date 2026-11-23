@@ -1,4 +1,4 @@
-import type { DistributedOmit, KeysOfUnion } from "type-fest"
+import type { KeysOfUnion } from "./internals"
 
 /**
  * # omit
@@ -12,7 +12,7 @@ import type { DistributedOmit, KeysOfUnion } from "type-fest"
  * Object.omit({ a: 1, b: 2, c: 3 }, ["b"]); // { a: 1, c: 3 }
  * ```
  */
-export function omit<T extends object, K extends KeysOfUnion<T>>(target: T, keys: Iterable<K>): DistributedOmit<T, K>
+export function omit<T extends object, K extends KeysOfUnion<T>>(target: T, keys: Iterable<K>): T extends unknown ? Omit<T, K> : never
 export function omit(target: Record<PropertyKey, unknown>, keys: Iterable<PropertyKey>): Record<PropertyKey, unknown> {
     let result: Record<PropertyKey, unknown> | undefined
     for (const key of keys) {

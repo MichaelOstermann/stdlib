@@ -1,5 +1,5 @@
-import type { TitleCase } from "../internals/strings"
-import { identifierWords, pascalCaseWords } from "../internals/strings"
+import type { TitleCase } from "./internals/words"
+import { identifierWords, pascalCaseWords } from "./internals/words"
 
 /**
  * # titleCase

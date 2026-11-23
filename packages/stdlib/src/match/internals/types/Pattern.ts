@@ -1,5 +1,5 @@
-import type { Primitive } from "type-fest"
 import type { AnyArray } from "./AnyArray"
+import type { Primitive } from "./Primitive"
 import type { Wildcard } from "./Wildcard"
 
 /** Everything that can be matched against: primitives, shallow objects and tuples. */

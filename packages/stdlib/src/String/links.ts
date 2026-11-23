@@ -12,6 +12,7 @@ type Found = [start: number, end: number, schema: string]
  * # links
  *
  * Returns a generator that yields the links in `target`:
+ *
  * - links with a scheme: `http:`, `https:`, `ftp:`, `mailto:` or `//`
  * - links without a scheme that end in a known top-level domain
  * - email addresses

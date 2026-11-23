@@ -1,4 +1,4 @@
-import { transliterations } from "../internals/transliterations"
+import { transliterations } from "./internals/transliterations"
 
 /**
  * # slug

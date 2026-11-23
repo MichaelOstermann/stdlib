@@ -1,8 +1,8 @@
-import type { MatchTag } from "./internals/match/tag"
-import type { Matcher } from "./internals/match/types/Matcher"
-import { _ } from "./_"
-import { tag } from "./internals/match/tag"
-import { Unmatched } from "./internals/match/Unmatched"
+import type { MatchTag } from "./internals/tag"
+import type { Matcher } from "./internals/types/Matcher"
+import { _ } from "../_"
+import { tag } from "./internals/tag"
+import { Unmatched } from "./internals/Unmatched"
 
 export interface Match {
     /**

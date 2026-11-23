@@ -1,5 +1,5 @@
-import type { Narrowed, Updated } from "../internals/types"
-import { indexWhere, setAt } from "../internals/arrays"
+import type { Narrowed, Updated } from "./internals"
+import { indexWhere, setAt } from "./internals"
 
 /**
  * # mapLastWhere

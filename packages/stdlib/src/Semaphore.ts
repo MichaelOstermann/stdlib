@@ -1,18 +1,6 @@
 import { Err, Ok } from "./Result"
 import { ResultAsync } from "./ResultAsync"
 
-/** The failure of a semaphore with `maxWaiting` when `maxWaiting` functions already wait. */
-export type SemaphoreFullError = { message: string, name: "SemaphoreFullError" }
-
-/** The options of `run`, besides the function. */
-export interface SemaphoreRunOptions {
-    /**
-     * Removes a waiting function from the line. `run` then rejects with `signal.reason`. A running
-     * function is not stopped. Pass the signal on to the function for that.
-     */
-    signal?: AbortSignal
-}
-
 /**
  * Runs a limited number of functions at the same time. The other functions wait for their turn, in
  * the order they came in.
@@ -22,21 +10,35 @@ export interface Semaphore {
      * Calls `fn` when its turn comes, and resolves or rejects like `fn`. With a `key`, the limit
      * applies per key. Functions of different keys do not wait for each other.
      */
-    run: (<T>(fn: () => PromiseLike<T> | T, options?: SemaphoreRunOptions) => Promise<Awaited<T>>) & (<T>(key: PropertyKey, fn: () => PromiseLike<T> | T, options?: SemaphoreRunOptions) => Promise<Awaited<T>>)
+    run: (<T>(fn: () => PromiseLike<T> | T, options?: Semaphore.RunOptions) => Promise<Awaited<T>>) & (<T>(key: PropertyKey, fn: () => PromiseLike<T> | T, options?: Semaphore.RunOptions) => Promise<Awaited<T>>)
     /** How many functions are running or waiting. */
     readonly size: number
     /** Resolves once nothing is running or waiting. Resolves right away when nothing is. */
     idle: () => Promise<void>
 }
 
-/** A semaphore with a limited line. Functions beyond the limit fail. */
-export interface BoundedSemaphore extends Omit<Semaphore, "run"> {
-    /**
-     * Calls `fn` when its turn comes, and succeeds with the result of `fn`. Fails right away when
-     * too many functions already wait. With a `key`, the limits apply per key. Functions of
-     * different keys do not wait for each other.
-     */
-    run: (<T>(fn: () => PromiseLike<T> | T, options?: SemaphoreRunOptions) => ResultAsync<Awaited<T>, SemaphoreFullError>) & (<T>(key: PropertyKey, fn: () => PromiseLike<T> | T, options?: SemaphoreRunOptions) => ResultAsync<Awaited<T>, SemaphoreFullError>)
+export namespace Semaphore {
+    /** The failure of a semaphore when `maxWaiting` functions already wait. */
+    export type FullError = { message: string, name: "SemaphoreFullError" }
+
+    /** The options of `run`, besides the function. */
+    export interface RunOptions {
+        /**
+         * Removes a waiting function from the line. `run` then rejects with `signal.reason`. A
+         * running function is not stopped. Pass the signal on to the function for that.
+         */
+        signal?: AbortSignal
+    }
+
+    /** A semaphore with a limited line. Functions beyond the limit fail. */
+    export interface Bounded extends Omit<Semaphore, "run"> {
+        /**
+         * Calls `fn` when its turn comes, and succeeds with the result of `fn`. Fails right away
+         * when too many functions already wait. With a `key`, the limits apply per key. Functions
+         * of different keys do not wait for each other.
+         */
+        run: (<T>(fn: () => PromiseLike<T> | T, options?: RunOptions) => ResultAsync<Awaited<T>, FullError>) & (<T>(key: PropertyKey, fn: () => PromiseLike<T> | T, options?: RunOptions) => ResultAsync<Awaited<T>, FullError>)
+    }
 }
 
 interface Slot {
@@ -56,14 +58,14 @@ type Fn = () => unknown
  * - `run(fn)` is a pool, or a queue with a `concurrency` of `1`
  * - `run(key, fn)` is a lock: the limit applies to each key on its own
  * - with `maxWaiting`, `run` returns a `ResultAsync`. When the line is full, it fails with a
- *   `SemaphoreFullError`
+ *   `Semaphore.FullError`
  * - with a `signal`, aborting removes a waiting function from the line. `run` then rejects with
  *   `signal.reason`, like `fetch` does
  *
  * ```ts
  * const hashing = Semaphore({ concurrency: 2, maxWaiting: 100 });
  * const hash = await hashing.run(() => Bun.password.hash(password));
- * // Result<string, SemaphoreFullError>
+ * // Result<string, Semaphore.FullError>
  *
  * const migrations = Semaphore({ concurrency: 1 });
  * await migrations.run(path, () => migrate(path));
@@ -75,9 +77,9 @@ type Fn = () => unknown
  * await migrations.run(path, () => migrate(path), { signal: AbortSignal.timeout(5000) });
  * ```
  */
-export function Semaphore(options: { concurrency: number, maxWaiting: number }): BoundedSemaphore
+export function Semaphore(options: { concurrency: number, maxWaiting: number }): Semaphore.Bounded
 export function Semaphore(options: { concurrency: number }): Semaphore
-export function Semaphore(options: { concurrency: number, maxWaiting?: number }): BoundedSemaphore | Semaphore {
+export function Semaphore(options: { concurrency: number, maxWaiting?: number }): Semaphore | Semaphore.Bounded {
     const { concurrency, maxWaiting } = options
     if (!(concurrency >= 1)) throw new RangeError("Semaphore: a concurrency below 1 lets nothing run.")
 
@@ -157,11 +159,11 @@ export function Semaphore(options: { concurrency: number, maxWaiting?: number })
 
     return {
         idle: () => size === 0 ? Promise.resolve() : new Promise((resolve) => idle.push(resolve)),
-        run(a: Fn | PropertyKey, b?: Fn | SemaphoreRunOptions, c?: SemaphoreRunOptions): never {
+        run(a: Fn | PropertyKey, b?: Fn | Semaphore.RunOptions, c?: Semaphore.RunOptions): never {
             const hasKey = typeof a !== "function"
             const key = hasKey ? a : slots
             const fn = (hasKey ? b : a) as Fn
-            const signal = (hasKey ? c : b as SemaphoreRunOptions | undefined)?.signal
+            const signal = (hasKey ? c : b as Semaphore.RunOptions | undefined)?.signal
             if (maxWaiting === undefined) return run(key, fn, signal, full) as never
 
             return ResultAsync.from(async () => {

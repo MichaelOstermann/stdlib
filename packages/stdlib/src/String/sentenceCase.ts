@@ -1,5 +1,5 @@
-import type { SentenceCase } from "../internals/strings"
-import { identifierWords } from "../internals/strings"
+import type { SentenceCase } from "./internals/words"
+import { identifierWords } from "./internals/words"
 
 /**
  * # sentenceCase

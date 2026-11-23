@@ -1,4 +1,4 @@
-import { setOwn } from "../internals/objects"
+import { setOwn } from "./internals"
 
 /**
  * # merge

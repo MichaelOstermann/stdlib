@@ -1,6 +1,5 @@
-import type { Comparable } from "../internals/arrays"
-import type { Updated } from "../internals/types"
-import { sortByKeys } from "../internals/arrays"
+import type { Comparable, Updated } from "./internals"
+import { sortByKeys } from "./internals"
 
 /**
  * # sortBy

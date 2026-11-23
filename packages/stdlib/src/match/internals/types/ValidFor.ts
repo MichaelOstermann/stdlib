@@ -1,4 +1,4 @@
-import type { IsEqual } from "type-fest"
+import type { IsEqual } from "./IsEqual"
 import type { MatchError } from "./MatchError"
 import type { Narrow } from "./Narrow"
 

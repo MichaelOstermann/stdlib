@@ -1,5 +1,5 @@
-import type { CamelCase } from "../internals/strings"
-import { identifierWords, pascalCaseWords } from "../internals/strings"
+import type { CamelCase } from "./internals/words"
+import { identifierWords, pascalCaseWords } from "./internals/words"
 
 /**
  * # camelCase

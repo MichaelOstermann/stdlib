@@ -1,5 +1,5 @@
-import type { Updated } from "../internals/types"
-import { removeWhere as update } from "../internals/arrays"
+import type { Updated } from "./internals"
+import { removeWhere as update } from "./internals"
 
 /**
  * # removeWhere

@@ -1,5 +1,5 @@
-import type { PascalCase } from "../internals/strings"
-import { identifierWords, pascalCaseWords } from "../internals/strings"
+import type { PascalCase } from "./internals/words"
+import { identifierWords, pascalCaseWords } from "./internals/words"
 
 /**
  * # pascalCase

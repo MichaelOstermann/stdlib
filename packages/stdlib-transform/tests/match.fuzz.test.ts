@@ -1,8 +1,8 @@
 import { describe, expect, it } from "bun:test"
 import { _ } from "../../stdlib/src/_"
-import { matches } from "../../stdlib/src/internals/match/matches"
-import { throwUnmatched } from "../../stdlib/src/internals/match/throwUnmatched"
 import { match } from "../../stdlib/src/match"
+import { matches } from "../../stdlib/src/match/internals/matches"
+import { throwUnmatched } from "../../stdlib/src/match/internals/throwUnmatched"
 import { transformMatches } from "../src/match"
 
 // Chains that are made up, to see that running them as they are and compiled comes to the same,

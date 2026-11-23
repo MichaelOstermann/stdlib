@@ -1,4 +1,4 @@
-import type { Excluded, Narrowed } from "../internals/types"
+import type { Excluded, Narrowed } from "./internals"
 
 /**
  * # partition

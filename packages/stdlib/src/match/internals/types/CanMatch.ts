@@ -1,9 +1,9 @@
-import type { Primitive } from "type-fest"
+// Whether a member of the input could be matched by a pattern.
 import type { AnyArray } from "./AnyArray"
 import type { ComparedKeys } from "./ComparedKeys"
 import type { Get } from "./Get"
+import type { Primitive } from "./Primitive"
 
-// Whether a member of the input could be matched by a pattern.
 export type CanMatch<T, P> = 0 extends 1 & T
     // Anything.
     ? true

@@ -1,5 +1,5 @@
-import type { Updated } from "../internals/types"
-import { indexWhere, removeAt } from "../internals/arrays"
+import type { Updated } from "./internals"
+import { indexWhere, removeAt } from "./internals"
 
 /**
  * # removeFirstWhere

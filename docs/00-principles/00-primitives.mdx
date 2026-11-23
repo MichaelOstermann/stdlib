@@ -275,7 +275,7 @@ await locks.run(path, () => migrate(path))
 
 // Bounded: fails instead of letting more than 100 wait.
 const hashing = Semaphore({ concurrency: 2, maxWaiting: 100 })
-const hash = await hashing.run(() => hashPassword(password)) // Result<string, SemaphoreFullError>
+const hash = await hashing.run(() => hashPassword(password)) // Result<string, Semaphore.FullError>
 
 // Waiting until nothing is running or waiting:
 await pool.idle()

@@ -1,3 +1,17 @@
+/** Returns the keys that `{ ...value }` copies: the own enumerable keys, symbols included. */
+export function ownKeys(value: object): PropertyKey[] {
+    const keys: PropertyKey[] = Object.keys(value)
+    for (const symbol of Object.getOwnPropertySymbols(value)) {
+        if (Object.prototype.propertyIsEnumerable.call(value, symbol)) keys.push(symbol)
+    }
+    return keys
+}
+
+/** Defines the property instead of assigning it, so `"__proto__"` is a key like any other. */
+export function setOwn(target: object, key: PropertyKey, value: unknown): void {
+    Object.defineProperty(target, key, { configurable: true, enumerable: true, value, writable: true })
+}
+
 /** The keys that a path can continue with in `T`: keys of objects, not of arrays. */
 type Key<T> = [T] extends [readonly unknown[]] ? never : [T] extends [object] ? keyof T & string : never
 
@@ -36,3 +50,9 @@ export function writePath(target: any, keys: string[], value: unknown, index = 0
     result[key] = index === keys.length - 1 ? value : writePath(target[key], keys, value, index + 1)
     return result
 }
+
+/**
+ * The keys of every member of `T`. `keyof T` only has the keys that all members share. A generic
+ * `T` still accepts the keys of its constraint.
+ */
+export type KeysOfUnion<T> = keyof T | (T extends unknown ? keyof T : never)

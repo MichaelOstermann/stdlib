@@ -1,7 +1,7 @@
-import type { IsUnion } from "type-fest"
-
 // Results are passed along with the patterns, where literals are not widened the way they usually are.
 // Something that is one of several literals has been given a type, and keeps it.
+import type { IsUnion } from "./IsUnion"
+
 export type Widen<T> = IsUnion<T> extends true
     ? T
     : T extends string

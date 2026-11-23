@@ -61,8 +61,8 @@ export interface AsyncEmitter<T = void> extends ReadonlyAsyncEmitter<T> {
 /**
  * `Emitter<T>(dispatch?)`
  *
- * Creates a single event. The argument decides what a call does. A function is added as a
- * listener. Anything else is sent to the listeners as a message, so a function cannot be a message.
+ * Creates a single event. The argument decides what a call does. A function is added as a listener.
+ * Anything else is sent to the listeners as a message, so a function cannot be a message.
  *
  * - listeners are kept in a `Set`. The same function counts once. A listener added while a message
  *   is sent is called as well

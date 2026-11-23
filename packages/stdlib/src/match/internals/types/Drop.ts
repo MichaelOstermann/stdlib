@@ -1,10 +1,13 @@
-import type { IsUnion, Primitive, Simplify, UnionToTuple } from "type-fest"
+import type { Simplify } from "../../../types"
 import type { AnyArray } from "./AnyArray"
 import type { CanMatch } from "./CanMatch"
 import type { ComparedKeys } from "./ComparedKeys"
 import type { Get } from "./Get"
 import type { IsExact } from "./IsExact"
+import type { IsUnion } from "./IsUnion"
 import type { IsUnit } from "./IsUnit"
+import type { Primitive } from "./Primitive"
+import type { UnionToTuple } from "./UnionToTuple"
 
 /** The input type that remains after a pattern did not match. */
 export type Drop<T, P> = IsUnion<P> extends true

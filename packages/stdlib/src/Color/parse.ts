@@ -1,5 +1,5 @@
 import type { Color } from "."
-import { fromRgb, normalizeHue } from "../internals/colors"
+import { fromRgb, normalizeHue } from "./internals"
 
 /**
  * # parse

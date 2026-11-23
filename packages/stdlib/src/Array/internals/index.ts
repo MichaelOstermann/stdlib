@@ -76,3 +76,26 @@ export function sortByKeys<K>(target: unknown[], keys: K[], compare: (a: K, b: K
 
     return order.map((index) => target[index])
 }
+
+/**
+ * Mutable in, mutable out. Readonly in, readonly out. Without `U`, the elements keep their type.
+ * Each member of a union of arrays is handled on its own.
+ */
+export type Updated<T extends readonly unknown[], U = never> = T extends unknown[]
+    ? ([U] extends [never] ? T[number] : U)[]
+    : readonly ([U] extends [never] ? T[number] : U)[]
+
+/**
+ * Several values. A string is rejected: a string is iterable, but never meant as a list of
+ * characters.
+ */
+export type Values<T extends readonly unknown[], V extends Iterable<T[number]>> = V extends string ? never : V
+
+/** The type a type guard narrows to. `T` for a plain predicate. */
+export type Narrowed<P, T> = P extends (value: any, ...args: any[]) => value is infer U ? U : T
+
+/**
+ * The element type of the second list of a partition. For a type guard, `T` without the narrowed
+ * type. Otherwise `T`.
+ */
+export type Excluded<P, T> = P extends (value: any, ...args: any[]) => value is infer U ? Exclude<T, U> : T

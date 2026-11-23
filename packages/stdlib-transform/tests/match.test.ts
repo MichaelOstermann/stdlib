@@ -1,8 +1,8 @@
 import { describe, expect, it } from "bun:test"
 import { _ } from "../../stdlib/src/_"
-import { matches } from "../../stdlib/src/internals/match/matches"
-import { throwUnmatched } from "../../stdlib/src/internals/match/throwUnmatched"
 import { match } from "../../stdlib/src/match"
+import { matches } from "../../stdlib/src/match/internals/matches"
+import { throwUnmatched } from "../../stdlib/src/match/internals/throwUnmatched"
 import { transformMatches } from "../src/match"
 
 const from = "@monstermann/stdlib"
@@ -133,22 +133,22 @@ describe("transformMatches", () => {
         expect(compile(`match(a).case(1, 2).unwrapOr(3);`).imports).toBe(`${imports}\n`)
         expect(compile(`match(a).shape(b, 2).unwrap();\nmatch(a).shape(b, 2).unwrap();`).imports).toBe([
             imports,
-            `import { matches as matches0 } from "${from}/internals/match/matches";`,
-            `import { throwUnmatched as throwUnmatched0 } from "${from}/internals/match/throwUnmatched";`,
+            `import { matches as matches0 } from "${from}/match/internals/matches";`,
+            `import { throwUnmatched as throwUnmatched0 } from "${from}/match/internals/throwUnmatched";`,
             ``,
         ].join("\n"))
         // Names that are taken, and what a chain that is kept as it is asked for.
         expect(compile(`const matches0 = 1;\nmatch(a).shape(b, 2).unwrapOr(3);\nmatch(a).shape(b, 2).unwrapOr(...c);`).imports).toBe([
             imports,
-            `import { matches as matches1 } from "${from}/internals/match/matches";`,
+            `import { matches as matches1 } from "${from}/match/internals/matches";`,
             ``,
         ].join("\n"))
         expect(compile(`match(a).shape(b, 2).unwrapOr(...c);`).imports).toBe(`${imports}\n`)
         // What has been imported by a run before.
         const again = transformMatches(`${imports}\nmatch(a).shape(b, 2).unwrap();`, "source.ts", from, { matches: "known" })!.ms.toString()
         expect(again).toContain(`known(match0, b)`)
-        expect(again).not.toContain(`/internals/match/matches"`)
-        expect(again).toContain(`/internals/match/throwUnmatched"`)
+        expect(again).not.toContain(`/match/internals/matches"`)
+        expect(again).toContain(`/match/internals/throwUnmatched"`)
     })
 
     it("should use results as they are, and call the ones that are asked to be called", () => {

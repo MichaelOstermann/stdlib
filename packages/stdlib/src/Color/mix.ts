@@ -1,4 +1,4 @@
-import { normalizeHue } from "../internals/colors"
+import { normalizeHue } from "./internals"
 import { oklch } from "./oklch"
 import { parse } from "./parse"
 

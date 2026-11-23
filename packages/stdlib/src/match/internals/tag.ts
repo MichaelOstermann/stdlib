@@ -19,8 +19,8 @@ type Returned<H> = H[keyof H] extends infer F ? F extends (...args: never[]) => 
 
 /**
  * A key that is a literal in every member, `never` otherwise. A `string` in one member, like the
- * `name` of a plain `Error`, would leave members that no handler can name. Use
- * `match(value).shape` for those.
+ * `name` of a plain `Error`, would leave members that no handler can name. Use `match(value).shape`
+ * for those.
  */
 type Discriminant<T, K extends keyof T> = false extends (T[K] extends infer V ? V extends unknown ? IsLiteral<V> : never : never)
     ? never

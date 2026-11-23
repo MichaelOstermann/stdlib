@@ -3,9 +3,9 @@ import type { Result } from "../Result"
 import type { InferAsyncErr, InferAsyncOk } from "../ResultAsync"
 import { backoff } from "../Duration/backoff"
 import { jitter } from "../Duration/jitter"
-import { RetryAgain } from "../internals/retry"
 import { Err } from "../Result"
 import { ResultAsync } from "../ResultAsync"
+import { RetryAgain } from "./internals"
 
 type RetryFn = (attempt: number) => PromiseLike<Result<unknown, unknown>> | Result<unknown, unknown>
 type RetryErr<E> = E extends RetryAgain<infer U> ? U : E

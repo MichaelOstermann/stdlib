@@ -1,9 +1,8 @@
-import type { ResolvedArgv } from "./resolve/argv"
-import type { AnyCommand } from "./types"
+import type { CLI } from "."
 import { serve } from "../internals/serve"
-import { env } from "./env"
 import { exec } from "./exec"
-import { format } from "./format"
+import { formatExec } from "./formatExec"
+import { isHuman } from "./isHuman"
 
 /**
  * # run
@@ -23,12 +22,12 @@ import { format } from "./format"
  * await CLI.run(miko, { name: "miko", rpc })
  * ```
  */
-export async function run(root: AnyCommand, input: { argv?: ResolvedArgv, name: string, prompt?: false, rpc?: AnyCommand }): Promise<void> {
+export async function run(root: CLI.AnyCommand, input: { argv?: CLI.ResolvedArgv, name: string, prompt?: false, rpc?: CLI.AnyCommand }): Promise<void> {
     const execution = await exec(root, input)
     if (input.rpc && execution.command?.command === input.rpc && !execution.argv.isHelp) return serve(root, { name: input.name, rpc: input.rpc })
-    const text = format.exec(execution)
+    const text = formatExec(execution)
     const isFailure = !execution.result.ok
     if (text && (!isFailure || execution.isRPC)) process.stdout.write(`${text}\n`)
-    if (text && isFailure && !execution.isRPC) process.stderr.write(env.human ? `\n${text}\n` : `${text}\n`)
+    if (text && isFailure && !execution.isRPC) process.stderr.write(isHuman() ? `\n${text}\n` : `${text}\n`)
     if (isFailure) process.exitCode = 1
 }

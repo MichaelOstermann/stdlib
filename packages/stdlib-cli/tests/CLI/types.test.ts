@@ -1,4 +1,3 @@
-import type { InferOptions } from "../../src"
 import { Err, Ok } from "@monstermann/stdlib"
 import { describe, expectTypeOf, it } from "bun:test"
 import { CLI } from "../../src"
@@ -22,7 +21,7 @@ const add = CLI
 
 describe("InferOptions", () => {
     it("should be the values the action gets", () => {
-        expectTypeOf<InferOptions<typeof add>>().toEqualTypeOf<{
+        expectTypeOf<CLI.InferOptions<typeof add>>().toEqualTypeOf<{
             email: string
             firstName: string | undefined
             notify: boolean

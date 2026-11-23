@@ -1,11 +1,10 @@
 import type { Failure, Result } from "@monstermann/stdlib"
-import type { CLIInternalError, CLIInvalidMessageError, CLIOptionsError, CLIUnknownCommandError } from "../../src"
 import type { CLIClient } from "../../src/client"
 import { Err, Ok } from "@monstermann/stdlib"
 import { describe, expectTypeOf, it } from "bun:test"
 import { CLI } from "../../src"
 
-type CLIErrors = CLIInvalidMessageError | CLIOptionsError | CLIInternalError | CLIUnknownCommandError
+type CLIErrors = CLI.InvalidMessageError | CLI.OptionsError | CLI.InternalError | CLI.UnknownCommandError
 
 type TakenError = { message: string, meta: { email: string }, name: "TakenError" }
 

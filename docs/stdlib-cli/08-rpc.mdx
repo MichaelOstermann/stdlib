@@ -63,7 +63,7 @@ const remote = CLIClient.connect<typeof rpc>({
     },
 })
 
-// Result<{ hello: string }, { message: string } | CLIError | CLIInvalidMessageError>
+// Result<{ hello: string }, { message: string } | CLI.Error | CLI.InvalidMessageError>
 const result = await remote.foo({ bar: true })
 ```
 
@@ -85,7 +85,7 @@ const rpc = CLI
 const root = CLI
     .command()
     .commands({
-        // Prints CLI.format.json(output):
+        // Prints CLI.formatJSON(output):
         foo,
         // Prints { ok, value } as JSON:
         rpc,
@@ -94,7 +94,7 @@ const root = CLI
 
 ```ts
 const base = CLI.command().options({ bar: CLI.boolean() })
-const foo = (options: InferOptions<typeof base>) => Ok({ hello: "world" })
+const foo = (options: CLI.InferOptions<typeof base>) => Ok({ hello: "world" })
 
 const rpc = CLI
     .command()
@@ -119,5 +119,5 @@ const root = CLI
 `console.*` utilities will send unexpected messages to stdout, if you want to be safe, you can redirect them to stderr (used by default in `CLI.run` for RPC commands):
 
 ```ts
-CLI.console.redirect()
+CLI.redirectConsole()
 ```

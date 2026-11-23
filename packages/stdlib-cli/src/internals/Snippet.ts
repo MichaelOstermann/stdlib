@@ -1,4 +1,4 @@
-import { ansi } from "../CLI/ansi"
+import { red } from "../CLI/red"
 import { quote } from "./quote"
 
 /**
@@ -21,7 +21,7 @@ export const Snippet = {
         const underline = Array.from({ length: line.length }, () => " ")
         for (const span of spans) underline.fill("^", span.start, span.end)
         const cut = (text: string): string => text.slice(start + head.length, end - tail.length)
-        return [`${head}${cut(line)}${tail}`, ansi.red(`${" ".repeat(head.length)}${cut(underline.join(""))}`.trimEnd())]
+        return [`${head}${cut(line)}${tail}`, red(`${" ".repeat(head.length)}${cut(underline.join(""))}`.trimEnd())]
     },
 }
 

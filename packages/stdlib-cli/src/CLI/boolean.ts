@@ -1,14 +1,4 @@
-export interface BooleanOption {
-    readonly config: BooleanOptionConfig
-    readonly kind: "boolean"
-    default: (value: boolean) => BooleanOption
-    desc: (desc: string) => BooleanOption
-}
-
-export interface BooleanOptionConfig {
-    default: boolean
-    desc?: string
-}
+import type { CLI } from "."
 
 /**
  * # boolean
@@ -22,11 +12,11 @@ export interface BooleanOptionConfig {
  * const force = CLI.boolean().desc("Overwrite what is there")
  * ```
  */
-export function boolean(): BooleanOption {
+export function boolean(): CLI.BooleanOption {
     return build({ default: false })
 }
 
-function build(config: BooleanOptionConfig): BooleanOption {
+function build(config: CLI.BooleanOptionConfig): CLI.BooleanOption {
     return {
         config,
         kind: "boolean",

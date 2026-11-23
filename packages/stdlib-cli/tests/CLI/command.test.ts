@@ -1,4 +1,3 @@
-import type { InferOptions } from "../../src"
 import { Err, Ok } from "@monstermann/stdlib"
 import { describe, expect, expectTypeOf, it } from "bun:test"
 import { CLI } from "../../src"
@@ -47,7 +46,7 @@ const members = CLI.command().commands({ add, empty })
 describe("Command", () => {
     it("should replace the options", () => {
         const command = CLI.command().options({ email: CLI.string() }).options({ seats: CLI.string().default("1") })
-        expectTypeOf<InferOptions<typeof command>>().toEqualTypeOf<{ seats: string }>()
+        expectTypeOf<CLI.InferOptions<typeof command>>().toEqualTypeOf<{ seats: string }>()
     })
 
     it("should have no action without one", () => {

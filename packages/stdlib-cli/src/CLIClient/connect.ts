@@ -2,15 +2,6 @@ import type { Result } from "@monstermann/stdlib"
 import type { CLIClient } from "."
 import { Err, JSON, Ok, String } from "@monstermann/stdlib"
 
-export interface CLIClientTransport {
-    /** Sends a request to the program. */
-    request: (text: string) => void
-    /**
-     * Calls `callback` with the text the program prints. The text arrives in pieces of any size.
-     */
-    response: (callback: (text: string) => void) => void
-}
-
 type Reply = { id: number, ok: boolean, value: unknown }
 
 /**
@@ -37,7 +28,7 @@ type Reply = { id: number, ok: boolean, value: unknown }
  * await miko.members.add({ email: "a@b.c" }) // Ok({ email: "a@b.c" })
  * ```
  */
-export function connect<X>(transport: CLIClientTransport): CLIClient<X> {
+export function connect<X>(transport: CLIClient.Transport): CLIClient<X> {
     const pending = new Map<number, (result: Result<unknown, unknown>) => void>()
     let nextId = 0
     let rest = ""

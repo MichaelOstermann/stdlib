@@ -22,27 +22,27 @@ In case you need to build your own `run` or `exec`, some building blocks are exp
 ```ts
 // Minor processing of argv, for example does it contain
 // --help, what are the flags, what is the command path, etc.:
-const argv = CLI.resolve.argv()
-const argv = CLI.resolve.argv(process.argv.slice(2))
+const argv = CLI.resolveArgv()
+const argv = CLI.resolveArgv(process.argv.slice(2))
 CLI.run(root, { argv, name: "miko" })
 CLI.exec(root, { argv, name: "miko" })
 
 // Try to find the command that matches argv:
-const command = CLI.resolve.command(root, argv.path)
+const command = CLI.resolveCommand(root, argv.path)
 
 // Try to find the closest matching command,
 // useful for "Did you mean?" messages:
-const command = CLI.commands.nearest(root, argv.path)
+const command = CLI.nearestCommand(root, argv.path)
 
 // Get a flat list of commands that have actions,
 // this is used internally in combination with
-// CLI.prompt.command(commands) to let users pick one:
-const commands = CLI.commands.pickable(command)
+// CLI.promptCommand(commands) to let users pick one:
+const commands = CLI.pickableCommands(command)
 // Filter out unwanted command trees, for example RPC commands:
-const commands = CLI.commands.pickable(command, (command) => command !== rpc)
+const commands = CLI.pickableCommands(command, (command) => command !== rpc)
 
 // Resolve the options of a command:
 const foo = CLI.boolean()
-const result = await CLI.resolve.options({ foo }, argv.flags)
-const result = await CLI.resolve.option("foo", foo, argv.flags)
+const result = await CLI.resolveOptions({ foo }, argv.flags)
+const result = await CLI.resolveOption("foo", foo, argv.flags)
 ```

@@ -1,38 +1,4 @@
-import type { Failure, JSON, Result } from "@monstermann/stdlib"
-import type { CommandOptions, Commands, InferOptions } from "./types"
-
-export interface Command<O extends CommandOptions = Record<never, never>, C extends Commands = Record<never, never>> {
-    readonly config: CommandConfig<O, C>
-    readonly kind: "command"
-    action: <R extends ActionReturn>(action: (options: InferOptions<O>) => R | Promise<R>) => ActionCommand<O, C, R>
-    commands: <const C extends Commands>(commands: C) => Command<O, C>
-    desc: (desc: string) => Command<O, C>
-    options: <const P extends CommandOptions>(options: P) => Command<P, C>
-}
-
-export interface CommandConfig<O extends CommandOptions, C extends Commands> {
-    action: undefined
-    commands: C
-    desc?: string
-    options: O
-}
-
-export interface ActionCommand<O extends CommandOptions, C extends Commands, R extends ActionReturn> {
-    readonly config: ActionCommandConfig<O, C, R>
-    readonly kind: "command"
-    commands: <const C extends Commands>(commands: C) => ActionCommand<O, C, R>
-    desc: (desc: string) => ActionCommand<O, C, R>
-}
-
-export interface ActionCommandConfig<O extends CommandOptions, C extends Commands, R extends ActionReturn> {
-    commands: C
-    desc?: string
-    options: O
-    action: (options: InferOptions<O>) => R | Promise<R>
-}
-
-/** An action returns `Ok` with JSON, `Err` with the problem, or nothing. */
-export type ActionReturn = Result<JSON, Failure | Error | string> | void
+import type { CLI } from "."
 
 /**
  * # command
@@ -62,26 +28,26 @@ export type ActionReturn = Result<JSON, Failure | Error | string> | void
  *     .commands({ add })
  * ```
  */
-export function command(): Command {
+export function command(): CLI.Command {
     return build({ action: undefined, commands: {}, options: {} })
 }
 
 type Config = {
     action: ((options: any) => unknown) | undefined
-    commands: Commands
+    commands: CLI.Commands
     desc?: string
-    options: CommandOptions
+    options: CLI.CommandOptions
 }
 
 function build(config: Config): never {
     const command = {
         config,
         kind: "command",
-        commands: (commands: Commands) => build({ ...config, commands }),
+        commands: (commands: CLI.Commands) => build({ ...config, commands }),
         desc: (desc: string) => build({ ...config, desc }),
         ...config.action ? {} : {
             action: (action: Config["action"]) => build({ ...config, action }),
-            options: (options: CommandOptions) => build({ ...config, options }),
+            options: (options: CLI.CommandOptions) => build({ ...config, options }),
         },
     }
     return command as never

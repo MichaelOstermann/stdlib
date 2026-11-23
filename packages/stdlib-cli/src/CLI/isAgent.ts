@@ -1,0 +1,33 @@
+// Taken from detectAgent of std-env@4.3.0, src/agents.ts, MIT License, Copyright (c) Pooya Parsa.
+
+/** Any agent can set this variable to name itself: `AI_AGENT=claude-code_2-1-310_agent`. */
+const CONVENTION = "AI_AGENT"
+
+/** Variables of agents that don't set `AI_AGENT`. Each variable belongs to one agent. */
+const VARIABLES = [
+    "AUGMENT_AGENT", // Auggie
+    "CLAUDECODE", // Claude Code
+    "CLAUDE_CODE",
+    "CODEX_SANDBOX", // Codex
+    "CODEX_THREAD_ID",
+    "COPILOT_AGENT", // GitHub Copilot
+    "COPILOT_CLI",
+    "CURSOR_AGENT", // Cursor
+    "GEMINI_CLI", // Gemini CLI
+    "GOOSE_PROVIDER", // Goose
+    "JUNIE_DATA", // Junie
+    "JUNIE_SHIM_PATH",
+    "OPENCODE", // opencode
+    "REPL_ID", // Replit
+]
+
+export function isAgent(): boolean {
+    const env = process.env
+    if (env[CONVENTION]) return true
+    if (VARIABLES.some((name) => env[name])) return true
+    // These only leave a trace in a variable that is also set for other reasons.
+    if (/\.pi[\\/]agent/.test(env["PATH"] ?? "")) return true // pi
+    if ((env["EDITOR"] ?? "").includes("devin")) return true // Devin
+    if ((env["TERM_PROGRAM"] ?? "").includes("kiro") && !process.stdout.isTTY) return true // Kiro, its terminal is a TTY when a person uses it
+    return false
+}

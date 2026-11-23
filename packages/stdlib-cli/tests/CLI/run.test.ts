@@ -24,7 +24,7 @@ async function run(line: string): Promise<{ exitCode: number | string | undefine
     }
     process.exitCode = 0
     try {
-        await CLI.run(miko, { argv: CLI.resolve.argv(line.split(" ")), name: "miko", prompt: false, rpc: CLI.command().commands({ add }) })
+        await CLI.run(miko, { argv: CLI.resolveArgv(line.split(" ")), name: "miko", prompt: false, rpc: CLI.command().commands({ add }) })
         return { exitCode: process.exitCode, ...written }
     }
     finally {

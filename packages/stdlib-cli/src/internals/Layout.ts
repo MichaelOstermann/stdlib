@@ -1,4 +1,4 @@
-import { ansi } from "../CLI/ansi"
+import { bold } from "../CLI/bold"
 
 export const Layout = {
     paragraphs(texts: string[]): string {
@@ -13,6 +13,6 @@ export const Layout = {
     },
     section(title: string, rows: string[]): string {
         if (!rows.length) return ""
-        return `${ansi.bold(`${title}:`)}\n${rows.join("\n")}`
+        return `${bold(`${title}:`)}\n${rows.join("\n")}`
     },
 }

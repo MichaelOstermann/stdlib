@@ -4,17 +4,17 @@ title: Environment
 
 ```ts
 // Is this an AI agent?
-CLI.env.agent
+CLI.isAgent()
 
 // Is this an interactive terminal?
-CLI.env.human
+CLI.isHuman()
 
 // Is this running in CI?
-CLI.env.ci
+CLI.isCI()
 
 // Are colors enabled?
-CLI.env.color
+CLI.hasColor()
 
-// Each of them can be changed:
-CLI.env.color = false
+// Colors can be turned on or off:
+CLI.setColor(false)
 ```

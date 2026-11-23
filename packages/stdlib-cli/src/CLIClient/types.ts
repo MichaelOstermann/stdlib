@@ -1,9 +1,5 @@
 import type { Failure, InferErr, InferOk, Result, Simplify } from "@monstermann/stdlib"
-import type { BooleanOption } from "../CLI/boolean"
-import type { ActionCommand } from "../CLI/command"
-import type { EnumOption } from "../CLI/enum"
-import type { StringOption } from "../CLI/string"
-import type { CLIError, CLIInvalidMessageError } from "../CLI/types"
+import type { CLI } from "../CLI"
 
 export type InferClient<X> = X extends { config: { commands: infer C, options: infer O } }
     ? keyof RPCCommands<C> extends never
@@ -13,8 +9,8 @@ export type InferClient<X> = X extends { config: { commands: infer C, options: i
 
 type RPCCommands<C> = Simplify<{ -readonly [K in keyof C as RPCHasAction<C[K]> extends true ? K : never]: InferClient<C[K]> }>
 
-type RPCAction<X, O> = X extends ActionCommand<any, any, infer R>
-    ? (options: RPCOptions<O>) => Promise<Result<RPCValue<R>, RPCError<R> | CLIError | CLIInvalidMessageError>>
+type RPCAction<X, O> = X extends CLI.ActionCommand<any, any, infer R>
+    ? (options: RPCOptions<O>) => Promise<Result<RPCValue<R>, RPCError<R> | CLI.Error | CLI.InvalidMessageError>>
     : unknown
 
 type RPCValue<R> = InferOk<Exclude<R, void>> | (undefined extends R ? null : never)
@@ -34,21 +30,21 @@ type RPCOptions<O> = Simplify<
     & { -readonly [K in keyof O as RPCRequired<O[K]> extends true ? never : K]?: RPCOption<O[K]> }
 >
 
-type RPCOption<O> = O extends StringOption<unknown, boolean, boolean>
+type RPCOption<O> = O extends CLI.StringOption<unknown, boolean, boolean>
     ? string
-    : O extends BooleanOption
+    : O extends CLI.BooleanOption
         ? boolean
-        : O extends EnumOption<infer K, boolean>
+        : O extends CLI.EnumOption<infer K, boolean>
             ? K
             : never
 
-type RPCRequired<O> = O extends StringOption<unknown, infer Optional, infer Defaulted>
+type RPCRequired<O> = O extends CLI.StringOption<unknown, infer Optional, infer Defaulted>
     ? Optional extends true
         ? false
         : Defaulted extends true
             ? false
             : true
-    : O extends EnumOption<infer _K, infer Defaulted>
+    : O extends CLI.EnumOption<infer _K, infer Defaulted>
         ? Defaulted extends true
             ? false
             : true

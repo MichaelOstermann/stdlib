@@ -45,6 +45,16 @@ describe("manifest", () => {
         }
     })
 
+    it("should list everything @monstermann/stdlib-cli exports, each member of a namespace in a file of its own", async () => {
+        const cli = Path.resolve(import.meta.dirname, "../../stdlib-cli/src")
+        const { functions, namespaces } = packages.get("@monstermann/stdlib-cli")!
+        const exports = await import(Path.join(cli, "index"))
+        expect([...namespaces, ...functions.keys()].sort()).toEqual(Object.keys(exports).sort())
+        for (const name of namespaces) {
+            for (const member of Object.keys(exports[name])) expect(member in await import(Path.join(cli, name, `${member}.ts`))).toBe(true)
+        }
+    })
+
     it("should list everything @monstermann/stdlib-embed exports, each member of a namespace in a file of its own", async () => {
         const embed = Path.resolve(import.meta.dirname, "../../stdlib-embed/src")
         const { functions, namespaces } = packages.get("@monstermann/stdlib-embed")!

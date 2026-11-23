@@ -20,7 +20,7 @@ const rpc = CLI.command().commands({ members })
 const miko = CLI.command().desc("Everything miko").commands({ members })
 
 function exec(line: string): ReturnType<typeof CLI.exec> {
-    return CLI.exec(miko, { argv: CLI.resolve.argv(line.split(" ")), name: "miko", prompt: false, rpc })
+    return CLI.exec(miko, { argv: CLI.resolveArgv(line.split(" ")), name: "miko", prompt: false, rpc })
 }
 
 describe("CLI.exec", () => {
@@ -64,7 +64,7 @@ describe("CLI.exec", () => {
 
     it("should know rpc by the command, not by its name", async () => {
         const own = CLI.command().commands({ rpc: CLI.command().action(() => Ok(1)) })
-        const execution = await CLI.exec(own, { argv: CLI.resolve.argv(["rpc"]), name: "miko", prompt: false })
+        const execution = await CLI.exec(own, { argv: CLI.resolveArgv(["rpc"]), name: "miko", prompt: false })
         expect(execution).toMatchObject({ isRPC: false, result: Ok(1) })
     })
 })

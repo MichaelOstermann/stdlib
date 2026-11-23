@@ -1,16 +1,4 @@
-export interface EnumOption<K extends string = never, Defaulted extends boolean = false> {
-    readonly config: EnumOptionConfig<K>
-    readonly kind: "enum"
-    default: (value: K) => EnumOption<K, true>
-    desc: (desc: string) => EnumOption<K, Defaulted>
-    options: <const C extends Record<string, string>>(options: C) => EnumOption<keyof C & string, false>
-}
-
-export interface EnumOptionConfig<K extends string> {
-    default?: K
-    desc?: string
-    options: Record<K, string>
-}
+import type { CLI } from "."
 
 /**
  * # enum
@@ -29,11 +17,11 @@ export interface EnumOptionConfig<K extends string> {
  *     .default("member")
  * ```
  */
-export function enumI(): EnumOption {
+function enumOption(): CLI.EnumOption {
     return build({ options: {} })
 }
 
-function build<K extends string, Defaulted extends boolean>(config: EnumOptionConfig<K>): EnumOption<K, Defaulted> {
+function build<K extends string, Defaulted extends boolean>(config: CLI.EnumOptionConfig<K>): CLI.EnumOption<K, Defaulted> {
     return {
         config,
         kind: "enum",
@@ -42,3 +30,5 @@ function build<K extends string, Defaulted extends boolean>(config: EnumOptionCo
         options: (options) => build({ ...config, default: undefined, options }),
     }
 }
+
+export { enumOption as enum }

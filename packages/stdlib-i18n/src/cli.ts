@@ -27,17 +27,17 @@ await CLI.run(program, { name: "stdlib-i18n" })
 
 function report({ errors, output, warnings }: I18nResult): string {
     const lines = [
-        ...errors.map((error) => `${CLI.ansi.red(location(error))} ${error.message}`),
-        ...warnings.map((warning) => `${CLI.ansi.yellow(location(warning))} ${warning.message}`),
+        ...errors.map((error) => `${CLI.red(location(error))} ${error.message}`),
+        ...warnings.map((warning) => `${CLI.yellow(location(warning))} ${warning.message}`),
     ]
     if (lines.length) lines.push("")
 
-    if (output?.written) lines.push(`${CLI.ansi.green(output.path)} ${count(output.messages, "message")}`)
-    if (output && !output.written) lines.push(CLI.ansi.dim(`${output.path} ${count(output.messages, "message")}, unchanged`))
+    if (output?.written) lines.push(`${CLI.green(output.path)} ${count(output.messages, "message")}`)
+    if (output && !output.written) lines.push(CLI.dim(`${output.path} ${count(output.messages, "message")}, unchanged`))
 
     const counts = [count(errors.length, "error"), ...warnings.length ? [count(warnings.length, "warning")] : []]
-    if (errors.length) lines.push(CLI.ansi.red(`${counts.join(", ")}, nothing written`))
-    if (!errors.length && warnings.length) lines.push(CLI.ansi.yellow(count(warnings.length, "warning")))
+    if (errors.length) lines.push(CLI.red(`${counts.join(", ")}, nothing written`))
+    if (!errors.length && warnings.length) lines.push(CLI.yellow(count(warnings.length, "warning")))
 
     return lines.join("\n")
 }

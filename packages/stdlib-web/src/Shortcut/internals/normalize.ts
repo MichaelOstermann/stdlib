@@ -3,6 +3,7 @@ import { modifierOf, nameOf } from "./keys"
 
 /**
  * Returns the single form of a keystroke that all comparisons use:
+ *
  * - names as events report them: `esc` → `Escape`
  * - a modifier used as the key becomes a modifier: `Control` → `ctrl`
  * - a single character in lowercase, with uppercase meaning shift: `A` → `shift+a`

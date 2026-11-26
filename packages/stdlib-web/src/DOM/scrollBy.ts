@@ -8,8 +8,8 @@
  * match a CSS transition, and reports when it is done.
  *
  * - `easing` maps the progress from `0` to `1` to the scrolled fraction. Defaults to CSS's `ease`
- * - the distance is clamped to what `element` can scroll. When there is nothing to scroll,
- *   `onDone` is called right away
+ * - the distance is clamped to what `element` can scroll. When there is nothing to scroll, `onDone`
+ *   is called right away
  * - a `duration` of `0` scrolls right away
  *
  * ## Example

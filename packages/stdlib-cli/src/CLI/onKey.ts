@@ -2,6 +2,8 @@ import type { CLI } from "."
 import type { Key as Keypress } from "node:readline"
 import { emitKeypressEvents } from "node:readline"
 import { batch } from "@monstermann/stdlib"
+import { acquireRawInput } from "../internals/rawInput"
+import { onTerminalCleanup } from "../internals/terminalCleanup"
 
 const NAMES: Record<string, string> = {
     backspace: "Backspace",
@@ -42,9 +44,17 @@ const PASTE_OFF = "\x1b[?2004l"
  */
 export function onKey(callback: (key: CLI.Key) => void): () => void {
     let pasted: string | undefined
+    let inMouseEvent = false
     const listener = (_: unknown, event: Keypress): void => {
         const sequence = event.sequence ?? ""
-        if (event.name === "paste-start") {
+        // readline splits a mouse event into keys: `\x1b[<`, the digits and `;`, then `M` or `m`.
+        if (sequence === "\x1b[<") {
+            inMouseEvent = true
+        }
+        else if (inMouseEvent) {
+            inMouseEvent = sequence !== "M" && sequence !== "m"
+        }
+        else if (event.name === "paste-start") {
             pasted = ""
         }
         else if (event.name === "paste-end") {
@@ -68,22 +78,14 @@ export function onKey(callback: (key: CLI.Key) => void): () => void {
             }))
         }
     }
-    const restore = (): void => {
-        process.stdout.write(PASTE_OFF)
-    }
-
     emitKeypressEvents(process.stdin)
-    process.stdin.setRawMode(true)
-    process.stdin.resume()
+    const releaseRawInput = acquireRawInput()
     process.stdin.on("keypress", listener)
     process.stdout.write(PASTE_ON)
-    process.on("exit", restore)
 
-    return () => {
+    return onTerminalCleanup(() => {
         process.stdin.off("keypress", listener)
-        process.stdin.setRawMode(false)
-        process.stdin.pause()
-        process.off("exit", restore)
-        restore()
-    }
+        releaseRawInput()
+        process.stdout.write(PASTE_OFF)
+    })
 }

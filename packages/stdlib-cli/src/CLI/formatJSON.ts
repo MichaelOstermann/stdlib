@@ -11,8 +11,8 @@ type Group = JSON.Object | JSON[] | readonly JSON[]
 /**
  * # formatJSON
  *
- * Turns JSON into readable text that looks like YAML. With `compact`, the text goes on one line
- * when it fits.
+ * Turns JSON into readable text that looks like YAML. With `compact`, the text always goes on one
+ * line, and an object loses its outer braces.
  *
  * ## Example
  *
@@ -24,17 +24,16 @@ type Group = JSON.Object | JSON[] | readonly JSON[]
  * // seats: 1
  *
  * CLI.formatJSON({ email: "jane@miko.dev", tags: ["admin"] }, { compact: true })
- * // { email: jane@miko.dev, tags: [admin] }
+ * // email: jane@miko.dev, tags: [admin]
  * ```
  */
 export function formatJSON(value: JSON, options: CLI.FormatOptions = {}): string {
     const limits = { maxItems: options.maxItems ?? 100, maxString: options.maxString ?? 1000 }
-    const width = options.width ?? process.stdout.columns ?? 80
     if (typeof value === "string") return value
     if (!isGroup(value)) return scalar(value)
-    const flat = options.compact ? inline(value, limits) : undefined
-    if (flat !== undefined && Bun.stringWidth(flat) <= width) return flat
-    return groupLines(value, width, limits).join("\n")
+    if (!options.compact) return groupLines(value, options.width ?? process.stdout.columns ?? 80, limits).join("\n")
+    if (isArray(value)) return inlineArray(value, limits)
+    return inlineEntries(value, limits)
 }
 
 function groupLines(group: Group, width: number, limits: Limits): string[] {
@@ -51,6 +50,7 @@ function arrayLines(array: readonly JSON[], width: number, limits: Limits): stri
 
 function itemLines(item: JSON, width: number, limits: Limits): string[] {
     const dash = dim("- ")
+    if (isMultiline(item)) return hang(dash, ["|", ...blockLines(item, width - 2, limits)])
     if (!isGroup(item)) return hang(dash, valueLines(item, width - 2, limits))
     return hang(dash, groupLines(item, width - 2, limits))
 }
@@ -66,6 +66,7 @@ function objectLines(object: JSON.Object, width: number, limits: Limits): string
 function entryLines(key: string, value: JSON, width: number, limits: Limits): string[] {
     const head = `${keyText(key)}: `
     const headWidth = Bun.stringWidth(head)
+    if (isMultiline(value)) return [`${head}|`, ...blockLines(value, width - 2, limits).map((line) => `  ${line}`)]
     if (!isGroup(value)) return hang(head, valueLines(value, Math.max(width - headWidth, 20), limits))
     if (isEmpty(value)) return [head + emptyText(value)]
     return [head.trimEnd(), ...groupLines(value, width - 2, limits).map((line) => `  ${line}`)]
@@ -74,6 +75,18 @@ function entryLines(key: string, value: JSON, width: number, limits: Limits): st
 function valueLines(value: boolean | number | string | null, width: number, limits: Limits): string[] {
     if (typeof value !== "string") return [scalar(value)]
     return Bun.wrapAnsi(stringText(value, limits), width, { hard: true }).split("\n")
+}
+
+/** Returns the lines of `string` as they are, like a block in YAML, each wrapped to `width`. */
+function blockLines(string: string, width: number, limits: Limits): string[] {
+    const cut = string.length <= limits.maxString ? string : string.slice(0, limits.maxString).trimEnd()
+    const lines = cut.split("\n").flatMap((line) => Bun.wrapAnsi(line, width, { hard: true, trim: false }).split("\n")).map((line) => green(line))
+    if (cut.length < string.length) lines.push(dim(`… ${string.length - cut.length} more characters`))
+    return lines
+}
+
+function isMultiline(value: JSON): value is string {
+    return typeof value === "string" && value.includes("\n")
 }
 
 function inline(value: JSON, limits: Limits): string {
@@ -90,11 +103,15 @@ function inlineArray(array: readonly JSON[], limits: Limits): string {
 }
 
 function inlineObject(object: JSON.Object, limits: Limits): string {
+    if (isEmpty(object)) return "{}"
+    return `{ ${inlineEntries(object, limits)} }`
+}
+
+function inlineEntries(object: JSON.Object, limits: Limits): string {
     const entries = Object.entries(object)
-    if (!entries.length) return "{}"
     const items = entries.slice(0, limits.maxItems).map(([key, value]) => `${keyText(key)}: ${inline(value, limits)}`)
     if (entries.length > limits.maxItems) items.push(more(entries.length - limits.maxItems))
-    return `{ ${items.join(", ")} }`
+    return items.join(", ")
 }
 
 function stringText(string: string, limits: Limits): string {

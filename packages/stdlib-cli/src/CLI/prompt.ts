@@ -45,7 +45,7 @@ export function prompt(options: CLI.PromptOptions & { parse?: Parse<unknown> }):
 
     if (options.initial) void check(options.initial)
 
-    const stopRender = render((width, done) => {
+    const stopRender = render(({ width }, done) => {
         const prefix = options.prefix?.(text, done) || ""
         const suffix = options.suffix?.(text, done) || ""
         const room = width - Bun.stringWidth(prefix) - Bun.stringWidth(suffix)

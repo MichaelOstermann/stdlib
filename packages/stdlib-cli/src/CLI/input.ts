@@ -16,7 +16,7 @@ const words = new Intl.Segmenter(undefined, { granularity: "word" })
  * ```ts
  * const email = CLI.input();
  *
- * CLI.render((width) => [`Email  ${email(width - 7)}`]);
+ * CLI.render(({ width }) => [`Email  ${email(width - 7)}`]);
  *
  * CLI.onKey((key) => {
  *     if (key.name === "Backspace") email.deletePrevChar();

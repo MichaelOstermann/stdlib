@@ -25,7 +25,7 @@ export function promptCommand(commands: CLI.ResolvedCommand[]): Promise<CLI.Reso
     const $index = Signal(0)
     const nameWidth = Math.max(...commands.map((entry) => Bun.stringWidth(entry.path.join(" "))))
 
-    const stopRender = render((width, done) => {
+    const stopRender = render(({ width }, done) => {
         const shown = matches(commands, text.$value())
         const index = Math.min($index(), shown.length - 1)
         const active = shown[index]

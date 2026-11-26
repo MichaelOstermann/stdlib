@@ -30,7 +30,7 @@ export async function resolveOptions<O extends CLI.CommandOptions>(options: O, f
         if (value.ok) values[name] = value.value
         if (!value.ok) errors.push(value.value)
     }
-    errors.push(...unknown.map((flag): CLI.UnknownOptionError => ({ message: "Unknown option", meta: { option: flag }, name: "CLIUnknownOptionError" })))
+    errors.push(...unknown.map((flag): CLI.UnknownOptionError => ({ message: "Unknown option", name: "CLIUnknownOptionError", option: flag })))
 
     if (errors.length) return Err<CLI.OptionsError>({ errors, message: "Invalid options", name: "CLIOptionsError" })
     return Ok(values as CLI.InferOptions<O>)

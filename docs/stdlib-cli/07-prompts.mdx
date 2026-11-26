@@ -41,7 +41,7 @@ const color = await CLI.select({ choices: ["red", "green"] })
 const name = CLI.input()
 
 // Draw lines:
-const stopRender = CLI.render((width, done) => [
+const stopRender = CLI.render(({ width }, done) => [
     `Name: ${done ? name.$value() : name(width - 6)}`,
 ])
 
@@ -57,3 +57,19 @@ const stopKeys = CLI.onKey((key) => {
 :::tip
 `CLI.render` uses an [effect](../stdlib/effect) under the hood, so use signals to rerender.
 :::
+
+```ts
+// A full screen of its own, like less or vim:
+const leave = CLI.alternateScreen()
+
+// Clicks and the wheel, with x and y counting from the top left:
+const stopMouse = CLI.onMouse((mouse) => {
+    if (mouse.name === "WheelUp") $scroll((scroll) => scroll - 1)
+    if (mouse.name === "WheelDown") $scroll((scroll) => scroll + 1)
+    if (mouse.name === "MouseDown") select(mouse.y)
+})
+```
+
+While `CLI.onMouse` listens, the terminal selects text only with Shift held down.
+
+`CLI.render`, `CLI.onKey`, `CLI.onMouse` and `CLI.alternateScreen` give the terminal back when the process exits, or gets SIGINT or SIGTERM. After a signal, the process exits like the signal would, unless it listens for the signal itself.

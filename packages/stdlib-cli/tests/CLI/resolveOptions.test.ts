@@ -31,11 +31,11 @@ describe("CLI.resolveOptions", () => {
 
     it("should report every problem, in the order of the options, unknown ones last", async () => {
         expect(await errors("--nope --seats x --role y z")).toEqual([
-            { message: "Required", meta: { option: "email" }, name: "CLIMissingOptionError" },
-            { message: "Must be one of: admin, member", meta: { option: "role" }, name: "CLIInvalidOptionError" },
-            { message: "Must be a whole number", meta: { option: "seats" }, name: "CLIInvalidOptionError" },
-            { message: "Unknown option", meta: { option: "--nope" }, name: "CLIUnknownOptionError" },
-            { message: "Unknown option", meta: { option: "z" }, name: "CLIUnknownOptionError" },
+            { message: "Required", name: "CLIMissingOptionError", option: "email" },
+            { message: "Must be one of: admin, member", name: "CLIInvalidOptionError", option: "role" },
+            { message: "Must be a whole number", name: "CLIInvalidOptionError", option: "seats" },
+            { message: "Unknown option", name: "CLIUnknownOptionError", option: "--nope" },
+            { message: "Unknown option", name: "CLIUnknownOptionError", option: "z" },
         ])
     })
 })

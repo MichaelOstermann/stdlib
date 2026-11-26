@@ -82,14 +82,14 @@ function unknownCommandText(execution: CLI.Execution): string {
 function optionsText(execution: CLI.Execution, failure: CLI.OptionsError): string {
     const { argv, command } = execution
     const options = command?.command.config.options ?? {}
-    const unknown = failure.errors.filter((item) => item.name === "CLIUnknownOptionError").map((item) => item.meta.option)
+    const unknown = failure.errors.filter((item) => item.name === "CLIUnknownOptionError").map((item) => item.option)
     const flagProblems = unknown.filter((flag) => flag.startsWith("-")).map((flag) => unknownFlagProblem(argv, options, flag))
     const looseProblems = looseRuns(argv, unknown).map((run) => looseProblem(argv, options, run))
     const unknownProblems = [...flagProblems, ...looseProblems]
     const suggested = unknownProblems.map((problem) => problem.suggests)
     const problems = failure.errors.flatMap((item) => {
         if (item.name === "CLIInvalidOptionError") return [invalidProblem(argv, options, item)]
-        if (item.name === "CLIMissingOptionError" && !suggested.includes(item.meta.option)) return [missingProblem(options, item)]
+        if (item.name === "CLIMissingOptionError" && !suggested.includes(item.option)) return [missingProblem(options, item)]
         return []
     })
     return problemsText(execution, [...problems, ...unknownProblems], command ? helpHint(execution, command) : "")
@@ -130,7 +130,7 @@ function looseProblem(argv: CLI.ResolvedArgv, options: CLI.CommandOptions, run: 
 }
 
 function invalidProblem(argv: CLI.ResolvedArgv, options: CLI.CommandOptions, item: CLI.InvalidOptionError): Problem {
-    const name = item.meta.option
+    const name = item.option
     const given = argv.flags[flagOf(name)] ?? []
     const first = given[0]
     const option = options[name]
@@ -154,8 +154,8 @@ function invalidProblem(argv: CLI.ResolvedArgv, options: CLI.CommandOptions, ite
 }
 
 function missingProblem(options: CLI.CommandOptions, item: CLI.MissingOptionError): Problem {
-    const flag = flagOf(item.meta.option)
-    const option = options[item.meta.option]
+    const flag = flagOf(item.option)
+    const option = options[item.option]
     const example = option?.kind === "string" ? option.config.example : undefined
     if (!example) return { marks: [], text: `Missing option ${flag}` }
     return { marks: [], text: `Missing option ${flag}, for example: ${flag} ${quote(example)}` }

@@ -25,11 +25,11 @@ describe("CLI.resolveOption", () => {
     })
 
     it("should give the problem as the message", async () => {
-        expect<unknown>(await CLI.resolveOption("email", options.email, flags(""))).toEqual(Err({ message: "Required", meta: { option: "email" }, name: "CLIMissingOptionError" }))
-        expect<unknown>(await CLI.resolveOption("email", options.email, flags("--email"))).toEqual(Err({ message: "Needs a value", meta: { option: "email" }, name: "CLIInvalidOptionError" }))
-        expect<unknown>(await CLI.resolveOption("seats", options.seats, flags("--seats x"))).toEqual(Err({ message: "Must be a whole number", meta: { option: "seats" }, name: "CLIInvalidOptionError" }))
-        expect<unknown>(await CLI.resolveOption("role", options.role, flags("--role admn"))).toEqual(Err({ message: "Must be one of: admin, member", meta: { option: "role" }, name: "CLIInvalidOptionError" }))
-        expect<unknown>(await CLI.resolveOption("seats", options.seats, flags("--seats 1 --seats=2"))).toEqual(Err({ message: "Options can only be used once", meta: { option: "seats" }, name: "CLIInvalidOptionError" }))
+        expect<unknown>(await CLI.resolveOption("email", options.email, flags(""))).toEqual(Err({ message: "Required", name: "CLIMissingOptionError", option: "email" }))
+        expect<unknown>(await CLI.resolveOption("email", options.email, flags("--email"))).toEqual(Err({ message: "Needs a value", name: "CLIInvalidOptionError", option: "email" }))
+        expect<unknown>(await CLI.resolveOption("seats", options.seats, flags("--seats x"))).toEqual(Err({ message: "Must be a whole number", name: "CLIInvalidOptionError", option: "seats" }))
+        expect<unknown>(await CLI.resolveOption("role", options.role, flags("--role admn"))).toEqual(Err({ message: "Must be one of: admin, member", name: "CLIInvalidOptionError", option: "role" }))
+        expect<unknown>(await CLI.resolveOption("seats", options.seats, flags("--seats 1 --seats=2"))).toEqual(Err({ message: "Options can only be used once", name: "CLIInvalidOptionError", option: "seats" }))
     })
 
     it("should read booleans", async () => {
@@ -37,7 +37,7 @@ describe("CLI.resolveOption", () => {
         expect(await notify("")).toEqual(Ok(false))
         expect(await notify("--notify")).toEqual(Ok(true))
         expect(await notify("--notify=false")).toEqual(Ok(false))
-        expect<unknown>(await notify("--notify=maybe")).toEqual(Err({ message: "Must be true or false", meta: { option: "notify" }, name: "CLIInvalidOptionError" }))
+        expect<unknown>(await notify("--notify=maybe")).toEqual(Err({ message: "Must be true or false", name: "CLIInvalidOptionError", option: "notify" }))
     })
 
     it("should parse with a Standard Schema", async () => {
@@ -49,6 +49,6 @@ describe("CLI.resolveOption", () => {
             },
         })
         expect(await CLI.resolveOption("port", port, flags("--port 80"))).toEqual(Ok(80))
-        expect<unknown>(await CLI.resolveOption("port", port, flags("--port x"))).toEqual(Err({ message: "Not a port", meta: { option: "port" }, name: "CLIInvalidOptionError" }))
+        expect<unknown>(await CLI.resolveOption("port", port, flags("--port x"))).toEqual(Err({ message: "Not a port", name: "CLIInvalidOptionError", option: "port" }))
     })
 })

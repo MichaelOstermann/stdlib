@@ -2,29 +2,29 @@ import { describe, expect, expectTypeOf, it } from "bun:test"
 import { Failure } from "../src/Failure"
 
 describe("Failure.from", () => {
-    it("should keep the name, message and stack of an error, and its fields that are JSON as meta", () => {
+    it("should keep the name, message, stack and other JSON fields of an error", () => {
         const error = Object.assign(new TypeError("Could not add the member"), { status: 503, notJSON: () => {} })
         const failure = Failure.from(error)
-        expect(failure).toEqual({ message: "Could not add the member", meta: { status: 503 }, name: "TypeError", stack: error.stack! })
+        expect(failure).toEqual({ message: "Could not add the member", name: "TypeError", stack: error.stack!, status: 503 })
     })
 
     it("should turn the cause and the errors of an AggregateError into failures", () => {
         const failure = Failure.from(new AggregateError([new Error("one"), "two"], "Several failed", { cause: { code: 3 } }))
         expect(failure.errors?.map(({ message, name }) => ({ message, name }))).toEqual([{ message: "one", name: "Error" }, { message: "two", name: "Error" }])
-        expect(failure.cause).toEqual({ message: "", meta: { code: 3 }, name: "Error" })
+        expect(failure.cause).toEqual({ code: 3, message: "", name: "Error" })
     })
 
-    it("should take the name and message of a plain object, and the rest as meta", () => {
+    it("should keep the name, message and other JSON fields of a plain object", () => {
         expect(Failure.from({ email: "jane@miko.dev", message: "Already a member", name: "TakenError" })).toEqual({
+            email: "jane@miko.dev",
             message: "Already a member",
-            meta: { email: "jane@miko.dev" },
             name: "TakenError",
         })
     })
 
     it("should give back a failure with the same fields", () => {
-        type TakenError = { cause: Failure, message: string, meta: { email: string }, name: "TakenError" }
-        const failure: TakenError = { cause: { message: "Duplicate key", name: "Error" }, message: "Already a member", meta: { email: "jane@miko.dev" }, name: "TakenError" }
+        type TakenError = { cause: Failure, email: string, message: string, name: "TakenError" }
+        const failure: TakenError = { cause: { message: "Duplicate key", name: "Error" }, email: "jane@miko.dev", message: "Already a member", name: "TakenError" }
         expect(Failure.from(failure)).toEqual(failure)
         expectTypeOf(Failure.from(failure)).toEqualTypeOf<typeof failure>()
         expectTypeOf(Failure.from(failure as typeof failure | string)).toEqualTypeOf<typeof failure | Failure>()
@@ -36,33 +36,25 @@ describe("Failure.from", () => {
         expectTypeOf(Failure.from("Bar" as unknown)).toEqualTypeOf<Failure>()
     })
 
-    it("should move the other fields that are JSON into meta", () => {
-        const failure = Failure.from({ email: "jane@miko.dev", message: "Bar", meta: { id: 1, retry: false }, name: "TakenError", retry: true, notJSON: () => {} })
-        expect(failure).toEqual({ message: "Bar", meta: { email: "jane@miko.dev", id: 1, retry: true }, name: "TakenError" })
-        expectTypeOf(failure).toEqualTypeOf<{ message: string, meta: { email: string, id: number, retry: boolean }, name: "TakenError" }>()
-        expectTypeOf(Failure.from({ email: "jane@miko.dev", message: "Bar", name: "TakenError" })).toEqualTypeOf<{ message: string, meta: { email: string }, name: "TakenError" }>()
-        expectTypeOf(Failure.from({ message: "Bar", name: "Foo", notJSON: () => {} })).toEqualTypeOf<{ message: string, name: "Foo" }>()
+    it("should give back the type of an object that is a failure, and Failure for anything else", () => {
+        expectTypeOf(Failure.from({ email: "jane@miko.dev", message: "Bar", name: "TakenError" })).toEqualTypeOf<{ email: string, message: string, name: "TakenError" }>()
+        expectTypeOf(Failure.from({ message: "Bar", name: "Foo", notJSON: () => {} })).toEqualTypeOf<Failure>()
     })
 
     it("should leave out the fields that are not JSON all the way down", () => {
         const failure = Failure.from({ date: new Date(), message: "", name: "Test", nested: { ok: 1, set: new Set() }, set: new Set() })
         expect(failure).toEqual({ message: "", name: "Test" })
-        expectTypeOf(failure).toEqualTypeOf<{ message: string, name: "Test" }>()
 
         const shared = { ok: 1 }
         const cycle: Record<string, unknown> = {}
         cycle["self"] = cycle
         expect(Failure.from({ a: shared, b: [shared, shared], cycle, list: [1, "two", null, { three: true }], message: "", name: "Test" })).toEqual({
+            a: shared,
+            b: [shared, shared],
+            list: [1, "two", null, { three: true }],
             message: "",
-            meta: { a: shared, b: [shared, shared], list: [1, "two", null, { three: true }] },
             name: "Test",
         })
-    })
-
-    it("should give back a meta that may be there for fields that may be there", () => {
-        const failure = { message: "", name: "Test" } as { foo?: string, message: string, name: "Test" }
-        expectTypeOf(Failure.from(failure)).toEqualTypeOf<{ message: string, meta?: { foo?: string }, name: "Test" }>()
-        expect(Failure.from({ ...failure, foo: "bar" })).toEqual({ message: "", meta: { foo: "bar" }, name: "Test" })
     })
 
     it("should turn anything else into the message", () => {
@@ -121,12 +113,12 @@ describe("Failure.toError", () => {
         expect(error.stack).toBeString()
     })
 
-    it("should keep the name, the meta as fields, and turn cause and errors into errors", () => {
+    it("should keep the name and the other fields, and turn cause and errors into errors", () => {
         const failure = {
             cause: { message: "Duplicate key", name: "SQLiteError" },
+            email: "a@b.c",
             errors: [{ message: "a", name: "A" }],
             message: "Already a member",
-            meta: { email: "a@b.c" },
             name: "TakenError",
             stack: "TakenError: Already a member\n    at somewhere",
         }
@@ -142,16 +134,16 @@ describe("Failure.toError", () => {
 
     it("should be undone by Failure.from", () => {
         const failure = {
-            cause: { message: "Duplicate key", meta: { code: 19 }, name: "SQLiteError" },
+            cause: { code: 19, message: "Duplicate key", name: "SQLiteError" },
+            email: "a@b.c",
             message: "Already a member",
-            meta: { email: "a@b.c" },
             name: "TakenError",
         }
         expect(Failure.removeStackTraces(Failure.from(Failure.toError(failure)))).toEqual(failure)
     })
 
-    it("should not let a meta field change the prototype", () => {
-        const error = Failure.toError(JSON.parse(`{"name":"A","message":"b","meta":{"__proto__":{"polluted":true}}}`))
+    it("should not let a field change the prototype", () => {
+        const error = Failure.toError(JSON.parse(`{"name":"A","message":"b","__proto__":{"polluted":true}}`))
         expect(error).toBeInstanceOf(Error)
         expect((error as Error & { polluted?: boolean }).polluted).toBeUndefined()
     })

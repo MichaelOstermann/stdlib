@@ -71,7 +71,7 @@ describe("Result", () => {
         const error = new RangeError("out")
         expect(() => Err(error).unwrap()).toThrow(error)
 
-        const failure = { message: "Already a member", meta: { email: "a@b.c" }, name: "TakenError" }
+        const failure = { email: "a@b.c", message: "Already a member", name: "TakenError" }
         try {
             Err(failure).unwrap()
         }

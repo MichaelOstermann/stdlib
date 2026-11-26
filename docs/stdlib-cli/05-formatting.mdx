@@ -19,10 +19,14 @@ What `CLI.run` prints for what an action returns:
 ```ts
 // JSON as readable text, like YAML:
 CLI.formatJSON(value)
-// On one line when it fits, with limits for long arrays, objects and strings:
-CLI.formatJSON(value, { compact: true, maxItems: 100, maxString: 1000, width: 80 })
+// Wrapped to a width, with limits for long arrays, objects and strings:
+CLI.formatJSON(value, { maxItems: 100, maxString: 1000, width: 80 })
+// On one line, without the outer braces of an object:
+CLI.formatJSON(value, { compact: true })
 // Anything that went wrong as readable text, takes the same options:
 CLI.formatError(error)
+// With the stack of the error, and of its cause and errors:
+CLI.formatError(error, { stack: true })
 // What CLI.run prints for an execution:
 CLI.formatExec(await CLI.exec(root, { name: "miko" }))
 ```

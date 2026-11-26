@@ -1,5 +1,6 @@
 import type { Failure, JSON, Result, Signal } from "@monstermann/stdlib"
 import type { Parse } from "../internals/Parse"
+import { alternateScreen } from "./alternateScreen"
 import { bgBlack } from "./bgBlack"
 import { bgBlue } from "./bgBlue"
 import { bgCyan } from "./bgCyan"
@@ -33,6 +34,7 @@ import { italic } from "./italic"
 import { magenta } from "./magenta"
 import { nearestCommand } from "./nearestCommand"
 import { onKey } from "./onKey"
+import { onMouse } from "./onMouse"
 import { optionHelp } from "./optionHelp"
 import { optionsHelp } from "./optionsHelp"
 import { pickableCommands } from "./pickableCommands"
@@ -90,11 +92,11 @@ export namespace CLI {
 
     export type UnknownCommandError = { message: string, name: "CLIUnknownCommandError" }
 
-    export type InvalidOptionError = { message: string, meta: { option: string }, name: "CLIInvalidOptionError" }
+    export type InvalidOptionError = { message: string, name: "CLIInvalidOptionError", option: string }
 
-    export type MissingOptionError = { message: string, meta: { option: string }, name: "CLIMissingOptionError" }
+    export type MissingOptionError = { message: string, name: "CLIMissingOptionError", option: string }
 
-    export type UnknownOptionError = { message: string, meta: { option: string }, name: "CLIUnknownOptionError" }
+    export type UnknownOptionError = { message: string, name: "CLIUnknownOptionError", option: string }
 
     export type OptionError = InvalidOptionError | MissingOptionError | UnknownOptionError
 
@@ -224,8 +226,8 @@ export namespace CLI {
 
     export interface FormatOptions {
         /**
-         * Prints one line like `{ email: jane@miko.dev, seats: 1 }` when the value fits into
-         * `width`. Off by default.
+         * Prints one line like `email: jane@miko.dev, seats: 1`, without the outer braces of an
+         * object. Ignores `width`, the caller cuts the line to fit. Off by default.
          */
         compact?: boolean
         /**
@@ -240,6 +242,11 @@ export namespace CLI {
         maxString?: number
         /** How many columns the text may use. Defaults to the width of the terminal. */
         width?: number
+    }
+
+    export interface FormatErrorOptions extends FormatOptions {
+        /** Shows the stack below the error, and below each cause and error. Off by default. */
+        stack?: boolean
     }
 
     export interface PromptOptions {
@@ -317,6 +324,19 @@ export namespace CLI {
         onKey: (key: Key) => boolean
     }
 
+    export interface Mouse {
+        alt: boolean
+        /** The button that was pressed or released: `0` is left, `1` is middle, `2` is right. */
+        button: number
+        ctrl: boolean
+        name: "MouseDown" | "MouseUp" | "WheelDown" | "WheelLeft" | "WheelRight" | "WheelUp"
+        shift: boolean
+        /** The column, from `0` at the left edge of the terminal. */
+        x: number
+        /** The row, from `0` at the top edge of the terminal. */
+        y: number
+    }
+
     export interface Key {
         alt: boolean
         ctrl: boolean
@@ -332,6 +352,7 @@ export namespace CLI {
 }
 
 export const CLI = {
+    alternateScreen,
     bgBlack,
     bgBlue,
     bgCyan,
@@ -365,6 +386,7 @@ export const CLI = {
     magenta,
     nearestCommand,
     onKey,
+    onMouse,
     optionHelp,
     optionsHelp,
     pickableCommands,

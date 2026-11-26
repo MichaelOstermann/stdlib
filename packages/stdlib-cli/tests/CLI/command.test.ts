@@ -22,7 +22,7 @@ describe("CLI.command", () => {
     })
 })
 
-type TakenError = { message: string, meta: { email: string }, name: "TakenError" }
+type TakenError = { email: string, message: string, name: "TakenError" }
 
 const add = CLI
     .command()
@@ -35,7 +35,7 @@ const add = CLI
         team: CLI.enum().options({ a: "", b: "" }),
     })
     .action(({ email }) => {
-        if (email === "taken@miko.dev") return Err<TakenError>({ message: "Already a member", meta: { email }, name: "TakenError" })
+        if (email === "taken@miko.dev") return Err<TakenError>({ email, message: "Already a member", name: "TakenError" })
         return Ok(email)
     })
 

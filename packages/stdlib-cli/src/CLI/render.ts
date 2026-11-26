@@ -1,5 +1,6 @@
 import { Effect, Signal } from "@monstermann/stdlib"
 import { CURSOR } from "../internals/cursor"
+import { onTerminalCleanup } from "../internals/terminalCleanup"
 
 const HIDE_CURSOR = "\x1b[?25l"
 const SHOW_CURSOR = "\x1b[?25h"
@@ -11,26 +12,23 @@ const SYNC_END = "\x1b[?2026l"
  * # render
  *
  * Draws `lines` below the current content of the terminal. Redraws whenever a signal read by
- * `lines` changes. Returns a function that stops drawing. Stopping draws `lines` one last time with
- * `done` set to `true` and leaves them on screen.
+ * `lines` changes, or when the terminal is resized. Returns a function that stops drawing. Stopping
+ * draws `lines` one last time with `done` set to `true` and leaves them on screen.
  *
  * ## Example
  *
  * ```ts
  * const email = CLI.input();
  *
- * const stop = CLI.render((width, done) => done
+ * const stop = CLI.render(({ width }, done) => done
  *     ? [`Email  ${CLI.dim(email.$value())}`]
  *     : [`Email  ${email(width - 7)}`, CLI.dim("Press Enter to continue")]);
  * ```
  */
-export function render(lines: (width: number, done: boolean) => string[]): () => void {
-    const $width = Signal(process.stdout.columns)
+export function render(lines: (size: { height: number, width: number }, done: boolean) => string[]): () => void {
+    const $size = Signal(terminalSize())
     const resize = (): void => {
-        $width(process.stdout.columns)
-    }
-    const showCursor = (): void => {
-        process.stdout.write(SHOW_CURSOR)
+        $size(terminalSize())
     }
     // The widths of the lines on screen, to know how many rows they take after a resize.
     let written: number[] = []
@@ -38,13 +36,13 @@ export function render(lines: (width: number, done: boolean) => string[]): () =>
 
     process.stdout.write(HIDE_CURSOR)
     process.stdout.on("resize", resize)
-    process.on("exit", showCursor)
 
     const draw = (done: boolean): void => {
-        const width = $width()
+        const size = $size()
+        const width = size.width
         const before = erase(written, cursor, width)
         cursor = undefined
-        const frame = lines(width, done).map((line, row) => {
+        const frame = lines(size, done).map((line, row) => {
             const index = line.indexOf(CURSOR)
             if (index !== -1) cursor ??= { col: Math.min(Bun.stringWidth(line.slice(0, index)), width - 1), row }
             return Bun.sliceAnsi(line.replaceAll(CURSOR, ""), 0, width)
@@ -52,17 +50,27 @@ export function render(lines: (width: number, done: boolean) => string[]): () =>
         written = frame.map((line) => Bun.stringWidth(line))
         process.stdout.write(`${SYNC_START}${HIDE_CURSOR}${before}${frame.join("\n")}${place(cursor, frame.length)}${SYNC_END}`)
     }
-    const stop = Effect(() => draw(false))
-
-    return () => {
-        stop()
-        draw(true)
+    const stopEffect = Effect(() => draw(false))
+    let stopped = false
+    const cleanup = onTerminalCleanup(() => {
+        stopped = true
+        stopEffect()
         process.stdout.off("resize", resize)
-        process.off("exit", showCursor)
         // Below the last line, for what is written next.
         const down = cursor ? written.length - 1 - cursor.row : 0
         process.stdout.write(`${down ? `\x1b[${down}B` : ""}${written.length ? "\n" : ""}${SHOW_CURSOR}`)
+    })
+
+    return () => {
+        if (stopped) return
+        stopEffect()
+        draw(true)
+        cleanup()
     }
+}
+
+function terminalSize(): { height: number, width: number } {
+    return { height: process.stdout.rows, width: process.stdout.columns }
 }
 
 interface Cursor {

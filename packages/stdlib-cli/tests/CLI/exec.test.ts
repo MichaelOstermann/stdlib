@@ -46,7 +46,7 @@ describe("CLI.exec", () => {
 
     it("should fail for wrong options", async () => {
         expect((await exec("members add")).result).toEqual(Err({
-            errors: [{ message: "Required", meta: { option: "email" }, name: "CLIMissingOptionError" }],
+            errors: [{ message: "Required", name: "CLIMissingOptionError", option: "email" }],
             message: "Invalid options",
             name: "CLIOptionsError",
         }))

@@ -7,6 +7,8 @@
             "@monstermann/stdlib/*": ["./packages/stdlib/src/*"],
             "@monstermann/stdlib-cli": ["./packages/stdlib-cli/src/index.ts"],
             "@monstermann/stdlib-embed": ["./packages/stdlib-embed/src/index.ts"],
+            "@monstermann/stdlib-logger": ["./packages/stdlib-logger/src/index.ts"],
+            "@monstermann/stdlib-logger/*": ["./packages/stdlib-logger/src/*"],
             "@monstermann/stdlib-web": ["./packages/stdlib-web/src/index.ts"],
             "@monstermann/stdlib-web/*": ["./packages/stdlib-web/src/*"]
         }

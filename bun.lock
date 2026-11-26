@@ -57,6 +57,19 @@
         "@monstermann/stdlib-transform": "workspace:*",
       },
     },
+    "packages/stdlib-logger": {
+      "name": "@monstermann/stdlib-logger",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@monstermann/stdlib": "workspace:*",
+        "@monstermann/stdlib-cli": "workspace:*",
+        "@monstermann/stdlib-transform": "workspace:*",
+      },
+      "peerDependencies": {
+        "@monstermann/stdlib": "workspace:^",
+        "@monstermann/stdlib-cli": "workspace:^",
+      },
+    },
     "packages/stdlib-react": {
       "name": "@monstermann/stdlib-react",
       "version": "0.1.0",
@@ -424,6 +437,8 @@
     "@monstermann/stdlib-embed": ["@monstermann/stdlib-embed@workspace:packages/stdlib-embed"],
 
     "@monstermann/stdlib-i18n": ["@monstermann/stdlib-i18n@workspace:packages/stdlib-i18n"],
+
+    "@monstermann/stdlib-logger": ["@monstermann/stdlib-logger@workspace:packages/stdlib-logger"],
 
     "@monstermann/stdlib-react": ["@monstermann/stdlib-react@workspace:packages/stdlib-react"],
 
